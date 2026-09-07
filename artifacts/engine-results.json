@@ -3,89 +3,90 @@
   "seed": "Aereth-47",
   "checks": {
     "geographyFirst": {
-      "realms": 30,
-      "towns": 84,
-      "physicalHash": "4b02963c",
+      "realms": 31,
+      "towns": 88,
+      "physicalHash": "440ae5d0",
       "continents": [
         {
           "id": 45,
           "name": "Thaloria",
           "cell": 35178,
-          "towns": 19,
-          "polities": 7,
+          "towns": 20,
+          "polities": 10,
           "realmIds": [
-            0,
-            8,
             5,
-            13,
-            14,
+            10,
+            8,
+            26,
+            15,
+            7,
             18,
-            12
+            24,
+            23,
+            20
           ],
-          "capitalCount": 7,
-          "largestShare": 0.19930402541794512,
-          "unclaimedShare": 0.06814315273899055,
-          "internalFrontiers": 11,
-          "borderEdges": 55
+          "capitalCount": 10,
+          "largestShare": 0.18270314606267626,
+          "unclaimedShare": 0.06154146462419086,
+          "internalFrontiers": 15,
+          "borderEdges": 61
         },
         {
           "id": 2,
           "name": "Vaelthar",
           "cell": 13116,
-          "towns": 8,
-          "polities": 6,
+          "towns": 9,
+          "polities": 5,
           "realmIds": [
-            29,
-            24,
+            30,
+            21,
             6,
-            19,
-            28,
-            27
+            27,
+            19
           ],
-          "capitalCount": 6,
-          "largestShare": 0.1991460955690206,
-          "unclaimedShare": 0.4063917729076555,
-          "internalFrontiers": 4,
-          "borderEdges": 15
+          "capitalCount": 5,
+          "largestShare": 0.2292218066485147,
+          "unclaimedShare": 0.374735654055524,
+          "internalFrontiers": 3,
+          "borderEdges": 17
         },
         {
           "id": 40,
           "name": "Soleran",
           "cell": 30243,
-          "towns": 24,
+          "towns": 25,
           "polities": 6,
           "realmIds": [
-            1,
-            4,
             2,
-            17,
-            7,
-            26
+            11,
+            3,
+            12,
+            14,
+            1
           ],
           "capitalCount": 6,
-          "largestShare": 0.20456870780459552,
-          "unclaimedShare": 0.10787382196032741,
-          "internalFrontiers": 6,
-          "borderEdges": 40
+          "largestShare": 0.2544967547845559,
+          "unclaimedShare": 0.08770194078008799,
+          "internalFrontiers": 9,
+          "borderEdges": 37
         },
         {
           "id": 1,
           "name": "Zarush",
           "cell": 14162,
-          "towns": 15,
-          "polities": 5,
+          "towns": 16,
+          "polities": 4,
           "realmIds": [
-            11,
-            23,
-            16,
-            21,
-            10
+            13,
+            28,
+            17,
+            9
           ],
-          "capitalCount": 5,
+          "capitalCount": 4,
           "largestShare": 0.25692847906017613,
-          "unclaimedShare": 0.10519722629975421,
-          "internalFrontiers": 6,
-          "borderEdges": 27
+          "unclaimedShare": 0.17794530607455863,
+          "internalFrontiers": 3,
+          "borderEdges": 15
         },
         {
           "id": 51,
@@ -94,16 +95,16 @@
           "towns": 14,
           "polities": 4,
           "realmIds": [
-            3,
-            20,
-            15,
-            22
+            0,
+            22,
+            16,
+            25
           ],
           "capitalCount": 4,
-          "largestShare": 0.33254364282347443,
-          "unclaimedShare": 0.13129718745503685,
-          "internalFrontiers": 4,
-          "borderEdges": 13
+          "largestShare": 0.3548520524823772,
+          "unclaimedShare": 0.14694567468025338,
+          "internalFrontiers": 3,
+          "borderEdges": 15
         },
         {
           "id": 78,
@@ -134,11 +135,11 @@
       ]
     },
     "allTowns": {
-      "towns": 84,
+      "towns": 88,
       "allParentArraysUnchanged": true,
       "simulationUnchanged": true,
       "minBuildings": 198,
-      "maxBuildings": 899,
+      "maxBuildings": 1087,
       "scenes": [
         {
           "id": 76,
@@ -183,9 +184,9 @@
         {
           "id": 152,
           "name": "Graniteforge",
-          "buildings": 682,
-          "landmarks": 5,
-          "fingerprint": "729f2ac7",
+          "buildings": 689,
+          "landmarks": 4,
+          "fingerprint": "56fbb76c",
           "waterPercent": 0.251602954305657
         },
         {
@@ -207,9 +208,9 @@
         {
           "id": 168,
           "name": "Oakwaystead",
-          "buildings": 380,
+          "buildings": 384,
           "landmarks": 6,
-          "fingerprint": "cfc6558b",
+          "fingerprint": "3e58540a",
           "waterPercent": 1.460920379839299
         },
         {
@@ -223,26 +224,42 @@
         {
           "id": 190,
           "name": "Stormley",
-          "buildings": 491,
+          "buildings": 482,
           "landmarks": 6,
-          "fingerprint": "c421607c",
+          "fingerprint": "d772159b",
           "waterPercent": 0
+        },
+        {
+          "id": 193,
+          "name": "Gullwharf",
+          "buildings": 258,
+          "landmarks": 7,
+          "fingerprint": "306d2ea5",
+          "waterPercent": 27.733138543949355
         },
         {
           "id": 194,
           "name": "Terncroft",
-          "buildings": 350,
-          "landmarks": 6,
-          "fingerprint": "63924f16",
-          "waterPercent": 36.62852041230419
+          "buildings": 248,
+          "landmarks": 7,
+          "fingerprint": "7152fe93",
+          "waterPercent": 32.57852447041636
+        },
+        {
+          "id": 201,
+          "name": "Sailwick",
+          "buildings": 402,
+          "landmarks": 7,
+          "fingerprint": "d0426098",
+          "waterPercent": 59.63801639477315
         },
         {
           "id": 213,
           "name": "Wildcombe",
-          "buildings": 524,
+          "buildings": 685,
           "landmarks": 7,
-          "fingerprint": "5b71083c",
-          "waterPercent": 30.370911451992534
+          "fingerprint": "8f6991dd",
+          "waterPercent": 20.809999188377567
         },
         {
           "id": 216,
@@ -431,10 +448,10 @@
         {
           "id": 300,
           "name": "Vespershore",
-          "buildings": 443,
+          "buildings": 384,
           "landmarks": 6,
-          "fingerprint": "2afb188c",
-          "waterPercent": 38.235532830127426
+          "fingerprint": "3b6c1c9",
+          "waterPercent": 37.943348754159565
         },
         {
           "id": 304,
@@ -445,27 +462,19 @@
           "waterPercent": 63.48510672834997
         },
         {
-          "id": 308,
-          "name": "Tamariskcliff",
-          "buildings": 448,
-          "landmarks": 7,
-          "fingerprint": "5fe88431",
-          "waterPercent": 17.40118496875254
-        },
-        {
           "id": 309,
           "name": "Upper Ashness",
-          "buildings": 567,
+          "buildings": 566,
           "landmarks": 7,
-          "fingerprint": "c9122d11",
+          "fingerprint": "437e8839",
           "waterPercent": 40.19154289424559
         },
         {
           "id": 313,
           "name": "Scorchwell",
-          "buildings": 582,
+          "buildings": 580,
           "landmarks": 5,
-          "fingerprint": "42f98864",
+          "fingerprint": "de290d2c",
           "waterPercent": 1.2093174255336416
         },
         {
@@ -517,28 +526,52 @@
           "waterPercent": 36.51489327165003
         },
         {
-          "id": 343,
-          "name": "Ravenness",
-          "buildings": 360,
-          "landmarks": 6,
-          "fingerprint": "7e99ad58",
-          "waterPercent": 28.869409950491033
+          "id": 341,
+          "name": "Silthollow",
+          "buildings": 502,
+          "landmarks": 5,
+          "fingerprint": "2839203c",
+          "waterPercent": 5.17815112409707
         },
         {
-          "id": 352,
-          "name": "Hollychase",
-          "buildings": 614,
+          "id": 343,
+          "name": "Ravenness",
+          "buildings": 495,
           "landmarks": 6,
-          "fingerprint": "85fd4e24",
-          "waterPercent": 1.1200389578767957
+          "fingerprint": "5d2c88e0",
+          "waterPercent": 32.156480805129455
+        },
+        {
+          "id": 349,
+          "name": "Scorchspire",
+          "buildings": 598,
+          "landmarks": 6,
+          "fingerprint": "f9ace6e3",
+          "waterPercent": 0.503205908611314
+        },
+        {
+          "id": 351,
+          "name": "New Foamcliff",
+          "buildings": 413,
+          "landmarks": 7,
+          "fingerprint": "49b8c3be",
+          "waterPercent": 26.118009901793688
         },
         {
           "id": 354,
           "name": "Greenwaystead",
-          "buildings": 652,
+          "buildings": 659,
           "landmarks": 7,
-          "fingerprint": "7a9f3586",
+          "fingerprint": "d0fe7fa7",
           "waterPercent": 29.851473094716336
+        },
+        {
+          "id": 365,
+          "name": "Goldwell",
+          "buildings": 653,
+          "landmarks": 6,
+          "fingerprint": "96d00a0a",
+          "waterPercent": 1.728755782809837
         },
         {
           "id": 366,
@@ -557,28 +590,36 @@
           "waterPercent": 17.20639558477396
         },
         {
-          "id": 377,
-          "name": "Alderbridge",
-          "buildings": 622,
+          "id": 376,
+          "name": "Osiercrest",
+          "buildings": 378,
           "landmarks": 6,
-          "fingerprint": "bad68e42",
-          "waterPercent": 4.723642561480399
+          "fingerprint": "9195c73e",
+          "waterPercent": 1.525850174498823
         },
         {
-          "id": 380,
-          "name": "Netherness",
-          "buildings": 493,
+          "id": 378,
+          "name": "Cleardrift",
+          "buildings": 551,
           "landmarks": 7,
-          "fingerprint": "e427eaad",
-          "waterPercent": 30.05437870302735
+          "fingerprint": "1cf722aa",
+          "waterPercent": 40.13472932391851
         },
         {
-          "id": 383,
-          "name": "Foxscar",
-          "buildings": 586,
+          "id": 381,
+          "name": "Redweir",
+          "buildings": 283,
+          "landmarks": 6,
+          "fingerprint": "27138951",
+          "waterPercent": 1.1606200795389985
+        },
+        {
+          "id": 382,
+          "name": "Eaglerise",
+          "buildings": 295,
           "landmarks": 7,
-          "fingerprint": "2601e7c6",
-          "waterPercent": 13.562210859508156
+          "fingerprint": "80a0b2bf",
+          "waterPercent": 16.313610908205504
         },
         {
           "id": 389,
@@ -589,124 +630,124 @@
           "waterPercent": 46.61959256553851
         },
         {
-          "id": 400,
-          "name": "Bluewick",
-          "buildings": 894,
+          "id": 394,
+          "name": "Wrencombe",
+          "buildings": 1087,
+          "landmarks": 7,
+          "fingerprint": "57a9ff08",
+          "waterPercent": 7.4263452641831025
+        },
+        {
+          "id": 398,
+          "name": "Stormbeck",
+          "buildings": 835,
+          "landmarks": 7,
+          "fingerprint": "e3367fa0",
+          "waterPercent": 10.843275708140574
+        },
+        {
+          "id": 399,
+          "name": "Tinminster",
+          "buildings": 422,
           "landmarks": 6,
-          "fingerprint": "490d282e",
+          "fingerprint": "e371c71",
           "waterPercent": 0
         },
         {
-          "id": 401,
-          "name": "Upper Bluewick",
-          "buildings": 363,
+          "id": 404,
+          "name": "Sandwell",
+          "buildings": 398,
           "landmarks": 6,
-          "fingerprint": "386df7c8",
-          "waterPercent": 0
-        },
-        {
-          "id": 403,
-          "name": "Gullley",
-          "buildings": 460,
-          "landmarks": 6,
-          "fingerprint": "356ce86f",
-          "waterPercent": 20.071422774125477
+          "fingerprint": "5533f132",
+          "waterPercent": 29.648567486405327
         },
         {
           "id": 405,
           "name": "Ashcliff",
-          "buildings": 708,
+          "buildings": 375,
           "landmarks": 7,
-          "fingerprint": "551325f9",
-          "waterPercent": 44.75286096907718
+          "fingerprint": "7ab10246",
+          "waterPercent": 33.60116873630387
         },
         {
           "id": 414,
           "name": "Millwell",
-          "buildings": 570,
+          "buildings": 512,
           "landmarks": 6,
-          "fingerprint": "ad49904a",
-          "waterPercent": 1.9316613911208504
+          "fingerprint": "ff0a4adc",
+          "waterPercent": 3.2789546303059818
         },
         {
           "id": 415,
-          "name": "Rosehollow",
-          "buildings": 613,
+          "name": "Bluewell",
+          "buildings": 455,
           "landmarks": 7,
-          "fingerprint": "50223901",
-          "waterPercent": 33.682330979628276
+          "fingerprint": "5b45c2c5",
+          "waterPercent": 36.482428374320264
         },
         {
-          "id": 422,
-          "name": "Mossridge",
-          "buildings": 729,
-          "landmarks": 6,
-          "fingerprint": "83413a40",
-          "waterPercent": 0.9171333495657821
-        },
-        {
-          "id": 423,
-          "name": "Foamhall",
-          "buildings": 442,
+          "id": 438,
+          "name": "Valegarth",
+          "buildings": 717,
           "landmarks": 7,
-          "fingerprint": "c92ffda3",
-          "waterPercent": 18.391364337310286
+          "fingerprint": "5c4c0f84",
+          "waterPercent": 1.996591185780375
         },
         {
-          "id": 428,
-          "name": "Terncliff",
-          "buildings": 525,
+          "id": 442,
+          "name": "Foxmeadow",
+          "buildings": 295,
           "landmarks": 7,
-          "fingerprint": "2f202a38",
-          "waterPercent": 27.871114357600845
+          "fingerprint": "1bc6b97",
+          "waterPercent": 29.177826475123776
         },
         {
-          "id": 429,
-          "name": "Wolfwatch",
-          "buildings": 426,
+          "id": 448,
+          "name": "Crowweir",
+          "buildings": 373,
           "landmarks": 5,
-          "fingerprint": "bd692e22",
-          "waterPercent": 0.1379758136514893
+          "fingerprint": "f01db72a",
+          "waterPercent": 1.8099180261342422
         },
         {
-          "id": 441,
-          "name": "Redport",
-          "buildings": 753,
+          "id": 452,
+          "name": "Kelplanding",
+          "buildings": 421,
           "landmarks": 7,
-          "fingerprint": "9b323d50",
-          "waterPercent": 35.31369207044882
+          "fingerprint": "ea5fee21",
+          "waterPercent": 57.63330898466034
         },
         {
-          "id": 443,
-          "name": "Clearwell",
-          "buildings": 324,
-          "landmarks": 6,
-          "fingerprint": "3edd6b3f",
-          "waterPercent": 0.032464897329762196
-        },
-        {
-          "id": 450,
-          "name": "Hawkcliff",
-          "buildings": 568,
+          "id": 458,
+          "name": "Kelpweir",
+          "buildings": 483,
           "landmarks": 7,
-          "fingerprint": "cad6f333",
-          "waterPercent": 27.051375700024348
+          "fingerprint": "8ee3ebf9",
+          "waterPercent": 20.12823634445256
         },
         {
-          "id": 465,
-          "name": "North Thorndell",
-          "buildings": 370,
+          "id": 459,
+          "name": "Herringburgh",
+          "buildings": 243,
           "landmarks": 7,
-          "fingerprint": "fc52c69a",
-          "waterPercent": 16.459702946189434
+          "fingerprint": "67b8dfa6",
+          "waterPercent": 43.25135946757568
         },
         {
-          "id": 468,
-          "name": "Valecombe",
-          "buildings": 805,
-          "landmarks": 6,
-          "fingerprint": "a19e93fb",
-          "waterPercent": 0.7142277412547683
+          "id": 463,
+          "name": "Ochrehaven",
+          "buildings": 416,
+          "landmarks": 7,
+          "fingerprint": "1811f307",
+          "waterPercent": 28.836945053161266
+        },
+        {
+          "id": 464,
+          "name": "Shellford",
+          "buildings": 522,
+          "landmarks": 7,
+          "fingerprint": "4131f808",
+          "waterPercent": 20.29867705543381
         },
         {
           "id": 472,
@@ -717,52 +758,28 @@
           "waterPercent": 5.924843762681601
         },
         {
-          "id": 478,
-          "name": "Far Scorchstrand",
-          "buildings": 222,
-          "landmarks": 7,
-          "fingerprint": "f3e8a8b8",
-          "waterPercent": 37.074912750588425
-        },
-        {
           "id": 480,
           "name": "Sedgecombe",
-          "buildings": 344,
+          "buildings": 562,
           "landmarks": 7,
-          "fingerprint": "8ff1ecd7",
-          "waterPercent": 3.441279116954793
-        },
-        {
-          "id": 485,
-          "name": "Netherford",
-          "buildings": 295,
-          "landmarks": 6,
-          "fingerprint": "2c64571b",
-          "waterPercent": 3.043584124665206
+          "fingerprint": "2abf1a56",
+          "waterPercent": 6.460514568622678
         },
         {
           "id": 486,
           "name": "Saltweir",
-          "buildings": 231,
+          "buildings": 532,
           "landmarks": 7,
-          "fingerprint": "166efe53",
-          "waterPercent": 40.70286502718935
+          "fingerprint": "ac52f9ec",
+          "waterPercent": 42.60206152098044
         },
         {
-          "id": 489,
-          "name": "New Sailwell",
-          "buildings": 856,
+          "id": 494,
+          "name": "Lower Foxlanding",
+          "buildings": 287,
           "landmarks": 7,
-          "fingerprint": "a899ca6a",
-          "waterPercent": 37.910883856829805
-        },
-        {
-          "id": 495,
-          "name": "Larkburgh",
-          "buildings": 245,
-          "landmarks": 7,
-          "fingerprint": "39122bc7",
-          "waterPercent": 58.688418147877606
+          "fingerprint": "97debd35",
+          "waterPercent": 26.255985715445174
         },
         {
           "id": 497,
@@ -775,41 +792,57 @@
         {
           "id": 500,
           "name": "Lower Ashness",
-          "buildings": 583,
+          "buildings": 367,
           "landmarks": 7,
-          "fingerprint": "d150cdcf",
-          "waterPercent": 29.810891973054137
+          "fingerprint": "c821c88c",
+          "waterPercent": 24.08895381868355
+        },
+        {
+          "id": 502,
+          "name": "Tamariskthorpe",
+          "buildings": 351,
+          "landmarks": 6,
+          "fingerprint": "f964a4e7",
+          "waterPercent": 2.9543056570083595
         },
         {
           "id": 507,
           "name": "Glassbeck",
-          "buildings": 674,
+          "buildings": 685,
           "landmarks": 7,
-          "fingerprint": "bb49246",
+          "fingerprint": "f68fb7ed",
           "waterPercent": 18.9351513675838
+        },
+        {
+          "id": 512,
+          "name": "Ashwell",
+          "buildings": 223,
+          "landmarks": 7,
+          "fingerprint": "22389818",
+          "waterPercent": 43.00787273760246
         },
         {
           "id": 515,
           "name": "East Rowanwaystead",
-          "buildings": 604,
+          "buildings": 592,
           "landmarks": 7,
-          "fingerprint": "e055c260",
+          "fingerprint": "d02a62b8",
           "waterPercent": 13.47293239185131
         },
         {
           "id": 545,
           "name": "Pinelanding",
-          "buildings": 407,
+          "buildings": 315,
           "landmarks": 7,
-          "fingerprint": "b7da785e",
-          "waterPercent": 46.10827043259476
+          "fingerprint": "922e442f",
+          "waterPercent": 43.87630874117361
         },
         {
           "id": 575,
           "name": "Elmwell",
-          "buildings": 717,
+          "buildings": 720,
           "landmarks": 6,
-          "fingerprint": "ec0b7b8",
+          "fingerprint": "1cd90f49",
           "waterPercent": 0.8603197792386983
         }
       ]
@@ -817,10 +850,10 @@
     "noAutomaticRuralCities": true,
     "polityIndependentCityPlan": true,
     "project": {
-      "cost": 2.3471114414412804,
+      "cost": 2.3469142020279326,
       "completed": 403,
-      "supportBefore": 36013.35247744762,
-      "supportAfter": 38894.42067564343,
+      "supportBefore": 36072.48641200341,
+      "supportAfter": 38958.28532496368,
       "planUnchanged": true,
       "saveContinuationIdentical": true
     },
@@ -833,51 +866,72 @@
         "ok": true,
         "nodes": [
           76,
-          248,
-          252,
-          304,
-          442,
-          478
+          294,
+          497,
+          535,
+          502,
+          503,
+          470,
+          471,
+          472
         ],
         "segments": [
           {
             "from": 76,
-            "to": 248,
+            "to": 294,
             "kind": "sea",
-            "cost": 21.25
+            "cost": 15.270000000000001
           },
           {
-            "from": 248,
-            "to": 252,
+            "from": 294,
+            "to": 497,
             "kind": "sea",
-            "cost": 11.59
+            "cost": 15.96
           },
           {
-            "from": 252,
-            "to": 304,
+            "from": 497,
+            "to": 535,
             "kind": "sea",
-            "cost": 17.11
+            "cost": 18.950000000000003
           },
           {
-            "from": 304,
-            "to": 442,
-            "kind": "sea",
-            "cost": 17.8
-          },
-          {
-            "from": 442,
-            "to": 478,
+            "from": 535,
+            "to": 502,
             "kind": "land",
-            "cost": 7.54736277269565
+            "cost": 5.444373607104186
+          },
+          {
+            "from": 502,
+            "to": 503,
+            "kind": "land",
+            "cost": 6.663588030518582
+          },
+          {
+            "from": 503,
+            "to": 470,
+            "kind": "land",
+            "cost": 11.780612181362645
+          },
+          {
+            "from": 470,
+            "to": 471,
+            "kind": "land",
+            "cost": 5.9396563730805845
+          },
+          {
+            "from": 471,
+            "to": 472,
+            "kind": "land",
+            "cost": 1.4021025777120777
           }
         ],
-        "cost": 75.29736277269565,
+        "cost": 81.41033276977807,
         "note": "Generalized travel-cost units, NOT days or a physically calibrated itinerary."
       }
     },
     "longRun": {
       "year": 520,
-      "livingRealms": 26,
+      "livingRealms": 30,
       "projects": 1,
       "audit": {
         "invalidOwners": 0,

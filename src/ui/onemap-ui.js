@@ -205,7 +205,7 @@ window.OneMap = (() => {
         if(world.height[i]<=0&&!f&&!b){clearSelection();return;}
         selection={kind:'world',i};
         const title=p?.settled?p.name:f?.name||b?.name||BIOME[world.biome[i]][0];
-        const subtitle=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
+        const subtitle=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});
         buttons.push({label:'Details',run:()=>openDrawer('detail')});

@@ -2,13 +2,13 @@
   "version": 1,
   "checks": {
     "paths": {
-      "roads": 167,
+      "roads": 175,
       "overWater": 0,
       "contiguous": true,
       "uniquePairs": true
     },
     "bridges": {
-      "count": 123,
+      "count": 137,
       "allOnChannels": true,
       "noUnflaggedFords": true
     },
@@ -17,21 +17,21 @@
       "componentsPerLandmass": 1
     },
     "classes": {
-      "trail": 91,
-      "road": 52,
-      "highway": 24
+      "trail": 96,
+      "road": 54,
+      "highway": 25
     },
     "ports": {
-      "count": 77,
-      "sea": 72,
-      "lake": 5,
-      "landlockedSkipped": 22
+      "count": 82,
+      "sea": 76,
+      "lake": 6,
+      "landlockedSkipped": 20
     },
     "townPort": {
-      "town": "Birchgrove",
-      "quays": 9,
-      "jetties": 3,
-      "moorings": 3,
+      "town": "Bluewell",
+      "quays": 45,
+      "jetties": 4,
+      "moorings": 4,
       "sheds": 0,
       "kind": "sea",
       "beacon": true,
@@ -40,14 +40,14 @@
     "readOnly": {
       "cached": true,
       "deterministic": true,
-      "physicalHash": "4b02963c",
-      "settlementHash": "73c1127f"
+      "physicalHash": "440ae5d0",
+      "settlementHash": "6b6c5ea8"
     },
     "seating": {
       "roads": {
         "under": 0.079,
         "over": 0.085,
-        "triangles": 35100
+        "triangles": 34884
       },
       "near": {
         "under": 0.004,
@@ -64,19 +64,19 @@
       ]
     },
     "symbolScale": {
-      "townWidth": 5.67,
-      "portWidth": 0.76,
+      "townWidth": 5.15,
+      "portWidth": 0.89,
       "portHeight": 0.4,
       "shipWidth": 0.13,
       "shipHeight": 0.09
     }
   },
   "stats": {
-    "nodes": 99,
-    "roads": 167,
-    "bridges": 123,
-    "ports": 77,
-    "highways": 24,
-    "cells": 2787
+    "nodes": 102,
+    "roads": 175,
+    "bridges": 137,
+    "ports": 82,
+    "highways": 25,
+    "cells": 2803
   }
 }

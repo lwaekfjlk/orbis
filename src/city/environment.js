@@ -39,16 +39,22 @@ const CityEnvironment = (() => {
   return {t,a,winter:w,cold,warm,frost,dry,humid,alpine,load,cover,
    thermal:clamp((t+18)/46),moisture:clamp(a/2.4),band:band(t,a)};
  }
- function band(t,a){
-  const thermal=t<-8?'Polar':t<0?'Subpolar':t<8?'Boreal':t<16?'Cool temperate':t<22?'Warm temperate':'Tropical';
+ /* One thermal vocabulary, and it has to be the SAME numbers the biome classifier
+  * uses or the two halves of a description contradict each other: a cell was reading
+  * "Warm temperate · humid" beside a biome name of its own that said subtropical.
+  * 16.5 and 21 are the classifier's own boundaries. Height is optional and only adds
+  * the qualifier — a subtropical highland is a real and distinct place to be, and
+  * without it a 3,800 m plateau at 20 degrees of latitude read as plain subtropics. */
+ function band(t,a,h=0){
+  const thermal=t<-8?'Polar':t<0?'Subpolar':t<8?'Boreal':t<12?'Cool temperate':t<16.5?'Warm temperate':t<21?'Subtropical':'Tropical';
   const moisture=a<.2?'arid':a<.7?'semi-arid':a<1.4?'subhumid':a<2.2?'humid':'perhumid';
-  return `${thermal} · ${moisture}`;
+  return `${thermal}${h>2200?' highland':''} · ${moisture}`;
  }
  /* Woody cover fraction per biome. Values above .3 count as forest in profile(),
   * which town-tradition routing reads, so every open-country biome is deliberately
   * kept below that line: a steppe now shows scattered scrub instead of nothing, but
   * it is still not a forest. */
- const baseDensity={7:.46,8:.52,9:.67,10:.42,11:.74,6:.28,20:.14,5:.22,2:.16,12:.14,19:.34,18:.11,13:.04,4:.02,3:.05};
+ const baseDensity={7:.46,8:.52,9:.67,10:.42,11:.74,6:.28,20:.14,5:.22,2:.16,12:.14,19:.34,18:.11,13:.04,4:.02,3:.05,21:.62,22:.26};
  /* Canopy form and density from the biome AND where the cell sits inside that
   * biome's own climate range. The old table was a flat per-biome constant, so a
   * boreal and a tropical forest grew the same trees, and savanna, steppe, tundra
@@ -69,6 +75,11 @@ const CityEnvironment = (() => {
    :biome===8||biome===12?'conifer'
    :t<11?'conifer'
    :biome===11&&a>1.6?'rainforest'
+   // The subtropics keep their own two silhouettes. Before they existed, everything
+   // humid from 11 to 21 C came out of the same generic broadleaf branch, so the warm
+   // half of the temperate world and the whole subtropical band grew one tree.
+   :biome===21?'laurel'
+   :biome===22?'hardleaf'
    // Open country reads by biome first. A generic warm-and-dry test placed ahead of
    // this turned every steppe into savanna and lost the distinction entirely.
    :biome===6?'acacia'
@@ -111,7 +122,7 @@ const CityEnvironment = (() => {
   // which collapsed boreal and tropical forest onto nearly the same colour.
   // Interpolate a cold canopy into a warm one instead, continuously: a forest
   // reads its own temperature rather than which of five categories it fell in.
-  if([7,8,9,10,11,19].includes(b)){
+  if([7,8,9,10,11,19,21,22].includes(b)){
    const cool=rgbHex('#6f9a94'),warmLeaf=rgbHex('#83a855'),m=clamp((cl.t-2)/22);
    blend(cool.map((v,k)=>v+(warmLeaf[k]-v)*m),.30);
   }

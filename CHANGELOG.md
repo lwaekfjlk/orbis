@@ -1,3 +1,35 @@
+# 13.5.0 — The subtropics get a name, a colour and a tree
+
+`physicalFingerprint` `4b02963c` → `440ae5d0`, `settlementFingerprint` `73c1127f` → `6b6c5ea8`:
+adding a biome class moves the world, by design.
+
+- **There was no subtropical anything.** Every humid cell from 7 °C to 21 °C was called
+  `Temperate forest` and grew the same generic broadleaf, so a laurel forest at 19 °C and a
+  beech wood at 11 °C were the same two words and the same silhouette. Two classes appended —
+  `Subtropical laurel forest` and `Subtropical dry woodland` — with their own colours, their
+  own woody densities, and their own tree forms: **laurel**, a short bole under one heavy dark
+  evergreen dome, and **hardleaf**, low forked stems with an open grey-green crown. 570 cells
+  that read "temperate" now read what they are.
+- **The written description contradicted the biome name.** `band()` had no subtropical step —
+  it jumped Warm temperate (16–22) straight to Tropical — so a cell whose biome said
+  subtropical was labelled "Warm temperate · humid" beside it. One vocabulary now, on the
+  classifier's own boundaries of 16.5 and 21.
+- **A high plateau says so.** `band()` takes elevation and appends `highland`, so the uplands
+  added in 13.4.0 read as "Subtropical highland · semi-arid" rather than as plain subtropics.
+- Biome indices are append-only: they are written into saves and read by every biome test
+  here. The test that used to require an exact name list now checks the existing classes are
+  unrenamed and unreordered, and allows the vocabulary to grow.
+- Three more tests were measuring by address, and this exposed them: a colour-variety floor
+  stated in saturation, which a grey-granite mountain tradition at .026 saturation cannot meet
+  without tinting stone that should stay stone (now measured as distance in colour, which a
+  neutral palette answers through value); and "the walker actually goes somewhere", which
+  compared straight-line displacement to distance along the path for whichever walker was
+  first in the roster — across one town's 49 walkers that ratio runs 0.06 to 0.92.
+- New checks: the subtropical classes exist, are warm, carry their own silhouettes, and agree
+  with the written band, in `tests/climate.test.mjs`.
+
+---
+
 # 13.4.0 — Lakes with a shoreline, and a roof on the ranges
 
 Two landform priors. Unlike everything since 13.0.0, these move the world: `physicalFingerprint`

@@ -27,7 +27,13 @@ const BIOME = [
     ['Open ocean', '#a4caca'], ['Persistent snow', '#e8ebe4'], ['Tundra', '#9fa89b'], ['Cold desert', '#c1b79f'],
     ['Sand desert', '#ddab5f'], ['Dry steppe', '#c0b273'], ['Savanna', '#b0b062'], ['Temperate forest', '#6f9a6a'],
     ['Boreal forest', '#4e7f7a'], ['Temperate rainforest', '#4b8a6c'], ['Monsoon woodland', '#8ba354'],
-    ['Tropical rainforest', '#3d7f4c'], ['Alpine meadow', '#9a9c86'], ['Rock desert', '#b79e81'], ['Salt basin', '#e4d2b0'], ['Lake', '#7cbbbb'], ['Glacier / ice sheet', '#d9eff0'], ['Sea ice', '#c8e7e9'], ['Freshwater marsh', '#679a8d'], ['Mangrove wetland', '#3f7c60'], ['Floodplain meadow', '#93ac75']
+    ['Tropical rainforest', '#3d7f4c'], ['Alpine meadow', '#9a9c86'], ['Rock desert', '#b79e81'], ['Salt basin', '#e4d2b0'], ['Lake', '#7cbbbb'], ['Glacier / ice sheet', '#d9eff0'], ['Sea ice', '#c8e7e9'], ['Freshwater marsh', '#679a8d'], ['Mangrove wetland', '#3f7c60'], ['Floodplain meadow', '#93ac75'],
+    // 21-22 close the gap between "Temperate forest" and "Tropical rainforest". Every
+    // humid cell from 7 to 21 C was called temperate, so a laurel forest at 19 C and a
+    // beech wood at 11 C carried the same two words and grew the same tree. Appended,
+    // never inserted: the indices above are written into saves and into every biome
+    // test in this repo.
+    ['Subtropical laurel forest', '#57906a'], ['Subtropical dry woodland', '#9aa863']
 ];
 const BOUNDARY = { 1: 'Continental collision', 2: 'Subduction margin', 3: 'Oceanic island arc', 4: 'Divergent boundary', 5: 'Transform boundary' };
 const PLATE_NAMES = ['Aurelian', 'Vesper', 'Boreal', 'Nacre', 'Cinder', 'Thalassic', 'Orison', 'Sable', 'Pelagic', 'Veyran', 'Crown', 'Morrow', 'Istrian', 'Eldwyn', 'Lacuna', 'Umbra', 'Nival', 'Caldera', 'Serene', 'Brass', 'Halcyon', 'Mistral', 'Tamar', 'Astral', 'Coralline', 'Meridian', 'Fallow', 'Caelian', 'Ember', 'Obsidian'];
@@ -582,6 +588,11 @@ async function climate(w, progress) {
                     b = 5;
                 else if (t > 21)
                     b = a < 1.2 ? 6 : seasonality > 1.2 ? 10 : 11;
+                // The subtropics: warm enough that the canopy holds its leaves through
+                // the winter, not warm enough for the tropical classes above. Dry ones
+                // are a hard-leaved woodland, wet ones a laurel forest.
+                else if (t >= 16.5)
+                    b = a < 1.05 ? 22 : 21;
                 else if (t < 7)
                     b = 8;
                 else
@@ -829,7 +840,7 @@ function describeWorld(w) {
     const desertR = findRegion(w, i => [3, 4, 13, 14].includes(w.biome[i]));
     if (desertR)
         add('desert', 'The Ochre Expanse', 'ARID INTERIOR', desertR.i, 'Low precipitation relative to evaporative demand creates this dry province. Inspect the moisture pathway to distinguish its causes.');
-    const forest = findRegion(w, i => [7, 8, 9, 10, 11].includes(w.biome[i]));
+    const forest = findRegion(w, i => [7, 8, 9, 10, 11, 21].includes(w.biome[i]));
     if (forest)
         add('forest', 'The Verdant Reach', 'FOREST PROVINCE', forest.i, 'Forests are placed only after temperature and transported moisture have been estimated.');
     const arcs = w.volcanoes.filter(v => v.type.includes('Subduction') || v.type.includes('Island'));

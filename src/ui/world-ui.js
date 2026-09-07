@@ -265,7 +265,7 @@ function showLocation(i) {
     if (!world || i < 0)
         return;
     const pid = world.provinceId[i], p = sim?.provinces[pid], b = world.basins[world.basinTarget[i]], extra = world.lake[i] > 0 ? `${world.basins[world.lakeId[i]]?.kind || 'Inland lake'} · water surface ${fmt(world.lake[i])} m` : b?.closed ? 'Inland drainage → ' + b.name : 'Drainage toward an ocean or an overflowing basin';
-    $('locationNote').textContent = `${p ? `${p.name} · ${sim.realms[p.owner]?.name || 'Unaligned communities'} · ` : ''}${BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
+    $('locationNote').textContent = `${p ? `${p.name} · ${sim.realms[p.owner]?.name || 'Unaligned communities'} · ` : ''}${BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i], world.height[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
 }
 function inspectCell(i) { selectedCell = i; const p = sim?.provinces[world.provinceId[i]]; renderer.select(i); showLocation(i); if (POLITICAL.includes(currentLayer) && p?.owner >= 0) {
     selectedRealm = p.owner;
