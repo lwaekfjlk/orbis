@@ -5,28 +5,28 @@
     "coverage": {
       "roofs": {
         "deepeave": 312,
-        "hip": 269,
-        "gable": 913,
+        "hip": 265,
+        "gable": 922,
         "northern": 76,
-        "conic": 557,
-        "vault": 81,
-        "rockcut": 39,
-        "parapet": 406,
-        "upturned": 531,
-        "leaf": 336
+        "conic": 558,
+        "vault": 78,
+        "rockcut": 38,
+        "parapet": 399,
+        "upturned": 525,
+        "leaf": 347
       },
       "materials": {
-        "timber": 1240,
-        "log": 126,
-        "masonry": 499,
+        "timber": 1237,
+        "log": 127,
+        "masonry": 497,
         "felt": 486,
-        "firedbrick": 73,
-        "cutstone": 40,
-        "adobe": 498,
+        "firedbrick": 80,
+        "cutstone": 38,
+        "adobe": 488,
         "rockface": 58,
-        "thatch": 500
+        "thatch": 509
       },
-      "formsPerTown": 2.53
+      "formsPerTown": 2.51
     },
     "weather": {
       "snowy": {
@@ -83,8 +83,8 @@
       ]
     },
     "size": {
-      "ratio": 50.76,
-      "correlation": 0.43,
+      "ratio": 49.48,
+      "correlation": 0.36,
       "smallest": {
         "name": "Gulldrift",
         "pop": 5843,
@@ -95,8 +95,13 @@
         "name": "Wrencombe",
         "pop": 23280,
         "span": 10.8,
-        "blocks": 1066
+        "blocks": 1039
       }
+    },
+    "separation": {
+      "pairs": 407,
+      "tightestFraction": 32,
+      "worst": "Foamchase/Spruceshore 1.99 cells across 6.3"
     },
     "geometry": {
       "forms": 10

@@ -145,6 +145,30 @@ test('a capital is visibly a capital and a hamlet a hamlet', () => {
   largest: {name: rows.at(-1).name, pop: Math.round(rows.at(-1).pop), span: +rows.at(-1).span.toFixed(1), blocks: rows.at(-1).blocks}};
 });
 
+test('neighbouring towns stay visibly apart when you zoom in', () => {
+ // The built disc must respect the separation `span` was sized for. Letting the
+ // settled factor climb past 1 pushed a large town's edge past that and left the
+ // tightest neighbours 1.4 cells apart across 6.7 — one conurbation, not two towns.
+ const towns = sim.provinces.filter(p => p.settled && p.urbanPop >= 650), radius = new Map();
+ for (const p of towns) {
+  const c = E.generateCity(world, sim, p.id);
+  let far = 0;
+  for (const b of c.buildings) far = Math.max(far, Math.hypot(b.x - c.market.x, b.z - c.market.z));
+  radius.set(p.id, far / c.width * c.span);   // art units back to parent cells
+ }
+ let pairs = 0, tightest = Infinity, worst = null;
+ for (let i = 0; i < towns.length; i++) for (let j = i + 1; j < towns.length; j++) {
+  const a = towns[i], b = towns[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+  if (d > 26) continue;
+  pairs++;
+  const gap = d - radius.get(a.id) - radius.get(b.id);
+  assert(gap > 0, `${a.name} and ${b.name} have overlapping built areas`);
+  if (gap / d < tightest) { tightest = gap / d; worst = `${a.name}/${b.name} ${gap.toFixed(2)} cells across ${d.toFixed(1)}`; }
+ }
+ assert(pairs > 100, 'expected a crowded world to test against');
+ assert(tightest > .3, `closest neighbours leave only ${(tightest * 100).toFixed(0)}% of their separation clear: ${worst}`);
+ report.checks.separation = {pairs, tightestFraction: +(tightest * 100).toFixed(0), worst};
+});
 test('every new roof form builds finite geometry inside its own footprint', () => {
  for (const kind of Object.keys(E.TownVocabulary.ROOFS)) {
   const recipe = E.LandmarkCatalog.recipe('river', 'roof/' + kind, {urbanStyle: 'river'});

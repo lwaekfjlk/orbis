@@ -141,7 +141,7 @@
     "coldTown": {
       "name": "Elmwell",
       "annualC": -1.3,
-      "coverLo": 0.45,
+      "coverLo": 0.48,
       "coverHi": 1,
       "snowedFraction": 1
     },
