@@ -29,21 +29,36 @@ class LandmarkKit {
  roof(x,y,z,w,d,h,m='roof',kind='hip',angle=0){this.mark(kind+'-roof');this.using('roof',()=>this.transform(x,y,z,angle,1,()=>{const W=w*.55,D=d*.55;
   // A concave sweep on bracket sets: the eave lifts at the corners instead of running straight.
   if(kind==='upturned'){
-   const steps=this.lod>0?5:3,lift=h*.30,over=W*.30;
-   let prev=null;
-   for(let s=0;s<=steps;s++){
-    const t=s/steps,ease=t*t,ww=W+over*(1-t)*(1-t)*1.0,dd=D+over*(1-t)*(1-t)*1.0,yy=h*ease-lift*(1-t)*(1-t)*.55;
-    const ring=[[-ww,yy,-dd],[ww,yy,-dd],[ww,yy,dd],[-ww,yy,dd]];
-    if(prev)for(let k=0;k<4;k++)this.quad(prev[k],ring[k],ring[(k+1)%4],prev[(k+1)%4],m);
-    prev=ring;
+   // Eight points a ring, not four: the CORNERS have to rise relative to the middle of
+   // each edge or there is no upturn to see. Rings also have to converge on a ridge —
+   // a first attempt kept full width at the top and capped flat, so every roof in the
+   // city read as a plain slab.
+   // Pushed hard on purpose. At the size an ordinary town block renders, a realistic
+   // 15% corner lift is a couple of pixels and reads as a plain pitched roof; the
+   // overhang and the upturn have to be exaggerated to survive the scale.
+   const steps=this.lod>0?6:3,over=.58,up=h*.62;
+   const ring=t=>{
+    const hw=W*(1.0+over-(1.0+over-.06)*t),hd=D*(1.0+over-(1.0+over-.34)*t);
+    const base=h*Math.pow(t,1.85),lift=up*Math.pow(1-t,2.2);
+    // corner, mid-edge, corner, ... anticlockwise from -x,-z
+    return [[-hw,base+lift,-hd],[0,base,-hd],[hw,base+lift,-hd],[hw,base,0],
+            [hw,base+lift,hd],[0,base,hd],[-hw,base+lift,hd],[-hw,base,0]];
+   };
+   let prev=ring(0);
+   for(let sN=1;sN<=steps;sN++){const cur=ring(sN/steps);
+    for(let k=0;k<8;k++)this.quad(prev[k],cur[k],cur[(k+1)%8],prev[(k+1)%8],m);
+    prev=cur;}
+   // Close the ridge along its length.
+   this.quad(prev[0],prev[7],prev[5],prev[2],m);this.quad(prev[2],prev[5],prev[4],prev[3],m);
+   const eave=ring(0);
+   if(this.lod>0){
+    // The tips that make the silhouette, and the bracket sets that carry the overhang.
+    for(const k of [0,2,4,6])this.cone(eave[k][0]*1.02,eave[k][1],eave[k][2]*1.02,.13,h*.46,'metal',0,5);
+    for(const k of [1,3,5,7])this.box(eave[k][0]*.82,eave[k][1]-h*.16,eave[k][2]*.82,.16,h*.22,.16,'wood');
    }
-   this.quad(prev[0],prev[3],prev[2],prev[1],m);
-   // Corner finials and the bracket sets that carry the overhang.
-   for(const sx of[-1,1])for(const sz of[-1,1]){
-    this.cone(sx*(W+over*.9),-lift*.55,sz*(D+over*.9),.10,.55,'metal',0,5);
-    if(this.lod>0)this.box(sx*(W+over*.45),-lift*.7,sz*(D+over*.45),.14,.34,.14,'wood');
-   }
-   this.beam([0,h,-D*.5],[0,h,D*.5],.09,'metal');
+   // A ridge beam with a finial at each end.
+   this.beam([0,h+h*.02,-D*.34],[0,h+h*.02,D*.34],.085,'metal');
+   for(const sz of[-1,1])this.cone(0,h+h*.02,sz*D*.34,.12,h*.26,'metal',0,6);
    return;
   }
   // A shallow pitch under a very deep straight eave, carried on exposed rafters.
@@ -73,6 +88,15 @@ class LandmarkKit {
    if(this.lod>0){this.ring(0,h*.16,0,r*1.0,.045,'trim','xz',seg);
     for(let k=0;k<seg;k+=2){const a=k/seg*Math.PI*2;this.beam([Math.cos(a)*r*.9,h*.20,Math.sin(a)*r*.9],[0,h*.94,0],.03,'trim',4);}}
    this.cylinder(0,h*.92,0,r*.13,.30,'wood',6);
+   return;
+  }
+  // A usable roof terrace behind a parapet: no pitch to speak of.
+  if(kind==='parapet'){
+   this.box(0,0,0,w*1.02,Math.max(.12,h*.16),d*1.02,m);
+   const t=Math.max(.12,h*.16);
+   for(const sx of[-1,1])this.box(sx*W,t,0,.20,h*.34,d*1.02,'trim');
+   for(const sz of[-1,1])this.box(0,t,sz*D,w*1.02,h*.34,.20,'trim');
+   if(this.lod>0)for(const sx of[-1,1])for(const sz of[-1,1])this.box(sx*W,t+h*.34,sz*D,.30,h*.16,.30,'trim');
    return;
   }
   // Cut into the rock: a face and a lintel, with no roof plane at all.
