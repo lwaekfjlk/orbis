@@ -226,11 +226,35 @@ const RoadNetwork = (() => {
         return net;
     }
     /** Interpolated position along a road, as a fraction of its cell path. */
+    /** Cumulative length of a path, in grid cells, cached on the road itself. A sea lane is
+     * straightened after it is found, so its legs are wildly unequal; parameterising by node
+     * index would crawl a hull along a long leg and fling it across a short one. */
+    function measure(road) {
+        const path = road.path;
+        if (road.acc && road.acc.length === path.length)
+            return road;
+        const acc = [0];
+        for (let k = 1; k < path.length; k++)
+            acc.push(acc[k - 1] + Math.hypot(path[k] % GW - path[k - 1] % GW, (path[k] / GW | 0) - (path[k - 1] / GW | 0)));
+        road.acc = acc;
+        road.len = acc[acc.length - 1] || 0;
+        return road;
+    }
+    function length(road) { return measure(road).len; }
     function along(road, t) {
-        const path = road.path, u = clamp(t) * (path.length - 1), k = Math.min(path.length - 2, Math.floor(u)), f = u - k;
-        const i = path[k], j = path[k + 1];
+        const path = road.path;
+        if (path.length < 2) {
+            const i = path[0] || 0;
+            return { x: i % GW, y: i / GW | 0, cell: i, heading: 0 };
+        }
+        const { acc, len } = measure(road), d = clamp(t) * len;
+        let k = 1;
+        while (k < acc.length - 1 && acc[k] < d)
+            k++;
+        const run = acc[k] - acc[k - 1], f = run > 1e-9 ? (d - acc[k - 1]) / run : 0;
+        const i = path[k - 1], j = path[k];
         return { x: lerp(i % GW, j % GW, f), y: lerp(i / GW | 0, j / GW | 0, f), cell: f < .5 ? i : j,
             heading: Math.atan2((j / GW | 0) - (i / GW | 0), j % GW - i % GW) };
     }
-    return { ensure, along, signature, classes: CLASSES, isRiver, passable, version: 1 };
+    return { ensure, along, length, signature, classes: CLASSES, isRiver, passable, version: 1 };
 })();

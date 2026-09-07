@@ -126,12 +126,18 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
             quay(this, ports, w, port);
         // A faint standing hint of the shipping the civilization model already computes.
         // The diplomacy layer draws its own trade lanes; this one steps aside there.
+        // Dashes step along each leg by DISTANCE. A lane is now a handful of long straight
+        // courses rather than a staircase of single cells, so the old every-other-node
+        // pattern would have dropped most of it.
         for (const route of s.routes || [])
-            for (let k = 2; k < route.path.length; k++) {
-                if (k % 4 > 1)
-                    continue;
+            for (let k = 1; k < route.path.length; k++) {
                 const i = route.path[k - 1], j = route.path[k];
-                lanes.line(this.coord(i % GW, i / GW | 0, .055), this.coord(j % GW, j / GW | 0, .055), .032, rgb('#b7cbc8'));
+                const x0 = i % GW, y0 = i / GW | 0, x1 = j % GW, y1 = j / GW | 0;
+                const span = Math.hypot(x1 - x0, y1 - y0), dashes = Math.max(1, Math.round(span / 2.4));
+                for (let d = 0; d < dashes; d++) {
+                    const u = (d + .14) / dashes, v = (d + .64) / dashes;
+                    lanes.line(this.coord(lerp(x0, x1, u), lerp(y0, y1, u), .055), this.coord(lerp(x0, x1, v), lerp(y0, y1, v), .055), .032, rgb('#b7cbc8'));
+                }
             }
         this.upload('roads', roads, false, .22);
         this.upload('bridges', decks, true);

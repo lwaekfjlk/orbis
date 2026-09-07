@@ -54,7 +54,10 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
     // are 2 to 4 town-plan units long. It is the INPUT size; `vehicle` turns that into a
     // hull 1.1x as long, so the two have to be read together — halving one and the other
     // separately is how a ship ends up smaller than the dinghies tied up beside it.
-    const LOCAL_HEIGHT = 1.5, NOMINAL = .043, SYMBOL = .10, SHIP = 5, HULL = 1.1;
+    // SHIP was reconciled against the moored dinghies at a town's own quay, which made the
+    // sea-lane hull match them — but a vessel three cells out on open water is read against
+    // the coastline behind it, not against a jetty, and at that reading it was far too large.
+    const LOCAL_HEIGHT = 1.5, NOMINAL = .043, SYMBOL = .10, SHIP = 1.6, HULL = 1.1;
     AtlasRenderer.FOLK_SCALE = { near: NOMINAL, symbol: SYMBOL, ship: SHIP, hullLength: HULL };
     const GRID_X = MAP_X / (GW - 1), GRID_Z = MAP_Z / (GH - 1);
     const skinOf = (cloth, tone) => colorMix(cloth, rgb('#e7d3b6'), .34 + tone * .22);
