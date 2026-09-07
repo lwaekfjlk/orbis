@@ -1,6 +1,6 @@
 {
   "name": "telluric-continuous-atlas",
-  "version": "13.5.0",
+  "version": "13.6.0",
   "private": true,
   "description": "One georeferenced world canvas, progressive town detail, inherited surrounding terrain and continuous camera navigation.",
   "engines": {

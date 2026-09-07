@@ -2,13 +2,13 @@
   "version": 1,
   "checks": {
     "paths": {
-      "roads": 175,
+      "roads": 173,
       "overWater": 0,
       "contiguous": true,
       "uniquePairs": true
     },
     "bridges": {
-      "count": 137,
+      "count": 135,
       "allOnChannels": true,
       "noUnflaggedFords": true
     },
@@ -17,8 +17,8 @@
       "componentsPerLandmass": 1
     },
     "classes": {
-      "trail": 96,
-      "road": 54,
+      "trail": 95,
+      "road": 53,
       "highway": 25
     },
     "ports": {
@@ -47,7 +47,7 @@
       "roads": {
         "under": 0.079,
         "over": 0.085,
-        "triangles": 34884
+        "triangles": 34920
       },
       "near": {
         "under": 0.004,
@@ -63,6 +63,14 @@
         -0.02
       ]
     },
+    "gradient": {
+      "pastVertical": 1,
+      "median": 0.074,
+      "p90": 0.286,
+      "p99": 0.497,
+      "worst": 1.041,
+      "segments": 2631
+    },
     "symbolScale": {
       "townWidth": 5.15,
       "portWidth": 0.89,
@@ -73,10 +81,10 @@
   },
   "stats": {
     "nodes": 102,
-    "roads": 175,
-    "bridges": 137,
+    "roads": 173,
+    "bridges": 135,
     "ports": 82,
     "highways": 25,
-    "cells": 2803
+    "cells": 2804
   }
 }
