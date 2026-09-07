@@ -15,13 +15,17 @@ if (!shell.includes('<!-- END-APP-SCRIPTS -->'))
     shell = shell.replace('<!-- APP-SCRIPTS -->', `<!-- APP-SCRIPTS -->\n${tags}\n<!-- END-APP-SCRIPTS -->`);
 await writeFile(resolve(root, 'index.html'), shell);
 let html = shell;
+// Replacer FUNCTIONS, not replacement strings. In a string replacement $&, $`, $' and $$
+// are substitution sequences, so any source file containing one would splice a copy of the
+// surrounding document into the bundle. A name template as ordinary as "Crown of $" is
+// enough to trigger it, and the failure surfaces as an unrelated build assertion.
 for (const css of styles) {
     const text = await readFile(resolve(root, css), 'utf8');
-    html = html.replace(new RegExp(`<link\\b[^>]*\\bhref=["\']${css.replaceAll(".", "\\.")}["\'][^>]*>`, "i"), `<style>\n${text}\n</style>`);
+    html = html.replace(new RegExp(`<link\\b[^>]*\\bhref=["\']${css.replaceAll(".", "\\.")}["\'][^>]*>`, "i"), () => `<style>\n${text}\n</style>`);
 }
 for (const js of scripts) {
     const text = await readFile(resolve(root, js), 'utf8');
-    html = html.replace(`<script src="${js}"></script>`, `<script>\n${text.replace(/<\/script/gi, '<\\/script')}\n</script>`);
+    html = html.replace(`<script src="${js}"></script>`, () => `<script>\n${text.replace(/<\/script/gi, '<\\/script')}\n</script>`);
 }
 if (/<script[^>]+src=|<link[^>]+(?:rel=["']stylesheet|href=["']styles\/)/i.test(html)) throw Error('Build left external scripts or styles in the offline bundle.');
 if (html.indexOf('id="omChrome"') > html.indexOf('<script>')) throw Error('Map shell must precede script execution.');
