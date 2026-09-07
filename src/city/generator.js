@@ -61,7 +61,31 @@ function generateCity(w, sim, provinceId, design = {}) {
     // sprawl: at 1.16 a town's edge keeps a gap of roughly half its own diameter, which is
     // the separation the fixed-7.8 atlas had. Sizing merely to avoid overlap is far too
     // tight — the discs miss each other and the map still looks like a conurbation.
-    const span = cityClamp(cityReach(sim, p) / 1.16, 6.4, 10.5), grow = span / 7.8;
+    // Extent follows POPULATION, capped by the neighbour so two towns never merge.
+    // Sizing on spacing alone gave a 115,000-resident capital and a 3,400-resident
+    // village almost the same footprint: population spans 34x and the footprint 1.6x.
+    // Neighbour spacing is TIGHT — median reach is 9.2 cells, so the 1.16 separation
+    // divisor caps most towns near 7.9 and clipped every one of them to the same size.
+    // The range therefore has to come from the bottom: a hamlet is genuinely small,
+    // which leaves the large end room to grow under its own cap.
+    // How much WORLD a town samples and how far it BUILDS are two different things.
+    // Tying both to population shrank a hamlet's window on its own landscape until the
+    // terrain around it disappeared: a glacier 4.5 cells out fell outside the grid and
+    // the site stopped reading as glacial at all. A hamlet does not shrink its valley.
+    //
+    // `span` stays the sampling window, sized by the room the site has. A separate
+    // `settled` factor decides how much of that window is actually built on, and that
+    // is where the range between 3,400 residents and 115,000 comes from.
+    const capital = sim.realms.some(r => r.alive && r.capital === p.id);
+    // detailSupport is the settlement's founding scale, fixed when it was founded and
+    // NOT re-derived as the years run. Keying off live urbanPop made the plan drift
+    // every simulated year, which breaks the reproducible-layout contract in
+    // docs/MODEL.md — the same value the block target already uses.
+    const scale = p.detailSupport ?? p.urbanSupport ?? p.urbanPop ?? 0;
+    const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
+    const wanted = (6.4 + 7.0 * crowd) * (capital ? 1.10 : 1);
+    const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / 7.8;
+    const settled = .52 + .74 * crowd;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
     const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;
@@ -262,7 +286,7 @@ function generateCity(w, sim, provinceId, design = {}) {
             if (city.water[k] || city.road[k] || city.gateReserve[k] || city.slope[k] > .8 || distanceRoad[k] < 1.4 || distanceRoad[k] > 11)
                 continue;
             const d = Math.hypot(q.x - city.market.x, q.z - city.market.z);
-            if (d > width * .375)
+            if (d > width * .375 * settled)
                 continue;
             // Concentric, not random: sequential placement in random order saturates near 45%
             // occupancy, which is what kept these towns thin. The hash only breaks ties.
@@ -343,7 +367,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     for (let k = 0; k < nn; k++) {
         if (!city.road[k]) continue;
         const x = k % n, y = Math.floor(k / n), q = city.xy(k);
-        if (Math.hypot(q.x - city.market.x, q.z - city.market.z) > width * .375) continue;
+        if (Math.hypot(q.x - city.market.x, q.z - city.market.z) > width * .375 * settled) continue;
         let ex = 0, ez = 0;
         for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
             const xx = x + dx, yy = y + dz;
@@ -384,7 +408,7 @@ function generateCity(w, sim, provinceId, design = {}) {
                 let seated = 0;
                 for (const t of [1, .84, .7, .57, .45, .35]) {
                     const dd = deep * t, cx = q.x + nx * (off + dd / 2), cz = q.z + nz * (off + dd / 2);
-                    if (Math.hypot(cx - city.market.x, cz - city.market.z) > width * .375) break;
+                    if (Math.hypot(cx - city.market.x, cz - city.market.z) > width * .375 * settled) break;
                     if (buildingAt(f.k, null, false, 3, 1, { x: cx, z: cz, w: f.alongX ? front : dd, d: f.alongX ? dd : front })) { seated = dd; break; }
                 }
                 off += seated ? seated + .10 : 1.25;
@@ -512,7 +536,7 @@ function generateCity(w, sim, provinceId, design = {}) {
         if (city.water[i] || city.road[i] || distanceRoad[i] < 1.2 || used.some(b => Math.abs(b.x - x) < b.w / 2 + 1.3 && Math.abs(b.z - z) < b.d / 2 + 1.3))
             continue;
         const d = Math.hypot(x - city.market.x, z - city.market.z);
-        if (d < (profile.id === 'forest' ? 6 : 16) * grow || city.environment.ice[i]>5 || city.environment.snow[i]>.2 || rng()>city.environment.treeDensity[i])
+        if (d < (profile.id === 'forest' ? 6 : 16) * grow * settled || city.environment.ice[i]>5 || city.environment.snow[i]>.2 || rng()>city.environment.treeDensity[i])
             continue;
         // Stature follows the form, so a scrub belt or a cushion field above the
         // treeline is not planted at full forest height on the same hillside.
@@ -526,7 +550,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     }
     for (let k = 0, plots = Math.round(100 * grow * grow); k < plots; k++) {
         const x = (rng() - .5) * width * .85, z = (rng() - .5) * depth * .85, i = city.index(x, z), d = Math.hypot(x - city.market.x, z - city.market.z);
-        if (d < 42 * grow || d > 68 * grow || city.water[i] || city.slope[i] > .18 || city.road[i] || city.environment.farm[i]<.2 || city.environment.ice[i]>1 || city.environment.snow[i]>.1 || city.environment.temperature[i]<3)
+        if (d < 42 * grow * settled || d > 68 * grow || city.water[i] || city.slope[i] > .18 || city.road[i] || city.environment.farm[i]<.2 || city.environment.ice[i]>1 || city.environment.snow[i]>.1 || city.environment.temperature[i]<3)
             continue;
         if (used.some(b => Math.hypot(b.x - x, b.z - z) < 7))
             continue;
@@ -536,7 +560,7 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.farms.push({ x, z, y: city.height[i], w: fw, d: fd });
     }
     // Historical precinct walls protect the old core; gaps are gates or open waterfronts.
-    const wallRadius = 20 * grow;
+    const wallRadius = 20 * grow * settled;
     for (let k = 0; k < (profile.wall ? 76 : 0); k++) {
         const a = k / 76 * Math.PI * 2, b = (k + 1) / 76 * Math.PI * 2, A = { x: city.market.x + Math.cos(a) * wallRadius, z: city.market.z + Math.sin(a) * wallRadius * .85 }, B = { x: city.market.x + Math.cos(b) * wallRadius, z: city.market.z + Math.sin(b) * wallRadius * .85 }, i = city.index(A.x, A.z), j = city.index(B.x, B.z);
         if (city.water[i] || city.water[j] || distanceRoad[i] < 2.5 || distanceRoad[j] < 2.5 || city.buildings.some(v => cityPointSegment(v, A, B) < Math.max(v.w, v.d) * .7))

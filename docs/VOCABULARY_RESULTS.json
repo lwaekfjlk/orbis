@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "seed": "Aereth-47",
+  "checks": {
+    "coverage": {
+      "roofs": {
+        "deepeave": 316,
+        "gable": 889,
+        "hip": 249,
+        "northern": 79,
+        "conic": 592,
+        "vault": 86,
+        "rockcut": 24,
+        "parapet": 453,
+        "upturned": 517,
+        "leaf": 315
+      },
+      "materials": {
+        "timber": 1261,
+        "log": 126,
+        "masonry": 461,
+        "felt": 470,
+        "firedbrick": 71,
+        "cutstone": 44,
+        "adobe": 555,
+        "rockface": 55,
+        "thatch": 477
+      },
+      "formsPerTown": 2.56
+    },
+    "weather": {
+      "snowy": {
+        "roof": "northern",
+        "material": "log",
+        "pitch": 2.14,
+        "eave": 0.02
+      },
+      "temperate": {
+        "roof": "gable",
+        "material": "timber",
+        "pitch": 1,
+        "eave": 0.1
+      },
+      "monsoon": {
+        "roof": "leaf",
+        "material": "thatch",
+        "pitch": 1.31,
+        "eave": 0.77
+      },
+      "desert": {
+        "roof": "parapet",
+        "material": "adobe",
+        "pitch": 0.26,
+        "eave": 0.02
+      }
+    },
+    "ancestryNeutral": {
+      "roofFormsAcrossPeoples": 1,
+      "crownsAcrossFaiths": 4
+    },
+    "replay": {
+      "deterministic": true,
+      "formsFromSeedAlone": 2
+    },
+    "palace": {
+      "byRealm": {
+        "forest/0": "forest",
+        "maritime/0": "lagoon",
+        "forge/0": "delve",
+        "granary/0": "river",
+        "arcane/0": "arcane",
+        "lake/0": "delta",
+        "frontier/0": "basalt",
+        "granary/1": "basilica",
+        "granary/2": "arcane"
+      },
+      "crowns": [
+        "dome",
+        "crystal",
+        "spire",
+        "battlement",
+        "native"
+      ]
+    },
+    "size": {
+      "ratio": 44.92,
+      "correlation": 0.38,
+      "smallest": {
+        "name": "Gulldrift",
+        "pop": 5843,
+        "span": 8.5,
+        "blocks": 24
+      },
+      "largest": {
+        "name": "Wrencombe",
+        "pop": 23280,
+        "span": 10.8,
+        "blocks": 1078
+      }
+    },
+    "geometry": {
+      "forms": 10
+    }
+  }
+}

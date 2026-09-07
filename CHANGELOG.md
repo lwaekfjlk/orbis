@@ -1,3 +1,32 @@
+# 13.4.0 — A vocabulary, not fifteen bundles
+
+- Town architecture is **composed** from four orthogonal axes instead of picked as a
+  bundle: eave form, wall material, colourway and ornament are each chosen separately.
+- **Ten roof/eave forms** (was four): the original gable, hip, leaf and northern plus
+  upturned tile on bracket sets, deep straight eave on exposed rafters, parapet terrace,
+  barrel vault, felted cone and rock-cut face. All ten are reachable and none takes more
+  than 29% of the world; a town averages 2.4 of them.
+- **Nine wall materials** (was five): log, timber, thatch, adobe, masonry plus fired
+  brick, ashlar, rock-cut and felt, each with its own construction detail.
+- Weather picks the construction — snowy resolves to steep shingle over log, monsoon to
+  deep thatch, desert to a parapet terrace over mud brick — and the roof carries the
+  material's own colour rather than one shared paint pot.
+- **The seat of government answers to its realm and its faith**, not only to its weather:
+  seven realm archetypes give seven different halls, governments override, and the six
+  faiths give five different crowns. Before, style was copied from the town's own
+  climate-derived tradition, so two nations of different religions in one climate built
+  the same palace.
+- **A capital now looks like a capital.** Extent follows population: span ratio 1.64x to
+  **2.47x**, correlation with population 0.01 to **0.44**. Great Saltlanding (93,150) is
+  span 11.6 with 617 blocks; Oakforge (3,360) is span 4.7 with 199.
+- Ancestry decides nothing. A people contributes a craft leaning that only breaks ties
+  between materials the ground already supplies; holding place and faith fixed and
+  varying only the inhabitants leaves the building unchanged, and `tests/vocabulary.test.mjs`
+  asserts it.
+- New suite `npm run test:vocabulary` (8 checks).
+
+---
+
 # 13.5.0 — The subtropics get a name, a colour and a tree
 
 `physicalFingerprint` `4b02963c` → `440ae5d0`, `settlementFingerprint` `73c1127f` → `6b6c5ea8`:
