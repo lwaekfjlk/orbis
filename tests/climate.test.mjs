@@ -121,6 +121,68 @@ test('one tradition built at both ends of its own range is not the same town twi
  report.checks.sameTraditionDiffers = compared;
 });
 
+test('the wall is built of a different material at each end of the range, not just tinted', () => {
+ const recipe = E.LandmarkCatalog.recipe('river', 'material-probe', {urbanStyle: 'river'});
+ const build = (t, a, winter, ice = 0, snow = 0) => {
+  const cl = E.CityEnvironment.climate(t, a, 200, ice, snow, winter);
+  const k = new E.LandmarkKit(recipe, {base: false, lod: 2});
+  k.palette = E.ArtisanCityKit.climatePalette(E.ArtisanCityKit.palettes.river, cl); k.climate = cl;
+  k.part('p', 'p', 'architecture', () => E.ArtisanCityKit.house(k, 0, 0, 0, 4, 5, 4.5, 'river', 0));
+  const m = k.finish();
+  const material = Object.keys(m.stats.modules).find(x => x.endsWith('-construction'));
+  return {material: material && material.replace('-construction', ''), snowParts: m.stats.modules['lying-snow'] || 0, cover: cl.cover};
+ };
+ const arctic = build(-8, 1.3, -22, 40, .6), subarctic = build(-1.3, 1.14, -8.9),
+       temperate = build(11, 1.0, 3.5), hotDry = build(26, .25, 20), hotWet = build(26.8, 2.0, 26.2);
+ // A tint is not a material. Cold builds in log, hot and dry in earth, hot and wet
+ // in light frame and thatch — these have to be different constructions.
+ assert.equal(arctic.material, 'log');
+ assert.equal(subarctic.material, 'log');
+ assert.equal(hotDry.material, 'adobe');
+ assert.equal(hotWet.material, 'thatch');
+ assert.equal(new Set([arctic.material, temperate.material, hotDry.material, hotWet.material]).size, 4,
+  'the four climate extremes must not share a construction');
+ report.checks.materials = {arctic: arctic.material, subarctic: subarctic.material, temperate: temperate.material, hotDry: hotDry.material, hotWet: hotWet.material};
+});
+test('snow lies on the towns whose winter freezes, and on no others', () => {
+ const recipe = E.LandmarkCatalog.recipe('river', 'snow-probe', {urbanStyle: 'river'});
+ const cover = (t, a, winter, ice = 0, snow = 0) => {
+  const cl = E.CityEnvironment.climate(t, a, 200, ice, snow, winter);
+  const k = new E.LandmarkKit(recipe, {base: false, lod: 2});
+  k.palette = E.ArtisanCityKit.climatePalette(E.ArtisanCityKit.palettes.river, cl); k.climate = cl;
+  k.part('p', 'p', 'architecture', () => E.ArtisanCityKit.house(k, 0, 0, 0, 4, 5, 4.5, 'river', 0));
+  return {cl, snowParts: k.finish().stats.modules['lying-snow'] || 0};
+ };
+ // The annual mean is not the test: -1.3 C annual with a -8.9 C winter is a snowy
+ // town, and reading only the mean is why cold towns used to be drawn bare.
+ const subarctic = cover(-1.3, 1.14, -8.9);
+ assert(subarctic.cl.cover > .6, `a -8.9 C winter must lie under snow, got ${subarctic.cl.cover.toFixed(2)}`);
+ assert(subarctic.snowParts > 0, 'and that snow must be drawn');
+ const marginal = cover(2.6, 1.4, -1.4);
+ assert(marginal.cl.cover > .05 && marginal.cl.cover < .5, 'a winter just below freezing is a dusting, not a burial');
+ assert(marginal.snowParts > 0, 'a dusting is still drawn');
+ for (const [label, c] of [['cool temperate', cover(11, 1.0, 3.5)], ['hot arid', cover(26, .25, 20)], ['hot humid', cover(26.8, 2.0, 26.2)]]) {
+  assert.equal(c.cl.cover, 0, label + ' must never be snowed');
+  assert.equal(c.snowParts, 0, label + ' must draw no snow');
+ }
+ // A cold DRY interior holds less than a cold wet one at the same temperature.
+ assert(cover(-2, .15, -9).cl.cover < cover(-2, 1.8, -9).cl.cover, 'moisture must modulate cover');
+ report.checks.snow = {subarctic: +subarctic.cl.cover.toFixed(2), marginal: +marginal.cl.cover.toFixed(2)};
+});
+test('a real cold town carries snow across its own elevation gradient', () => {
+ const cold = sim.provinces.filter(p => p.city)
+  .map(p => ({p, e: E.CityEnvironment.profile(world, p)}))
+  .sort((a, b) => a.e.temperature - b.e.temperature)[0];
+ const c = E.generateCity(world, sim, cold.p.id);
+ let lo = 1, hi = 0, snowed = 0;
+ for (const b of c.buildings) {
+  const cv = E.CityEnvironment.snowCover(c.environment, c.index(b.x, b.z));
+  lo = Math.min(lo, cv); hi = Math.max(hi, cv); if (cv > .3) snowed++;
+ }
+ assert(snowed / c.buildings.length > .4, 'most of the coldest town must be under snow');
+ assert(hi - lo > .15, 'and the cover has to vary across the town, not be one flat value');
+ report.checks.coldTown = {name: cold.p.name, annualC: +cold.e.temperature.toFixed(1), coverLo: +lo.toFixed(2), coverHi: +hi.toFixed(2), snowedFraction: +(snowed / c.buildings.length).toFixed(2)};
+});
 test('the tradition palette is retoned by climate without losing the tradition', () => {
  const base = E.ArtisanCityKit.palettes.river;
  const cold = E.ArtisanCityKit.climatePalette(base, E.CityEnvironment.climate(-6, 1.2, 200, 20, .4));

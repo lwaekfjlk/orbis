@@ -2,6 +2,7 @@
  * Terrain remains the same piecewise-linear height field at every zoom level.
  * Local building assemblies are rigidly seated on that field; no baked backdrops.
  */
+const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
  constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.retess=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
@@ -49,7 +50,15 @@ class ContinuousCityLayer {
    const nx=lerp(lerp(field[i0],field[i1],u),lerp(field[i2],field[i3],u),v),ny=lerp(lerp(field[i0+1],field[i1+1],u),lerp(field[i2+1],field[i3+1],u),v),nz=lerp(lerp(field[i0+2],field[i1+2],u),lerp(field[i2+2],field[i3+2],u),v);
    const l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
    const[ids,q]=AtlasSpace.weights(x,y);let cr=0,cg=0,cb=0;
-   for(let n=0;n<3;n++){const c=near&&w.height[ids[n]]>0?CityEnvironment.cellColor(w,ids[n]):r.palette(ids[n]);cr+=q[n]*c[0];cg+=q[n]*c[1];cb+=q[n]*c[2];}
+   for(let n=0;n<3;n++){let c=r.palette(ids[n]);
+    if(near&&w.height[ids[n]]>0){
+     c=CityEnvironment.cellColor(w,ids[n]);
+     // Close in, the ground carries the season the buildings are carrying. The atlas
+     // keeps its annual-mean palette: a world map is not a picture of one winter.
+     const cover=CityEnvironment.cellCover(w,ids[n]);
+     if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));
+    }
+    cr+=q[n]*c[0];cg+=q[n]*c[1];cb+=q[n]*c[2];}
    a=[p[0],p[1],p[2],nx/l,ny/l,nz/l,cr,cg,cb];vertices.set(k,a);return a;
   };
   for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){

@@ -57,33 +57,33 @@
     },
     "houseResponse": {
       "arctic": {
-        "height": 9.51,
+        "height": 10.15,
         "width": 4.52,
         "depth": 6.38,
         "load": 1
       },
       "boreal": {
-        "height": 8.27,
+        "height": 8.02,
         "width": 4.56,
         "depth": 6,
-        "load": 0.38
+        "load": 0
       },
       "temperate": {
-        "height": 7.37,
+        "height": 7.64,
         "width": 4.6,
         "depth": 6.03,
         "load": 0
       },
       "hotDry": {
-        "height": 5.87,
+        "height": 5.94,
         "width": 4.56,
         "depth": 5.93,
         "load": 0
       },
       "hotWet": {
         "height": 7.92,
-        "width": 5.54,
-        "depth": 7.4,
+        "width": 6.58,
+        "depth": 8.61,
         "load": 0
       }
     },
@@ -125,10 +125,28 @@
         "span": 6.7
       }
     ],
+    "materials": {
+      "arctic": "log",
+      "subarctic": "log",
+      "temperate": "timber",
+      "hotDry": "adobe",
+      "hotWet": "thatch"
+    },
+    "snow": {
+      "subarctic": 0.9,
+      "marginal": 0.22
+    },
+    "coldTown": {
+      "name": "Rowanchase",
+      "annualC": -1.3,
+      "coverLo": 0.39,
+      "coverHi": 1,
+      "snowedFraction": 1
+    },
     "palette": {
       "coldWall": "#c9c2ad",
       "hotWall": "#e4ddc8",
-      "coldRoof": "#475867",
+      "coldRoof": "#495b6a",
       "hotRoof": "#65696b"
     },
     "traditions": {
