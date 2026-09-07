@@ -18,9 +18,24 @@ function lookAt(eye, target, up) { const z = norm(sub(eye, target)), x = norm(cr
 function project4(m, p) { return [0, 1, 2, 3].map(r => m[r] * p[0] + m[4 + r] * p[1] + m[8 + r] * p[2] + m[12 + r]); }
 class Geometry {
     constructor() { this.data = []; }
-    tri(a, b, c, color, normal = null) { const face = cross(sub(b, a), sub(c, a)); if (Math.hypot(...face) < 1e-10)
-        return; const n = normal || norm(face); for (const p of [a, b, c])
-        this.data.push(...p, ...n, ...color); }
+    // The innermost loop of the whole renderer: a town pushes half a million triangles
+    // through it. Written with sub/cross/norm/spread it allocated seven arrays and four
+    // spreads per triangle — some 3.6M short-lived allocations per town, which is most of
+    // what a reader waits for after clicking one. Inlined here, allocation-free. The
+    // arithmetic is deliberately identical, Math.hypot included, so every vertex and every
+    // geometry hash comes out bit-for-bit as before; only the garbage is gone.
+    tri(a, b, c, color, normal = null) {
+        const ax = a[0], ay = a[1], az = a[2], bx = b[0], by = b[1], bz = b[2], cx = c[0], cy = c[1], cz = c[2];
+        const ux = bx - ax, uy = by - ay, uz = bz - az, vx = cx - ax, vy = cy - ay, vz = cz - az;
+        const fx = uy * vz - uz * vy, fy = uz * vx - ux * vz, fz = ux * vy - uy * vx;
+        if (Math.hypot(fx, fy, fz) < 1e-10)
+            return;
+        let nx, ny, nz;
+        if (normal) { nx = normal[0]; ny = normal[1]; nz = normal[2]; }
+        else { const s = Math.hypot(fx, fy, fz) || 1; nx = fx / s; ny = fy / s; nz = fz / s; }
+        const r = color[0], g = color[1], bl = color[2];
+        this.data.push(ax, ay, az, nx, ny, nz, r, g, bl, bx, by, bz, nx, ny, nz, r, g, bl, cx, cy, cz, nx, ny, nz, r, g, bl);
+    }
     // Per-vertex normals and colours; each vertex is [x,y,z, nx,ny,nz, r,g,b], the
     // buffer layout this renderer already uses. A surface built from these reads as
     // one sheet instead of a fan of individually shaded facets, and a flat-shading

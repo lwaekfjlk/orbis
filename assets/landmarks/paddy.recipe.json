@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-paddy",
+  "style": "paddy",
+  "seed": "AERETH / 01",
+  "name": "The Sluicewater Prefecture",
+  "material": "paddy",
+  "faith": "tide",
+  "culture": "Riverfolk craft",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 2,
+  "roofPitch": 1.0369834011234342,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": false,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

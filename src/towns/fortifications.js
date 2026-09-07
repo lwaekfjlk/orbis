@@ -2,12 +2,45 @@
  * A citadel reserves genuinely buildable high ground BEFORE streets are routed.
  * The outer enceinte follows a buffered urban hull. Water gaps are not called gates.
  */
+/** A town that has both a tradition and the surplus to carry a wonder gets one, and WHICH
+ * wonder is a property of the tradition, not a roll. Only the pilgrimage towns used to have
+ * one, so every other tradition topped out at a citadel and the world read the same however
+ * far you travelled. Loaded here because fortifications reserves the parcel a wonder stands
+ * on, before the streets are routed. */
+const TOWN_WONDERS = {
+    basilica: [{ id: 'cathedral',        name: 'Grand Sanctuary',   material: 'ivory' }],
+    forest:   [{ id: 'grove-sanctuary',  name: 'Grove Sanctuary',   material: 'woodland' }],
+    // Two traditions are broad enough to hold a second answer, chosen by what the site has
+    // rather than by a roll: an arcane town on a deep mana field raises the tower instead of
+    // the crystal, and a volcanic town over real ore keeps a dragon rather than a warlord.
+    arcane:   [{ id: 'suspended-tower',  name: 'Suspended Tower',   material: 'moonstone', when: p => p.mana > .58 },
+               { id: 'sky-crystal',      name: 'Suspended Crystal', material: 'moonstone' }],
+    basalt:   [{ id: 'dragon-court',     name: 'Dragon Court',      material: 'basalt', when: p => p.ore > .42 },
+               { id: 'dread-keep',       name: 'Dread Keep',        material: 'basalt' }],
+    mountain: [{ id: 'deep-city',        name: 'Deep City',         material: 'granite' }],
+    delve:    [{ id: 'forge-hollow',     name: 'Forge Hollow',      material: 'delve' }],
+    river:    [{ id: 'gilded-palace',    name: 'Gilded Palace',     material: 'limestone' }],
+    desert:   [{ id: 'sunless-well',     name: 'Sunless Well',      material: 'sandstone' }],
+    delta:    [{ id: 'reed-throne',      name: 'Reed Throne',       material: 'reed' }],
+    fjord:    [{ id: 'whale-moot',       name: 'Whalebone Moot',    material: 'northern' }],
+    steppe:   [{ id: 'sky-court',        name: 'Sky Court',         material: 'steppe' }],
+    paddy:    [{ id: 'water-pagoda',     name: 'Water Pagoda',      material: 'paddy' }],
+    lagoon:   [{ id: 'tide-palace',      name: 'Tide Palace',       material: 'lagoon' }]
+};
+function wonderFor(style, support, p) {
+    if (support < 6500)
+        return null;
+    const list = TOWN_WONDERS[style];
+    if (!list)
+        return null;
+    return list.find(v => !v.when || (p && v.when(p))) || list[list.length - 1];
+}
 const FortressPlan=(()=>{
  const inside=(q,b,pad=0)=>Math.abs(q.x-b.x)<=b.w/2+pad&&Math.abs(q.z-b.z)<=b.d/2+pad;
  function reserve(c,candidates,p,steep=.85){
   // A hamlet does not acquire a royal capital just because its view was opened.
   if((p.detailSupport??p.urbanSupport)<1500||c.townProfile.id==='delta')return null;
-  const sacred=c.townProfile.id==='basilica'&&(p.detailSupport??p.urbanSupport)>=6500;
+  const wonder=wonderFor(c.townProfile.id,p.detailSupport??p.urbanSupport,p),sacred=!!wonder;
   const ordinary=candidates.filter(a=>{const q=c.xy(a.k),d=Math.hypot(q.x-c.market.x,q.z-c.market.z);const S=c.width/152;return d>(sacred?23:19)*S&&d<(sacred?34:43)*S&&Math.abs(q.x)<c.width*.34&&Math.abs(q.z)<c.depth*.32});
   const ranked=ordinary.map(a=>({k:a.k,score:c.height[a.k]*(sacred?1.7:2.4)-Math.max(0,c.slope[a.k]-.8)*4-Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)*(sacred?.14:.05)})).sort((a,b)=>b.score-a.score);
   for(const size of (sacred?[38,34,30,26,22]:[26,22,18])) for(const {k}of ranked.slice(0,700)){
@@ -20,7 +53,7 @@ const FortressPlan=(()=>{
    for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>steep){valid=false;break}samples.push(c.height[j])}if(!valid)break}
    // A cut-in citadel spans a real bank, so it is allowed far more fall than a pad would be.
    if(!valid||Math.max(...samples)-Math.min(...samples)>13)continue;
-   site.sacred=sacred;site.deck=Math.max(...samples)+.16;site.bed=Math.min(...samples);site.relief=site.deck-site.bed;
+   site.sacred=sacred;site.wonder=wonder;site.deck=Math.max(...samples)+.16;site.bed=Math.min(...samples);site.relief=site.deck-site.bed;
    // buildingAt() snaps its footprint samples to the NEAREST cell, so a cell centre up to
    // half a cell beyond the parcel edge is still tested. Mask that far or a street routes
    // through ground the precinct will later refuse to build on.

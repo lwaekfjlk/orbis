@@ -186,13 +186,28 @@ const CityEnvironment = (() => {
   m.set(p.i,out);return out;
  }
  function createGrid(n){const grid={n};for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','winter'])grid[key]=new Float32Array(n*n);grid.parentIndex=new Int32Array(n*n);grid.biome=new Uint8Array(n*n);grid.color=new Float32Array(n*n*3);return grid;}
+ const GRID_KEYS=['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','winter','parentIndex','biome'];
+ /** Copy one already-sampled cell between two grids of the same pitch. */
+ function copyCell(dst,k,src,j){for(const key of GRID_KEYS)dst[key][k]=src[key][j];dst.color.set(src.color.subarray(j*3,j*3+3),k*3);}
  function write(grid,k,s){for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','winter','parentIndex','biome'])grid[key][k]=s[key];grid.color.set(s.color,k*3);}
  function hash(grid){let h=2166136261;for(const key of ['bed','surface','biome','temperature','aridity','rain','ice','snow','winter','color']){const a=grid[key],bytes=new Uint8Array(a.buffer,a.byteOffset,a.byteLength);for(const byte of bytes){h^=byte;h=Math.imul(h,16777619);}}return(h>>>0).toString(16).padStart(8,'0');}
  function context(w,p,city,elevate){
   // A read-only wider ring. Same sample pitch and exact inner boundary as the town.
   const n=city.n*2-1,g=createGrid(n),count=n*n,context={...g,width:city.width*2,depth:city.depth*2,height:new Float32Array(count),water:new Uint8Array(count),waterKind:new Uint8Array(count),innerStart:(city.n-1)/2,innerEnd:(city.n-1)*1.5};
+  // The inner block sits on the town's own coordinates at the town's own pitch — that is
+  // exactly what the seam assertion in tests/environment.test.mjs pins. Re-sampling it cost
+  // a quarter of the whole context build and could only reproduce numbers already in hand,
+  // so it is copied. Everything outside the town is still sampled from the parent world.
+  const inner=context.innerStart;
   for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-   const k=y*n+x,gx=p.x+(x/(n-1)-.5)*city.span*2,gy=p.y+(y/(n-1)-.5)*city.span*2*city.depth/city.width,s=sample(w,gx,gy);
+   const k=y*n+x,cx=x-inner,cy=y-inner;
+   if(cx>=0&&cx<city.n&&cy>=0&&cy<city.n){
+    const j=cy*city.n+cx;
+    copyCell(context,k,city.environment,j);
+    context.water[k]=city.water[j];context.waterKind[k]=city.waterKind[j];context.height[k]=city.height[j];
+    continue;
+   }
+   const gx=p.x+(x/(n-1)-.5)*city.span*2,gy=p.y+(y/(n-1)-.5)*city.span*2*city.depth/city.width,s=sample(w,gx,gy);
    write(context,k,s);context.water[k]=s.water;context.waterKind[k]=s.waterKind;context.height[k]=elevate(s.surface);
   }
   context.xy=k=>({x:(k%n/(n-1)-.5)*context.width,z:(Math.floor(k/n)/(n-1)-.5)*context.depth});

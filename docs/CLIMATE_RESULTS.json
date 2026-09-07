@@ -48,31 +48,31 @@
     "houseResponse": {
       "arctic": {
         "height": 10.15,
-        "width": 4.52,
-        "depth": 6.38,
+        "width": 4.91,
+        "depth": 6.61,
         "load": 1
       },
       "boreal": {
         "height": 8.02,
-        "width": 4.56,
-        "depth": 6,
+        "width": 4.58,
+        "depth": 6.17,
         "load": 0
       },
       "temperate": {
         "height": 7.64,
-        "width": 4.6,
-        "depth": 6.03,
+        "width": 4.62,
+        "depth": 6.19,
         "load": 0
       },
       "hotDry": {
-        "height": 5.94,
-        "width": 4.56,
-        "depth": 5.93,
+        "height": 5.56,
+        "width": 4.57,
+        "depth": 6.01,
         "load": 0
       },
       "hotWet": {
         "height": 7.92,
-        "width": 6.58,
+        "width": 6.6,
         "depth": 8.61,
         "load": 0
       }
@@ -101,18 +101,6 @@
         "coldC": 13.9,
         "hotC": 26.3,
         "span": 12.4
-      },
-      {
-        "style": "mountain",
-        "coldC": 6.4,
-        "hotC": 18.4,
-        "span": 11.9
-      },
-      {
-        "style": "lagoon",
-        "coldC": 17.1,
-        "hotC": 27.7,
-        "span": 10.7
       },
       {
         "style": "desert",
