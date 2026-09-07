@@ -78,13 +78,42 @@ const ArtisanCityKit=(()=>{
  // The two shifts compose and are applied in that order: the climate decides what the
  // town is built and painted from, then each block weathers away from that. Reversing
  // them would let the per-block jitter be flattened back out by the climate tone.
- function kit(recipe,lod=1,cl=null){
+ function kit(recipe,lod=1,cl=null,vocab=null){
   const k=new LandmarkKit(recipe,{base:false,lod});
   let palette=PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material];
   k.climate=cl||NEUTRAL;
+  // The composed vocabulary, when the caller has one. house() falls back to its own
+  // climate ladder without it, so a kit built straight from a recipe still works.
+  k.vocab=vocab||null;
   if(cl)palette=climatePalette(palette,k.climate);
+  if(vocab)palette=vocabularyPalette(palette,vocab,k.climate);
   k.palette=weather(palette,recipe.seed);
   return k;
+ }
+ /* The material decides what the wall is actually made of, so it has to reach the
+  * colour too: an ashlar town and a mud-brick town in the same climate cannot come out
+  * of the same paint pot. The realm accent rides on the trim and the metal, which is
+  * where a livery belongs — it must not repaint the masonry. */
+ const MATERIAL_TONE={
+  log:{wall:'#8d7350',wood:'#6b5334'}, timber:{wall:'#b9a888',wood:'#6f5a41'},
+  thatch:{wall:'#e6dfc8',wood:'#6a5236'}, adobe:{wall:'#cfa877',wood:'#8a6b46'},
+  firedbrick:{wall:'#b0705a',wood:'#6d5540'}, masonry:{wall:'#c3bda9',wood:'#6a5a47'},
+  cutstone:{wall:'#cdc9ba',wood:'#6d5f4c'}, rockface:{wall:'#a09384',wood:'#6a5b4c'},
+  felt:{wall:'#ddd3bd',wood:'#7a6448'}
+ };
+ function vocabularyPalette(p,vocab,cl){
+  const toward=(hex,to,amount)=>{const a=rgb(hex),b=rgb(to);return hexOf(a.map((v,k)=>v+(b[k]-v)*clamp(amount)))};
+  const tone=MATERIAL_TONE[vocab.material]||MATERIAL_TONE.masonry,out={...p};
+  out.wall=toward(p.wall,tone.wall,.55);
+  out.wood=toward(p.wood,tone.wood,.45);
+  // Thatch and felt roofs are the material, not slate laid over it.
+  if(vocab.roof==='leaf'||vocab.material==='thatch')out.roof=toward(p.roof,'#a8873f',.55);
+  if(vocab.material==='felt'||vocab.roof==='conic')out.roof=toward(p.roof,'#cdc3ad',.55);
+  if(vocab.roof==='upturned')out.roof=toward(p.roof,'#4a5a6b',.40);
+  if(vocab.roof==='rockcut'||vocab.material==='rockface')out.roof=toward(p.roof,'#8d8072',.60);
+  // A nation shows on its trim and metal, never on the body of the wall.
+  if(vocab.accent){out.trim=toward(p.trim,vocab.accent,.26);out.metal=toward(p.metal,vocab.accent,.34);}
+  return out;
  }
  function append(dst,src){for(const n of src.data)dst.data.push(n)}
  // Openings are the single largest triangle cost in a town, so they carry the LOD split:
@@ -146,30 +175,34 @@ const ArtisanCityKit=(()=>{
   // forces a northern pitch whatever the family says; sustained heat with no rain
   // flattens it to a usable terrace. Neither overrides where the family is already
   // the right answer, so a fjord longhall stays a fjord longhall.
-  const flat=flatStyle||(cl.warm*cl.dry>.42&&cl.load<.15);
-  /* WHAT THE WALL IS MADE OF, not merely what colour it is painted. A tint alone
-   * left a subarctic and a tropical house identical in construction, which is the
-   * most legible difference of all. Each material is what the climate and the
-   * ground actually supply: timber where forest grows and frost splits masonry,
-   * earth where it is hot and dry and thermal mass is the whole point, light frame
-   * and thatch where it is hot and wet and the wall only has to keep rain out. */
-  const material=style==='taiga'||cl.cover>.34||(cl.cold>.52&&style!=='mountain'&&style!=='basalt')?'log'
+  const flat0=flatStyle||(cl.warm*cl.dry>.42&&cl.load<.15);
+  /* WHAT THE WALL IS MADE OF, not merely what colour it is painted. When the caller
+   * composed a vocabulary, that decides; the ladder below is the fallback for a kit
+   * built straight from a recipe, and keeps the pre-vocabulary behaviour. */
+  const v=k.vocab;
+  const material=v?v.material
+   :style==='taiga'||cl.cover>.34||(cl.cold>.52&&style!=='mountain'&&style!=='basalt')?'log'
    :style==='monsoon'||cl.warm*cl.humid>.40?'thatch'
    :cl.warm*cl.dry>.38?'adobe'
    :['fjord','delta','steppe','paddy'].includes(style)||(style==='river'&&variant%3===0)?'timber'
    :'masonry';
-  const timber=material==='log'||material==='timber'||material==='thatch';
-  let roof=material==='thatch'?'leaf'
+  const timber=['log','timber','thatch','felt'].includes(material);
+  let roof=v?v.roof
+   :material==='thatch'?'leaf'
    :style==='taiga'?'northern'
    :cl.load>.45?'northern'
    :style==='fjord'?'northern'
    :['forest','paddy'].includes(style)?'leaf'
-   :flat?'flat'
+   :flat0?'flat'
    :['steppe','lagoon'].includes(style)?'hip':'gable';
+  // `parapet` and `rockcut` have no pitched plane; the flat path already draws a
+  // parapet, and rockcut is drawn by the roof primitive itself.
+  const flat=roof==='parapet'||(!v&&flat0);
+  if(roof==='parapet')roof='flat';
   // Overhang is the rain response: a deep eave in the wet tropics, a tight verge
   // where it is cold and dry and the eave would only catch snow and wind.
-  const eave=(material==='thatch'?.95:0)+clamp(cl.warm*cl.humid*1.5)*.85-cl.cold*.10,
-   pitch=(style==='taiga'?1.35:1)*(1+cl.load*.62+cl.humid*.18-cl.dry*.22);
+  const eave=v?v.eave*1.4:((material==='thatch'?.95:0)+clamp(cl.warm*cl.humid*1.5)*.85-cl.cold*.10),
+   pitch=v?v.pitch:((style==='taiga'?1.35:1)*(1+cl.load*.62+cl.humid*.18-cl.dry*.22));
   // Stilts are structural in the two families built for standing water.
   const raised=style==='monsoon'||cl.wet>.55;
   k.transform(x,y,z,angle,1,()=>{
@@ -215,6 +248,30 @@ const ArtisanCityKit=(()=>{
     else if(material==='thatch'){
      for(const s of[-1,1])for(const t of[-1,1])k.box(s*(w/2-.06),plinth,t*(d/2-.06),.13,h,.13,'wood');
      for(const s of[-1,1])k.box(0,plinth+h*.52,s*(d/2+.03),w*.98,.09,.05,'wood');
+    }
+    // FIRED BRICK: fine regular courses with a moulded string course.
+    else if(material==='firedbrick'){
+     for(let yy=.30;yy<h-.10;yy+=.26)for(const s of[-1,1])k.box(0,plinth+yy,s*(d/2+.015),w*.99,.03,.02,colorScale(k.color('wall'),.88));
+     for(const s of[-1,1])k.box(0,plinth+h*.52,s*(d/2+.03),w+.10,.09,.06,'trim');
+    }
+    // ASHLAR: large squared blocks, deliberately few and deliberately big.
+    else if(material==='cutstone'){
+     for(let yy=.40;yy<h-.20;yy+=.78)for(const s of[-1,1]){
+      k.box(0,plinth+yy,s*(d/2+.015),w*.99,.045,.03,colorScale(k.color('wall'),.82));
+      for(let col=-w/2+.55;col<w/2-.2;col+=1.35)k.box(col,plinth+yy,s*(d/2+.02),.04,.74,.03,colorScale(k.color('wall'),.85));
+     }
+     for(const s of[-1,1])for(const t of[-1,1])k.box(s*(w/2-.05),plinth,t*(d/2-.05),.22,h,.22,colorScale(k.color('wall'),1.06));
+    }
+    // ROCK-CUT: the room is excavated, so the face is rough and the openings are holes.
+    else if(material==='rockface'){
+     for(const sx of[-1,1])k.rock(sx*w*.44,plinth,-d*.30,w*.30,h*1.02,d*.34,7,'wall');
+     k.rock(0,plinth,-d*.42,w*.72,h*1.10,d*.30,8,'wall');
+     for(const s of[-1,1])k.box(0,plinth+h*.86,s*(d/2+.02),w*.96,.16,.10,'trim');
+    }
+    // FELT: a lattice under layered felt, lashed down with tension bands.
+    else if(material==='felt'){
+     for(const s of[-1,1])for(let j=0;j<3;j++)k.box(0,plinth+h*(.24+j*.26),s*(d/2+.02),w*.98,.07,.04,'trim');
+     for(const s of[-1,1])for(const t of[-1,1])k.cylinder(s*(w/2-.03),plinth,t*(d/2-.03),.10,h,'wood',6);
     }
     else if(material==='timber')for(const sign of[-1,1]){
      k.box(0,h*.55,sign*(d/2+.08),w,.08,.08,'trim');
@@ -454,7 +511,14 @@ const ArtisanCityKit=(()=>{
   // relief spans several degrees between its lower and upper districts, and 67 of
   // the 96 towns in a default world span more than four.
   const cl=blockClimate(c,b);
-  const K=kit(recipe,b.lod??2,cl),rng=K.random;
+  // Compose the vocabulary for this block: weather and ground choose the construction,
+  // the province's faith breaks ties and supplies the ornament, the realm supplies only
+  // an accent on trim and metal. A people contributes a craft leaning and nothing else.
+  const vocab=typeof TownVocabulary!=='undefined'?{
+   ...TownVocabulary.select({climate:cl,site:{...c.siteEnvironment,ore:p.ore},faith,people:cDominant(p.people),seed:c.townRecipe.seed+'/'+b.id}),
+   accent:realm?.color||null
+  }:null;
+  const K=kit(recipe,b.lod??2,cl,vocab),rng=K.random;
   if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true},{climate:cl}),b);
   // The surveyed parcel is what gets built on. meshAt scales this model uniformly to fit
   // b.w x b.d, so a court authored square inside a long burgage plot would leave most of

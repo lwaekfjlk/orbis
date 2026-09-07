@@ -19,7 +19,70 @@ class LandmarkKit {
  dome(x,y,z,r,h,m='metal'){this.mark('ribbed-dome');const prof=[[0,0],[r,0]];for(let j=0;j<=7;j++){const t=j/7*Math.PI/2;prof.push([r*Math.cos(t),h*Math.sin(t)])}this.using('roof',()=>{this.lathe(x,y,z,prof,m,20);for(let k=0;k<10;k++){const a=k/10*Math.PI*2;let last=null;for(let j=0;j<=7;j++){const t=j/7*Math.PI/2,p=[x+(r+.035)*Math.cos(t)*Math.cos(a),y+h*Math.sin(t),z+(r+.035)*Math.cos(t)*Math.sin(a)];if(last)this.beam(last,p,.045,'trim');last=p}}this.cone(x,y+h,z,.22,.8,'metal',.06,8)})}
  beam(a,b,r,m='trim',seg=5){const d=sub(b,a),L=Math.hypot(...d);if(L<.001)return;const n=norm(d),u=norm(cross(n,Math.abs(n[1])<.9?[0,1,0]:[1,0,0])),v=cross(n,u);for(let k=0;k<seg;k++){const A=k/seg*Math.PI*2,B=(k+1)/seg*Math.PI*2,p=t=>u.map((q,i)=>a[i]+(Math.cos(t)*q+Math.sin(t)*v[i])*r),q=t=>p(t).map((e,i)=>e+d[i]);this.quad(p(A),q(A),q(B),p(B),m)}}
  ring(x,y,z,r,t,m='metal',plane='xz',seg=40){for(let k=0;k<seg;k++){const a=k/seg*Math.PI*2,b=(k+1)/seg*Math.PI*2;const p=A=>plane==='xy'?[x+r*Math.cos(A),y+r*Math.sin(A),z]:plane==='yz'?[x,y+r*Math.cos(A),z+r*Math.sin(A)]:[x+r*Math.cos(A),y,z+r*Math.sin(A)];this.beam(p(a),p(b),t,m,5)}}
- roof(x,y,z,w,d,h,m='roof',kind='hip',angle=0){this.mark(kind+'-roof');this.using('roof',()=>this.transform(x,y,z,angle,1,()=>{const W=w*.55,D=d*.55;const a=[-W,0,-D],b=[W,0,-D],c=[W,0,D],q=[-W,0,D];let A,B;if(kind==='gable'){A=[0,h,-D];B=[0,h,D]}else{A=[0,h,-Math.max(0,D-W*.65)];B=[0,h,Math.max(0,D-W*.65)]}this.quad(a,A,B,q,m);this.quad(A,b,c,B,m);this.tri(a,b,A,m);this.tri(q,B,c,m);this.beam(A,B,.07,'metal');if(this.lod>0){for(const p of [a,b,c,q]){const top=p[2]<0?A:B;this.beam(p,top,.035,'trim')}}if(kind==='leaf'||kind==='northern'){this.beam([0,h,-D-.35],A,.09,'wood');this.beam(B,[0,h,D+.35],.09,'wood');this.cone(0,h,D+.35,.12,.55,'metal',0,6)}}))}
+ /* Roof and eave forms. The first four are the original geometry, byte-for-byte, so
+  * everything already authored against them is unmoved. The rest widen the silhouette
+  * library, which was the whole of the town's visual vocabulary: four shapes shared by
+  * every tradition, which is why a warm town and a cold one read as the same place with
+  * different paint. Each form is picked by TownVocabulary from climate, site and faith —
+  * none of them is a nationality.
+  */
+ roof(x,y,z,w,d,h,m='roof',kind='hip',angle=0){this.mark(kind+'-roof');this.using('roof',()=>this.transform(x,y,z,angle,1,()=>{const W=w*.55,D=d*.55;
+  // A concave sweep on bracket sets: the eave lifts at the corners instead of running straight.
+  if(kind==='upturned'){
+   const steps=this.lod>0?5:3,lift=h*.30,over=W*.30;
+   let prev=null;
+   for(let s=0;s<=steps;s++){
+    const t=s/steps,ease=t*t,ww=W+over*(1-t)*(1-t)*1.0,dd=D+over*(1-t)*(1-t)*1.0,yy=h*ease-lift*(1-t)*(1-t)*.55;
+    const ring=[[-ww,yy,-dd],[ww,yy,-dd],[ww,yy,dd],[-ww,yy,dd]];
+    if(prev)for(let k=0;k<4;k++)this.quad(prev[k],ring[k],ring[(k+1)%4],prev[(k+1)%4],m);
+    prev=ring;
+   }
+   this.quad(prev[0],prev[3],prev[2],prev[1],m);
+   // Corner finials and the bracket sets that carry the overhang.
+   for(const sx of[-1,1])for(const sz of[-1,1]){
+    this.cone(sx*(W+over*.9),-lift*.55,sz*(D+over*.9),.10,.55,'metal',0,5);
+    if(this.lod>0)this.box(sx*(W+over*.45),-lift*.7,sz*(D+over*.45),.14,.34,.14,'wood');
+   }
+   this.beam([0,h,-D*.5],[0,h,D*.5],.09,'metal');
+   return;
+  }
+  // A shallow pitch under a very deep straight eave, carried on exposed rafters.
+  if(kind==='deepeave'){
+   const over=Math.max(w,d)*.20,ww=W+over,dd=D+over,hh=h*.62;
+   const a=[-ww,0,-dd],b=[ww,0,-dd],c=[ww,0,dd],q=[-ww,0,dd],A=[0,hh,-Math.max(0,dd-ww*.55)],B=[0,hh,Math.max(0,dd-ww*.55)];
+   this.quad(a,A,B,q,m);this.quad(A,b,c,B,m);this.tri(a,b,A,m);this.tri(q,B,c,m);
+   this.beam(A,B,.10,'metal');
+   if(this.lod>0)for(let t=-1;t<=1;t+=.5)for(const sz of[-1,1])this.beam([W*t,-.05,sz*D],[W*t,-.22,sz*dd],.045,'wood',4);
+   return;
+  }
+  // A barrel vault, the dry-country answer to a pitched roof.
+  if(kind==='vault'){
+   const seg=this.lod>0?9:5;let prev=null;
+   for(let s=0;s<=seg;s++){const t=s/seg*Math.PI,yy=Math.sin(t)*h,xx=-Math.cos(t)*W;
+    const edge=[[xx,yy,-D],[xx,yy,D]];
+    if(prev){this.quad(prev[0],edge[0],edge[1],prev[1],m);}
+    prev=edge;}
+   for(const sz of[-1,1]){for(let s=0;s<seg;s++){const t0=s/seg*Math.PI,t1=(s+1)/seg*Math.PI;
+    this.tri([0,0,sz*D],[-Math.cos(t0)*W,Math.sin(t0)*h,sz*D],[-Math.cos(t1)*W,Math.sin(t1)*h,sz*D],m);}}
+   return;
+  }
+  // A felted cone on a ring frame: portable building, not masonry.
+  if(kind==='conic'){
+   const r=Math.min(W,D)*1.06,seg=this.lod>0?12:7;
+   this.lathe(0,0,0,[[r,0],[r*.98,h*.16],[r*.62,h*.66],[0,h]],m,seg);
+   if(this.lod>0){this.ring(0,h*.16,0,r*1.0,.045,'trim','xz',seg);
+    for(let k=0;k<seg;k+=2){const a=k/seg*Math.PI*2;this.beam([Math.cos(a)*r*.9,h*.20,Math.sin(a)*r*.9],[0,h*.94,0],.03,'trim',4);}}
+   this.cylinder(0,h*.92,0,r*.13,.30,'wood',6);
+   return;
+  }
+  // Cut into the rock: a face and a lintel, with no roof plane at all.
+  if(kind==='rockcut'){
+   this.box(0,0,-D*.55,w*1.04,h*1.5,d*.5,'wall');
+   this.box(0,h*1.1,0,w*1.02,.22,d*1.02,'trim');
+   if(this.lod>0)for(const sx of[-1,1])this.box(sx*W*.72,0,D*.42,.26,h*1.05,.30,'trim');
+   return;
+  }
+  const a=[-W,0,-D],b=[W,0,-D],c=[W,0,D],q=[-W,0,D];let A,B;if(kind==='gable'){A=[0,h,-D];B=[0,h,D]}else{A=[0,h,-Math.max(0,D-W*.65)];B=[0,h,Math.max(0,D-W*.65)]}this.quad(a,A,B,q,m);this.quad(A,b,c,B,m);this.tri(a,b,A,m);this.tri(q,B,c,m);this.beam(A,B,.07,'metal');if(this.lod>0){for(const p of [a,b,c,q]){const top=p[2]<0?A:B;this.beam(p,top,.035,'trim')}}if(kind==='leaf'||kind==='northern'){this.beam([0,h,-D-.35],A,.09,'wood');this.beam(B,[0,h,D+.35],.09,'wood');this.cone(0,h,D+.35,.12,.55,'metal',0,6)}}))}
  parapet(x,y,z,w,d,m='wall'){this.mark('parapet');this.box(x-w/2,y,z,.25,.60,d,m);this.box(x+w/2,y,z,.25,.60,d,m);this.box(x,y,z-d/2,w,.60,.25,m);this.box(x,y,z+d/2,w,.60,.25,m);for(let xx=-w/2;xx<=w/2;xx+=1.05)for(const sign of [-1,1])this.box(x+xx,y+.6,z+sign*d/2,.46,.32,.38,m);for(let zz=-d/2+1;zz<d/2;zz+=1.05)for(const sign of[-1,1])this.box(x+sign*w/2,y+.6,z+zz,.38,.32,.46,m)}
  stairs(x,y,z,w,n,rise=.25,run=.45,angle=0,m='trim'){this.mark('ceremonial-stair');this.transform(x,y,z,angle,1,()=>{for(let i=0;i<n;i++)this.box(0,i*rise,-i*run,w,rise,(n-i)*run*2+.10,m)})}
  arch(x,y,z,w,h,d,m='wall',angle=0){this.mark('open-arch');const r=w/2,t=Math.max(.17,w*.12),spring=h-r;this.transform(x,y,z,angle,1,()=>{this.box(-r-t/2,0,0,t,spring,d,m);this.box(r+t/2,0,0,t,spring,d,m);this.box(-r-t/2,-.12,0,t*1.65,.22,d*1.3,'trim');this.box(r+t/2,-.12,0,t*1.65,.22,d*1.3,'trim');for(let k=0;k<10;k++){const a=k/10*Math.PI,b=(k+1)/10*Math.PI;const p=(A,R,Z)=>[Math.cos(A)*R,spring+Math.sin(A)*R,Z];this.quad(p(a,r,-d/2),p(b,r,-d/2),p(b,r+t,-d/2),p(a,r+t,-d/2),m);this.quad(p(a,r,d/2),p(a,r+t,d/2),p(b,r+t,d/2),p(b,r,d/2),m);this.quad(p(a,r,-d/2),p(a,r,d/2),p(b,r,d/2),p(b,r,-d/2),'trim');this.quad(p(a,r+t,-d/2),p(b,r+t,-d/2),p(b,r+t,d/2),p(a,r+t,d/2),m)}})}
