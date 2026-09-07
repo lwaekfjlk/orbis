@@ -62,7 +62,9 @@ const TownGrammar = (()=>{
    const step=profile.plan==='labyrinth'?14:20,grid=[];for(let j=-3;j<=3;j++){const row=[];for(let i=-3;i<=3;i++){const jitter=profile.plan==='labyrinth'?2.5:0;row.push(at(i*step+(rng()-.5)*jitter,j*step*.8+(rng()-.5)*jitter))}grid.push(row)}
    for(let j=0;j<7;j++)for(let i=0;i<7;i++){if(i)add(grid[j][i-1],grid[j][i],j===3?'arterial':'lane');if(j&&(profile.plan==='grid'||i%2===0||j%2===0))add(grid[j-1][i],grid[j][i],i===3?'arterial':'street')}add(center,grid[3][3],'arterial');roles.civic=at(-22,-25);roles.temple=at(24,-22);roles.academy=at(23,23);
   }else{
-   const dx=axisX,dz=axisZ,rx=-dz,rz=dx;let grids=[];const rows=profile.plan==='ribbon'?[-14,0,15]:[-23,-5,15,30];
+   const dx=axisX,dz=axisZ,rx=-dz,rz=dx;let grids=[];// Row spacing was authored for the old small town. On a grown one four shore-parallel
+   // streets leave most of the core with no frontage to build against at all.
+   const rows=profile.plan==='ribbon'?[-25,-14,-4,6,15,26]:[-31,-23,-14,-5,5,15,22,30];
    for(const t of rows){let line=[];for(let k=-3;k<=3;k++)line.push(at(dx*k*17+rx*t,dz*k*17+rz*t));grids.push(line);for(let k=1;k<7;k++)add(line[k-1],line[k],'arterial')}
    for(let r=1;r<grids.length;r++)for(let k=0;k<7;k+=2)add(grids[r-1][k],grids[r][k],'lane');add(center,grids[1][3],'street');roles.civic=at(rx*23,rz*23);roles.temple=at(dx*30+rx*16,dz*30+rz*16);roles.academy=at(-dx*28+rx*13,-dz*28+rz*13);
   }

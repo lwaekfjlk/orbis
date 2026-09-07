@@ -4,12 +4,12 @@
  */
 const FortressPlan=(()=>{
  const inside=(q,b,pad=0)=>Math.abs(q.x-b.x)<=b.w/2+pad&&Math.abs(q.z-b.z)<=b.d/2+pad;
- function reserve(c,candidates,p){
+ function reserve(c,candidates,p,steep=.85){
   // A hamlet does not acquire a royal capital just because its view was opened.
   if((p.detailSupport??p.urbanSupport)<1500||c.townProfile.id==='delta')return null;
   const sacred=c.townProfile.id==='basilica'&&(p.detailSupport??p.urbanSupport)>=6500;
   const ordinary=candidates.filter(a=>{const q=c.xy(a.k),d=Math.hypot(q.x-c.market.x,q.z-c.market.z);const S=c.width/152;return d>(sacred?23:19)*S&&d<(sacred?34:43)*S&&Math.abs(q.x)<c.width*.34&&Math.abs(q.z)<c.depth*.32});
-  const ranked=ordinary.map(a=>({k:a.k,score:c.height[a.k]*(sacred?1.7:2.4)-c.slope[a.k]*4-Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)*(sacred?.14:.05)})).sort((a,b)=>b.score-a.score);
+  const ranked=ordinary.map(a=>({k:a.k,score:c.height[a.k]*(sacred?1.7:2.4)-Math.max(0,c.slope[a.k]-.8)*4-Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)*(sacred?.14:.05)})).sort((a,b)=>b.score-a.score);
   for(const size of (sacred?[38,34,30,26,22]:[26,22,18])) for(const {k}of ranked.slice(0,700)){
    const q=c.xy(k),site={...q,k,w:size,d:size},samples=[];let valid=true;
    if(inside(c.market,site,5))continue;
@@ -17,8 +17,9 @@ const FortressPlan=(()=>{
    // buildingAt then finds, and the reserve hands back a parcel the precinct cannot use.
    // The grid is n x n over width x depth, so the z cell is the smaller of the two.
    const step=Math.min(c.width,c.depth)/(c.n-1)*.85;
-   for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>.85){valid=false;break}samples.push(c.height[j])}if(!valid)break}
-   if(!valid||Math.max(...samples)-Math.min(...samples)>5.6)continue;
+   for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>steep){valid=false;break}samples.push(c.height[j])}if(!valid)break}
+   // A cut-in citadel spans a real bank, so it is allowed far more fall than a pad would be.
+   if(!valid||Math.max(...samples)-Math.min(...samples)>13)continue;
    site.sacred=sacred;site.deck=Math.max(...samples)+.16;site.bed=Math.min(...samples);site.relief=site.deck-site.bed;
    // buildingAt() snaps its footprint samples to the NEAREST cell, so a cell centre up to
    // half a cell beyond the parcel edge is still tested. Mask that far or a street routes
