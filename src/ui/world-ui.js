@@ -350,6 +350,8 @@ function legend() {
     $('legend').innerHTML = items.map(([c, t]) => `<span><i style="background:${c}"></i>${escapeHTML(t)}</span>`).join('') + (['faiths', 'peoples'].includes(currentLayer) ? '<span>Color: local majority, not uniform belief or ancestry.</span>' : '');
     $('mapStamp').textContent = layerTitles[currentLayer] + ' / ' + sim.year;
 }
+// Named wonders only appear when the legend layer itself is switched on.
+function legendLabels() { return $('legends')?.checked === false ? [] : (world.legends || []); }
 function makeLabels() {
     $('labels').innerHTML = '';
     labelItems = [];
@@ -365,7 +367,10 @@ function makeLabels() {
     else if (POLITICAL.includes(currentLayer))
         list = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength).map(c => { const p = sim.provinces[c.capital]; return { x: p.x, y: p.y, i: p.i, name: c.name, kind: c.gov === 2 ? 'MAGOC RACY'.replace(' ', '') : c.gov === 1 ? 'HOLY KINGDOM' : GOVERNMENTS[c.gov], capital: true, realm: c.id }; });
     else if (currentLayer === 'relief')
-        list = [...world.continents,
+        // Legends are placed first so a wonder keeps its name when an ordinary
+        // label would otherwise claim the same patch of screen.
+        list = [...legendLabels(),
+            ...world.continents,
             ...sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop)
                 .map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() })),
             ...world.features];
@@ -374,10 +379,10 @@ function makeLabels() {
     else if (currentLayer === 'ice')
         list = world.features.filter(f => ['glacier', 'alpine'].includes(f.id)).concat(world.continents.filter(c => Math.abs(world.lat[c.i]) > 60));
     else
-        list = [...world.continents, ...world.features];
+        list = [...legendLabels(), ...world.continents, ...world.features];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.capital ? ' capitalLabel' : '') + (f.plate ? ' plateLabel' : '');
+        b.className = 'maplabel' + (f.capital ? ' capitalLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '');
         b.innerHTML = `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
         b.title = 'Inspect ' + f.name;
         b.onclick = () => { if (f.realm != null) {
@@ -398,7 +403,7 @@ function positionLabels() {
         return;
     const boxes = [];
     for (const { element: e, feature: f } of labelItems) {
-        const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : .6), width = Math.max(62, Math.min(160, 25 + f.name.length * (f.capital ? 6.2 : 5.3))), height = 30, box = { x: x - width / 2, y: y - height, w: width, h: height };
+        const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : f.legend ? 1.9 : .6), width = Math.max(62, Math.min(160, 25 + f.name.length * (f.capital || f.legend ? 6.2 : 5.3))), height = f.legend ? 34 : 30, box = { x: x - width / 2, y: y - height, w: width, h: height };
         const overlaps = boxes.some(b => box.x < b.x + b.w && box.x + box.w > b.x && box.y < b.y + b.h && box.y + box.h > b.y), edge = x < 30 || x > renderer.width - 35 || y < 28 || y > renderer.height - 22 || (x < 210 && y < 75);
         const show = !edge && !overlaps;
         e.style.opacity = show ? '1' : '0';
@@ -601,12 +606,12 @@ async function savePNG() {
         for (const { element: e, feature: f } of labelItems) {
             if (e.style.opacity === '0')
                 continue;
-            const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : .6);
+            const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : f.legend ? 1.9 : .6);
             ctx.textAlign = 'center';
-            ctx.font = `${f.capital ? '' : 'italic '}${12 * sx}px Georgia`;
-            ctx.strokeStyle = '#efe9ce';
+            ctx.font = `${f.capital || f.legend ? '' : 'italic '}${(f.legend ? 14 : 12) * sx}px Georgia`;
+            ctx.strokeStyle = f.legend ? '#fff8e2' : '#efe9ce';
             ctx.lineWidth = 2.4 * sx;
-            ctx.fillStyle = '#294734';
+            ctx.fillStyle = f.legend ? '#5a3d10' : '#294734';
             ctx.strokeText(f.name, x * sx, (y - 10) * sy);
             ctx.fillText(f.name, x * sx, (y - 10) * sy);
         }
@@ -776,6 +781,8 @@ function boot() {
         setLayer($('moreLayer').value); };
     for (const id of ['frontiers', 'settlements', 'trees', 'rivers'])
         $(id).onchange = () => { renderer.options[id] = $(id).checked; renderer.dirtyShadow = true; renderer.request(); };
+    if ($('legends'))
+        $('legends').onchange = () => { renderer.options.legends = $('legends').checked; renderer.dirtyShadow = true; makeLabels(); renderer.request(); };
     $('names').onchange = positionLabels;
     $('sortRealms').onchange = renderRealmList;
     $('realmSearch').oninput = () => { if (sim)

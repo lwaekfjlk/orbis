@@ -8,6 +8,10 @@ Scroll to approach, drag to pan, Shift-drag to orbit, click a building to inspec
 
 Heavy meshes are synthesized in a Worker and mounted in atlas coordinates. The model cache is bounded to two detailed towns; regional silhouettes are replaced with finer geometry nearby. This does not promise zero LOD popping or real-time frame rates on software graphics.
 
+Seven **legendary places** are named from the finished physical model, not invented on top of it: The Dragonwell stands on the greatest river's own headwater, The Skymirror on the highest standing water in the world, The Nightspire and The Drowned Choir on the two extremes of the elevation field, and so on for The Emberthroat, The Weeping Stair and The Hollow Crown. Each carries its lore and the measurement it was chosen by, and appears as a gilt marker, a name on the map, a search hit and a detail card. A world whose landform is missing simply has no legend there. Toggle them with **Legends**.
+
+Terrain refinement follows the camera — a grid cell is subdivided up to eight ways once it covers enough screen — and the map renders above CSS resolution. Refined vertices sample the same parent surface, so this adds triangles, not landscape.
+
 Terrain is sampled from the unchanged physical world. Refined triangles do not invent new mountains or water, and buildings use re-seated foundations. Render scale remains exaggerated and non-metric. Architecture is synthetic and not a surveyed, engineering-valid city.
 
 See [中文完整说明](README.zh-CN.md), [verification](docs/CONTINUOUS_VERIFICATION.md), and `src/continuous/`.

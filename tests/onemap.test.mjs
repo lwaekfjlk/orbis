@@ -28,21 +28,50 @@ test('Parent geography, society and world-map renderer retain the pre-art-upgrad
  // civilization and the world-map geometry must still match the approved baseline.
  for(const [file,expected] of Object.entries(sha256)){
   if(!['src/world/geography.js','src/civilization/simulation.js','src/render/world-renderer.js'].includes(file))continue;
-  let content=readFileSync(resolve(root,file));
-  // v12 adds a configurable light direction to the shader. Normalize ONLY
-  // that deliberate rendering change; all world geometry remains byte-identical.
-  if(file==='src/render/world-renderer.js')content=Buffer.from(content.toString('utf8')
-    .replace('uniform vec3 lightDir;','')
-    .replace('vec3 sun=normalize(lightDir);','vec3 sun=normalize(vec3(-.65,1.,-.48));')
-    .replace("'unlit', 'lightDir'", "'unlit'")
-    .replace('gl.uniform3fv(this.loc.lightDir,this.sunDirection||[-.65,1,-.48]);',''));
-
-  if(file==='src/render/world-renderer.js')content=Buffer.from(content.toString('utf8')
-    .replace("return this.options.settlements !== false && (civil || this.layer === 'settlements' || this.layer === 'relief');", "return this.options.settlements !== false && (civil || this.layer === 'settlements');")
-    .replace("return this.options.frontiers !== false && (civil || this.layer === 'relief');", "return this.options.frontiers !== false && civil;"));
+  // geography.js and world-renderer.js carry approved new baselines; see the
+  // notes in docs/CORE_BASELINE.json for what changed and what still locks it.
+  const content=readFileSync(resolve(root,file));
   const actual=createHash('sha256').update(content).digest('hex');
   assert.equal(actual,expected,file+' unexpectedly changed');
  }
+});
+test('Named wonders read the finished world and change none of it',async()=>{
+ const {loadEngine,defaults}=await import('./engine-loader.mjs');
+ const E=loadEngine(),w=await E.generateWorld(defaults);
+ // The hash geography.js used to be locked by. Legends are a labelling pass that
+ // runs last, so the physical model must come out bit-identical to the baseline.
+ assert.equal(E.physicalFingerprint(w),'dfd91476');
+ assert(w.legends.length>=5,'a full world should carry its wonders');
+ for(const f of w.legends){
+  assert(Number.isInteger(f.i)&&f.i>=0&&f.i<E.GN,f.id+' must name a real cell');
+  assert.equal(f.x,f.i%E.GW);
+  assert.equal(f.y,f.i/E.GW|0);
+  assert(f.name&&f.kind&&f.lore&&f.basis,f.id+' needs a name, a kind and both halves of its text');
+ }
+ assert.equal(new Set(w.legends.map(f=>f.id)).size,w.legends.length,'one site per legend');
+ // A wonder has to be the extreme it claims to be, not a nearby cell.
+ const sky=w.legends.find(f=>f.id==='skymirror');
+ if(sky)assert.equal(w.lake[sky.i],Math.max(...w.lake));
+ const peak=w.legends.find(f=>f.id==='nightspire');
+ if(peak)assert.equal(w.height[peak.i],Math.max(...w.height));
+});
+test('The atlas renders above CSS resolution, within a pixel budget',async()=>{
+ const {loadEngine}=await import('./engine-loader.mjs');
+ const E=loadEngine();
+ const stage=(w,h)=>({width:0,height:0,parentElement:{getBoundingClientRect:()=>({width:w,height:h})}});
+ const sized=(canvas,dpr,gl)=>{globalThis.window={devicePixelRatio:dpr};const r=Object.create(E.AtlasRenderer.prototype);Object.assign(r,{canvas,gl,request(){}});r.resize();delete globalThis.window;return r;};
+ // A 1x display is where the old device-pixel backing store looked softest: the
+ // relief shading and the river ribbons alias inside the triangle, which no amount
+ // of multisampling fixes.
+ const one=stage(1440,900);sized(one,1,{});
+ assert(one.width>=1440*1.5,'a 1x display must be supersampled, got '+one.width);
+ // ...but a 4K window on a 3x display must not quietly ask for 130 megapixels.
+ const huge=stage(3840,2160);sized(huge,3,{});
+ assert(huge.width*huge.height<=1.15e7,'backing store must stay inside the pixel budget');
+ assert(huge.width>=3840,'and must never fall below CSS resolution');
+ // The software rasteriser pays per pixel on the CPU and keeps its old ceiling.
+ const slow=stage(1440,900);sized(slow,3,null);
+ assert.equal(slow.width,2880);
 });
 test('Geography-driven district names leave the society itself untouched, and never number a town',async()=>{
  const {loadEngine,defaults}=await import('./engine-loader.mjs');

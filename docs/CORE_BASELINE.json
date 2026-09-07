@@ -1,22 +1,24 @@
 {
-  "baseline": "Townsmith 9.1 supplied in this conversation",
-  "notes": {
-    "src/civilization/simulation.js": "Re-baselined in v13 for geography-driven district names only. The random stream is unchanged (naming draws two rolls at the same point cName(rng) drew two), so settlementFingerprint stays 77c3b21f and every population, polity and district id is byte-identical. Locked by the settlementFingerprint assertion in tests/onemap.test.mjs."
-  },
-  "sha256": {
-    "src/world/geography.js": "b147b5bd79be4b6731c85099644fc75c969bd86f2b1071a790eb1854c611b2bb",
-    "src/civilization/simulation.js": "f84eb0013644852e33f1c0f19a96a60007d10230f09fa991e651a9a09cb695cf",
-    "src/city/environment.js": "9c8562ff086bb7244509a23fb5168549f3055d744983e16bed3fce0378748f19",
-    "src/city/generator.js": "5fc24373aabb214fac5c75d3b994d27b5f1df1911a37a97b86efc35e39103977",
-    "src/city/actions.js": "7c0d28e21c5100f784a68e1e6bd6c4ad182c30a8aa47d46a7818d72c448fba4e",
-    "src/towns/catalog.js": "dad0db0d211cf7c87e7fa430bed1ed37fd19ac2e41c2095cc10c7a4b2804f641",
-    "src/towns/grammar.js": "e484ff71cec4d4aa319063e5fa82a659049df2fd7624f7728db7600858ef23d8",
-    "src/towns/building-kit.js": "9585f076bbbebaa571f3ed7d256e17edd2037c2c3ea7771b70fd524fb66b41a7",
-    "src/landmarks/catalog.js": "bad1a90325ecb365a294bf0ecc2344cfe53f4cd198a4611e3eac9833d0a39451",
-    "src/landmarks/kit.js": "ddf30189acb7801c8f1b78ab7f0888ee50e46a2b00e1ee5113ec261c6f7dbf9f",
-    "src/landmarks/templates.js": "8e98f8b459ef6d49dbcc5328451765de2db30bf91a1e26cbb17188d21fdf2c9f",
-    "src/landmarks/world-binding.js": "c83b701fe8ce637a825dd25946cdb3215e66d34f547c6e065aed7983b7a4d629",
-    "src/render/city-renderer.js": "8dc547843284821a4495a90b401cf7670da8e2dc572d63671d01f3962cf5dcee",
-    "src/render/world-renderer.js": "3a3ea10c2c7c7e7d020900053de84459e705ce99d00946eb0e10e6b7b62373de"
-  }
+ "baseline": "Townsmith 9.1 supplied in this conversation",
+ "notes": {
+  "src/civilization/simulation.js": "Re-baselined in v13 for geography-driven district names only. The random stream is unchanged (naming draws two rolls at the same point cName(rng) drew two), so settlementFingerprint stays 77c3b21f and every population, polity and district id is byte-identical. Locked by the settlementFingerprint assertion in tests/onemap.test.mjs.",
+  "src/world/geography.js": "Re-baselined for legendary places. nameLegends() runs after every physical pass has finished and writes only w.legends / w.legendStats; it reads the finished fields and moves nothing. physicalFingerprint is dfd91476 before and after the change, asserted in tests/onemap.test.mjs, so the geography itself is byte-identical.",
+  "src/render/world-renderer.js": "Re-baselined for map clarity: supersampled backing store in resize(), Geometry.smoothTri() for per-vertex terrain normals and colours, and buildLegends() markers for named wonders. Terrain vertex positions are untouched \u2014 AtlasSpace.surface parity and the shared-edge check in tests/continuous.test.mjs are what lock the surface, not the file hash. The earlier v12 shader and layer-visibility normalisations are folded into this baseline."
+ },
+ "sha256": {
+  "src/world/geography.js": "9adce3e4f82cc4998c529f74bef900343c4dc899f7e10e5e94c2fcda24be1525",
+  "src/civilization/simulation.js": "f84eb0013644852e33f1c0f19a96a60007d10230f09fa991e651a9a09cb695cf",
+  "src/city/environment.js": "9c8562ff086bb7244509a23fb5168549f3055d744983e16bed3fce0378748f19",
+  "src/city/generator.js": "5fc24373aabb214fac5c75d3b994d27b5f1df1911a37a97b86efc35e39103977",
+  "src/city/actions.js": "7c0d28e21c5100f784a68e1e6bd6c4ad182c30a8aa47d46a7818d72c448fba4e",
+  "src/towns/catalog.js": "dad0db0d211cf7c87e7fa430bed1ed37fd19ac2e41c2095cc10c7a4b2804f641",
+  "src/towns/grammar.js": "e484ff71cec4d4aa319063e5fa82a659049df2fd7624f7728db7600858ef23d8",
+  "src/towns/building-kit.js": "9585f076bbbebaa571f3ed7d256e17edd2037c2c3ea7771b70fd524fb66b41a7",
+  "src/landmarks/catalog.js": "bad1a90325ecb365a294bf0ecc2344cfe53f4cd198a4611e3eac9833d0a39451",
+  "src/landmarks/kit.js": "ddf30189acb7801c8f1b78ab7f0888ee50e46a2b00e1ee5113ec261c6f7dbf9f",
+  "src/landmarks/templates.js": "8e98f8b459ef6d49dbcc5328451765de2db30bf91a1e26cbb17188d21fdf2c9f",
+  "src/landmarks/world-binding.js": "c83b701fe8ce637a825dd25946cdb3215e66d34f547c6e065aed7983b7a4d629",
+  "src/render/city-renderer.js": "8dc547843284821a4495a90b401cf7670da8e2dc572d63671d01f3962cf5dcee",
+  "src/render/world-renderer.js": "8124a497e4781e9c7e6a3c5a68f585afcdc1c8218229895ea9bc230e865c1362"
+ }
 }

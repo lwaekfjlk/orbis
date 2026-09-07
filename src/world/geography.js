@@ -332,6 +332,7 @@ async function generateWorld(p, progress = async () => { }) {
     describeWorld(w);
     measureLandmasses(w);
     describeHydrology(w);
+    nameLegends(w);
     return w;
 }
 class MinHeap {
@@ -1179,6 +1180,106 @@ function describeHydrology(w) {
     if (jungle)
         w.features.push({ id: 'jungle', name: 'The Emerald Canopy', kind: 'TROPICAL RAINFOREST', i: jungle.i, x: jungle.i % GW, y: jungle.i / GW | 0, text: 'Warm conditions and transported rainfall sustain a wet forest province.' });
     w.audit.waterBudget = w.waterBudgetError;
+}
+/* VII: Legendary places.
+ * Every named wonder is the extreme of a quantity the physical model already
+ * computed — the strongest headwater, the highest standing lake, the deepest
+ * trench. The myth is a label placed on a real cell; it moves no terrain and
+ * writes to no field. A world that lacks the landform simply lacks the legend.
+ */
+function nameLegends(w) {
+    w.legends = [];
+    const add = (id, name, kind, i, lore, basis) => {
+        if (!(i >= 0) || i >= GN)
+            return null;
+        const f = { id, name, kind, i, x: i % GW, y: i / GW | 0, legend: true, lore, basis, text: lore + ' In the model: ' + basis };
+        w.legends.push(f);
+        return f;
+    };
+    const down = w.riverDown || w.down, threshold = i => w.channelThreshold?.[i] || w.riverThreshold;
+    // The strongest river's own headwater, reached by walking its trunk upstream.
+    let mouth = -1, mouthFlow = 0;
+    for (let i = 0; i < GN; i++)
+        if (w.height[i] > 0 && w.flow[i] > mouthFlow) {
+            const d = down[i];
+            if (d < 0 || w.height[d] <= 0) {
+                mouthFlow = w.flow[i];
+                mouth = i;
+            }
+        }
+    if (mouth >= 0 && mouthFlow > w.riverThreshold * 4) {
+        let source = mouth;
+        for (let step = 0; step < GN; step++) {
+            const x = source % GW, y = source / GW | 0;
+            let best = -1, bestFlow = 0;
+            // Drainage is eight-connected, so a four-neighbour walk loses the trunk
+            // at the first diagonal step and never leaves the coast.
+            for (let dy = -1; dy <= 1; dy++)
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (!dx && !dy)
+                        continue;
+                    const j = cell(x + dx, y + dy);
+                    if (down[j] === source && w.height[j] > 0 && w.flow[j] > bestFlow) {
+                        bestFlow = w.flow[j];
+                        best = j;
+                    }
+                }
+            if (best < 0 || bestFlow < threshold(best))
+                break;
+            source = best;
+        }
+        add('dragonwell', 'The Dragonwell', 'SOURCE OF THE GREAT RIVER', source, 'The first dragon is said to have broken the mountain here and left its breath running downhill forever; every hold along the water claims descent from that morning.', `the headwater of the world's largest river, traced upstream from a mouth carrying ${Math.round(mouthFlow).toLocaleString()} units of modeled discharge, standing at ${Math.round(w.height[source]).toLocaleString()} m.`);
+    }
+    // The highest standing water surface in the world.
+    let sky = -1, skyLevel = 0;
+    for (let i = 0; i < GN; i++)
+        if (w.lake[i] > skyLevel) {
+            skyLevel = w.lake[i];
+            sky = i;
+        }
+    if (sky >= 0 && skyLevel > 900) {
+        const basin = w.basins[w.lakeId[sky]], crater = w.volcanoes.some(v => Math.hypot(v.x - sky % GW, v.y - (sky / GW | 0)) < 2.5);
+        add('skymirror', 'The Skymirror', crater ? 'LAKE IN A DEAD CRATER' : 'THE HIGH LAKE', sky, crater ? 'Pilgrims climb to a still lake sitting in the throat of a burnt-out mountain, and swear the sky it reflects is the older of the two.' : 'A lake held so high that travellers describe walking up to the edge of the sky and finding water there.', `the highest standing water surface in the world at ${Math.round(skyLevel).toLocaleString()} m${basin?.name ? ', the ' + basin.kind.toLowerCase() + ' named ' + basin.name : ''}.`);
+    }
+    // The most powerful erupting vent.
+    const burning = w.volcanoes.filter(v => v.active).sort((a, b) => b.magnitude - a.magnitude)[0];
+    if (burning)
+        add('emberthroat', 'The Emberthroat', 'THE MOUNTAIN THAT NEVER SLEEPS', burning.i, 'The mountain is counted a living thing with an appetite, and the calendars of three peoples begin on the night it last spoke.', `the largest vent still marked active, a ${burning.type.toLowerCase()} of ${Math.round(burning.magnitude).toLocaleString()} m modeled relief contribution.`);
+    // The largest single elevation step along a channel.
+    let fall = -1, fallDrop = 0;
+    for (let i = 0; i < GN; i++) {
+        const d = down[i];
+        if (d < 0 || w.height[i] <= 0 || w.lake[i] > 0 || w.flow[i] < threshold(i) * 3)
+            continue;
+        const drop = w.height[i] - w.height[d];
+        if (drop > fallDrop) {
+            fallDrop = drop;
+            fall = i;
+        }
+    }
+    if (fall >= 0 && fallDrop > 220)
+        add('weepingstair', 'The Weeping Stair', 'THE GREAT CATARACT', fall, 'The water is said to be a grief that has not finished falling; boatmen going upstream stop here and go no further by any craft.', `the steepest single step on any modeled channel, dropping ${Math.round(fallDrop).toLocaleString()} m between neighbouring cells while carrying ${Math.round(w.flow[fall]).toLocaleString()} units of discharge.`);
+    // The largest basin that never reaches the sea.
+    const terminal = w.basins.filter(b => b.closed && b.area >= 3).sort((a, b) => b.area - a.area)[0];
+    if (terminal)
+        add('hollowcrown', 'The Hollow Crown', terminal.saline ? 'THE SALT THAT SWALLOWS RIVERS' : 'THE WATER WITH NO SEA', terminal.i, 'Rivers walk in and are never seen again, and the crust left behind is traded as far as the coast; the local telling is that something beneath is still drinking.', `the largest closed basin, ${terminal.area} cells of water with no outlet to the ocean${terminal.saline ? '; modeled evaporation exceeds rainfall, so salt concentrates' : ''}.`);
+    // The two extremes of the elevation field.
+    let peak = -1, peakH = 0, abyss = -1, abyssH = 0;
+    for (let i = 0; i < GN; i++) {
+        if (w.height[i] > peakH) {
+            peakH = w.height[i];
+            peak = i;
+        }
+        if (w.height[i] < abyssH) {
+            abyssH = w.height[i];
+            abyss = i;
+        }
+    }
+    if (peak >= 0)
+        add('nightspire', 'The Nightspire', 'THE HIGHEST SUMMIT', peak, 'It keeps the last light after the valleys are dark, which is read either as a watch being kept or a debt being counted, depending on who is asked.', `the highest cell in the world at ${Math.round(peakH).toLocaleString()} m of modeled bedrock elevation.`);
+    if (abyss >= 0 && abyssH < -4000)
+        add('drownedchoir', 'The Drowned Choir', 'THE DEEPEST WATER', abyss, 'Sailors report a sound over this water on calm nights and will not fish it; the charts of two admiralties simply leave the square blank.', `the deepest point of the modeled ocean floor at ${Math.round(-abyssH).toLocaleString()} m below sea level${w.trench[abyss] > .2 ? ', above a subducting margin' : ''}.`);
+    w.legendStats = { count: w.legends.length, ids: w.legends.map(f => f.id) };
 }
 if (typeof module !== 'undefined')
     module.exports = { generateWorld, GW, GH, GN, BIOME, BOUNDARY, seedHash, random32, noise, clamp, cell, measureLandmasses };
