@@ -142,22 +142,22 @@
         {
           "wonder": "deep-city",
           "town": "Scorchspire",
-          "triangles": 18088
+          "triangles": 19406
         },
         {
           "wonder": "gilded-palace",
           "town": "Bluewell",
-          "triangles": 67630
+          "triangles": 92686
         },
         {
           "wonder": "sky-court",
           "town": "Scorchwell",
-          "triangles": 14396
+          "triangles": 15926
         },
         {
           "wonder": "forge-hollow",
           "town": "Pineshore",
-          "triangles": 13636
+          "triangles": 17264
         },
         {
           "wonder": "cathedral",
@@ -167,37 +167,37 @@
         {
           "wonder": "tide-palace",
           "town": "Great Saltlanding",
-          "triangles": 47784
+          "triangles": 54736
         },
         {
           "wonder": "water-pagoda",
           "town": "Oakdell",
-          "triangles": 24598
+          "triangles": 32502
         },
         {
           "wonder": "sunless-well",
           "town": "Stormbeck",
-          "triangles": 31718
+          "triangles": 42520
         },
         {
           "wonder": "grove-sanctuary",
           "town": "Foamcliff",
-          "triangles": 8587
+          "triangles": 24068
         },
         {
           "wonder": "suspended-tower",
           "town": "Herringburgh",
-          "triangles": 7000
+          "triangles": 14102
         },
         {
           "wonder": "dread-keep",
           "town": "Wildcombe",
-          "triangles": 63338
+          "triangles": 69450
         },
         {
           "wonder": "dragon-court",
           "town": "Sailwick",
-          "triangles": 64664
+          "triangles": 36974
         }
       ]
     },

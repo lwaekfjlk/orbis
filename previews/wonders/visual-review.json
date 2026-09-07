@@ -1,0 +1,100 @@
+{
+  "baseline": "7264fd6",
+  "view": "overall",
+  "viewport": [
+    1280,
+    720
+  ],
+  "models": [
+    {
+      "id": "cathedral",
+      "after": "185,796 triangles · 10 mesh groups",
+      "before": "185,796 triangles · 10 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "grove-sanctuary",
+      "after": "23,058 triangles · 5 mesh groups",
+      "before": "7,657 triangles · 4 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "sky-crystal",
+      "after": "14,776 triangles · 5 mesh groups",
+      "before": "5,886 triangles · 6 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "dread-keep",
+      "after": "53,038 triangles · 5 mesh groups",
+      "before": "47,918 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "deep-city",
+      "after": "15,338 triangles · 5 mesh groups",
+      "before": "13,788 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "suspended-tower",
+      "after": "12,778 triangles · 5 mesh groups",
+      "before": "5,876 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "dragon-court",
+      "after": "31,636 triangles · 5 mesh groups",
+      "before": "47,218 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "forge-hollow",
+      "after": "16,280 triangles · 5 mesh groups",
+      "before": "11,120 triangles · 4 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "gilded-palace",
+      "after": "72,700 triangles · 6 mesh groups",
+      "before": "53,672 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "sunless-well",
+      "after": "35,096 triangles · 6 mesh groups",
+      "before": "23,430 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "reed-throne",
+      "after": "21,478 triangles · 6 mesh groups",
+      "before": "26,536 triangles · 6 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "whale-moot",
+      "after": "10,302 triangles · 7 mesh groups",
+      "before": "11,450 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "sky-court",
+      "after": "15,812 triangles · 6 mesh groups",
+      "before": "10,438 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "water-pagoda",
+      "after": "27,042 triangles · 6 mesh groups",
+      "before": "19,782 triangles · 6 mesh groups",
+      "ready": "true"
+    },
+    {
+      "id": "tide-palace",
+      "after": "44,312 triangles · 6 mesh groups",
+      "before": "38,420 triangles · 6 mesh groups",
+      "ready": "true"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "date": "2026-09-07",
+  "node": "v23.6.0",
+  "scope": {
+    "registeredWonders": 15,
+    "individuallyRefinedThisChange": 14,
+    "previouslyRefinedAndRechecked": ["cathedral"],
+    "comparisonBaseline": "7264fd60b1c7d382e552c3ca1f90ecfca1c2d360",
+    "finalIntegrationBase": "71d0eb4"
+  },
+  "build": {"command": "npm run build", "exitCode": 0},
+  "targeted": {"command": "npm run test:wonders", "tests": 37, "pass": 37, "fail": 0, "durationMs": 3947.480959},
+  "integration": {
+    "command": "node --test tests/onemap.test.mjs tests/continuous.test.mjs",
+    "tests": 28, "pass": 28, "fail": 0, "durationMs": 8905.880209
+  },
+  "fullRegressionBeforeUpstreamIntegration": {
+    "command": "npm test", "tests": 158, "pass": 155, "fail": 3,
+    "durationMs": 1243740.930958,
+    "note": "The complete sweep ran on the refinement branch based on 7264fd6. Final targeted and integration checks were repeated after updating to 71d0eb4. The later arcane and disk-asset test files are included in the final targeted run."
+  },
+  "baselineFailures": [
+    {
+      "file": "tests/artisan.test.mjs", "line": 46,
+      "assertion": "assert(c.defenses.gates.length > 0)",
+      "actual": false,
+      "command": "node --test --test-name-pattern='^Hilltop reserve precedes roads; main citadel remains dry and road accessible$' tests/artisan.test.mjs",
+      "cleanBaselineExitCode": 1
+    },
+    {
+      "file": "tests/climate.test.mjs", "line": 100,
+      "assertion": "assert(hotDry.width <= temperate.width + .1)",
+      "message": "a dry climate must not grow an eave",
+      "command": "node --test --test-name-pattern='^the same house responds to snow load, heat, drought and rain$' tests/climate.test.mjs",
+      "cleanBaselineExitCode": 1
+    },
+    {
+      "file": "tests/landmarks.test.mjs", "line": 41,
+      "assertion": "assert.equal(manifest.models.length, 15)",
+      "actual": 21, "expected": 15,
+      "command": "node --test --test-name-pattern='^exported GLB files have named real meshes, not image planes$' tests/landmarks.test.mjs",
+      "cleanBaselineExitCode": 1
+    }
+  ],
+  "baselineReproduction": "All three failures reproduced from a separate git archive of unmodified 7264fd6 with the same Node version.",
+  "assets": {
+    "command": "npm run assets:wonders",
+    "glbFiles": 15, "pairedRecipes": 15, "savedComplexity": 2,
+    "roundTrip": "Default recipe import matches every exported POSITION, NORMAL and COLOR_0 attribute byte for byte after Float32 conversion, plus signatures, bounds and manifest metadata."
+  },
+  "visualReview": {
+    "screenshots": 15,
+    "data": "../previews/wonders/visual-review.json",
+    "method": "Actual browser WebGL rendering, synchronized before/after cameras and light, town LOD 1; all 15 overall views inspected and saved.",
+    "nativeMapFollowup": "Additional map UI inspection was interrupted by the computer-use service: target closed, then Sky Computer Use service startup request failed. Native town integration is covered by the completed sanctuary, wonder parcel, worker and continuous-map tests."
+  }
+}
