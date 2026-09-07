@@ -22,6 +22,7 @@ const TownBuildingKit = (()=>{
   // The tradition's palette, toned by the weather it stands in. ArtisanCityKit loads
   // after this module, so the shared tinting is resolved at call time when present.
   if(typeof ArtisanCityKit!=='undefined')K.palette={...ArtisanCityKit.climatePalette(K.palette,cl),ground:K.palette.ground};
+  if(!K.palette.snow)K.palette={...K.palette,snow:'#eef4f7'};
   if(profile.id==='forest')K.palette={...K.palette,wall:'#e1dbc4',roof:'#80ad9f',trim:'#e9e4ce'};
   const hall=(x,z,w,d,h,roof=profile.roof,options={})=>{
    structures++;h*=.85+v*.17;
@@ -33,7 +34,13 @@ const TownBuildingKit = (()=>{
     const y=(options.stilt||cl.wet>.6)?.88:0,wall=(options.timber||cl.cold>.62)?'wood':'wall';
     K.box(0,y,0,w,h,d,wall);K.box(0,y+h-.12,0,w+.06,.12,d+.06,'trim');
     if(roof==='flat')K.using('roof',()=>{K.box(0,y+h,0,w+.16,.14,d+.16,'trim');for(const xx of[-1,1])K.box(xx*w/2,y+h,0,.14,.32,d,'wall');K.box(0,y+h,-d/2,w,.32,.14,'wall')});
-    else K.roof(0,y+h,0,w+eave,d+eave,Math.min(w,d)*(roof==='northern'?.80:roof==='leaf'?.70:.46)*pitch,'roof',roof==='northern'?'northern':roof==='leaf'?'leaf':'gable');
+    else{
+     const rk=roof==='northern'?'northern':roof==='leaf'?'leaf':'gable',rh=Math.min(w,d)*(roof==='northern'?.80:roof==='leaf'?.70:.46)*pitch;
+     K.roof(0,y+h,0,w+eave,d+eave,rh,'roof',rk);
+     // Snow lies on this roof too. Same seasonal field as the artisan blocks, so a
+     // town does not have snow on half its buildings and bare slate on the other half.
+     if(typeof ArtisanCityKit!=='undefined')ArtisanCityKit.snowShell(K,0,y+h,0,w+eave,d+eave,rh,rk,cl.cover);
+    }
     // Opening area is a climate cost: small deep-set lights at both extremes.
     const open=1-cl.cold*.34-cl.warm*cl.dry*.30;
     const rows=Math.max(1,Math.min(3,Math.floor(h/1.6)));for(let row=0;row<rows;row++)for(const x of[-.25,.25]){

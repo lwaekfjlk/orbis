@@ -97,7 +97,18 @@ function createCityRenderer(canvas, onChange, config = {}) {
         this.world = null;
         const terrain = new Geometry(), sea = new Geometry(), roads = new Geometry(), buildings = new Geometry(), roofs = new Geometry(), details = new Geometry(), trees = new Geometry(), farms = new Geometry(), walls = new Geometry(), port = new Geometry();
         const dry = c.siteEnvironment.aridity<.6&&c.siteEnvironment.temperature>=16;
-        const colorAt=(grid,ids)=>{const col=[0,0,0];for(const i of ids)for(let j=0;j<3;j++)col[j]+=grid.color[i*3+j]/ids.length;return col;};
+        // Seasonal snow lies on the town's ground as well as on its roofs, from the
+        // same cold-season field. Town scene only: the atlas keeps its annual-mean
+        // palette, because a world map is not a picture of one particular winter.
+        const snowTone = rgb('#e9f1f4');
+        const colorAt=(grid,ids)=>{
+            const col=[0,0,0];
+            for(const i of ids)for(let j=0;j<3;j++)col[j]+=grid.color[i*3+j]/ids.length;
+            if(!grid.winter)return col;
+            let cover=0;
+            for(const i of ids)cover+=CityEnvironment.localClimate(grid,i).cover/ids.length;
+            return cover>.05?colorMix(col,snowTone,clamp(cover*.85)):col;
+        };
         const elevation = (x, z) => this.ground(x, z);
         for (let y = 0; y < c.n - 1; y++)
             for (let x = 0; x < c.n - 1; x++) {

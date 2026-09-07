@@ -19,13 +19,24 @@ const CityEnvironment = (() => {
   * aridity p10 .08, p25 .19, p50 .55, p75 1.35, p90 2.36; bedrock p75 1200 m,
   * p90 2061 m. A factor reads 0 at the ordinary end and 1 at the world's own
   * extreme, so nothing saturates across the whole map. */
- function climate(t,a,bed=0,ice=0,snow=0){
+ function climate(t,a,bed=0,ice=0,snow=0,winter=null){
   const cold=clamp((12-t)/24),warm=clamp((t-10)/16),frost=clamp((8-t)/16),
    dry=clamp((.55-a)/.42),humid=clamp((a-1.35)/1.3),alpine=clamp((bed-1200)/1800);
-  // Snow load is what actually shapes a roof: cold alone does not, a dry cold
-  // interior sheds little. Stored ice and the snow biomes are world data.
-  const load=clamp(frost*(.45+.55*clamp(a/1.2))+clamp(ice/60)*.5+snow*.5);
-  return {t,a,cold,warm,frost,dry,humid,alpine,load,
+  // Seasonal snow, from the model's own two-season temperature fields rather than
+  // from the annual mean. The `snow` flag alone is the permanent-snow biome, which
+  // is 5,996 land cells; 11,794 have a season below freezing. A place whose winter
+  // reaches -9 C lies under snow for part of every year even though its annual mean
+  // is only -1.3, and drawing it bare was the reason cold towns read as mild ones.
+  const w=winter==null?t:winter;
+  // Starts just below freezing and saturates near -10: a winter that dips to -1.4
+  // carries a dusting, one that reaches -9 is properly under snow. Scaled by moisture,
+  // because a cold DRY interior gets far less of it than a cold wet coast.
+  const seasonal=clamp((1-w)/11)*clamp(.35+.65*clamp(a/1.1));
+  // How much settles and stays: permanent ice and the snow biomes on top of it.
+  const cover=clamp(Math.max(seasonal,snow,clamp(ice/45)));
+  // Load is what shapes a roof — accumulation, not merely cold.
+  const load=clamp(cover*.85+clamp(ice/60)*.35+snow*.35);
+  return {t,a,winter:w,cold,warm,frost,dry,humid,alpine,load,cover,
    thermal:clamp((t+18)/46),moisture:clamp(a/2.4),band:band(t,a)};
  }
  function band(t,a){
@@ -127,11 +138,11 @@ const CityEnvironment = (() => {
   x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
   const a=prepare(w),xx=Math.floor(x),yy=Math.floor(y),u=x-xx,v=y-yy;
   const ids=[yy*GW+xx,yy*GW+Math.min(GW-1,xx+1),Math.min(GH-1,yy+1)*GW+xx,Math.min(GH-1,yy+1)*GW+Math.min(GW-1,xx+1)],weights=[(1-u)*(1-v),u*(1-v),(1-u)*v,u*v];
-  const s={parentIndex:Math.round(y)*GW+Math.round(x),worldX:x,worldY:y,bed:0,surface:0,temperature:0,aridity:0,rain:0,ice:0,snow:0,wetness:0,farm:0,treeDensity:0,water:0,waterKind:0,color:[0,0,0]};
+  const s={parentIndex:Math.round(y)*GW+Math.round(x),worldX:x,worldY:y,bed:0,surface:0,temperature:0,aridity:0,rain:0,ice:0,snow:0,wetness:0,farm:0,treeDensity:0,winter:0,water:0,waterKind:0,color:[0,0,0]};
   let waterWeight=0,lakeWeight=0,landWeight=0,bestWeight=-1;
   for(let k=0;k<4;k++){
    const i=ids[k],t=weights[k],b=w.biome[i],land=!a.water[i];
-   s.bed+=t*w.height[i];s.surface+=t*a.surface[i];s.temperature+=t*w.temp[i];s.aridity+=t*w.arid[i];s.rain+=t*w.rain[i];s.ice+=t*(w.ice?.[i]||0);s.wetness+=t*(w.wetness?.[i]||0);s.farm+=t*(w.human?.farm?.[i]||0);
+   s.bed+=t*w.height[i];s.surface+=t*a.surface[i];s.temperature+=t*w.temp[i];s.winter+=t*(w.seasonTemp?Math.min(w.seasonTemp[0][i],w.seasonTemp[1][i]):w.temp[i]);s.aridity+=t*w.arid[i];s.rain+=t*w.rain[i];s.ice+=t*(w.ice?.[i]||0);s.wetness+=t*(w.wetness?.[i]||0);s.farm+=t*(w.human?.farm?.[i]||0);
    waterWeight+=t*a.water[i];if(a.kind[i]===2)lakeWeight+=t;
    if(land){
     landWeight+=t;if(t>bestWeight){s.biome=b;bestWeight=t;}
@@ -163,9 +174,9 @@ const CityEnvironment = (() => {
   const out={...core,version,label,climate:cl,climateBand:cl.band,maxElevation:max,minElevation:min,relief:max-min,peak,nearestGlacier:Number.isFinite(nearestGlacier)?nearestGlacier:null,glacialFoothills,mountainous,forestFraction:land?forest/land:0,biomes:[...biomes]};
   m.set(p.i,out);return out;
  }
- function createGrid(n){const grid={n};for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity'])grid[key]=new Float32Array(n*n);grid.parentIndex=new Int32Array(n*n);grid.biome=new Uint8Array(n*n);grid.color=new Float32Array(n*n*3);return grid;}
- function write(grid,k,s){for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','parentIndex','biome'])grid[key][k]=s[key];grid.color.set(s.color,k*3);}
- function hash(grid){let h=2166136261;for(const key of ['bed','surface','biome','temperature','aridity','rain','ice','snow','color']){const a=grid[key],bytes=new Uint8Array(a.buffer,a.byteOffset,a.byteLength);for(const byte of bytes){h^=byte;h=Math.imul(h,16777619);}}return(h>>>0).toString(16).padStart(8,'0');}
+ function createGrid(n){const grid={n};for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','winter'])grid[key]=new Float32Array(n*n);grid.parentIndex=new Int32Array(n*n);grid.biome=new Uint8Array(n*n);grid.color=new Float32Array(n*n*3);return grid;}
+ function write(grid,k,s){for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','winter','parentIndex','biome'])grid[key][k]=s[key];grid.color.set(s.color,k*3);}
+ function hash(grid){let h=2166136261;for(const key of ['bed','surface','biome','temperature','aridity','rain','ice','snow','winter','color']){const a=grid[key],bytes=new Uint8Array(a.buffer,a.byteOffset,a.byteLength);for(const byte of bytes){h^=byte;h=Math.imul(h,16777619);}}return(h>>>0).toString(16).padStart(8,'0');}
  function context(w,p,city,elevate){
   // A read-only wider ring. Same sample pitch and exact inner boundary as the town.
   const n=city.n*2-1,g=createGrid(n),count=n*n,context={...g,width:city.width*2,depth:city.depth*2,height:new Float32Array(count),water:new Uint8Array(count),waterKind:new Uint8Array(count),innerStart:(city.n-1)/2,innerEnd:(city.n-1)*1.5};
@@ -191,7 +202,16 @@ const CityEnvironment = (() => {
  // The town-grid form of the same resolvers, so a placed tree and the ground
  // under it were decided by one rule.
  function treeKind(g,k){return canopy(g.biome[k],g.temperature[k],g.aridity[k]).form;}
- function localClimate(g,k){return climate(g.temperature[k],g.aridity[k],g.bed[k],g.ice[k],g.snow[k]);}
- function roofSnow(g,k){return g.snow[k]>.5&&g.ice[k]>0;}
- return {version,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,climate,localClimate,canopy,leafColor,band};
+ function localClimate(g,k){return climate(g.temperature[k],g.aridity[k],g.bed[k],g.ice[k],g.snow[k],g.winter?.[k]);}
+ // Snow that actually lies on a roof. The old test was the permanent-snow biome
+ // AND stored ice, which no ordinary town ever satisfies, so no town was ever drawn
+ // under snow. Seasonal cover comes from the model's own cold-season field.
+ function snowCover(g,k){return localClimate(g,k).cover;}
+ // Seasonal cover for a parent-world cell, for the near-zoom ground.
+ function cellCover(w,i){
+  const winter=w.seasonTemp?Math.min(w.seasonTemp[0][i],w.seasonTemp[1][i]):w.temp[i];
+  return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
+ }
+ function roofSnow(g,k){return snowCover(g,k)>.3;}
+ return {version,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();

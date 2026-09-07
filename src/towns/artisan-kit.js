@@ -4,21 +4,21 @@
  */
 const ArtisanCityKit=(()=>{
  const PALETTES={
-  river:{wall:'#ddd6bf',trim:'#f1e7cc',roof:'#526777',metal:'#be9d62',wood:'#62513e',dark:'#384246',ground:'#aca68d',water:'#83b7bd',leaf:'#536d46'},
-  basilica:{wall:'#e0d8c4',trim:'#f3e9cf',roof:'#355870',metal:'#d0af5f',wood:'#6d4f3e',dark:'#424453',ground:'#b1ab98',water:'#819fb9',leaf:'#506b48'},
-  arcane:{wall:'#c9ced1',trim:'#e8e4d4',roof:'#465571',metal:'#c6ac66',wood:'#5b5267',dark:'#343a54',ground:'#979b96',water:'#86c5d9',leaf:'#4a7067'},
-  mountain:{wall:'#989995',trim:'#c9c6b6',roof:'#3f5b65',metal:'#b5a074',wood:'#65523f',dark:'#353d3e',ground:'#aaa18f',water:'#89abae',leaf:'#476959'},
-  forest:{wall:'#c4c9a5',trim:'#e2dabc',roof:'#387e75',metal:'#c3a966',wood:'#7a6244',dark:'#364f47',ground:'#83967a',water:'#8fc7b5',leaf:'#386b42'},
-  desert:{wall:'#c7a576',trim:'#ecce99',roof:'#348c88',metal:'#bf9551',wood:'#846342',dark:'#5d4c3e',ground:'#bdae8d',water:'#68bec2',leaf:'#728950'},
-  delta:{wall:'#baa775',trim:'#e5d3a0',roof:'#7c7b49',metal:'#adbc98',wood:'#725338',dark:'#374f47',ground:'#8b9575',water:'#7fbdb6',leaf:'#466d50'},
-  basalt:{wall:'#5e6268',trim:'#a7a497',roof:'#755e4d',metal:'#c49859',wood:'#51473b',dark:'#2b313c',ground:'#8a8981',water:'#8dabad',leaf:'#4c6555'},
-  fjord:{wall:'#abaeac',trim:'#d8dacd',roof:'#405669',metal:'#bbab7e',wood:'#685340',dark:'#303f4b',ground:'#a0a59b',water:'#7baebb',leaf:'#405f54'},
-  steppe:{wall:'#d3c49b',trim:'#eee1bd',roof:'#8b7650',metal:'#bda162',wood:'#7a6446',dark:'#4d483b',ground:'#b9b281',water:'#7fb0a6',leaf:'#8b9a5d'},
-  paddy:{wall:'#dad4bd',trim:'#efe9d1',roof:'#587757',metal:'#b9a46a',wood:'#6c5540',dark:'#3d4b43',ground:'#93a777',water:'#84c0b4',leaf:'#4b8253'},
-  delve:{wall:'#8b857f',trim:'#b8b0a2',roof:'#68594f',metal:'#c9a05c',wood:'#695948',dark:'#363438',ground:'#8d887e',water:'#7ba0a5',leaf:'#5c735f'},
-  lagoon:{wall:'#ded5c0',trim:'#f3ebd7',roof:'#3d888e',metal:'#c7ab63',wood:'#7a6450',dark:'#3e555c',ground:'#aeb391',water:'#6cc0c4',leaf:'#5d8868'},
-  taiga:{wall:'#a08a6c',trim:'#dcd7c6',roof:'#465a63',metal:'#a7a086',wood:'#6a5339',dark:'#31373a',ground:'#8e9a92',water:'#7aa4b0',leaf:'#3d6a63'},
-  monsoon:{wall:'#e5dec6',trim:'#f4eeda',roof:'#9a7943',metal:'#c0a45f',wood:'#5d4833',dark:'#38453e',ground:'#7d9367',water:'#6fbfb2',leaf:'#2f7146'}
+  river:{wall:'#ddd6bf',trim:'#f1e7cc',roof:'#526777',metal:'#be9d62',wood:'#62513e',dark:'#384246',ground:'#aca68d',water:'#83b7bd',leaf:'#536d46',snow:'#eef4f7'},
+  basilica:{wall:'#e0d8c4',trim:'#f3e9cf',roof:'#355870',metal:'#d0af5f',wood:'#6d4f3e',dark:'#424453',ground:'#b1ab98',water:'#819fb9',leaf:'#506b48',snow:'#eef4f7'},
+  arcane:{wall:'#c9ced1',trim:'#e8e4d4',roof:'#465571',metal:'#c6ac66',wood:'#5b5267',dark:'#343a54',ground:'#979b96',water:'#86c5d9',leaf:'#4a7067',snow:'#eef4f7'},
+  mountain:{wall:'#989995',trim:'#c9c6b6',roof:'#3f5b65',metal:'#b5a074',wood:'#65523f',dark:'#353d3e',ground:'#aaa18f',water:'#89abae',leaf:'#476959',snow:'#eef4f7'},
+  forest:{wall:'#c4c9a5',trim:'#e2dabc',roof:'#387e75',metal:'#c3a966',wood:'#7a6244',dark:'#364f47',ground:'#83967a',water:'#8fc7b5',leaf:'#386b42',snow:'#eef4f7'},
+  desert:{wall:'#c7a576',trim:'#ecce99',roof:'#348c88',metal:'#bf9551',wood:'#846342',dark:'#5d4c3e',ground:'#bdae8d',water:'#68bec2',leaf:'#728950',snow:'#eef4f7'},
+  delta:{wall:'#baa775',trim:'#e5d3a0',roof:'#7c7b49',metal:'#adbc98',wood:'#725338',dark:'#374f47',ground:'#8b9575',water:'#7fbdb6',leaf:'#466d50',snow:'#eef4f7'},
+  basalt:{wall:'#5e6268',trim:'#a7a497',roof:'#755e4d',metal:'#c49859',wood:'#51473b',dark:'#2b313c',ground:'#8a8981',water:'#8dabad',leaf:'#4c6555',snow:'#eef4f7'},
+  fjord:{wall:'#abaeac',trim:'#d8dacd',roof:'#405669',metal:'#bbab7e',wood:'#685340',dark:'#303f4b',ground:'#a0a59b',water:'#7baebb',leaf:'#405f54',snow:'#eef4f7'},
+  steppe:{wall:'#d3c49b',trim:'#eee1bd',roof:'#8b7650',metal:'#bda162',wood:'#7a6446',dark:'#4d483b',ground:'#b9b281',water:'#7fb0a6',leaf:'#8b9a5d',snow:'#eef4f7'},
+  paddy:{wall:'#dad4bd',trim:'#efe9d1',roof:'#587757',metal:'#b9a46a',wood:'#6c5540',dark:'#3d4b43',ground:'#93a777',water:'#84c0b4',leaf:'#4b8253',snow:'#eef4f7'},
+  delve:{wall:'#8b857f',trim:'#b8b0a2',roof:'#68594f',metal:'#c9a05c',wood:'#695948',dark:'#363438',ground:'#8d887e',water:'#7ba0a5',leaf:'#5c735f',snow:'#eef4f7'},
+  lagoon:{wall:'#ded5c0',trim:'#f3ebd7',roof:'#3d888e',metal:'#c7ab63',wood:'#7a6450',dark:'#3e555c',ground:'#aeb391',water:'#6cc0c4',leaf:'#5d8868',snow:'#eef4f7'},
+  taiga:{wall:'#a08a6c',trim:'#dcd7c6',roof:'#465a63',metal:'#a7a086',wood:'#6a5339',dark:'#31373a',ground:'#8e9a92',water:'#7aa4b0',leaf:'#3d6a63',snow:'#eef4f7'},
+  monsoon:{wall:'#e5dec6',trim:'#f4eeda',roof:'#9a7943',metal:'#c0a45f',wood:'#5d4833',dark:'#38453e',ground:'#7d9367',water:'#6fbfb2',leaf:'#2f7146',snow:'#eef4f7'}
  };
  const hex2=v=>Math.round(clamp(v,0,1)*255).toString(16).padStart(2,'0');
  const hexOf=c=>'#'+c.map(v=>Math.round(clamp(v)*255).toString(16).padStart(2,'0')).join('');
@@ -60,7 +60,7 @@ const ArtisanCityKit=(()=>{
  // A tradition supplies the construction language; the climate supplies the tone and
  // the weather response. Without one, every town of a family was painted from the
  // same nine hex values, so a -1 C and a +26 C town of one tradition were identical.
- const NEUTRAL={t:14,a:1,cold:0,warm:0,frost:0,dry:0,humid:0,alpine:0,load:0,wet:0};
+ const NEUTRAL={t:14,a:1,winter:14,cold:0,warm:0,frost:0,dry:0,humid:0,alpine:0,load:0,cover:0,wet:0};
  function climatePalette(p,cl){
   const toward=(hex,to,amount)=>{const a=rgb(hex),b=rgb(to);return hexOf(a.map((v,k)=>v+(b[k]-v)*clamp(amount)))};
   return {...p,
@@ -70,6 +70,9 @@ const ArtisanCityKit=(()=>{
    // Wet slate and turf in the north, baked earth and tile in the dry south.
    roof:toward(toward(p.roof,'#3b4956',cl.load*.50),'#a96f3f',cl.warm*cl.dry*.30),
    leaf:hexOf(CityEnvironment.leafColor(cl.t,cl.a)),
+   // Old settled snow is greyer and bluer than fresh; a light dusting reads warmer
+   // because most of what the eye gets is still the roof underneath it.
+   snow:toward('#eef4f7','#c3d3da',clamp(.55-cl.cover*.5)),
    ground:toward(toward(p.ground,'#cdc19e',cl.dry*.40),'#8b9591',cl.cold*.32)};
  }
  // The two shifts compose and are applied in that order: the climate decides what the
@@ -114,6 +117,28 @@ const ArtisanCityKit=(()=>{
    if(ornate)for(const sign of[-1,1])k.cone(x,y+h,z+sign*D*.72,.11,.60,'metal',0,6);
   });
  }
+ /* Snow lying on a surface, not a white repaint of it. `k.roof()` already knows the
+  * gable/hip/northern/leaf shapes, so a slightly larger, slightly raised shell in
+  * snow colour settles onto whatever roof the climate chose. Depth follows cover, so
+  * a -1 C town carries a dusting and a -12 C one is buried. */
+ function snowShell(k,x,y,z,w,d,ph,kind,cover){
+  if(cover<.06)return;
+  const t=clamp(cover);
+  k.mark('lying-snow');
+  // Inset from the eaves so a margin of the roof itself still shows. A full shell
+  // buried the log, thatch and adobe work under one white lid, which trades one
+  // kind of sameness for another; the sheet has to read as lying ON something.
+  const inset=1-(1-t)*.34;
+  k.using('roof',()=>{
+   if(kind==='flat'){k.box(x,y+.02,z,w*.80*inset,.05+t*.16,d*.80*inset,'snow');return;}
+   k.roof(x,y+.03,z,w*inset,d*inset,ph*inset,'snow',kind);
+   if(k.lod<1)return;
+   // The ridge cap and the eave rolls: where it actually piles, and what reads as
+   // snow at town distance even when the sheet itself is small.
+   k.box(x,y+ph*inset-.05,z,w*.26,.06+t*.14,d*.26,'snow');
+   for(const s of[-1,1])k.box(x,y+.07,z+s*d*.44,w*.88*inset,.05+t*.12,.16+t*.14,'snow');
+  });
+ }
  function house(k,x,y,z,w,d,h,style,variant=0,angle=0){
   const cl=k.climate||NEUTRAL;
   const flatStyle=style==='desert';
@@ -121,32 +146,51 @@ const ArtisanCityKit=(()=>{
   // forces a northern pitch whatever the family says; sustained heat with no rain
   // flattens it to a usable terrace. Neither overrides where the family is already
   // the right answer, so a fjord longhall stays a fjord longhall.
-  const flat=flatStyle||(cl.warm*cl.dry>.42&&cl.load<.15),
-   timber=['fjord','delta','steppe','paddy','taiga','monsoon'].includes(style)||(style==='river'&&variant%3===0)||cl.cold>.55;
-  let roof=style==='taiga'?'northern'
-   :style==='monsoon'?'leaf'
+  const flat=flatStyle||(cl.warm*cl.dry>.42&&cl.load<.15);
+  /* WHAT THE WALL IS MADE OF, not merely what colour it is painted. A tint alone
+   * left a subarctic and a tropical house identical in construction, which is the
+   * most legible difference of all. Each material is what the climate and the
+   * ground actually supply: timber where forest grows and frost splits masonry,
+   * earth where it is hot and dry and thermal mass is the whole point, light frame
+   * and thatch where it is hot and wet and the wall only has to keep rain out. */
+  const material=style==='taiga'||cl.cover>.34||(cl.cold>.52&&style!=='mountain'&&style!=='basalt')?'log'
+   :style==='monsoon'||cl.warm*cl.humid>.40?'thatch'
+   :cl.warm*cl.dry>.38?'adobe'
+   :['fjord','delta','steppe','paddy'].includes(style)||(style==='river'&&variant%3===0)?'timber'
+   :'masonry';
+  const timber=material==='log'||material==='timber'||material==='thatch';
+  let roof=material==='thatch'?'leaf'
+   :style==='taiga'?'northern'
    :cl.load>.45?'northern'
    :style==='fjord'?'northern'
    :['forest','paddy'].includes(style)?'leaf'
    :flat?'flat'
-   :cl.warm*cl.humid>.34?'leaf'
    :['steppe','lagoon'].includes(style)?'hip':'gable';
   // Overhang is the rain response: a deep eave in the wet tropics, a tight verge
   // where it is cold and dry and the eave would only catch snow and wind.
-  const eave=(style==='monsoon'?.95:0)+clamp(cl.warm*cl.humid*1.5)*.85-cl.cold*.10,
+  const eave=(material==='thatch'?.95:0)+clamp(cl.warm*cl.humid*1.5)*.85-cl.cold*.10,
    pitch=(style==='taiga'?1.35:1)*(1+cl.load*.62+cl.humid*.18-cl.dry*.22);
   // Stilts are structural in the two families built for standing water.
-  const raised=['monsoon'].includes(style)||cl.wet>.55;
+  const raised=style==='monsoon'||cl.wet>.55;
   k.transform(x,y,z,angle,1,()=>{
-   k.mark('inhabited-masonry');k.box(0,0,0,w+.2,.27,d+.2,'wall');
-   const wall=timber?'wood':colorScale(k.color('wall'),.89+(variant%4)*.047);
-   k.box(0,.27,0,w,h,d,wall);k.box(0,h+.13,0,w+.14,.16,d+.14,'trim');
+   k.mark(material+'-construction');
+   // An earth wall stands on a stone plinth that keeps damp out of it; a log wall
+   // stands on one that keeps the bottom course off the ground and out of the snow.
+   const plinth=material==='adobe'?.34:material==='log'?.30+cl.cover*.22:.27;
+   k.box(0,0,0,w+.2,plinth,d+.2,'wall');
+   const wall=material==='log'||material==='timber'?'wood'
+    :material==='thatch'?colorScale(k.color('wall'),1.04)
+    :material==='adobe'?colorScale(k.color('wall'),.95+(variant%4)*.03)
+    :colorScale(k.color('wall'),.89+(variant%4)*.047);
+   // An earth wall is battered: thicker at the base than at the head.
+   if(material==='adobe')k.box(0,plinth,0,w+.16,h*.45,d+.16,colorScale(k.color('wall'),.92));
+   k.box(0,plinth,0,w,h,d,wall);k.box(0,plinth+h-.14,0,w+.14,.16,d+.14,'trim');
    const floors=Math.max(1,Math.min(3,Math.floor(h/1.8)));
    // Opening area is a climate cost: small deep-set lights where heating or shade
    // matters, generous glazing in the mild middle of the range.
    const openW=1-cl.cold*.34-cl.warm*cl.dry*.30,openH=1-cl.cold*.26-cl.warm*cl.dry*.20;
    for(let f=0;f<floors;f++)for(const side of[-1,1]){
-    const yy=.6+f*1.6;for(const xx of[-.27,.27])windowN(k,xx*w,yy,side*(d/2+.018),.42*openW,.73*openH,side<0?Math.PI:0,!timber);
+    const yy=plinth+.33+f*1.6;for(const xx of[-.27,.27])windowN(k,xx*w,yy,side*(d/2+.018),.42*openW,.73*openH,side<0?Math.PI:0,!timber);
     windowN(k,side*(w/2+.018),yy,0,.38*openW,.7*openH,side<0?-Math.PI/2:Math.PI/2,!timber);
    }
    for(const s of[-1,1])for(const t of[-1,1]){
@@ -154,34 +198,58 @@ const ArtisanCityKit=(()=>{
     k.box(s*(w/2-.10),.22,t*(d/2+.035),.17,h+.05,.13,'trim');
     if(k.lod>=2)for(let j=0;j<Math.floor(h/.62);j++)k.box(s*(w/2-.16),j*.62+.25,t*(d/2+.045),.29,.18,.08,'trim');
    }
-   if(timber&&k.lod>=1){for(const sign of[-1,1]){
-    k.box(0,h*.55,sign*(d/2+.08),w,.08,.08,'trim');
-    k.beam([-w*.4,.35,sign*(d/2+.1)],[0,h*.55,sign*(d/2+.1)],.04,'trim',4);
-    k.beam([0,h*.55,sign*(d/2+.1)],[w*.4,.35,sign*(d/2+.1)],.04,'trim',4);
-   }}
+   if(k.lod>=1){
+    // LOG: round courses stacked up the wall with the corner notching that holds them.
+    if(material==='log'){
+     for(let yy=.30;yy<h-.10;yy+=.40)for(const s of[-1,1]){
+      k.beam([-w/2,plinth+yy,s*(d/2+.035)],[w/2,plinth+yy,s*(d/2+.035)],.15,yy%.80<.40?'wood':colorScale(k.color('wood'),1.14),5);
+     }
+     for(const s of[-1,1])for(const t of[-1,1])k.cylinder(s*(w/2+.03),plinth,t*(d/2+.03),.17,h,'wood',7);
+    }
+    // ADOBE: mud-brick banding and a rounded parapet; the wall is one mass, not courses.
+    else if(material==='adobe'){
+     for(let yy=.42;yy<h-.15;yy+=.58)for(const s of[-1,1])k.box(0,plinth+yy,s*(d/2+.02),w*.99,.05,.04,colorScale(k.color('wall'),.86));
+     for(const s of[-1,1])k.box(s*(w/2+.02),plinth+h-.30,0,.05,.22,d*.99,colorScale(k.color('trim'),.96));
+    }
+    // THATCH / light frame: exposed posts and infill panels, no masonry at all.
+    else if(material==='thatch'){
+     for(const s of[-1,1])for(const t of[-1,1])k.box(s*(w/2-.06),plinth,t*(d/2-.06),.13,h,.13,'wood');
+     for(const s of[-1,1])k.box(0,plinth+h*.52,s*(d/2+.03),w*.98,.09,.05,'wood');
+    }
+    else if(material==='timber')for(const sign of[-1,1]){
+     k.box(0,h*.55,sign*(d/2+.08),w,.08,.08,'trim');
+     k.beam([-w*.4,.35,sign*(d/2+.1)],[0,h*.55,sign*(d/2+.1)],.04,'trim',4);
+     k.beam([0,h*.55,sign*(d/2+.1)],[w*.4,.35,sign*(d/2+.1)],.04,'trim',4);
+    }
+   }
    const ph=flat?.3:Math.min(w,d)*(style==='fjord'?.81:.56)*pitch;
-   slateRoof(k,0,h+.30,0,w+.14+eave,d+.15+eave,ph,roof,style==='arcane');
-   k.box(0,.27,d/2+.08,.6,1.0,.10,'dark');
-   if(k.lod>=1){k.box(0,.3,d/2+.14,.44,.88,.05,'wood');k.box(0,.26,d/2+.39,1,.13,.54,'trim');}
+   const roofTop=plinth+h+.03;
+   slateRoof(k,0,roofTop,0,w+.14+eave,d+.15+eave,ph,roof,style==='arcane');
+   // Snow settles on the roof it actually has. Driven by the model's cold-season
+   // field, so it appears on every town whose winter freezes, not only on glaciers.
+   snowShell(k,0,roofTop,0,w+.14+eave,d+.15+eave,ph,roof,cl.cover);
+   k.box(0,plinth,d/2+.08,.6,1.0,.10,'dark');
+   if(k.lod>=1){k.box(0,plinth+.03,d/2+.14,.44,.88,.05,'wood');k.box(0,plinth-.01,d/2+.39,1,.13,.54,'trim');}
    // A flue is heating, so it belongs where the model says heating is needed.
    const heated=cl.cold>.28||(!flat&&cl.warm<.55);
-   if(!flat&&heated&&variant%3!==1&&k.lod>=1){const ch=.42+cl.cold*.30;k.box(w*.27,h*.9,-d*.20,ch,ph+1+cl.cold*.9,.5,'wall');k.box(w*.27,h*.9+ph+.9+cl.cold*.9,-d*.2,ch+.14,.15,.62,'trim');k.box(w*.27,h*.9+ph+1.06+cl.cold*.9,-d*.2,.32,.02,.34,'dark');}
+   if(!flat&&heated&&variant%3!==1&&k.lod>=1){
+    const ch=.42+cl.cold*.30,top=plinth+h*.9+ph+.9+cl.cold*.9;
+    k.box(w*.27,plinth+h*.63,-d*.20,ch,ph+1+cl.cold*.9,.5,'wall');
+    k.box(w*.27,top,-d*.2,ch+.14,.15,.62,'trim');k.box(w*.27,top+.16,-d*.2,.32,.02,.34,'dark');
+    // A cap of snow on the chimney head, where it always sits.
+    if(cl.cover>.25)k.box(w*.27,top+.19,-d*.2,ch+.18,.05+cl.cover*.10,.66,'snow');
+   }
    // Projecting dormers, not a painted roof texture.
-   if(!flat&&w>2.2&&k.lod>=2){k.transform(-w*.35,h+.48,.35,0,1,()=>{k.box(0,0,0,.65,.63,.72,'wall');slateRoof(k,0,.63,0,.76,.81,.48,'gable');windowN(k,0,.08,.40,.27,.43,0);});}
+   if(!flat&&w>2.2&&k.lod>=2){k.transform(-w*.35,plinth+h+.21,.35,0,1,()=>{k.box(0,0,0,.65,.63,.72,'wall');slateRoof(k,0,.63,0,.76,.81,.48,'gable');snowShell(k,0,.63,0,.76,.81,.48,'gable',cl.cover);windowN(k,0,.08,.40,.27,.43,0);});}
    if(k.lod<1)return;
-   // Snow boards and a ridge cap where the world actually reports a snow load.
-   if(cl.load>.52&&!flat){k.box(0,h+.30+ph*.34,d/2+.10+eave*.5,w*.92,.09,.12,'trim');k.box(0,h+.30+ph*.34,-d/2-.10-eave*.5,w*.92,.09,.12,'trim');}
+   // Snow on the sills and ledges that catch it. The ground it stands on is tinted
+   // by the town terrain instead, so the cover reads as landscape and not as a
+   // rectangle of white under every house.
+   if(cl.cover>.20)for(const s of[-1,1])k.box(0,plinth+.30,s*(d/2+.06),w*.86,.045+cl.cover*.06,.12,'snow');
    // A posted veranda under the deep eave: the hot-and-wet answer to the same wall.
    if(eave>.34){k.box(0,.24,d*.5+eave*.55,w+.3,.10,eave*1.05,'wood');for(const t of[-1,1])k.box(t*w*.36,.34,d*.5+eave*.85,.11,h*.60,.11,'wood');}
    // A raised floor keeps the ground damp out; wetness is a parent-world field.
    if(raised&&!flat)for(const t of[-1,1])for(const u of[-1,1])k.box(t*w*.40,-.30,u*d*.40,.16,.34,.16,'wood');
-   // Log building: stacked courses with the corner notching that carries them, and a
-   // stone flue, which is the one part of the house that cannot be timber.
-   if(style==='taiga'){
-    for(let yy=.45;yy<h;yy+=.44)for(const s of[-1,1])k.box(0,.27+yy,s*(d/2+.03),w*.98,.19,.06,yy%.88<.44?'wood':'trim');
-    for(const s of[-1,1])for(const t of[-1,1])k.cylinder(s*(w/2-.02),.27,t*(d/2-.02),.19,h,'wood',7);
-    k.box(0,.05,0,w+.5,.24,d+.5,'wall');
-   }
    // Screen walls, not glazing: louvred panels under the eave, and a work platform.
    if(style==='monsoon'){
     for(const s of[-1,1])for(let j=0;j<5;j++)k.box(s*(w/2+.03),.55+j*.30,0,.05,.19,d*.82,'trim');
@@ -473,5 +541,5 @@ const ArtisanCityKit=(()=>{
   });
   const m=K.finish(),body=new Geometry(),roof=new Geometry();for(const p of m.parts)append(p.role==='roof'?roof:body,p.geometry);return{body,roof};
  }
- return{palettes:PALETTES,paint:weather,blockPaint,blockClimate,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,climatePalette,neutralClimate:NEUTRAL,version:1};
+ return{palettes:PALETTES,paint:weather,blockPaint,blockClimate,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,snowShell,climatePalette,neutralClimate:NEUTRAL,version:1};
 })();
