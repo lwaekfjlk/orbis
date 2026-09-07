@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-steppe",
+  "style": "steppe",
+  "seed": "Artisan11-steppe",
+  "name": "The Windward Standard",
+  "material": "steppe",
+  "faith": "ancestors",
+  "culture": "Clan craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 3,
+  "roofPitch": 1.1161862531024962,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "steppe"
+}

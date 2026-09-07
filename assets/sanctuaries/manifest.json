@@ -3,9 +3,9 @@
     "name": "solar-sanctuary",
     "faith": "sun",
     "crown": "spire",
-    "triangles": 221213,
+    "triangles": 213692,
     "parts": 10,
-    "bytes": 23898120,
+    "bytes": 23085868,
     "bounds": {
       "min": [
         -18.62,
@@ -23,9 +23,9 @@
     "name": "astral-sanctuary",
     "faith": "stars",
     "crown": "crystal",
-    "triangles": 221605,
+    "triangles": 213968,
     "parts": 10,
-    "bytes": 23940464,
+    "bytes": 23115680,
     "bounds": {
       "min": [
         -18.62,

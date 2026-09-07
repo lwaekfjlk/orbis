@@ -18,7 +18,7 @@
     },
     {
       "name": "real-geometry",
-      "triangles": 221605,
+      "triangles": 213968,
       "parts": 10,
       "bounds": {
         "min": [
@@ -33,30 +33,44 @@
         ]
       },
       "modules": {
-        "pointed-arch": 482,
+        "pointed-arch": 444,
         "connected-grand-stair": 3,
-        "guardian-sculpture": 14,
-        "ribbed-dome": 8,
-        "traceried-window": 116,
-        "double-flying-buttress": 12,
+        "guardian-sculpture": 19,
+        "double-flying-buttress": 10,
+        "stepped-buttress-pier": 10,
         "crocketed-pinnacle": 85,
+        "traceried-window": 102,
+        "splayed-window-reveal": 102,
+        "radial-chancel-roof": 1,
+        "chancel-clerestory": 1,
+        "apsidal-roof-shell": 1,
         "gable-roof": 8,
+        "coped-sanctuary-ridge": 1,
+        "deep-processional-portal": 3,
+        "gabled-portal-canopy": 3,
+        "pierced-rose-wall": 1,
         "radial-stained-glass": 1,
-        "ritual-stars": 2,
-        "crystal-crown": 7,
+        "recessed-rose-tracery": 1,
+        "processional-gallery": 1,
         "open-belfry-tower": 5,
+        "buttressed-bell-chamber": 5,
+        "hanging-bronze-bell": 5,
+        "crystal-crown": 6,
+        "ritual-stars": 1,
+        "ribbed-dome": 3,
         "audience-hall": 4,
-        "open-arch": 130,
+        "recessed-window": 164,
+        "open-arch": 2,
         "formal-garden": 4,
         "pine-tree": 4,
         "banner": 6,
         "cistern": 2
       },
-      "sha256": "72f38f4a2eb68b5282400cb9b0409457eb8e923baddb8cc9100f3c34f339c6f9"
+      "sha256": "f52f29655ad261180d394f568839fec04c90da11032f251834b4228a63585358"
     },
     {
       "name": "same-recipe-at-three-scales",
-      "signature": "3114bd9d/great-sanctuary-1",
+      "signature": "3114bd9d/great-sanctuary-2",
       "placedHeight": 50.11336070244246
     },
     {
@@ -128,62 +142,62 @@
         {
           "wonder": "deep-city",
           "town": "Scorchspire",
-          "triangles": 16208
+          "triangles": 18088
         },
         {
           "wonder": "gilded-palace",
           "town": "Bluewell",
-          "triangles": 54666
+          "triangles": 67630
         },
         {
           "wonder": "sky-court",
           "town": "Scorchwell",
-          "triangles": 11678
+          "triangles": 14396
         },
         {
           "wonder": "forge-hollow",
           "town": "Pineshore",
-          "triangles": 13036
+          "triangles": 13636
         },
         {
           "wonder": "cathedral",
           "town": "Whitebeck",
-          "triangles": 219323
+          "triangles": 212072
         },
         {
           "wonder": "tide-palace",
           "town": "Great Saltlanding",
-          "triangles": 37756
+          "triangles": 47784
         },
         {
           "wonder": "water-pagoda",
           "town": "Oakdell",
-          "triangles": 22270
+          "triangles": 24598
         },
         {
           "wonder": "sunless-well",
           "town": "Stormbeck",
-          "triangles": 27466
+          "triangles": 31718
         },
         {
           "wonder": "grove-sanctuary",
           "town": "Foamcliff",
-          "triangles": 8287
+          "triangles": 8587
         },
         {
           "wonder": "suspended-tower",
           "town": "Herringburgh",
-          "triangles": 6748
+          "triangles": 7000
         },
         {
           "wonder": "dread-keep",
           "town": "Wildcombe",
-          "triangles": 54216
+          "triangles": 63338
         },
         {
           "wonder": "dragon-court",
           "town": "Sailwick",
-          "triangles": 52474
+          "triangles": 64664
         }
       ]
     },
@@ -198,7 +212,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23941008,
+      "bytes": 23116204,
       "meshes": 10
     }
   ]

@@ -2,64 +2,106 @@
   {
     "style": "river",
     "file": "river.glb",
-    "triangles": 50286,
+    "triangles": 31878,
     "parts": 4,
-    "bytes": 5434176
+    "bytes": 3446108
   },
   {
     "style": "basilica",
     "file": "basilica.glb",
-    "triangles": 38426,
+    "triangles": 21938,
     "parts": 4,
-    "bytes": 4153308
+    "bytes": 2372600
   },
   {
     "style": "arcane",
     "file": "arcane.glb",
-    "triangles": 24122,
+    "triangles": 14726,
     "parts": 4,
-    "bytes": 2608444
+    "bytes": 1593676
   },
   {
     "style": "mountain",
     "file": "mountain.glb",
-    "triangles": 33634,
+    "triangles": 17878,
     "parts": 4,
-    "bytes": 3635772
+    "bytes": 1934120
   },
   {
     "style": "forest",
     "file": "forest.glb",
-    "triangles": 2225,
+    "triangles": 2241,
     "parts": 4,
-    "bytes": 243580
+    "bytes": 245308
   },
   {
     "style": "desert",
     "file": "desert.glb",
-    "triangles": 27044,
+    "triangles": 15784,
     "parts": 4,
-    "bytes": 2924044
+    "bytes": 1707964
   },
   {
     "style": "delta",
     "file": "delta.glb",
-    "triangles": 22298,
+    "triangles": 11538,
     "parts": 4,
-    "bytes": 2411456
+    "bytes": 1249376
   },
   {
     "style": "basalt",
     "file": "basalt.glb",
-    "triangles": 42902,
+    "triangles": 25262,
     "parts": 4,
-    "bytes": 4636716
+    "bytes": 2731596
   },
   {
     "style": "fjord",
     "file": "fjord.glb",
-    "triangles": 32394,
+    "triangles": 21938,
     "parts": 4,
-    "bytes": 3501844
+    "bytes": 2372596
+  },
+  {
+    "style": "steppe",
+    "file": "steppe.glb",
+    "triangles": 9512,
+    "parts": 4,
+    "bytes": 1030616
+  },
+  {
+    "style": "paddy",
+    "file": "paddy.glb",
+    "triangles": 10764,
+    "parts": 4,
+    "bytes": 1165804
+  },
+  {
+    "style": "delve",
+    "file": "delve.glb",
+    "triangles": 5336,
+    "parts": 4,
+    "bytes": 579572
+  },
+  {
+    "style": "lagoon",
+    "file": "lagoon.glb",
+    "triangles": 18516,
+    "parts": 4,
+    "bytes": 2003068
+  },
+  {
+    "style": "taiga",
+    "file": "taiga.glb",
+    "triangles": 10942,
+    "parts": 4,
+    "bytes": 1185040
+  },
+  {
+    "style": "monsoon",
+    "file": "monsoon.glb",
+    "triangles": 11868,
+    "parts": 4,
+    "bytes": 1285032
   }
 ]
