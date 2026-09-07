@@ -57,7 +57,11 @@ function generateCity(w, sim, provinceId, design = {}) {
     // Footprint is limited by the room the site actually has. The built disc reaches
     // 0.375*span parent cells, so a close neighbour keeps this town from growing into it.
     // width/depth track span, leaving on-atlas building size unchanged; only extent grows.
-    const span = Math.min(10.5, Math.max(7.8, cityReach(sim, p) / .79)), grow = span / 7.8;
+    // The divisor is what makes two neighbours read as separate places rather than one
+    // sprawl: at 1.16 a town's edge keeps a gap of roughly half its own diameter, which is
+    // the separation the fixed-7.8 atlas had. Sizing merely to avoid overlap is far too
+    // tight — the discs miss each other and the map still looks like a conurbation.
+    const span = cityClamp(cityReach(sim, p) / 1.16, 6.4, 10.5), grow = span / 7.8;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
     const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;

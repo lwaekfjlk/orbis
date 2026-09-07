@@ -13,7 +13,7 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 127
+        "buildings": 77
       }
     },
     {
@@ -56,7 +56,7 @@
     {
       "name": "same-recipe-at-three-scales",
       "signature": "769d69fb/great-sanctuary-1",
-      "placedHeight": 49.233936471812996
+      "placedHeight": 49.23393647181299
     },
     {
       "name": "native-sacred-towns",
@@ -65,19 +65,19 @@
         {
           "id": 259,
           "name": "Scorchquay",
-          "blocks": 127,
+          "blocks": 77,
           "sanctuary": 38
         },
         {
           "id": 288,
           "name": "Whitebeck",
-          "blocks": 218,
-          "sanctuary": 38
+          "blocks": 120,
+          "sanctuary": 34
         },
         {
           "id": 289,
           "name": "Whitecombe",
-          "blocks": 223,
+          "blocks": 122,
           "sanctuary": 38
         },
         {
@@ -95,14 +95,14 @@
         {
           "id": 480,
           "name": "Sedgecombe",
-          "blocks": 289,
+          "blocks": 257,
           "sanctuary": 38
         },
         {
           "id": 485,
           "name": "Netherford",
-          "blocks": 207,
-          "sanctuary": 38
+          "blocks": 114,
+          "sanctuary": 34
         }
       ]
     },

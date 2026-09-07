@@ -13,7 +13,11 @@ const FortressPlan=(()=>{
   for(const size of (sacred?[38,34,30,26,22]:[26,22,18])) for(const {k}of ranked.slice(0,700)){
    const q=c.xy(k),site={...q,k,w:size,d:size},samples=[];let valid=true;
    if(inside(c.market,site,5))continue;
-   for(let x=-size/2-1.1;x<=size/2+1.1;x+=1.2){for(let z=-size/2-1.1;z<=size/2+1.1;z+=1.2){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>.85){valid=false;break}samples.push(c.height[j])}if(!valid)break}
+   // Step with the grid, not a fixed stride: anything coarser than a cell skips cells that
+   // buildingAt then finds, and the reserve hands back a parcel the precinct cannot use.
+   // The grid is n x n over width x depth, so the z cell is the smaller of the two.
+   const step=Math.min(c.width,c.depth)/(c.n-1)*.85;
+   for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>.85){valid=false;break}samples.push(c.height[j])}if(!valid)break}
    if(!valid||Math.max(...samples)-Math.min(...samples)>5.6)continue;
    site.sacred=sacred;site.deck=Math.max(...samples)+.16;site.bed=Math.min(...samples);site.relief=site.deck-site.bed;
    // buildingAt() snaps its footprint samples to the NEAREST cell, so a cell centre up to

@@ -4,9 +4,9 @@
     "geometricFamilies": 13,
     "highland": {
       "name": "Tinyard",
-      "footprints": 300,
-      "wallSegments": 271,
-      "towers": 25,
+      "footprints": 207,
+      "wallSegments": 228,
+      "towers": 23,
       "gates": 2,
       "approaches": 2,
       "citadelWidth": 26,
