@@ -1,0 +1,13 @@
+{
+  "bundle_sha256": "5366520c9445b6e85668a9b50431670b573543b6bb132fd10fec0fd15f8b610a",
+  "files": 199,
+  "current_evidence": [
+    "docs/VERIFICATION_CITADELS.md",
+    "docs/CITADEL_BROWSER_RESULTS.json",
+    "docs/FINAL_SMOKE.json",
+    "docs/ARTISAN_GLB_VALIDATION.json",
+    "artifacts/test-results.log"
+  ],
+  "rendering": "Canvas software depth buffer; real hardware GPU not tested",
+  "art_target_reached": false
+}

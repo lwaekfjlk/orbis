@@ -1,0 +1,56 @@
+{
+  "styles": [
+    {
+      "name": "Ambergrove",
+      "style": "river",
+      "stats": {
+        "modules": 98,
+        "structures": 404,
+        "grammar": "axial",
+        "buildings": 104,
+        "landmarks": 6,
+        "streets": 48,
+        "districts": 6,
+        "waterPercent": 0.7773205304069501,
+        "bridges": 0,
+        "piers": 0,
+        "weights": {
+          "home": 16,
+          "workshop": 0,
+          "market": 22,
+          "temple": 14,
+          "academy": 22,
+          "harbor": 0,
+          "civic": 11,
+          "garden": 19
+        }
+      },
+      "audit": {
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 104
+      },
+      "signature": "2680ba28",
+      "software": true
+    }
+  ],
+  "screenshotsAreActualApplication": true,
+  "baseline": {
+    "geo": "dfd91476",
+    "towns": "77c3b21f",
+    "politics": "973dace6",
+    "year": 400
+  },
+  "interactionChecks": {
+    "styleButton": true,
+    "recompose": true,
+    "recipeDownloadImport": true,
+    "roofToggle": true,
+    "blockViewAndSelection": true
+  },
+  "errors": [],
+  "externalRequests": []
+}

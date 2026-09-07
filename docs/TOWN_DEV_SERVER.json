@@ -1,0 +1,29 @@
+{
+  "status": 200,
+  "sourceAssets": {
+    "styles/world.css": 200,
+    "styles/city.css": 200,
+    "styles/landmarks.css": 200,
+    "styles/towns.css": 200,
+    "src/world/geography.js": 200,
+    "src/civilization/simulation.js": 200,
+    "src/towns/catalog.js": 200,
+    "src/towns/grammar.js": 200,
+    "src/city/generator.js": 200,
+    "src/city/actions.js": 200,
+    "src/render/world-renderer.js": 200,
+    "src/landmarks/catalog.js": 200,
+    "src/landmarks/kit.js": 200,
+    "src/landmarks/templates.js": 200,
+    "src/landmarks/world-binding.js": 200,
+    "src/render/depth-rasterizer.js": 200,
+    "src/towns/building-kit.js": 200,
+    "src/render/city-renderer.js": 200,
+    "src/render/landmark-renderer.js": 200,
+    "src/render/export-glb.js": 200,
+    "src/ui/world-ui.js": 200,
+    "src/ui/city-ui.js": 200,
+    "src/ui/landmark-ui.js": 200,
+    "src/bootstrap.js": 200
+  }
+}

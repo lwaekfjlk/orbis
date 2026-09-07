@@ -1,0 +1,42 @@
+[
+  {
+    "name": "solar-sanctuary",
+    "faith": "sun",
+    "crown": "spire",
+    "triangles": 221213,
+    "parts": 10,
+    "bytes": 23898120,
+    "bounds": {
+      "min": [
+        -18.62,
+        0,
+        -20.62
+      ],
+      "max": [
+        18.62,
+        54.3303,
+        20.6845
+      ]
+    }
+  },
+  {
+    "name": "astral-sanctuary",
+    "faith": "stars",
+    "crown": "crystal",
+    "triangles": 221605,
+    "parts": 10,
+    "bytes": 23940464,
+    "bounds": {
+      "min": [
+        -18.62,
+        0,
+        -20.62
+      ],
+      "max": [
+        18.62,
+        55.300756268609014,
+        20.6845
+      ]
+    }
+  }
+]

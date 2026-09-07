@@ -1,0 +1,160 @@
+/* One visible map viewport. Dashboards and editors are progressively disclosed. */
+html:has(body.onemap),body.onemap{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body.onemap{--glass:rgba(23,40,40,.93);--ui-text:#f5f3e8;--ui-muted:#b1c1b9;--ui-line:#ffffff20;--ui-accent:#d5e7ae;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#9fc4c5}
+body.onemap [hidden],body.onemap .hidden{display:none!important}
+body.onemap #legacyHooks,body.onemap .explore-strip,body.onemap .city-offer{display:none!important}
+body.onemap #stage{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0;max-height:none;border:0;border-radius:0;margin:0;z-index:0;isolation:isolate;background:#9fc4c5}
+body.onemap #stage canvas,body.onemap #cityCanvas,body.onemap #lmCanvas{width:100%;height:100%;display:block;outline:none;touch-action:none}
+body.onemap #stage>.maphead,body.onemap #stage>.mapstamp,body.onemap #stage>.mapfooter,body.onemap #stage>.maptools{display:none}
+body.onemap .maploading{position:absolute;inset:0;z-index:5;background:rgba(177,202,196,.96);color:#2b4e43}
+body.onemap .maploading p{color:#4c7061;font-size:12px}
+body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6da9c}
+body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
+body.onemap .maplabel em{font:italic 15px Georgia,serif}
+body.onemap .world-landmark-pin{width:23px;height:23px;font-size:12px;opacity:.88;background:#f4efd7db;border:1px solid #8b977c80}
+body.onemap .world-landmark-pin:hover{opacity:1;transform:translate(-50%,-50%) scale(1.13)}
+body.onemap[data-scene='city'] #stage,body.onemap[data-scene='landmark'] #stage{visibility:hidden;pointer-events:none}
+body.onemap #cityDialog,body.onemap #landmarkDialog{position:fixed;inset:0;margin:0;padding:0;border:0;border-radius:0;max-width:none;max-height:none;width:100vw;height:100dvh;z-index:10;overflow:hidden;background:#91b4b6;box-shadow:none}
+body.onemap #cityDialog:not([open]),body.onemap #landmarkDialog:not([open]){display:none!important}
+body.onemap #landmarkDialog{z-index:15}
+body.onemap[data-scene='landmark'] #cityDialog{visibility:hidden;pointer-events:none}
+body.onemap .city-shell,body.onemap .city-body,body.onemap .city-main,body.onemap .lm-shell,body.onemap .lm-body,body.onemap .lm-center{position:absolute;inset:0;display:block!important;width:100%;height:100%;min-height:0;margin:0;padding:0;overflow:hidden}
+body.onemap .city-top,body.onemap .city-tools,body.onemap .city-district-strip,body.onemap .city-foot,body.onemap .lm-top,body.onemap .lm-toolbar,body.onemap .lm-foot,body.onemap .lm-library{display:none!important}
+body.onemap .city-stage,body.onemap .lm-stage{position:absolute;inset:0;height:100%;width:100%;min-height:0;max-height:none;border:0;border-radius:0;margin:0}
+body.onemap .city-stage-label,body.onemap .city-stamp,body.onemap .city-maphelp,body.onemap .city-camera,body.onemap .lm-scene-title,body.onemap .lm-scene-stamp,body.onemap .lm-help,body.onemap .lm-cam{display:none!important}
+body.onemap #omChrome{position:fixed;inset:0;z-index:40;pointer-events:none;color:var(--ui-text)}
+body.onemap #omChrome button,body.onemap #omChrome input,body.onemap #omChrome select,body.onemap #omChrome summary,body.onemap #omChrome label{pointer-events:auto}
+body.onemap .glass{background:var(--glass);color:var(--ui-text);border:1px solid #dce6d129;box-shadow:0 6px 28px #173b3420,0 1px 2px #14281e22;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+body.onemap #omChrome button,body.onemap #omChrome select,body.onemap .om-forge button,body.onemap .om-forge input,body.onemap .om-forge select{font:500 12px/1.4 inherit;color:inherit;border:1px solid transparent;background:transparent;box-shadow:none;transition:background .13s,border-color .13s,opacity .13s;cursor:pointer;border-radius:7px}
+body.onemap #omChrome button:hover,body.onemap .om-forge button:hover{background:#ffffff12;border-color:#ffffff0a;transform:none}
+body.onemap #omChrome button:disabled{opacity:.35;cursor:wait}
+body.onemap #omChrome button:focus-visible,body.onemap #omChrome input:focus-visible,body.onemap #omChrome select:focus-visible,body.onemap .om-forge :focus-visible{outline:2px solid var(--ui-accent);outline-offset:3px}
+body.onemap .om-header{position:absolute;inset:20px 22px auto;display:flex;justify-content:space-between;align-items:start;gap:16px;height:auto;padding:0;border:0;background:none;pointer-events:none}
+body.onemap .om-brandbar{display:flex;gap:11px;align-items:center;min-height:60px;border-radius:12px;padding:8px 14px;pointer-events:auto}
+body.onemap #omChrome .om-brand{display:flex;gap:9px;align-items:center;padding:0;font-size:13px;font-weight:650;letter-spacing:3px;height:36px}
+body.onemap .om-brand svg{width:26px;height:26px;fill:none;stroke:var(--ui-accent);stroke-width:1.2;stroke-linejoin:round}
+body.onemap .om-brand-divider{height:27px;width:1px;background:var(--ui-line);margin:0 3px}
+body.onemap .om-address{max-width:260px;padding-right:5px}
+body.onemap #omSceneLabel{font-size:8px;letter-spacing:1.6px;color:var(--ui-muted);display:block}
+body.onemap #omPlaceName{display:block;font:17px/1.45 Georgia,serif;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.onemap .om-tools{display:flex;align-items:center;padding:5px;border-radius:11px;gap:2px;pointer-events:auto}
+body.onemap #omChrome .om-icon{height:40px;width:40px;padding:9px;display:grid;place-items:center;font-size:25px;font-weight:300;line-height:1;flex-shrink:0}
+body.onemap .om-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+body.onemap #omChrome .om-icon[aria-expanded=true]{background:#d5e7ae22;color:var(--ui-accent)}
+body.onemap #omBack{width:26px!important;padding:3px!important;margin:-5px}
+body.onemap .om-dock{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:13px;min-height:66px;pointer-events:auto;white-space:nowrap}
+body.onemap .om-date{display:grid;grid-template-columns:auto;gap:0;padding:0 9px 0 4px;min-width:57px}
+body.onemap .om-date small{font-size:8px;letter-spacing:1.8px;color:var(--ui-muted)}
+body.onemap .om-date b,body.onemap .om-date #year{font:24px/1.05 Georgia,serif;letter-spacing:.5px;color:var(--ui-text);font-variant-numeric:tabular-nums}
+body.onemap .om-dock-divider{height:29px;width:1px;background:var(--ui-line)}
+body.onemap #omTimeControls{display:flex;align-items:center;gap:5px}
+body.onemap #omTimeControls button{height:36px;padding:6px 10px;font-size:12px}
+body.onemap #omTimeControls #play{min-width:91px;color:#203b30;background:var(--ui-accent);font-weight:650}
+body.onemap #omTimeControls #play:hover{background:#e6f4c8}
+body.onemap #omTimeControls #play[aria-pressed=true]{background:#f2dda1}
+body.onemap #omTimeControls #speed{width:52px;padding:6px 1px 6px 5px;background:#ffffff08;color:var(--ui-text);font-size:11px;height:34px;border:1px solid var(--ui-line)}
+body.onemap #omChrome option{color:#213c33;background:#f7f7ef}
+body.onemap #omRegenHost button{height:36px;padding:7px 10px;font-size:12px}
+body.onemap .om-camera{position:absolute;right:22px;bottom:24px;padding:4px;display:flex;flex-direction:column;border-radius:10px;pointer-events:auto}
+body.onemap .om-camera button{height:30px;width:32px;padding:0;font-size:20px}
+body.onemap .om-hint{position:absolute;left:24px;bottom:28px;max-width:270px;font-size:8px;line-height:1.85;letter-spacing:1.3px;color:#234840c9;text-shadow:0 1px 4px #e6f4e5;pointer-events:none}
+body.onemap .om-hint i{font-style:normal;padding:0 3px}
+body.onemap .om-event{position:absolute;left:50%;bottom:101px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:min(580px,calc(100vw - 40px));padding:8px 12px!important;border-radius:8px!important;font-size:10px!important;color:#d3e0d7!important;pointer-events:auto}
+body.onemap #omEventText{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
+body.onemap .om-event b{font-size:14px;font-weight:400;color:var(--ui-accent)}
+body.onemap .om-event-dot{width:5px;height:5px;border-radius:50%;background:var(--ui-accent);flex-shrink:0}
+body.onemap .om-popover{position:absolute;top:84px;right:22px;width:328px;border-radius:13px;padding:19px;pointer-events:auto;max-height:calc(100dvh - 195px);overflow:auto;overscroll-behavior:contain}
+body.onemap .om-eyebrow{font-size:8px;letter-spacing:1.8px;color:var(--ui-muted);font-weight:600;display:block;margin:0 0 10px}
+body.onemap #omSearch{width:100%;background:#ffffff09;border:1px solid #dce4d030;border-radius:7px;padding:12px;color:var(--ui-text);font-size:13px;margin-bottom:12px}
+body.onemap #omSearch::placeholder{color:#b4c2b38a}
+body.onemap .om-results{display:grid;gap:4px}
+body.onemap .om-result{display:flex;gap:5px;border-bottom:1px solid #ffffff0c;padding:4px 0}
+body.onemap .om-result>button:first-child{flex:1;min-width:0;text-align:left;padding:7px 8px}
+body.onemap .om-result b{font:15px/1.3 Georgia,serif;font-weight:400;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.onemap .om-result small{color:var(--ui-muted);font-size:9px;display:block;margin-top:3px;line-height:1.5}
+body.onemap #omChrome .om-enter{align-self:center;font-size:10px;background:#d5e7ae12;color:var(--ui-accent);border:1px solid #d5e7ae30;padding:7px 8px}
+body.onemap .om-note{font-size:10px;line-height:1.7;color:var(--ui-muted);margin:12px 0 0}
+body.onemap .om-layer-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:15px}
+body.onemap #omChrome .om-layer-grid button{background:#ffffff06;border:1px solid #ffffff16;text-align:left;padding:9px 10px;font-size:11px}
+body.onemap #omChrome .om-layer-grid button.active{background:#d5e7ae24;border-color:#d5e7ae70;color:#e5f2c4}
+body.onemap #omMoreLayers select,body.onemap #omToggles select,body.onemap .om-field select{width:100%;background:#ffffff0a;border:1px solid #ffffff1c;padding:8px;color:var(--ui-text);margin:0 0 13px;font-size:11px}
+body.onemap #omToggles .checks{display:flex;gap:10px;flex-wrap:wrap;margin:13px 0}
+body.onemap #omToggles label,body.onemap .om-check{display:flex;align-items:center;gap:7px;color:#dce8dd;font-size:11px}
+body.onemap .om-check{margin:14px 0}
+body.onemap #omChrome input[type=checkbox]{accent-color:#c7dda0;width:13px;height:13px}
+body.onemap #omLayerLegend .legend{margin:10px 0 0;gap:9px;border-top:1px solid #ffffff16;padding-top:12px;font-size:9px;color:var(--ui-muted)}
+body.onemap .om-field{display:block;color:var(--ui-muted);font-size:10px;margin-top:15px}
+body.onemap .om-field select{display:block;margin-top:6px}
+body.onemap #omMorePanel{width:272px;padding:17px 12px}
+body.onemap #omMorePanel .om-eyebrow{padding-left:8px}
+body.onemap #omMorePanel>button{display:block;width:100%;text-align:left;font-size:12px;padding:9px 10px}
+body.onemap #omMorePanel>button span{display:block;color:var(--ui-muted);font-size:9px;margin-top:2px;font-weight:400}
+body.onemap #omMorePanel hr{height:1px;border:0;background:#ffffff15;margin:8px 5px}
+body.onemap #omDrawer{position:absolute;top:88px;right:22px;bottom:108px;width:365px;max-height:calc(100dvh - 196px);border-radius:13px;display:flex;flex-direction:column;overflow:hidden;pointer-events:auto}
+body.onemap .om-drawer-head{display:flex;gap:12px;justify-content:space-between;align-items:start;padding:20px 20px 13px;border-bottom:1px solid #ffffff16;flex-shrink:0}
+body.onemap .om-drawer-head .om-eyebrow{margin-bottom:6px}
+body.onemap .om-drawer-head h2{font:23px/1.2 Georgia,serif;margin:0;font-weight:400;color:var(--ui-text)}
+body.onemap #omDrawerClose{margin:-7px -10px 0 0}
+body.onemap .om-drawer-body{overflow:auto;overscroll-behavior:contain;padding:18px;flex:1;min-height:0;scrollbar-color:#647f71 transparent;scrollbar-width:thin}
+body.onemap #omDrawer .inspector,body.onemap #omDrawer .city-side,body.onemap #omDrawer .lm-inspector,body.onemap #omDrawer .realmnav{position:static!important;display:block!important;width:100%!important;max-height:none!important;height:auto!important;background:none!important;border:0!important;border-radius:0!important;padding:0!important;color:var(--ui-text)!important;overflow:visible!important;box-shadow:none!important;min-width:0}
+body.onemap #omDrawer .city-dossier{padding:15px 0 0;overflow:visible;max-height:none}
+body.onemap #omDrawer h2{color:var(--ui-text);font:23px/1.25 Georgia,serif;font-weight:400}
+body.onemap #omDrawer h3,body.onemap #omDrawer b,body.onemap #omDrawer strong{color:#f0f2e3}
+body.onemap #omDrawer p,body.onemap #omDrawer .identity,body.onemap #omDrawer .geoStat,body.onemap #omDrawer .reason{color:#bccabd;font-size:11px;line-height:1.8}
+body.onemap #omDrawer small,body.onemap #omDrawer .overline,body.onemap #omDrawer .lm-overline,body.onemap #omDrawer .miniheading{color:#adbdac}
+body.onemap #omDrawer section,body.onemap #omDrawer .metrics,body.onemap #omDrawer .city-metrics,body.onemap #omDrawer .city-facts,body.onemap #omDrawer .detailTable td{border-color:#ffffff18}
+body.onemap #omDrawer input:not([type=checkbox]):not([type=range]),body.onemap #omDrawer select{width:100%;padding:9px;background:#ffffff08;border:1px solid #ffffff25;color:var(--ui-text);font-size:12px}
+body.onemap #omDrawer button{border:1px solid #ffffff20;color:#ebf1dc;background:#ffffff05;font-size:11px}
+body.onemap #omDrawer button:hover{background:#ffffff12}
+body.onemap #omDrawer .city-side-tabs{position:static;top:auto;display:flex;gap:3px;padding:0 0 12px;background:transparent;border:0}
+body.onemap #omDrawer .city-side-tabs button{flex:1;padding:7px 4px;font-size:9px}
+body.onemap #omDrawer .active{background:#d5e7ae20!important;color:#edffd3!important;border-color:#d5e7ae40!important}
+body.onemap #omDrawer .city-setting,body.onemap #omDrawer .project-card,body.onemap #omDrawer .building-card,body.onemap #omDrawer .lm-selected,body.onemap #omDrawer .town-type-grid button,body.onemap #omDrawer .realmitem,body.onemap #omDrawer .event,body.onemap #omDrawer .city-event{background:#ffffff04;border-color:#ffffff20;color:#e9f0df}
+body.onemap #omDrawer .realmitem{padding:11px 8px}
+body.onemap #omDrawer .rankrow{color:var(--ui-muted)}
+body.onemap #omDrawer .geolock,body.onemap #omDrawer .geographyintro,body.onemap #omDrawer .navnote,body.onemap #omDrawer #rerollPolitics,body.onemap #omDrawer #rerollSocieties,body.onemap #omDrawer .lm-metrics{display:none}
+body.onemap #omHistory #eventFilter{margin-bottom:14px}
+body.onemap #omHistory .events{max-height:none}
+body.onemap #omSelection{position:absolute;left:22px;bottom:112px;max-width:302px;min-width:236px;pointer-events:auto;border-radius:11px;padding:17px 20px 15px}
+body.onemap #omSelection h3{font:21px/1.2 Georgia,serif;margin:6px 15px 7px 0;color:var(--ui-text);font-weight:400}
+body.onemap #omSelection p{margin:0;font-size:10px;line-height:1.7;color:var(--ui-muted)}
+body.onemap #omSelection .om-eyebrow{font-size:7px;margin:0;max-width:240px}
+body.onemap #omSelection .om-actions{display:flex;gap:6px;margin-top:12px}
+body.onemap #omSelection .om-actions button{border:1px solid #ffffff25;padding:6px 10px;font-size:10px}
+body.onemap #omSelection .om-actions .main{background:var(--ui-accent);color:#284535;border:0;min-width:0;margin:0}
+body.onemap #omSelectionClose{position:absolute;top:7px;right:6px;width:25px;height:25px;padding:0;font-size:18px}
+body.onemap .om-forge{position:fixed;left:auto;top:88px;right:22px;bottom:auto;width:346px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 198px);margin:0;padding:22px;border-radius:13px;z-index:45;overflow:auto;overscroll-behavior:contain;font-size:12px;backdrop-filter:blur(20px)}
+body.onemap .om-forge::backdrop{display:none}
+body.onemap .om-forge .dialoghead{padding:0;margin:0}
+body.onemap .om-forge h2{font:27px Georgia,serif;margin:3px 0 12px;color:var(--ui-text)}
+body.onemap .om-forge p{font-size:11px;color:var(--ui-muted);line-height:1.8}
+body.onemap .om-forge .overline{color:#b2c4b5}
+body.onemap .om-forge #closeForge{border:0;background:transparent;font-size:24px;padding:0 0 0 12px;color:var(--ui-text)}
+body.onemap .om-forge label{display:block;font-size:10px;color:#d0dfce;margin:10px 0 7px}
+body.onemap .om-seedrow{display:flex;gap:6px}
+body.onemap .om-forge input:not([type=range]){width:100%;background:#ffffff0a;border:1px solid #ffffff25;padding:10px;color:var(--ui-text);font:12px ui-monospace,monospace;cursor:text;min-width:0}
+body.onemap .om-forge #omRandomSeed{width:37px;flex-shrink:0;padding:4px;background:#ffffff0a;border:1px solid #ffffff20;font-size:23px}
+body.onemap .om-generation-options{margin:20px 0;padding:12px 0;border-block:1px solid #ffffff18;color:var(--ui-text)}
+body.onemap .om-generation-options summary{cursor:pointer;font-size:11px;color:#c9dbbf}
+body.onemap .om-generation-options .forgegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+body.onemap .om-forge output{color:#f0e6bd}
+body.onemap .om-forge input[type=range]{width:100%;accent-color:var(--ui-accent)}
+body.onemap .om-forge #generate{background:var(--ui-accent);color:#213f2f;font-weight:650;width:100%;margin-top:8px;padding:12px}
+body.onemap .om-forge #generate:hover{background:#e2f1c3}
+body.onemap .om-forge #omSaveBeforeGenerate{width:100%;border:1px solid #ffffff25;padding:10px;margin-top:10px;font-size:11px}
+body.onemap #notes{max-width:590px;z-index:100}
+body.onemap #toast{z-index:110;bottom:103px;max-width:calc(100vw - 30px);background:#233e35f5;color:#eff9db;border:1px solid #bfd9a240;font-size:12px;padding:12px 18px}
+body.onemap .om-scene-loading{position:fixed;inset:0;display:flex;gap:14px;align-items:center;justify-content:center;background:#b7cfcaef;color:#214d3c;z-index:39;font:18px Georgia,serif;pointer-events:auto}
+body.onemap .om-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+body.onemap[data-working=true] .om-tools,body.onemap[data-working=true] #omSelection{opacity:.5;pointer-events:none}
+body.onemap[data-working=true] .om-tools button,body.onemap[data-working=true] #omSelection button{pointer-events:none}
+@media(max-width:1150px){body.onemap .om-hint{display:none}body.onemap .om-event{max-width:420px}body.onemap #omSelection{bottom:146px}body.onemap .om-dock{bottom:18px}}
+@media(max-width:700px){body.onemap .om-header{inset:12px 12px auto;gap:8px}body.onemap .om-brandbar{padding:8px 10px;gap:6px;min-height:53px;max-width:calc(100vw - 143px)}body.onemap .om-brand span{display:none}body.onemap .om-brand-divider{display:none}body.onemap .om-brand svg{width:22px;height:22px}body.onemap #omPlaceName{font-size:15px;max-width:140px}body.onemap #omSceneLabel{font-size:7px}body.onemap .om-tools{gap:0;padding:4px}body.onemap #omChrome .om-tools .om-icon{width:32px;height:40px;padding:8px}body.onemap .om-dock{gap:7px;padding:8px 9px;bottom:max(12px,env(safe-area-inset-bottom));min-height:61px;border-radius:12px}body.onemap .om-date{padding:0 2px;min-width:41px}body.onemap .om-date b,body.onemap .om-date #year{font-size:23px}body.onemap #omTimeControls{gap:2px}body.onemap #omTimeControls button{font-size:11px;padding:6px 8px}body.onemap #omTimeControls #play{min-width:70px}body.onemap #omTimeControls #speed{width:43px;font-size:10px;padding-left:3px}body.onemap #step50{display:none!important}body.onemap #omRegenHost button{font-size:10px;padding:6px 7px}body.onemap .om-camera{right:12px;bottom:91px;padding:3px}body.onemap .om-camera button{width:31px;height:29px}body.onemap .om-popover,body.onemap .om-forge{right:12px;top:77px;width:calc(100vw - 24px);max-height:calc(100dvh - 167px)}body.onemap #omMorePanel{width:272px}body.onemap #omDrawer{inset:77px 12px 86px auto;width:calc(100vw - 24px);max-height:none}body.onemap #omSelection{left:12px;bottom:91px;max-width:calc(100vw - 76px);width:calc(100vw - 76px);min-width:0;padding:14px 17px}body.onemap .om-event{bottom:86px;max-width:calc(100vw - 90px);left:12px;transform:none;font-size:9px!important}body.onemap:has(#omSelection:not(.hidden)) .om-event{display:none!important}body.onemap #omSelection h3{font-size:19px}body.onemap #toast{bottom:83px}body.onemap .city-label{font-size:10px}body.onemap .om-address{overflow:hidden}}
+@media(prefers-reduced-motion:reduce){body.onemap *{transition:none!important;scroll-behavior:auto!important}}
+/* Event text must stay legible over both snow and pale urban ground. */
+body.onemap #omChrome .om-event{background:rgba(23,40,40,.90);border:1px solid #dce6d129}
+body.onemap #omChrome .om-event:hover{background:rgba(30,52,47,.98)}
+body.onemap .om-forge .forgefooter{display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin-top:17px;min-width:0}
+body.onemap .om-forge .forgefooter>p{display:none}
+body.onemap .om-forge .forgefooter button{width:100%;max-width:100%;margin:0!important;white-space:normal;min-width:0}
+body.onemap #omHistory .events{height:auto;max-height:none;overflow:visible}

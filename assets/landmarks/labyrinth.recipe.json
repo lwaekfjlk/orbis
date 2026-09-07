@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-labyrinth",
+  "style": "labyrinth",
+  "seed": "AERETH / 01",
+  "name": "The Ninth Stair",
+  "material": "sandstone",
+  "faith": "ancestors",
+  "culture": "Dwarven craft",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 3,
+  "roofPitch": 0.8596530838031321,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": true,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

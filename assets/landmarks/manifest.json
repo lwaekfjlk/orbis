@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "license": "MIT",
+  "models": [
+    {
+      "id": "river",
+      "name": "River Crown",
+      "type": "palace",
+      "file": "river.glb",
+      "recipe": "river.recipe.json",
+      "signature": "469ba84c",
+      "triangles": 61338,
+      "groups": 16,
+      "bytes": 6635148
+    },
+    {
+      "id": "basilica",
+      "name": "Sanctuary of the Dawn",
+      "type": "palace",
+      "file": "basilica.glb",
+      "recipe": "basilica.recipe.json",
+      "signature": "136d67ae",
+      "triangles": 88802,
+      "groups": 19,
+      "bytes": 9603064
+    },
+    {
+      "id": "arcane",
+      "name": "The Aether Collegium",
+      "type": "palace",
+      "file": "arcane.glb",
+      "recipe": "arcane.recipe.json",
+      "signature": "ba23b950",
+      "triangles": 39890,
+      "groups": 19,
+      "bytes": 4320704
+    },
+    {
+      "id": "forest",
+      "name": "The Verdant Court",
+      "type": "palace",
+      "file": "forest.glb",
+      "recipe": "forest.recipe.json",
+      "signature": "61c5b7c8",
+      "triangles": 28205,
+      "groups": 13,
+      "bytes": 3054860
+    },
+    {
+      "id": "mountain",
+      "name": "The Deepgate Holds",
+      "type": "palace",
+      "file": "mountain.glb",
+      "recipe": "mountain.recipe.json",
+      "signature": "9c3facb0",
+      "triangles": 36116,
+      "groups": 11,
+      "bytes": 3908004
+    },
+    {
+      "id": "desert",
+      "name": "The Saffron Diwan",
+      "type": "palace",
+      "file": "desert.glb",
+      "recipe": "desert.recipe.json",
+      "signature": "99dab3f8",
+      "triangles": 60570,
+      "groups": 14,
+      "bytes": 6551040
+    },
+    {
+      "id": "delta",
+      "name": "The Reedwater Assembly",
+      "type": "palace",
+      "file": "delta.glb",
+      "recipe": "delta.recipe.json",
+      "signature": "f22f2fa2",
+      "triangles": 21216,
+      "groups": 10,
+      "bytes": 2298244
+    },
+    {
+      "id": "basalt",
+      "name": "The Obsidian Citadel",
+      "type": "palace",
+      "file": "basalt.glb",
+      "recipe": "basalt.recipe.json",
+      "signature": "0646b03c",
+      "triangles": 47976,
+      "groups": 12,
+      "bytes": 5189556
+    },
+    {
+      "id": "fjord",
+      "name": "The Whitewake Hall",
+      "type": "palace",
+      "file": "fjord.glb",
+      "recipe": "fjord.recipe.json",
+      "signature": "d55be8ad",
+      "triangles": 36776,
+      "groups": 12,
+      "bytes": 3979976
+    },
+    {
+      "id": "lighthouse",
+      "name": "The Lantern of Nacre",
+      "type": "landmark",
+      "file": "lighthouse.glb",
+      "recipe": "lighthouse.recipe.json",
+      "signature": "e949ad77",
+      "triangles": 28004,
+      "groups": 9,
+      "bytes": 3030672
+    },
+    {
+      "id": "observatory",
+      "name": "The Meridian Orrery",
+      "type": "landmark",
+      "file": "observatory.glb",
+      "recipe": "observatory.recipe.json",
+      "signature": "3342afed",
+      "triangles": 29332,
+      "groups": 8,
+      "bytes": 3173572
+    },
+    {
+      "id": "labyrinth",
+      "name": "The Ninth Stair",
+      "type": "landmark",
+      "file": "labyrinth.glb",
+      "recipe": "labyrinth.recipe.json",
+      "signature": "ca928c26",
+      "triangles": 19134,
+      "groups": 9,
+      "bytes": 2072876
+    },
+    {
+      "id": "bridge",
+      "name": "The Crownspan",
+      "type": "landmark",
+      "file": "bridge.glb",
+      "recipe": "bridge.recipe.json",
+      "signature": "bbf8abf9",
+      "triangles": 21832,
+      "groups": 7,
+      "bytes": 2363024
+    },
+    {
+      "id": "ice",
+      "name": "The Pale Archive",
+      "type": "landmark",
+      "file": "ice.glb",
+      "recipe": "ice.recipe.json",
+      "signature": "9c6eb113",
+      "triangles": 23748,
+      "groups": 8,
+      "bytes": 2570504
+    },
+    {
+      "id": "grove",
+      "name": "The Rootbound Shrine",
+      "type": "landmark",
+      "file": "grove.glb",
+      "recipe": "grove.recipe.json",
+      "signature": "99f16421",
+      "triangles": 14655,
+      "groups": 7,
+      "bytes": 1587852
+    }
+  ]
+}

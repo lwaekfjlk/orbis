@@ -1,0 +1,77 @@
+{
+  "checks": [
+    {
+      "name": "Full-viewport map, no dashboard or page scroll, one visible map",
+      "result": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 960
+      }
+    },
+    {
+      "name": "Advance ten years without changing geography",
+      "result": true
+    },
+    {
+      "name": "Play / pause stops at the current year",
+      "result": true
+    },
+    {
+      "name": "Political map without a side dashboard",
+      "result": true
+    },
+    {
+      "name": "Town drill-down occupies the same viewport with shared time controls",
+      "result": "Stonefall 5"
+    },
+    {
+      "name": "Advance history while looking at the town",
+      "result": true
+    },
+    {
+      "name": "Inherited town setting is preserved",
+      "result": true
+    },
+    {
+      "name": "Landmark in same viewport, no asset-library dashboard",
+      "result": true
+    },
+    {
+      "name": "Part detail opens only after explicit selection",
+      "result": true
+    },
+    {
+      "name": "Back restores the exact world camera",
+      "result": true
+    },
+    {
+      "name": "Save simulation from the map menu",
+      "result": true
+    },
+    {
+      "name": "Regenerate drawer proposes a new seed; cancel preserves all state",
+      "result": true
+    },
+    {
+      "name": "Generate replaces the world and starts at year 400",
+      "result": true
+    },
+    {
+      "name": "Load restores physical, settlement, political and year fingerprints",
+      "result": true
+    },
+    {
+      "name": "390px mobile layout and town navigation without horizontal scrolling",
+      "result": true
+    },
+    {
+      "name": "Zero application errors and zero network requests",
+      "result": true
+    }
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "renderer": "Canvas software fallback",
+  "notes": "Screenshots come from the actual offline application."
+}

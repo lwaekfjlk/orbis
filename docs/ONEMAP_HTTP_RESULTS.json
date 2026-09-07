@@ -1,0 +1,22 @@
+[
+  {
+    "path": "index.html",
+    "status": 200,
+    "matchesSource": true
+  },
+  {
+    "path": "src/ui/onemap-ui.js",
+    "status": 200,
+    "matchesSource": true
+  },
+  {
+    "path": "styles/onemap.css",
+    "status": 200,
+    "matchesSource": true
+  },
+  {
+    "path": "src/bootstrap.js",
+    "status": 200,
+    "matchesSource": true
+  }
+]

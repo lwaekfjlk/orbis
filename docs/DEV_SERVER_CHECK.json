@@ -1,0 +1,47 @@
+{
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "type": "text/html; charset=utf-8",
+      "bytes": 22420
+    },
+    {
+      "path": "/src/landmarks/catalog.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 13234
+    },
+    {
+      "path": "/src/render/landmark-renderer.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 3385
+    },
+    {
+      "path": "/styles/landmarks.css",
+      "status": 200,
+      "type": "text/css; charset=utf-8",
+      "bytes": 9749
+    },
+    {
+      "path": "/assets/landmarks/river.glb",
+      "status": 200,
+      "type": "model/gltf-binary",
+      "bytes": 6635148
+    },
+    {
+      "path": "/../package.json",
+      "status": 200,
+      "type": "application/json; charset=utf-8",
+      "bytes": 520
+    },
+    {
+      "path": "/%2e%2e/%2e%2e/etc/passwd",
+      "status": 404,
+      "type": "text/plain",
+      "bytes": 29
+    }
+  ],
+  "note": "HTTP route checks. Full browser navigation to local URLs is blocked by the test environment policy; bundled DOM execution is covered separately."
+}

@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-mountain",
+  "style": "mountain",
+  "seed": "AERETH / 01",
+  "name": "The Deepgate Holds",
+  "material": "granite",
+  "faith": "hearth",
+  "culture": "Dwarven craft",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 3,
+  "roofPitch": 0.9897860674839467,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": false,
+    "forest": false,
+    "elevation": 1800
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

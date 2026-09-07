@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-river",
+  "style": "river",
+  "seed": "AERETH / 01",
+  "name": "River Crown",
+  "material": "limestone",
+  "faith": "sun",
+  "culture": "Human courts",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 2,
+  "roofPitch": 0.8669483837392181,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": false,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

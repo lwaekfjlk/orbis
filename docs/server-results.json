@@ -1,0 +1,25 @@
+{
+  "/": {
+    "status": 200,
+    "bytes": 21985,
+    "type": "text/html; charset=utf-8"
+  },
+  "/src/city/generator.js": {
+    "status": 200,
+    "bytes": 20664,
+    "type": "text/javascript; charset=utf-8"
+  },
+  "/styles/city.css": {
+    "status": 200,
+    "bytes": 9404,
+    "type": "text/css; charset=utf-8"
+  },
+  "/dist/telluric-explorer.html": {
+    "status": 200,
+    "bytes": 358810,
+    "type": "text/html; charset=utf-8"
+  },
+  "method": 405,
+  "missing": 404,
+  "traversal": 400
+}

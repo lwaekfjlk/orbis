@@ -1,0 +1,25 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-basilica",
+  "style": "basilica",
+  "seed": "Sacred-12-astral-sanctuary",
+  "name": "astral-sanctuary",
+  "material": "ivory",
+  "faith": "stars",
+  "culture": "Human courts",
+  "complexity": 2,
+  "crown": "crystal",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 2,
+  "roofPitch": 1.0278675631154328,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.65,
+    "cold": false
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "sacred": true,
+  "sacredVersion": 1
+}

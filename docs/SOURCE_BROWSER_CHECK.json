@@ -1,0 +1,1 @@
+{"sourceIndexLoads": false, "error": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at http://127.0.0.1:5173/#atelier/desert\nCall log:\n  - navigating to \"http://127.0.0.1:5173/#atelier/desert\", waiting until \"load\"\n"}

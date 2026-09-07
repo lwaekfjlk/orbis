@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-lighthouse",
+  "style": "lighthouse",
+  "seed": "AERETH / 01",
+  "name": "The Lantern of Nacre",
+  "material": "limestone",
+  "faith": "tide",
+  "culture": "Mixed traditions",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 2,
+  "roofPitch": 0.9587040839903056,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": true,
+    "lake": false,
+    "cold": false,
+    "dry": false,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

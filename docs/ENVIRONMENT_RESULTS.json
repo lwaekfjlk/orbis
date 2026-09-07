@@ -1,0 +1,52 @@
+{
+  "version": "9.1.0",
+  "seed": "Aereth-47",
+  "checks": {
+    "stonefall": true,
+    "exactParentSampling": {
+      "samples": 227
+    },
+    "architectureIndependentGeography": {
+      "styles": 4,
+      "signature": "eae3c4ed",
+      "contextSignature": "58ae8cc1"
+    },
+    "provinceAverageIgnored": true,
+    "legacyRecipeMigration": true,
+    "contextSeam": {
+      "edgeSamples": 320
+    },
+    "allTowns": {
+      "count": 96,
+      "parentWorldUnchanged": true,
+      "civilizationUnchanged": true
+    },
+    "sharedWorldCityPalette": {
+      "samples": 1385
+    }
+  },
+  "site": {
+    "id": 507,
+    "name": "Stonefall 5",
+    "sourceCell": 38502,
+    "siteTemperature": 11.143096923828125,
+    "siteBiome": "Salt basin",
+    "siteIce": 0,
+    "closestGlacierGridDistance": 3,
+    "maximumSurroundingElevation": 7524.6962890625,
+    "oldStyle": "desert",
+    "newStyle": "mountain",
+    "buildingCount": 116,
+    "localBiomes": [
+      15,
+      14,
+      7,
+      3,
+      5,
+      8,
+      2,
+      16
+    ],
+    "iceSampleCount": 342
+  }
+}

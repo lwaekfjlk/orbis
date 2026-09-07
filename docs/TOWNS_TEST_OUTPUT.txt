@@ -1,0 +1,134 @@
+
+> telluric-townsmith@9.0.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: World and existing towns precede city detail
+ok 1 - World and existing towns precede city detail
+  ---
+  duration_ms: 2878.35726
+  type: 'test'
+  ...
+# Subtest: Every default town has deterministic, dry, non-overlapping detail
+ok 2 - Every default town has deterministic, dry, non-overlapping detail
+  ---
+  duration_ms: 20448.53971
+  type: 'test'
+  ...
+# Subtest: Non-settled districts do not get invented cities
+ok 3 - Non-settled districts do not get invented cities
+  ---
+  duration_ms: 1.527061
+  type: 'test'
+  ...
+# Subtest: Political reroll preserves local street geometry
+ok 4 - Political reroll preserves local street geometry
+  ---
+  duration_ms: 1305.509206
+  type: 'test'
+  ...
+# Subtest: Project pays once, finishes at due year, survives JSON save, preserves geography
+ok 5 - Project pays once, finishes at due year, survives JSON save, preserves geography
+  ---
+  duration_ms: 430.534547
+  type: 'test'
+  ...
+# Subtest: Project preconditions, upgrade cap and malformed save validation
+ok 6 - Project preconditions, upgrade cap and malformed save validation
+  ---
+  duration_ms: 19.450759
+  type: 'test'
+  ...
+# Subtest: Journey follows graph, unreachable towns do not get teleport routes
+ok 7 - Journey follows graph, unreachable towns do not get teleport routes
+  ---
+  duration_ms: 34.323925
+  type: 'test'
+  ...
+# Subtest: 120 years remain finite and city projects do not mutate natural fields
+ok 8 - 120 years remain finite and city projects do not mutate natural fields
+  ---
+  duration_ms: 1209.816418
+  type: 'test'
+  ...
+# Subtest: GLB exporter creates aligned glTF buffers and rejects nonfinite coordinates
+ok 9 - GLB exporter creates aligned glTF buffers and rejects nonfinite coordinates
+  ---
+  duration_ms: 2.137212
+  type: 'test'
+  ...
+# Subtest: catalog has nine palace families and six separately composed regional landmarks
+ok 10 - catalog has nine palace families and six separately composed regional landmarks
+  ---
+  duration_ms: 2.019368
+  type: 'test'
+  ...
+# Subtest: all fifteen assemblies are deterministic finite meshes, with separate named roof groups
+ok 11 - all fifteen assemblies are deterministic finite meshes, with separate named roof groups
+  ---
+  duration_ms: 11295.091131
+  type: 'test'
+  ...
+# Subtest: seed recombination, tower-crown substitution and roof substitution change actual mesh geometry
+ok 12 - seed recombination, tower-crown substitution and roof substitution change actual mesh geometry
+  ---
+  duration_ms: 1909.78939
+  type: 'test'
+  ...
+# Subtest: religious geometry changes without relocating the structural foundation
+ok 13 - religious geometry changes without relocating the structural foundation
+  ---
+  duration_ms: 811.116741
+  type: 'test'
+  ...
+# Subtest: invalid recipes are rejected or normalized without accepting unknown templates
+ok 14 - invalid recipes are rejected or normalized without accepting unknown templates
+  ---
+  duration_ms: 0.847551
+  type: 'test'
+  ...
+# Subtest: exported GLB files have named real meshes, not image planes
+ok 15 - exported GLB files have named real meshes, not image planes
+  ---
+  duration_ms: 185.20581
+  type: 'test'
+  ...
+# Subtest: world landmarks and city miniatures inherit the same recipe and never modify natural or settlement fields
+ok 16 - world landmarks and city miniatures inherit the same recipe and never modify natural or settlement fields
+  ---
+  duration_ms: 4398.639918
+  type: 'test'
+  ...
+# Subtest: nine whole-town grammars place connected compounds on existing settlements, without changing nature
+ok 17 - nine whole-town grammars place connected compounds on existing settlements, without changing nature
+  ---
+  duration_ms: 5014.056103
+  type: 'test'
+  ...
+# Subtest: on the SAME site four types change streets and ordinary modules, not only a central palace
+ok 18 - on the SAME site four types change streets and ordinary modules, not only a central palace
+  ---
+  duration_ms: 985.586571
+  type: 'test'
+  ...
+# Subtest: ordinary compounds are distinct actual 3D meshes, bounded by their placed parcels
+ok 19 - ordinary compounds are distinct actual 3D meshes, bounded by their placed parcels
+  ---
+  duration_ms: 1764.963976
+  type: 'test'
+  ...
+# Subtest: composition seed rerolls the town; recipe JSON replays it and invalid combinations are rejected
+ok 20 - composition seed rerolls the town; recipe JSON replays it and invalid combinations are rejected
+  ---
+  duration_ms: 667.851259
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 28447.930497

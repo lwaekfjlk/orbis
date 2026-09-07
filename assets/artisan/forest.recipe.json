@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-forest",
+  "style": "forest",
+  "seed": "Artisan11-forest",
+  "name": "The Verdant Court",
+  "material": "woodland",
+  "faith": "grove",
+  "culture": "Elven craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 3,
+  "roofPitch": 1.0559075994696467,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "forest"
+}

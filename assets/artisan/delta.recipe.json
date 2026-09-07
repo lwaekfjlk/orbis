@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-delta",
+  "style": "delta",
+  "seed": "Artisan11-delta",
+  "name": "The Reedwater Assembly",
+  "material": "reed",
+  "faith": "tide",
+  "culture": "Riverfolk craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 0,
+  "wings": 3,
+  "roofPitch": 0.9700395024847239,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "delta"
+}

@@ -1,0 +1,49 @@
+{
+  "styles": [
+    {
+      "name": "Ashgrove",
+      "style": "forest",
+      "stats": {
+        "modules": 65,
+        "structures": 206,
+        "grammar": "groves",
+        "buildings": 72,
+        "landmarks": 7,
+        "streets": 41,
+        "districts": 7,
+        "waterPercent": 14.007011126352689,
+        "bridges": 0,
+        "piers": 5,
+        "weights": {
+          "home": 10,
+          "workshop": 15,
+          "market": 6,
+          "temple": 22,
+          "academy": 0,
+          "harbor": 2,
+          "civic": 6,
+          "garden": 11
+        }
+      },
+      "audit": {
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 72
+      },
+      "signature": "b5a7cd79",
+      "software": true
+    }
+  ],
+  "screenshotsAreActualApplication": true,
+  "baseline": {
+    "geo": "dfd91476",
+    "towns": "77c3b21f",
+    "politics": "973dace6",
+    "year": 400
+  },
+  "errors": [],
+  "externalRequests": []
+}

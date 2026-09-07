@@ -1,0 +1,143 @@
+{
+  "checks": [
+    {
+      "name": "Initial geography, towns and polities load",
+      "data": {
+        "seed": "Aereth-47",
+        "year": 400,
+        "realms": 38,
+        "towns": 96,
+        "settlements": 103,
+        "population": 12070795.470445402,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10290,
+        "frontierVertices": 11688,
+        "settlementsVisible": true,
+        "frontiersVisible": true
+      }
+    },
+    {
+      "name": "Search zooms to Stonefall without replacing the map",
+      "data": {
+        "canvas": "map",
+        "same": true,
+        "scene": "world",
+        "openCity": false,
+        "openMonument": false
+      }
+    },
+    {
+      "name": "Exploration leaves geography, population and politics unchanged",
+      "data": true
+    },
+    {
+      "name": "Stonefall inherits a dry lake basin and real glacial foothills",
+      "data": "Salt basin · glacial foothills"
+    },
+    {
+      "name": "Wider setting is only a continuous camera pullback",
+      "data": true
+    },
+    {
+      "name": "Mouse wheel crosses regional/town detail thresholds in place",
+      "data": 25.497619452281178
+    },
+    {
+      "name": "A building is selectable on the world canvas",
+      "data": {
+        "x": 689.1571534075837,
+        "y": 412.26102724111865,
+        "id": "b0"
+      }
+    },
+    {
+      "name": "Closer focuses the same in-place mesh, not a monument dialog",
+      "data": true
+    },
+    {
+      "name": "Details open only a small side drawer",
+      "data": true
+    },
+    {
+      "name": "Existing grand sanctuary stays in the actual town during zoom",
+      "data": {
+        "canvas": "map",
+        "same": true,
+        "scene": "world",
+        "openCity": false,
+        "openMonument": false
+      }
+    },
+    {
+      "name": "Repeated city/building zooms do not mutate the world",
+      "data": true
+    },
+    {
+      "name": "Annual simulation runs while looking at an embedded sanctuary",
+      "data": true
+    },
+    {
+      "name": "Local mesh cache remains bounded",
+      "data": 2
+    },
+    {
+      "name": "Lakeshore town preserves the same canvas and surrounding water",
+      "data": true
+    },
+    {
+      "name": "Regenerate replaces world data, keeps canvas, removes stale towns",
+      "data": {
+        "seed": "Continuous-ridge-17",
+        "year": 400,
+        "realms": 32,
+        "towns": 103,
+        "settlements": 114,
+        "population": 12620658.208017653,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10164,
+        "frontierVertices": 12528,
+        "settlementsVisible": true,
+        "frontiersVisible": true
+      }
+    },
+    {
+      "name": "Existing save/load works with the continuous view",
+      "data": true
+    },
+    {
+      "name": "Newly generated cities reference the new geography",
+      "data": true
+    },
+    {
+      "name": "Mobile viewport retains the one-map view",
+      "data": true
+    },
+    {
+      "name": "Recasting societies on the same terrain invalidates city and worker caches",
+      "data": true
+    },
+    {
+      "name": "No page errors or external asset requests; mesh worker active",
+      "data": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "blob:null/25321167-b063-476a-8c32-46e826948bc2",
+    "blob:null/9ae58e66-59b5-4c62-b296-98b13f9759aa"
+  ],
+  "renderer": "software",
+  "load_method": "bundled HTML in an about:blank document",
+  "final": {
+    "epoch": 6,
+    "worldSeed": "Continuous-ridge-17",
+    "models": [],
+    "loading": true,
+    "terrainTriangles": 107050,
+    "singleCanvas": "map"
+  },
+  "worker": true,
+  "error": null
+}

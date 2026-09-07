@@ -1,0 +1,212 @@
+
+> telluric-onemap@10.0.1 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: Stonefall is a dry basin beside glacier-bearing mountains, not a hot-desert theme
+ok 1 - Stonefall is a dry basin beside glacier-bearing mountains, not a hot-desert theme
+  ---
+  duration_ms: 3723.135116
+  type: 'test'
+  ...
+# Subtest: local biome, temperature, ice and surface color are sampled from parent coordinates
+ok 2 - local biome, temperature, ice and surface color are sampled from parent coordinates
+  ---
+  duration_ms: 1.596368
+  type: 'test'
+  ...
+# Subtest: changing four architectural families and seeds never repaints or changes physical surroundings
+ok 3 - changing four architectural families and seeds never repaints or changes physical surroundings
+  ---
+  duration_ms: 1684.81929
+  type: 'test'
+  ...
+# Subtest: province-average climate cannot overwrite settlement and hillside climate
+ok 4 - province-average climate cannot overwrite settlement and hillside climate
+  ---
+  duration_ms: 205.646237
+  type: 'test'
+  ...
+# Subtest: legacy hot-desert saved designs adapt without modifying saves or the physical world
+ok 5 - legacy hot-desert saved designs adapt without modifying saves or the physical world
+  ---
+  duration_ms: 462.105663
+  type: 'test'
+  ...
+# Subtest: context joins the town at the same geographic coordinates, without arbitrary backdrop peaks
+ok 6 - context joins the town at the same geographic coordinates, without arbitrary backdrop peaks
+  ---
+  duration_ms: 24.657847
+  type: 'test'
+  ...
+# Subtest: all existing towns avoid glacier footprints; foliage and fields respect local conditions
+ok 7 - all existing towns avoid glacier footprints; foliage and fields respect local conditions
+  ---
+  duration_ms: 35714.712615
+  type: 'test'
+  ...
+# Subtest: world and town surface colors share the same land resolver, including ice and cold deserts
+ok 8 - world and town surface colors share the same land resolver, including ice and cold deserts
+  ---
+  duration_ms: 13.647708
+  type: 'test'
+  ...
+# Subtest: World and existing towns precede city detail
+ok 9 - World and existing towns precede city detail
+  ---
+  duration_ms: 5587.204557
+  type: 'test'
+  ...
+# Subtest: Every default town has deterministic, dry, non-overlapping detail
+ok 10 - Every default town has deterministic, dry, non-overlapping detail
+  ---
+  duration_ms: 57677.203416
+  type: 'test'
+  ...
+# Subtest: Non-settled districts do not get invented cities
+ok 11 - Non-settled districts do not get invented cities
+  ---
+  duration_ms: 1.607452
+  type: 'test'
+  ...
+# Subtest: Political reroll preserves local street geometry
+ok 12 - Political reroll preserves local street geometry
+  ---
+  duration_ms: 1860.247737
+  type: 'test'
+  ...
+# Subtest: Project pays once, finishes at due year, survives JSON save, preserves geography
+ok 13 - Project pays once, finishes at due year, survives JSON save, preserves geography
+  ---
+  duration_ms: 779.342522
+  type: 'test'
+  ...
+# Subtest: Project preconditions, upgrade cap and malformed save validation
+ok 14 - Project preconditions, upgrade cap and malformed save validation
+  ---
+  duration_ms: 16.313991
+  type: 'test'
+  ...
+# Subtest: Journey follows graph, unreachable towns do not get teleport routes
+ok 15 - Journey follows graph, unreachable towns do not get teleport routes
+  ---
+  duration_ms: 34.011236
+  type: 'test'
+  ...
+# Subtest: 120 years remain finite and city projects do not mutate natural fields
+ok 16 - 120 years remain finite and city projects do not mutate natural fields
+  ---
+  duration_ms: 1370.217777
+  type: 'test'
+  ...
+# Subtest: GLB exporter creates aligned glTF buffers and rejects nonfinite coordinates
+ok 17 - GLB exporter creates aligned glTF buffers and rejects nonfinite coordinates
+  ---
+  duration_ms: 2.705627
+  type: 'test'
+  ...
+# Subtest: catalog has nine palace families and six separately composed regional landmarks
+ok 18 - catalog has nine palace families and six separately composed regional landmarks
+  ---
+  duration_ms: 0.989401
+  type: 'test'
+  ...
+# Subtest: all fifteen assemblies are deterministic finite meshes, with separate named roof groups
+ok 19 - all fifteen assemblies are deterministic finite meshes, with separate named roof groups
+  ---
+  duration_ms: 8970.028104
+  type: 'test'
+  ...
+# Subtest: seed recombination, tower-crown substitution and roof substitution change actual mesh geometry
+ok 20 - seed recombination, tower-crown substitution and roof substitution change actual mesh geometry
+  ---
+  duration_ms: 1584.003668
+  type: 'test'
+  ...
+# Subtest: religious geometry changes without relocating the structural foundation
+ok 21 - religious geometry changes without relocating the structural foundation
+  ---
+  duration_ms: 848.971983
+  type: 'test'
+  ...
+# Subtest: invalid recipes are rejected or normalized without accepting unknown templates
+ok 22 - invalid recipes are rejected or normalized without accepting unknown templates
+  ---
+  duration_ms: 1.009793
+  type: 'test'
+  ...
+# Subtest: exported GLB files have named real meshes, not image planes
+ok 23 - exported GLB files have named real meshes, not image planes
+  ---
+  duration_ms: 183.022445
+  type: 'test'
+  ...
+# Subtest: world landmarks and city miniatures inherit the same recipe and never modify natural or settlement fields
+ok 24 - world landmarks and city miniatures inherit the same recipe and never modify natural or settlement fields
+  ---
+  duration_ms: 10444.489191
+  type: 'test'
+  ...
+# Subtest: OneMap has a single startup entry, with shell before executable scripts
+ok 25 - OneMap has a single startup entry, with shell before executable scripts
+  ---
+  duration_ms: 1.397683
+  type: 'test'
+  ...
+# Subtest: Single-file build has no external styles or executable scripts
+ok 26 - Single-file build has no external styles or executable scripts
+  ---
+  duration_ms: 3.801236
+  type: 'test'
+  ...
+# Subtest: Generation and renderer geometry stay identical; only two visibility predicates change
+ok 27 - Generation and renderer geometry stay identical; only two visibility predicates change
+  ---
+  duration_ms: 2.329762
+  type: 'test'
+  ...
+# Subtest: Civilization is visible on both everyday map layers and toggles still work
+ok 28 - Civilization is visible on both everyday map layers and toggles still work
+  ---
+  duration_ms: 1.349072
+  type: 'test'
+  ...
+# Subtest: Presentation reset resets view only; report distinguishes state from mesh visibility
+ok 29 - Presentation reset resets view only; report distinguishes state from mesh visibility
+  ---
+  duration_ms: 2.655284
+  type: 'test'
+  ...
+# Subtest: nine whole-town grammars place connected compounds on existing settlements, without changing nature
+ok 30 - nine whole-town grammars place connected compounds on existing settlements, without changing nature
+  ---
+  duration_ms: 11111.221447
+  type: 'test'
+  ...
+# Subtest: on the SAME site four types change streets and ordinary modules, not only a central palace
+ok 31 - on the SAME site four types change streets and ordinary modules, not only a central palace
+  ---
+  duration_ms: 1735.153224
+  type: 'test'
+  ...
+# Subtest: ordinary compounds are distinct actual 3D meshes, bounded by their placed parcels
+ok 32 - ordinary compounds are distinct actual 3D meshes, bounded by their placed parcels
+  ---
+  duration_ms: 5958.029853
+  type: 'test'
+  ...
+# Subtest: composition seed rerolls the town; recipe JSON replays it and invalid combinations are rejected
+ok 33 - composition seed rerolls the town; recipe JSON replays it and invalid combinations are rejected
+  ---
+  duration_ms: 991.029554
+  type: 'test'
+  ...
+1..33
+# tests 33
+# suites 0
+# pass 33
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 69833.42312

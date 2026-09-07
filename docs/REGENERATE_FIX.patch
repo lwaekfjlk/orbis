@@ -1,0 +1,233 @@
+--- a/src/ui/world-ui.js
++++ b/src/ui/world-ui.js
+@@ -3,7 +3,8 @@
+ const fmtPop = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'k' : Math.round(v).toString();
+ const fmt = v => Number.isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
+ const GEN_DEFAULTS = { seed: 'Aereth-47', form: 'global', plates: 24, continents: 6, islands: 1.2, volcanism: .85, uplift: 1.2, sea: 0, aridity: .85, current: 1, erosion: .7, temperature: 0, glaciation: 1.2 };
+-let world = null, sim = null, renderer = null, busy = false, playing = false, timer = null, currentLayer = 'relief', selectedRealm = 0, selectedCell = -1, labelItems = [], diplomacyTarget = -1, lastError = null, simAdvancing = false;
++const DEFAULT_WORLD_LAYER = 'realms';
++let world = null, sim = null, renderer = null, busy = false, playing = false, timer = null, currentLayer = DEFAULT_WORLD_LAYER, selectedRealm = 0, selectedCell = -1, labelItems = [], diplomacyTarget = -1, lastError = null, simAdvancing = false;
+ const POLITICAL = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'];
+ const layerTitles = { potential: 'SETTLEMENT POTENTIAL', settlements: 'SETTLEMENTS / BEFORE STATES', realms: 'THE REALMS', relief: 'PHYSICAL LANDSCAPE', faiths: 'LOCAL FAITHS', peoples: 'LOCAL PEOPLES', diplomacy: 'DIPLOMACY & SEA LANES', water: 'WATERSHEDS & BASINS', plates: 'LITHOSPHERE / MOTION', ice: 'CRYOSPHERE', aridity: 'DESERT CAUSES', rain: 'RAINFALL', ocean: 'OCEAN HEAT', wealth: 'PROVINCIAL DEVELOPMENT', magic: 'ARCANE CAPACITY' };
+ function toast(text) { $('toast').textContent = text; $('toast').classList.remove('hidden'); clearTimeout(toast.timer); toast.timer = setTimeout(() => $('toast').classList.add('hidden'), 4800); }
+@@ -11,15 +12,52 @@
+ function setBusy(value) { busy = value; for (const id of ['generate', 'play', 'step1', 'step10', 'step50', 'resetAge', 'exportToggle', 'forgeButton'])
+     $(id).disabled = value; $('loading').classList.toggle('hidden', !value); window.OneMap?.onBusy(value); }
+ async function stageProgress(text) { $('loadingText').textContent = text; await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0))); }
++/** Default presentation for a newly generated/restored world, not a model update. */
++function resetWorldPresentation() {
++    currentLayer = DEFAULT_WORLD_LAYER;
++    renderer.layer = currentLayer;
++    for (const id of ['settlements', 'frontiers', 'names']) {
++        $(id).checked = true;
++        if (id !== 'names') renderer.options[id] = true;
++    }
++    $('realmSearch').value = '';
++    $('moreLayer').value = '';
++}
++function generationReport(w, s) {
++    const report = {
++        seed: w.params.seed, year: s.year,
++        realms: s.realms.filter(c => c.alive).length,
++        towns: s.provinces.filter(p => p.city).length,
++        settlements: s.provinces.filter(p => p.settled).length,
++        population: s.provinces.reduce((n, p) => n + p.pop, 0),
++        layer: renderer.layer,
++        rendererBound: renderer.world === w && renderer.sim === s,
++        settlementVertices: renderer.meshes.settlements?.count || 0,
++        frontierVertices: renderer.meshes.frontiers?.count || 0,
++        settlementsVisible: renderer.visible('settlements'),
++        frontiersVisible: renderer.visible('frontiers')
++    };
++    if (!report.rendererBound || (report.settlements && !report.settlementVertices))
++        throw Error('The civilization was generated but its map geometry did not attach.');
++    return report;
++}
+ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 1 }, restored = null) {
+     if (busy || simAdvancing)
+         return;
++    const previous = world && sim ? {
++        world, sim, layer: currentLayer, selectedRealm, selectedCell, diplomacyTarget,
++        continent: focusedContinent, report: window.__generationReport,
++        options: { ...renderer.options }, names: $('names').checked,
++        camera: { target: renderer.target.slice(), zoom: renderer.zoom,
++            azimuth: renderer.azimuth, elevation: renderer.elevation }
++    } : null;
+     window.CityUI?.close();
+     window.LandmarkUI?.close();
+     pause();
+     setBusy(true);
+     window.__ready = false;
+     window.__error = null;
++    window.__generationReport = null;
+     $('loadingTitle').textContent = 'A world taking shape.';
+     $('spinner').classList.remove('hidden');
+     try {
+@@ -38,7 +76,8 @@
+         else {
+             await stageProgress('09 / Independent local centers and bounded administration');
+         }
+-        await stageProgress('10 / Building castles, temples and arcane towers');
++        validateSimulation(next, w);
++        await stageProgress('10 / Attaching towns, realms and borders to the map');
+         world = w;
+         sim = next;
+         window.world = w;
+@@ -46,13 +85,14 @@
+         selectedRealm = sim.realms[0]?.alive ? 0 : sim.realms.find(c => c.alive)?.id ?? 0;
+         selectedCell = sim.provinces[sim.realms[selectedRealm]?.capital ?? 0]?.i ?? Math.floor(GN / 2);
+         diplomacyTarget = -1;
++        resetWorldPresentation();
+         renderer.sim = sim;
+-        renderer.layer = currentLayer;
+         renderer.setWorld(world);
+         renderer.buildCivilization();
+         renderer.reset();
+         renderer.focusRealm = selectedRealm;
+         window.lastGenerationMs = performance.now() - start;
++        window.__generationReport = generationReport(world, sim);
+         refreshAll(false);
+         makeGeoJumps();
+         document.querySelectorAll('[data-layer]').forEach(b => { b.classList.toggle('active', b.dataset.layer === currentLayer); b.setAttribute('aria-selected', String(b.dataset.layer === currentLayer)); });
+@@ -60,17 +100,46 @@
+         renderer.request();
+         window.__ready = true;
+         window.__error = null;
++        lastError = null;
++        return window.__generationReport;
+     }
+     catch (e) {
+         console.error(e);
+         lastError = e.message;
++        // Keep the previous inhabited world usable if any generation stage fails.
++        // A failed build must not publish a half-built terrain-only world.
++        let recovered = false;
++        if (previous) {
++            try {
++                world = previous.world; sim = previous.sim;
++                window.world = world; window.sim = sim;
++                currentLayer = previous.layer; selectedRealm = previous.selectedRealm;
++                selectedCell = previous.selectedCell; diplomacyTarget = previous.diplomacyTarget;
++                focusedContinent = previous.continent;
++                renderer.options = { ...previous.options }; renderer.layer = currentLayer;
++                renderer.sim = sim; renderer.focusRealm = selectedRealm;
++                for (const id of ['settlements', 'frontiers']) $(id).checked = renderer.options[id] !== false;
++                $('names').checked = previous.names;
++                renderer.setWorld(world); renderer.buildCivilization();
++                Object.assign(renderer, previous.camera);
++                refreshAll(false); makeGeoJumps();
++                document.querySelectorAll('[data-layer]').forEach(b => {
++                    b.classList.toggle('active', b.dataset.layer === currentLayer);
++                    b.setAttribute('aria-selected', String(b.dataset.layer === currentLayer));
++                });
++                window.__generationReport = previous.report;
++                renderer.request(); recovered = true;
++            } catch (restoreError) { console.error('Could not restore the previous map:', restoreError); }
++        }
+         setBusy(false);
+-        $('loading').classList.remove('hidden');
++        $('loading').classList.toggle('hidden', recovered);
+         $('spinner').classList.add('hidden');
+         $('loadingTitle').textContent = 'Generation stopped.';
+         $('loadingText').textContent = e.message;
++        window.__ready = recovered;
+         window.__error = e.message;
+-        toast(e.message);
++        toast(recovered ? 'Generation failed. Your previous world and history are unchanged. ' + e.message : e.message);
++        return null;
+     }
+ }
+ function validateSimulation(s, w) {
+@@ -293,6 +362,11 @@
+         list = world.plates.map(p => ({ x: p.x, y: p.y, i: cell(p.x, p.y), name: p.name + ' Plate', kind: '', plate: true }));
+     else if (POLITICAL.includes(currentLayer))
+         list = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength).map(c => { const p = sim.provinces[c.capital]; return { x: p.x, y: p.y, i: p.i, name: c.name, kind: c.gov === 2 ? 'MAGOC RACY'.replace(' ', '') : c.gov === 1 ? 'HOLY KINGDOM' : GOVERNMENTS[c.gov], capital: true, realm: c.id }; });
++    else if (currentLayer === 'relief')
++        list = [...world.continents,
++            ...sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop)
++                .map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() })),
++            ...world.features];
+     else if (currentLayer === 'water')
+         list = world.features.filter(f => f.id.startsWith('lake') || f.id.startsWith('fjord') || f.id === 'wetland');
+     else if (currentLayer === 'ice')
+--- a/src/ui/onemap-ui.js
++++ b/src/ui/onemap-ui.js
+@@ -56,8 +56,15 @@
+             if(!interactive())return;
+             const f=readForge();
+             closeRegenerate();closeDrawer();closeMenus();clearSelection();
+-            await buildWorld(f.params,f.options);
+-            announce(window.__error?'World generation failed.':'New world ready. History begins in year 400.');
++            const result = await buildWorld(f.params,f.options);
++            if (result) {
++                const note = result.realms
++                    ? `World ready · ${result.realms} realms · ${result.towns} towns · Year ${result.year}.`
++                    : result.settlements
++                        ? `World ready · ${result.settlements} settlements. No states formed under these conditions.`
++                        : 'World ready · No concentrated settlements formed under these conditions. Try different world settings.';
++                toast(note); announce(note);
++            } else announce('World generation failed. The previous world was kept when available.');
+             E('map').focus({preventScroll:true});
+         };
+         E('forge').addEventListener('keydown',e=>{
+@@ -146,7 +153,7 @@
+         if(changed){closeMenus();closeDrawer();closeRegenerate();clearSelection();}
+         show('omBack',value!=='world');
+         E('omBack').title=value==='landmark'&&CityUI.activeId!==null?'Return to town':'Return to world';
+-        let title='The Manyfold World',sub='WORLD ATLAS';
++        let title='The Manyfold World',sub=sim?`WORLD ATLAS · ${sim.realms.filter(c=>c.alive).length} REALMS · ${sim.provinces.filter(p=>p.city).length} TOWNS`:'WORLD ATLAS';
+         if(value==='city'){
+             title=CityUI.layout?.name||'Town';
+             const p=sim?.provinces[CityUI.activeId];
+--- a/src/render/world-renderer.js
++++ b/src/render/world-renderer.js
+@@ -588,9 +588,9 @@
+ AtlasRenderer.prototype.visible = function (name) {
+     const civil = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer);
+     if (name === 'settlements')
+-        return this.options.settlements !== false && (civil || this.layer === 'settlements');
++        return this.options.settlements !== false && (civil || this.layer === 'settlements' || this.layer === 'relief');
+     if (name === 'frontiers')
+-        return this.options.frontiers !== false && civil;
++        return this.options.frontiers !== false && (civil || this.layer === 'relief');
+     if (name === 'tradeRoutes' || name === 'pactLines' || name === 'warLines')
+         return this.layer === 'diplomacy';
+     if (name === 'reeds')
+--- a/tests/onemap.test.mjs
++++ b/tests/onemap.test.mjs
+@@ -22,10 +22,14 @@
+  assert(html.includes('body.onemap #stage'));
+  assert(html.indexOf('id="omChrome"')<html.indexOf('<script>'));
+ });
+-test('Geography, town rules, state formation and renderer geometry remain identical to 9.1',()=>{
++test('Generation and renderer geometry stay identical; only two visibility predicates change',()=>{
+  const {sha256}=JSON.parse(read('docs/CORE_BASELINE.json'));
+  for(const [file,expected] of Object.entries(sha256)){
+-  const actual=createHash('sha256').update(readFileSync(resolve(root,file))).digest('hex');
++  let content=readFileSync(resolve(root,file));
++  if(file==='src/render/world-renderer.js')content=Buffer.from(content.toString('utf8')
++    .replace("return this.options.settlements !== false && (civil || this.layer === 'settlements' || this.layer === 'relief');", "return this.options.settlements !== false && (civil || this.layer === 'settlements');")
++    .replace("return this.options.frontiers !== false && (civil || this.layer === 'relief');", "return this.options.frontiers !== false && civil;"));
++  const actual=createHash('sha256').update(content).digest('hex');
+   assert.equal(actual,expected,file+' unexpectedly changed');
+  }
+ });
+--- a/tests/onemap_browser.py
++++ b/tests/onemap_browser.py
+@@ -23,6 +23,7 @@
+  p.set_content((R/'dist/telluric-onemap.html').read_text(),wait_until='load')
+  p.wait_for_function('window.__ready||window.__error',timeout=120000)
+  assert p.evaluate('window.__ready&&!window.__error');wait(p)
++ assert p.evaluate("currentLayer==='realms'&&sim.realms.length>0&&renderer.visible('settlements')&&renderer.visible('frontiers')&&renderer.meshes.settlements.count>0")
+  report['renderer']=p.evaluate('renderer.software?"Canvas software fallback":"WebGL2"')
+  assert geom(p,'map')=={'x':0,'y':0,'width':1536,'height':960}
+  assert p.evaluate('document.documentElement.scrollHeight===innerHeight&&document.documentElement.scrollWidth===innerWidth')
+@@ -64,7 +65,7 @@
+  # Regeneration is never a side effect of opening or cancelling its drawer.
+  p.locator('#forgeButton').click();assert p.locator('#forge').is_visible();newseed=p.locator('#seed').input_value();assert newseed!=p.evaluate('world.params.seed');assert env(p)==saved;p.evaluate('document.getElementById("toast").classList.add("hidden")');fbox=geom(p,'forge');gbox=geom(p,'generate');assert gbox['x']>=fbox['x'] and gbox['x']+gbox['width']<=fbox['x']+fbox['width'];assert p.evaluate('document.getElementById("forge").scrollWidth===document.getElementById("forge").clientWidth');p.screenshot(path=str(OUT/'regenerate.png'));p.locator('#closeForge').click();assert env(p)==saved;mark('Regenerate drawer proposes a new seed; cancel preserves all state')
+  # A successful full regeneration, followed by an actual load of the save.
+- p.locator('#forgeButton').click();p.locator('#seed').fill('OneMap-regression-10');p.locator('#generate').click();p.wait_for_function('window.__ready&&world.params.seed==="OneMap-regression-10"&&!busy',timeout=120000);assert p.evaluate('sim.year')==400;assert env(p)['physical']!=saved['physical'];assert not p.locator('#omDrawer').is_visible();mark('Generate replaces the world and starts at year 400')
++ p.locator('#forgeButton').click();p.locator('#seed').fill('OneMap-regression-10');p.locator('#generate').click();p.wait_for_function('window.__ready&&world.params.seed==="OneMap-regression-10"&&!busy',timeout=120000);assert p.evaluate("sim.realms.length>0&&sim.provinces.some(p=>p.city)&&renderer.sim===sim&&renderer.visible('settlements')&&renderer.visible('frontiers')&&labelItems.some(x=>x.feature.capital&&x.element.style.opacity==='1')");assert p.evaluate('sim.year')==400;assert env(p)['physical']!=saved['physical'];assert not p.locator('#omDrawer').is_visible();mark('Generate replaces the world and starts at year 400')
+  p.locator('#importFile').set_input_files(str(save));p.wait_for_function('(h)=>window.__ready&&!busy&&sim.physicalHash===h',arg=saved['physical'],timeout=120000);assert env(p)==saved,(env(p),saved);mark('Load restores physical, settlement, political and year fingerprints')
+  # Narrow viewport: default map only, controls stay within screen and clickable.
+  p.set_viewport_size({'width':390,'height':844});p.wait_for_timeout(600);wait(p)

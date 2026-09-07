@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-river",
+  "style": "river",
+  "seed": "Artisan11-river",
+  "name": "River Crown",
+  "material": "limestone",
+  "faith": "sun",
+  "culture": "Human courts",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 2,
+  "roofPitch": 0.9176442479901016,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "river"
+}

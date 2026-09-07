@@ -1,0 +1,31 @@
+{
+  "name": "telluric-continuous-atlas",
+  "version": "13.0.0",
+  "private": true,
+  "description": "One georeferenced world canvas, progressive town detail, inherited surrounding terrain and continuous camera navigation.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "test:browser": "python tests/continuous_browser.py",
+    "assets": "node scripts/export-landmarks.mjs",
+    "test:towns": "node --test tests/towns.test.mjs",
+    "assets:towns": "node scripts/export-town-recipes.mjs",
+    "test:environment": "node --test tests/environment.test.mjs",
+    "test:onemap": "python tests/onemap_browser.py",
+    "test:regenerate": "python tests/regenerate_browser.py",
+    "assets:artisan": "node scripts/export-artisan.mjs",
+    "test:artisan": "node --test tests/artisan.test.mjs",
+    "test:citadels": "python tests/citadels-browser.py",
+    "test:cache": "python tests/cache-browser.py",
+    "test:sanctuary": "node --test tests/sanctuary.test.mjs",
+    "assets:sanctuary": "node scripts/export-sanctuaries.mjs",
+    "test:browser:sanctuary": "python tests/sanctuary_browser.py",
+    "test:continuous": "node --test tests/continuous.test.mjs",
+    "test:legacy-modals": "python tests/onemap_browser.py"
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "checks": [
+    {
+      "name": "Existing 38-country world remains visible",
+      "details": true
+    },
+    {
+      "name": "Same-world highland city renders without mutating simulation",
+      "details": {
+        "id": 179,
+        "name": "Valehold",
+        "style": "mountain",
+        "footprints": 154,
+        "walls": 241,
+        "gates": 1,
+        "gateApproaches": 1,
+        "citadel": true,
+        "triangles": 1045788,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 154
+        }
+      }
+    },
+    {
+      "name": "Actual citadel can be selected from map",
+      "details": true
+    },
+    {
+      "name": "Building drill-down shares artisan model recipe",
+      "details": true
+    },
+    {
+      "name": "Same-world courtyard city renders without mutating simulation",
+      "details": {
+        "id": 385,
+        "name": "Bluegate 3",
+        "style": "desert",
+        "footprints": 165,
+        "walls": 265,
+        "gates": 3,
+        "gateApproaches": 3,
+        "citadel": true,
+        "triangles": 1125550,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 165
+        }
+      }
+    },
+    {
+      "name": "Same-world woodland city renders without mutating simulation",
+      "details": {
+        "id": 112,
+        "name": "Valemere",
+        "style": "forest",
+        "footprints": 107,
+        "walls": 236,
+        "gates": 2,
+        "gateApproaches": 2,
+        "citadel": true,
+        "triangles": 251699,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 107
+        }
+      }
+    },
+    {
+      "name": "Same-world arcane city renders without mutating simulation",
+      "details": {
+        "id": 191,
+        "name": "Reedwatch",
+        "style": "arcane",
+        "footprints": 162,
+        "walls": 217,
+        "gates": 1,
+        "gateApproaches": 3,
+        "citadel": true,
+        "triangles": 1107668,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 162
+        }
+      }
+    },
+    {
+      "name": "Time advances without new terrain",
+      "details": true
+    },
+    {
+      "name": "Regenerate still retains visible civilizations",
+      "details": true
+    },
+    {
+      "name": "No application errors or network requests",
+      "details": true
+    }
+  ],
+  "errors": [],
+  "scenes": [
+    {
+      "id": 179,
+      "name": "Valehold",
+      "style": "mountain",
+      "footprints": 154,
+      "walls": 241,
+      "gates": 1,
+      "gateApproaches": 1,
+      "citadel": true,
+      "triangles": 1045788,
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 154
+      }
+    },
+    {
+      "id": 385,
+      "name": "Bluegate 3",
+      "style": "desert",
+      "footprints": 165,
+      "walls": 265,
+      "gates": 3,
+      "gateApproaches": 3,
+      "citadel": true,
+      "triangles": 1125550,
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 165
+      }
+    },
+    {
+      "id": 112,
+      "name": "Valemere",
+      "style": "forest",
+      "footprints": 107,
+      "walls": 236,
+      "gates": 2,
+      "gateApproaches": 2,
+      "citadel": true,
+      "triangles": 251699,
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 107
+      }
+    },
+    {
+      "id": 191,
+      "name": "Reedwatch",
+      "style": "arcane",
+      "footprints": 162,
+      "walls": 217,
+      "gates": 1,
+      "gateApproaches": 3,
+      "citadel": true,
+      "triangles": 1107668,
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 162
+      }
+    }
+  ],
+  "renderer": "Canvas depth-buffer fallback",
+  "network": []
+}

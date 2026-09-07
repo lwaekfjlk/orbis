@@ -1,0 +1,9 @@
+{
+  "version": "13.0.0",
+  "sha256": {
+    "dist/telluric-onemap.html": "901a960e2607f77db155f9366d16e54f10912815f0fdebd5f2cd13f58752c91b",
+    "src/continuous/atlas-space.js": "11b110bcbe20b191182e13bec18446b9935fc89e5b5784f6e876d8dfd66206eb",
+    "src/continuous/city-layer.js": "b8f71baba24984c1c57d570ae8a77bcdf2515ca50686f74c60c7d3ceec2a4b8e",
+    "src/ui/continuous-map.js": "75226f93531733356927539e618eea6eed8bd164259ded782ad123f9b7b9ab96"
+  }
+}

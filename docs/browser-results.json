@@ -1,0 +1,92 @@
+{
+  "modularAssetsLoaded": true,
+  "directFileNavigation": false,
+  "initial": {
+    "geo": "dfd91476",
+    "towns": "77c3b21f",
+    "politics": "973dace6",
+    "year": 400
+  },
+  "city": {
+    "id": 390,
+    "name": "Stargrove 3",
+    "statistics": {
+      "buildings": 243,
+      "landmarks": 7,
+      "streets": 50,
+      "districts": 7,
+      "waterPercent": 25.666819082456943,
+      "bridges": 0,
+      "piers": 6,
+      "weights": {
+        "home": 19,
+        "workshop": 34,
+        "market": 53,
+        "temple": 38,
+        "academy": 0,
+        "harbor": 7,
+        "civic": 36,
+        "garden": 56
+      }
+    },
+    "audit": {
+      "wetBuildings": 0,
+      "roadBuildings": 0,
+      "overlaps": 0,
+      "nonfinite": 0,
+      "seaRoads": 0,
+      "buildings": 243
+    },
+    "renderer": "Canvas"
+  },
+  "projectSaveResume": {
+    "samePlan": true,
+    "resumedYear": 411,
+    "level": 1,
+    "supportMultiplier": 1.08
+  },
+  "exports": {
+    "glbBytes": 6347456,
+    "meshes": 9,
+    "pngBytes": 1295694,
+    "jsonBytes": 1019632
+  },
+  "lakeCity": {
+    "id": 382,
+    "stats": {
+      "buildings": 284,
+      "landmarks": 7,
+      "streets": 50,
+      "districts": 7,
+      "waterPercent": 12.147538484987045,
+      "bridges": 1,
+      "piers": 5,
+      "weights": {
+        "home": 34,
+        "workshop": 52,
+        "market": 38,
+        "temple": 44,
+        "academy": 0,
+        "harbor": 34,
+        "civic": 28,
+        "garden": 54
+      }
+    },
+    "audit": {
+      "wetBuildings": 0,
+      "roadBuildings": 0,
+      "overlaps": 0,
+      "nonfinite": 0,
+      "seaRoads": 0,
+      "buildings": 284
+    }
+  },
+  "polityRerollAfterCityUse": {
+    "initialTownSignatureUnchanged": true,
+    "resetsHistoryTo400": true
+  },
+  "standaloneOffline": true,
+  "mobile390": true,
+  "externalRequests": [],
+  "errors": []
+}

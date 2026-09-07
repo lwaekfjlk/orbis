@@ -1,0 +1,2 @@
+# Optional browser tests only; the application and Node tests have no package dependencies.
+playwright>=1.50,<2

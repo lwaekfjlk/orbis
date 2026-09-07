@@ -1,0 +1,18 @@
+PASS Initial map visibly includes countries, towns, borders and clickable country labels
+PASS Opening and cancelling Regenerate do not mutate world or history
+PASS Regenerate from plate view with all civilization overlays off restores living world
+PASS Natural landscape retains settlement symbols, names and optional borders
+PASS A randomly proposed seed still produces a visible civilization
+PASS Consecutive regeneration has new model references, not stale civilization
+PASS Same seed rebuilds the same geography, settlements and states
+PASS Cold eight-province world retains visible geography-first civilization
+PASS Newly generated city can be entered and uses the new world, not a cached old town
+PASS Regenerate from a city returns to the populated world viewport
+PASS History advances normally after repeated regeneration
+PASS Save from a regenerated world reloads its civilization and year
+PASS Civilization generation error preserves the previous complete map and timeline
+PASS Mesh attachment failure also rolls back to previous population, borders and history
+PASS A new attempt succeeds after failure without reloading the application
+PASS Single-map mobile UI and controls remain usable
+PASS No unexpected JavaScript errors or external requests
+ALL PASSED 17

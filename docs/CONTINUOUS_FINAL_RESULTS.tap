@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: A single parent surface is preserved at every original grid vertex
+ok 1 - A single parent surface is preserved at every original grid vertex
+  ---
+  duration_ms: 2028.96944
+  type: 'test'
+  ...
+# Subtest: Subdivided terrain shares both sides of every original grid edge
+ok 2 - Subdivided terrain shares both sides of every original grid edge
+  ---
+  duration_ms: 9.777338
+  type: 'test'
+  ...
+# Subtest: City coordinates refer to the actual Stonefall source and preserve nearby glacial relief
+ok 3 - City coordinates refer to the actual Stonefall source and preserve nearby glacial relief
+  ---
+  duration_ms: 6.569632
+  type: 'test'
+  ...
+# Subtest: Every building has a rigid elevated anchor and finite transformation
+ok 4 - Every building has a rigid elevated anchor and finite transformation
+  ---
+  duration_ms: 2.935822
+  type: 'test'
+  ...
+# Subtest: Mesh collection does not request a second canvas or graphics context
+ok 5 - Mesh collection does not request a second canvas or graphics context
+  ---
+  duration_ms: 4317.668348
+  type: 'test'
+  ...
+# Subtest: Exploration routes delegate to a camera operation, with no city dialog open
+ok 6 - Exploration routes delegate to a camera operation, with no city dialog open
+  ---
+  duration_ms: 0.78763
+  type: 'test'
+  ...
+# Subtest: Geometry worker includes trusted modules and transfers reusable model buffers
+ok 7 - Geometry worker includes trusted modules and transfers reusable model buffers
+  ---
+  duration_ms: 1.336736
+  type: 'test'
+  ...
+# Subtest: OneMap has a single startup entry, with shell before executable scripts
+ok 8 - OneMap has a single startup entry, with shell before executable scripts
+  ---
+  duration_ms: 1.034597
+  type: 'test'
+  ...
+# Subtest: Single-file build has no external styles or executable scripts
+ok 9 - Single-file build has no external styles or executable scripts
+  ---
+  duration_ms: 3.874577
+  type: 'test'
+  ...
+# Subtest: Parent geography, society and world-map renderer retain the pre-art-upgrade baseline
+ok 10 - Parent geography, society and world-map renderer retain the pre-art-upgrade baseline
+  ---
+  duration_ms: 3.146816
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7531.925454

@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-desert",
+  "style": "desert",
+  "seed": "AERETH / 01",
+  "name": "The Saffron Diwan",
+  "material": "sandstone",
+  "faith": "tide",
+  "culture": "Human courts",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 2,
+  "roofPitch": 0.9486290742643178,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": true,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

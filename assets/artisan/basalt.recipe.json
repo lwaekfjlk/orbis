@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-basalt",
+  "style": "basalt",
+  "seed": "Artisan11-basalt",
+  "name": "The Obsidian Citadel",
+  "material": "basalt",
+  "faith": "hearth",
+  "culture": "Mixed traditions",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 2,
+  "roofPitch": 1.1270395707711578,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "basalt"
+}

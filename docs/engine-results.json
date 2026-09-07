@@ -1,0 +1,1004 @@
+{
+  "engine": "v22.16.0",
+  "seed": "Aereth-47",
+  "checks": {
+    "geographyFirst": {
+      "realms": 38,
+      "towns": 96,
+      "physicalHash": "dfd91476",
+      "continents": [
+        {
+          "id": 45,
+          "name": "Thaloria",
+          "cell": 35178,
+          "towns": 18,
+          "polities": 7,
+          "realmIds": [
+            1,
+            3,
+            13,
+            11,
+            12,
+            18,
+            22
+          ],
+          "capitalCount": 7,
+          "largestShare": 0.21199658793917636,
+          "unclaimedShare": 0.08208182046615926,
+          "internalFrontiers": 10,
+          "borderEdges": 52
+        },
+        {
+          "id": 2,
+          "name": "Vaelthar",
+          "cell": 13116,
+          "towns": 12,
+          "polities": 8,
+          "realmIds": [
+            30,
+            36,
+            28,
+            32,
+            8,
+            34,
+            19,
+            25
+          ],
+          "capitalCount": 8,
+          "largestShare": 0.1653283898623579,
+          "unclaimedShare": 0.2417125132551912,
+          "internalFrontiers": 8,
+          "borderEdges": 26
+        },
+        {
+          "id": 40,
+          "name": "Soleran",
+          "cell": 30243,
+          "towns": 26,
+          "polities": 6,
+          "realmIds": [
+            5,
+            0,
+            6,
+            10,
+            7,
+            24
+          ],
+          "capitalCount": 6,
+          "largestShare": 0.2508084003935181,
+          "unclaimedShare": 0.02417203314678127,
+          "internalFrontiers": 9,
+          "borderEdges": 34
+        },
+        {
+          "id": 1,
+          "name": "Zarush",
+          "cell": 14162,
+          "towns": 17,
+          "polities": 7,
+          "realmIds": [
+            20,
+            26,
+            23,
+            9,
+            35,
+            14,
+            17
+          ],
+          "capitalCount": 7,
+          "largestShare": 0.15764944930073813,
+          "unclaimedShare": 0.09042855113443085,
+          "internalFrontiers": 10,
+          "borderEdges": 38
+        },
+        {
+          "id": 51,
+          "name": "Kethis",
+          "cell": 36772,
+          "towns": 16,
+          "polities": 6,
+          "realmIds": [
+            2,
+            21,
+            16,
+            27,
+            33,
+            37
+          ],
+          "capitalCount": 6,
+          "largestShare": 0.3121968073910892,
+          "unclaimedShare": 0.11959784101351795,
+          "internalFrontiers": 8,
+          "borderEdges": 26
+        },
+        {
+          "id": 78,
+          "name": "The Shattered South",
+          "cell": 49301,
+          "towns": 0,
+          "polities": 0,
+          "realmIds": [],
+          "capitalCount": 0,
+          "largestShare": 0,
+          "unclaimedShare": 1,
+          "internalFrontiers": 0,
+          "borderEdges": 0
+        },
+        {
+          "id": 0,
+          "name": "The Frozen Reach",
+          "cell": 3749,
+          "towns": 0,
+          "polities": 0,
+          "realmIds": [],
+          "capitalCount": 0,
+          "largestShare": 0,
+          "unclaimedShare": 1,
+          "internalFrontiers": 0,
+          "borderEdges": 0
+        }
+      ]
+    },
+    "allTowns": {
+      "towns": 96,
+      "allParentArraysUnchanged": true,
+      "simulationUnchanged": true,
+      "minBuildings": 161,
+      "maxBuildings": 333,
+      "scenes": [
+        {
+          "id": 76,
+          "name": "Amberbridge",
+          "buildings": 236,
+          "landmarks": 7,
+          "fingerprint": "fceb506e",
+          "waterPercent": 40.070111263526904
+        },
+        {
+          "id": 77,
+          "name": "Amberfall",
+          "buildings": 269,
+          "landmarks": 7,
+          "fingerprint": "be575665",
+          "waterPercent": 18.39658588629782
+        },
+        {
+          "id": 96,
+          "name": "Valehall 2",
+          "buildings": 256,
+          "landmarks": 7,
+          "fingerprint": "35eadf94",
+          "waterPercent": 38.46974546563024
+        },
+        {
+          "id": 103,
+          "name": "Bluegate",
+          "buildings": 298,
+          "landmarks": 7,
+          "fingerprint": "77b25871",
+          "waterPercent": 13.763145861911294
+        },
+        {
+          "id": 111,
+          "name": "Sunreach 3",
+          "buildings": 247,
+          "landmarks": 7,
+          "fingerprint": "2d8a2981",
+          "waterPercent": 34.94894071025758
+        },
+        {
+          "id": 112,
+          "name": "Valemere",
+          "buildings": 300,
+          "landmarks": 6,
+          "fingerprint": "a8f37fc6",
+          "waterPercent": 1.4631915866483767
+        },
+        {
+          "id": 115,
+          "name": "Amberford",
+          "buildings": 274,
+          "landmarks": 7,
+          "fingerprint": "19bec642",
+          "waterPercent": 22.69471117207743
+        },
+        {
+          "id": 117,
+          "name": "Mossford 2",
+          "buildings": 260,
+          "landmarks": 7,
+          "fingerprint": "c43b5fb8",
+          "waterPercent": 28.090230147843315
+        },
+        {
+          "id": 151,
+          "name": "Mosshold",
+          "buildings": 291,
+          "landmarks": 6,
+          "fingerprint": "cab59870",
+          "waterPercent": 0.7773205304069501
+        },
+        {
+          "id": 160,
+          "name": "Rosewell 4",
+          "buildings": 197,
+          "landmarks": 7,
+          "fingerprint": "324a93af",
+          "waterPercent": 49.94665447340345
+        },
+        {
+          "id": 166,
+          "name": "Reedwell",
+          "buildings": 222,
+          "landmarks": 7,
+          "fingerprint": "cfc83495",
+          "waterPercent": 30.056393842402073
+        },
+        {
+          "id": 179,
+          "name": "Valehold",
+          "buildings": 289,
+          "landmarks": 6,
+          "fingerprint": "85f8a4f4",
+          "waterPercent": 0
+        },
+        {
+          "id": 185,
+          "name": "Cinderhaven",
+          "buildings": 269,
+          "landmarks": 7,
+          "fingerprint": "400cdb4",
+          "waterPercent": 26.245999085505257
+        },
+        {
+          "id": 191,
+          "name": "Reedwatch",
+          "buildings": 278,
+          "landmarks": 6,
+          "fingerprint": "ff332dc2",
+          "waterPercent": 0.1371742112482853
+        },
+        {
+          "id": 192,
+          "name": "Oakhaven",
+          "buildings": 281,
+          "landmarks": 7,
+          "fingerprint": "b964fba8",
+          "waterPercent": 5.944215820759031
+        },
+        {
+          "id": 194,
+          "name": "Oakwatch",
+          "buildings": 231,
+          "landmarks": 7,
+          "fingerprint": "99fda471",
+          "waterPercent": 36.35116598079561
+        },
+        {
+          "id": 201,
+          "name": "Amberford 3",
+          "buildings": 229,
+          "landmarks": 7,
+          "fingerprint": "c5700265",
+          "waterPercent": 59.88416399939034
+        },
+        {
+          "id": 204,
+          "name": "Brightwatch 2",
+          "buildings": 206,
+          "landmarks": 7,
+          "fingerprint": "c45012ac",
+          "waterPercent": 42.32586495960982
+        },
+        {
+          "id": 213,
+          "name": "Silverford",
+          "buildings": 237,
+          "landmarks": 7,
+          "fingerprint": "dd5afd00",
+          "waterPercent": 30.80323121475385
+        },
+        {
+          "id": 215,
+          "name": "Silverwatch",
+          "buildings": 234,
+          "landmarks": 7,
+          "fingerprint": "16b34474",
+          "waterPercent": 30.65081542447798
+        },
+        {
+          "id": 225,
+          "name": "Dawnfall 5",
+          "buildings": 237,
+          "landmarks": 7,
+          "fingerprint": "d96d3748",
+          "waterPercent": 29.873494894071023
+        },
+        {
+          "id": 228,
+          "name": "Ashwell 2",
+          "buildings": 245,
+          "landmarks": 7,
+          "fingerprint": "731ffb87",
+          "waterPercent": 39.338515470202715
+        },
+        {
+          "id": 235,
+          "name": "Brightmead",
+          "buildings": 270,
+          "landmarks": 7,
+          "fingerprint": "2ad08269",
+          "waterPercent": 22.679469593049838
+        },
+        {
+          "id": 236,
+          "name": "Whitemead",
+          "buildings": 249,
+          "landmarks": 7,
+          "fingerprint": "45b0b5c6",
+          "waterPercent": 41.9753086419753
+        },
+        {
+          "id": 238,
+          "name": "Silverreach 3",
+          "buildings": 216,
+          "landmarks": 7,
+          "fingerprint": "cb1d52f5",
+          "waterPercent": 42.88980338363054
+        },
+        {
+          "id": 240,
+          "name": "Moonmead",
+          "buildings": 252,
+          "landmarks": 7,
+          "fingerprint": "dd823d86",
+          "waterPercent": 38.56119493979576
+        },
+        {
+          "id": 249,
+          "name": "Suncrest",
+          "buildings": 257,
+          "landmarks": 7,
+          "fingerprint": "4a7bf813",
+          "waterPercent": 29.29431489102271
+        },
+        {
+          "id": 252,
+          "name": "Blueford",
+          "buildings": 236,
+          "landmarks": 7,
+          "fingerprint": "c83a2d45",
+          "waterPercent": 51.27267184880354
+        },
+        {
+          "id": 253,
+          "name": "Mistmead",
+          "buildings": 223,
+          "landmarks": 7,
+          "fingerprint": "f3a14845",
+          "waterPercent": 35.69577808260936
+        },
+        {
+          "id": 256,
+          "name": "Ashmere",
+          "buildings": 210,
+          "landmarks": 7,
+          "fingerprint": "86116ca2",
+          "waterPercent": 47.58420972412742
+        },
+        {
+          "id": 258,
+          "name": "Starwatch",
+          "buildings": 251,
+          "landmarks": 7,
+          "fingerprint": "33218d1c",
+          "waterPercent": 32.47980490778845
+        },
+        {
+          "id": 259,
+          "name": "Ironhall",
+          "buildings": 248,
+          "landmarks": 7,
+          "fingerprint": "b14da7d8",
+          "waterPercent": 47.934766041761925
+        },
+        {
+          "id": 261,
+          "name": "Irongrove",
+          "buildings": 261,
+          "landmarks": 7,
+          "fingerprint": "1296eaa",
+          "waterPercent": 29.477213839353755
+        },
+        {
+          "id": 262,
+          "name": "Ambermere",
+          "buildings": 280,
+          "landmarks": 7,
+          "fingerprint": "1966d27",
+          "waterPercent": 30.45267489711934
+        },
+        {
+          "id": 265,
+          "name": "Brightport",
+          "buildings": 238,
+          "landmarks": 7,
+          "fingerprint": "26c32f97",
+          "waterPercent": 38.40877914951989
+        },
+        {
+          "id": 267,
+          "name": "Cinderfall 2",
+          "buildings": 227,
+          "landmarks": 7,
+          "fingerprint": "982edf66",
+          "waterPercent": 44.29202865416857
+        },
+        {
+          "id": 269,
+          "name": "Valegrove 2",
+          "buildings": 247,
+          "landmarks": 7,
+          "fingerprint": "8934a7de",
+          "waterPercent": 35.72626124066453
+        },
+        {
+          "id": 276,
+          "name": "Rosecrest",
+          "buildings": 214,
+          "landmarks": 7,
+          "fingerprint": "417c3c7d",
+          "waterPercent": 44.68830970888584
+        },
+        {
+          "id": 283,
+          "name": "Mooncrest 2",
+          "buildings": 207,
+          "landmarks": 7,
+          "fingerprint": "cd8a5bb5",
+          "waterPercent": 42.264898643499464
+        },
+        {
+          "id": 288,
+          "name": "Ashgrove",
+          "buildings": 275,
+          "landmarks": 7,
+          "fingerprint": "255a85cf",
+          "waterPercent": 14.007011126352689
+        },
+        {
+          "id": 289,
+          "name": "Ashmere 2",
+          "buildings": 295,
+          "landmarks": 6,
+          "fingerprint": "65c5ba26",
+          "waterPercent": 0
+        },
+        {
+          "id": 292,
+          "name": "Brightmead 2",
+          "buildings": 216,
+          "landmarks": 7,
+          "fingerprint": "be668281",
+          "waterPercent": 33.5009907026368
+        },
+        {
+          "id": 295,
+          "name": "Amberreach 2",
+          "buildings": 183,
+          "landmarks": 7,
+          "fingerprint": "3d7b0266",
+          "waterPercent": 58.64959609815577
+        },
+        {
+          "id": 297,
+          "name": "Moonport",
+          "buildings": 161,
+          "landmarks": 7,
+          "fingerprint": "d55fd9e6",
+          "waterPercent": 17.832647462277095
+        },
+        {
+          "id": 299,
+          "name": "Brightbridge 3",
+          "buildings": 243,
+          "landmarks": 7,
+          "fingerprint": "4ca1cc9",
+          "waterPercent": 24.50845907636031
+        },
+        {
+          "id": 300,
+          "name": "Mistford",
+          "buildings": 211,
+          "landmarks": 7,
+          "fingerprint": "d0674f81",
+          "waterPercent": 37.84484072549916
+        },
+        {
+          "id": 303,
+          "name": "Silverreach 4",
+          "buildings": 265,
+          "landmarks": 7,
+          "fingerprint": "ad4b0f67",
+          "waterPercent": 40.22252705380278
+        },
+        {
+          "id": 310,
+          "name": "Stonereach 4",
+          "buildings": 221,
+          "landmarks": 7,
+          "fingerprint": "82b07d5",
+          "waterPercent": 33.6076817558299
+        },
+        {
+          "id": 311,
+          "name": "Ironmere",
+          "buildings": 302,
+          "landmarks": 6,
+          "fingerprint": "56f9b2c0",
+          "waterPercent": 0.4572473708276178
+        },
+        {
+          "id": 317,
+          "name": "Cinderport",
+          "buildings": 293,
+          "landmarks": 7,
+          "fingerprint": "dcac23bf",
+          "waterPercent": 0.823045267489712
+        },
+        {
+          "id": 329,
+          "name": "Ambergrove",
+          "buildings": 306,
+          "landmarks": 6,
+          "fingerprint": "2bd6cd15",
+          "waterPercent": 0.7773205304069501
+        },
+        {
+          "id": 335,
+          "name": "Ironhold 5",
+          "buildings": 231,
+          "landmarks": 7,
+          "fingerprint": "be4cb55",
+          "waterPercent": 41.18274653254077
+        },
+        {
+          "id": 340,
+          "name": "Moonmead 2",
+          "buildings": 245,
+          "landmarks": 6,
+          "fingerprint": "dfab8340",
+          "waterPercent": 0.3962810547172687
+        },
+        {
+          "id": 341,
+          "name": "Moongrove 2",
+          "buildings": 291,
+          "landmarks": 6,
+          "fingerprint": "72980b65",
+          "waterPercent": 5.944215820759031
+        },
+        {
+          "id": 343,
+          "name": "Reedbridge",
+          "buildings": 254,
+          "landmarks": 7,
+          "fingerprint": "65397ca5",
+          "waterPercent": 30.345983843926234
+        },
+        {
+          "id": 347,
+          "name": "Oakwatch 4",
+          "buildings": 285,
+          "landmarks": 6,
+          "fingerprint": "3ffb63e3",
+          "waterPercent": 0.16765736930345984
+        },
+        {
+          "id": 355,
+          "name": "Roseford",
+          "buildings": 222,
+          "landmarks": 7,
+          "fingerprint": "8b2e8c9c",
+          "waterPercent": 49.794238683127574
+        },
+        {
+          "id": 365,
+          "name": "Bluehold",
+          "buildings": 295,
+          "landmarks": 6,
+          "fingerprint": "f372a584",
+          "waterPercent": 1.0059442158207592
+        },
+        {
+          "id": 366,
+          "name": "Reedgrove 2",
+          "buildings": 240,
+          "landmarks": 7,
+          "fingerprint": "9dcf8ec8",
+          "waterPercent": 31.611034903215973
+        },
+        {
+          "id": 382,
+          "name": "Starcrest 2",
+          "buildings": 284,
+          "landmarks": 7,
+          "fingerprint": "840d6082",
+          "waterPercent": 12.147538484987045
+        },
+        {
+          "id": 384,
+          "name": "Ambergate 2",
+          "buildings": 289,
+          "landmarks": 6,
+          "fingerprint": "143b136c",
+          "waterPercent": 0.8078036884621246
+        },
+        {
+          "id": 385,
+          "name": "Bluegate 3",
+          "buildings": 295,
+          "landmarks": 6,
+          "fingerprint": "d0106a64",
+          "waterPercent": 1.066910531931108
+        },
+        {
+          "id": 386,
+          "name": "Ironwatch 2",
+          "buildings": 219,
+          "landmarks": 7,
+          "fingerprint": "38251990",
+          "waterPercent": 31.732967535436675
+        },
+        {
+          "id": 388,
+          "name": "Silverhold",
+          "buildings": 232,
+          "landmarks": 7,
+          "fingerprint": "3629b86f",
+          "waterPercent": 32.40359701265051
+        },
+        {
+          "id": 390,
+          "name": "Stargrove 3",
+          "buildings": 243,
+          "landmarks": 7,
+          "fingerprint": "6206a579",
+          "waterPercent": 25.666819082456943
+        },
+        {
+          "id": 399,
+          "name": "Starquay 2",
+          "buildings": 261,
+          "landmarks": 7,
+          "fingerprint": "c2a163b3",
+          "waterPercent": 8.413351623228166
+        },
+        {
+          "id": 403,
+          "name": "Amberwatch",
+          "buildings": 244,
+          "landmarks": 7,
+          "fingerprint": "5f14f63c",
+          "waterPercent": 21.886907483615303
+        },
+        {
+          "id": 404,
+          "name": "Bluehold 2",
+          "buildings": 271,
+          "landmarks": 7,
+          "fingerprint": "7e53f531",
+          "waterPercent": 37.357110196616375
+        },
+        {
+          "id": 405,
+          "name": "Ashgrove 3",
+          "buildings": 246,
+          "landmarks": 7,
+          "fingerprint": "52b64542",
+          "waterPercent": 37.799115988416396
+        },
+        {
+          "id": 414,
+          "name": "Reedhold 4",
+          "buildings": 295,
+          "landmarks": 6,
+          "fingerprint": "3e2ce178",
+          "waterPercent": 2.240512117055327
+        },
+        {
+          "id": 415,
+          "name": "Brightquay",
+          "buildings": 248,
+          "landmarks": 7,
+          "fingerprint": "85ca1fe9",
+          "waterPercent": 33.775339125133364
+        },
+        {
+          "id": 421,
+          "name": "Amberhaven",
+          "buildings": 294,
+          "landmarks": 6,
+          "fingerprint": "45949b36",
+          "waterPercent": 1.4327084285932024
+        },
+        {
+          "id": 424,
+          "name": "Sunreach 4",
+          "buildings": 221,
+          "landmarks": 7,
+          "fingerprint": "198b8532",
+          "waterPercent": 19.433013260173755
+        },
+        {
+          "id": 428,
+          "name": "Greyfall 5",
+          "buildings": 244,
+          "landmarks": 7,
+          "fingerprint": "c2c3c256",
+          "waterPercent": 27.998780673677793
+        },
+        {
+          "id": 430,
+          "name": "Whitegate 2",
+          "buildings": 333,
+          "landmarks": 6,
+          "fingerprint": "f6f1cf18",
+          "waterPercent": 0.4267642127724432
+        },
+        {
+          "id": 442,
+          "name": "Moonhaven",
+          "buildings": 267,
+          "landmarks": 7,
+          "fingerprint": "5a20e8db",
+          "waterPercent": 31.001371742112482
+        },
+        {
+          "id": 448,
+          "name": "Mossreach 3",
+          "buildings": 301,
+          "landmarks": 6,
+          "fingerprint": "7c6b7557",
+          "waterPercent": 1.6156073769242492
+        },
+        {
+          "id": 450,
+          "name": "Silverwell 4",
+          "buildings": 277,
+          "landmarks": 7,
+          "fingerprint": "51c6019d",
+          "waterPercent": 28.42554488645024
+        },
+        {
+          "id": 452,
+          "name": "Whitefall 4",
+          "buildings": 216,
+          "landmarks": 7,
+          "fingerprint": "5bc47b00",
+          "waterPercent": 50.49535131839659
+        },
+        {
+          "id": 462,
+          "name": "Dawnhaven 3",
+          "buildings": 228,
+          "landmarks": 7,
+          "fingerprint": "9443458",
+          "waterPercent": 42.31062338058223
+        },
+        {
+          "id": 469,
+          "name": "Bluewatch 2",
+          "buildings": 292,
+          "landmarks": 6,
+          "fingerprint": "bf216f21",
+          "waterPercent": 0.8687700045724738
+        },
+        {
+          "id": 480,
+          "name": "Moonwatch 4",
+          "buildings": 284,
+          "landmarks": 6,
+          "fingerprint": "24ebdaf3",
+          "waterPercent": 0
+        },
+        {
+          "id": 483,
+          "name": "Ashgrove 4",
+          "buildings": 225,
+          "landmarks": 7,
+          "fingerprint": "f1594eff",
+          "waterPercent": 40.481633897271756
+        },
+        {
+          "id": 485,
+          "name": "Mooncrest 3",
+          "buildings": 280,
+          "landmarks": 6,
+          "fingerprint": "67477ab9",
+          "waterPercent": 2.423411065386374
+        },
+        {
+          "id": 486,
+          "name": "Amberfall 2",
+          "buildings": 218,
+          "landmarks": 7,
+          "fingerprint": "17851079",
+          "waterPercent": 41.67047706142356
+        },
+        {
+          "id": 490,
+          "name": "Moonquay 2",
+          "buildings": 257,
+          "landmarks": 7,
+          "fingerprint": "43b36998",
+          "waterPercent": 27.81588172534675
+        },
+        {
+          "id": 494,
+          "name": "Silverport",
+          "buildings": 235,
+          "landmarks": 7,
+          "fingerprint": "4c158dda",
+          "waterPercent": 23.441548544429203
+        },
+        {
+          "id": 499,
+          "name": "Brightmere",
+          "buildings": 248,
+          "landmarks": 7,
+          "fingerprint": "507b3357",
+          "waterPercent": 38.68312757201646
+        },
+        {
+          "id": 500,
+          "name": "Ashgate 3",
+          "buildings": 259,
+          "landmarks": 7,
+          "fingerprint": "7aa1df2d",
+          "waterPercent": 26.047858558146626
+        },
+        {
+          "id": 502,
+          "name": "Valemere 3",
+          "buildings": 298,
+          "landmarks": 6,
+          "fingerprint": "e59d605f",
+          "waterPercent": 2.9873494894071024
+        },
+        {
+          "id": 507,
+          "name": "Stonefall 5",
+          "buildings": 280,
+          "landmarks": 7,
+          "fingerprint": "612405b9",
+          "waterPercent": 18.533760097546107
+        },
+        {
+          "id": 512,
+          "name": "Ashhold 2",
+          "buildings": 240,
+          "landmarks": 7,
+          "fingerprint": "105c0136",
+          "waterPercent": 42.67642127724432
+        },
+        {
+          "id": 532,
+          "name": "Ironford 2",
+          "buildings": 223,
+          "landmarks": 7,
+          "fingerprint": "bb837900",
+          "waterPercent": 50.75445816186557
+        },
+        {
+          "id": 546,
+          "name": "Oakcrest",
+          "buildings": 228,
+          "landmarks": 7,
+          "fingerprint": "629afabb",
+          "waterPercent": 44.88645023624447
+        },
+        {
+          "id": 573,
+          "name": "Ironcrest",
+          "buildings": 238,
+          "landmarks": 7,
+          "fingerprint": "b561f4a1",
+          "waterPercent": 42.447797591830515
+        },
+        {
+          "id": 577,
+          "name": "Reedport 4",
+          "buildings": 285,
+          "landmarks": 6,
+          "fingerprint": "547c2955",
+          "waterPercent": 0.30483158055174514
+        }
+      ]
+    },
+    "noAutomaticRuralCities": true,
+    "polityIndependentCityPlan": true,
+    "project": {
+      "cost": 3.649472541057429,
+      "completed": 403,
+      "supportBefore": 57243.01033594842,
+      "supportAfter": 61822.4511628243,
+      "planUnchanged": true,
+      "saveContinuationIdentical": true
+    },
+    "projectValidation": true,
+    "journey": {
+      "routeExists": true,
+      "onlyGraphEdges": true,
+      "unreachableRefused": true,
+      "example": {
+        "ok": true,
+        "nodes": [
+          76,
+          267,
+          225,
+          304,
+          335,
+          307,
+          486
+        ],
+        "segments": [
+          {
+            "from": 76,
+            "to": 267,
+            "kind": "sea",
+            "cost": 15.5
+          },
+          {
+            "from": 267,
+            "to": 225,
+            "kind": "sea",
+            "cost": 17.8
+          },
+          {
+            "from": 225,
+            "to": 304,
+            "kind": "sea",
+            "cost": 18.490000000000002
+          },
+          {
+            "from": 304,
+            "to": 335,
+            "kind": "sea",
+            "cost": 15.73
+          },
+          {
+            "from": 335,
+            "to": 307,
+            "kind": "sea",
+            "cost": 13.89
+          },
+          {
+            "from": 307,
+            "to": 486,
+            "kind": "sea",
+            "cost": 17.34
+          }
+        ],
+        "cost": 98.75,
+        "note": "Generalized travel-cost units, NOT days or a physically calibrated itinerary."
+      }
+    },
+    "longRun": {
+      "year": 520,
+      "livingRealms": 32,
+      "projects": 1,
+      "audit": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 520
+      }
+    },
+    "glb": true
+  }
+}

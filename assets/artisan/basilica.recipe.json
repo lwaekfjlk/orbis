@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-basilica",
+  "style": "basilica",
+  "seed": "Artisan11-basilica",
+  "name": "Sanctuary of the Dawn",
+  "material": "ivory",
+  "faith": "sun",
+  "culture": "Human courts",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 3,
+  "roofPitch": 0.8987882418651134,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "basilica"
+}

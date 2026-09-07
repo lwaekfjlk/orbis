@@ -1,0 +1,85 @@
+{
+  "version": "9.1.0",
+  "checks": {
+    "enterCorrectSettlement": true,
+    "actualContextControl": true,
+    "changingArchitectureKeepsActualTerrainMeshAndColors": true,
+    "contextToggle": true,
+    "legacySaveDesignAdaptedOnOpen": true,
+    "recipeDownloadImport": true,
+    "returnToExactParentWorldCell": true
+  },
+  "baseline": {
+    "physical": "dfd91476",
+    "towns": "77c3b21f",
+    "polities": "973dace6",
+    "year": 400
+  },
+  "site": {
+    "id": 507,
+    "name": "Stonefall 5",
+    "style": "mountain",
+    "setting": {
+      "parentIndex": 38502,
+      "worldX": 102,
+      "worldY": 128,
+      "bed": 104.24906921386719,
+      "surface": 104.24906921386719,
+      "temperature": 11.143096923828125,
+      "aridity": 0.0802520141005516,
+      "rain": 0.05774872377514839,
+      "ice": 0,
+      "snow": 0,
+      "wetness": 0.06126806512475014,
+      "farm": 0.5349461436271667,
+      "treeDensity": 0,
+      "water": 0,
+      "waterKind": 0,
+      "color": [
+        0.8941176470588236,
+        0.8235294117647058,
+        0.6901960784313725
+      ],
+      "biome": 14,
+      "version": 1,
+      "label": "Salt basin \u00b7 glacial foothills",
+      "maxElevation": 7524.6962890625,
+      "minElevation": 74.43601989746094,
+      "relief": 7450.260269165039,
+      "peak": {
+        "x": 96,
+        "y": 134,
+        "height": 7524.6962890625
+      },
+      "nearestGlacier": 3,
+      "glacialFoothills": true,
+      "mountainous": true,
+      "forestFraction": 0.0547945205479452,
+      "biomes": [
+        14,
+        4,
+        13,
+        5,
+        8,
+        3,
+        7,
+        2,
+        16
+      ]
+    },
+    "environmentHash": "eae3c4ed",
+    "contextHash": "58ae8cc1",
+    "audit": {
+      "iceBuildings": 0,
+      "wetBuildings": 0,
+      "roadBuildings": 0,
+      "overlaps": 0,
+      "nonfinite": 0,
+      "seaRoads": 0,
+      "buildings": 82
+    },
+    "software": true
+  },
+  "errors": [],
+  "externalRequests": []
+}

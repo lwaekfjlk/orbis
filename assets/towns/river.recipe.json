@@ -1,0 +1,9 @@
+{
+  "format": "telluric-town-recipe",
+  "version": 1,
+  "style": "river",
+  "seed": "Town-assembly-9",
+  "variety": 0.6,
+  "provinceId": 329,
+  "sourceCell": 28876
+}

@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-fjord",
+  "style": "fjord",
+  "seed": "AERETH / 01",
+  "name": "The Whitewake Hall",
+  "material": "northern",
+  "faith": "ancestors",
+  "culture": "Clan craft",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 2,
+  "roofPitch": 0.8576991355698556,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": true,
+    "lake": false,
+    "cold": true,
+    "dry": false,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

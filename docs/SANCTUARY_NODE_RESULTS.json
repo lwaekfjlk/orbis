@@ -1,0 +1,135 @@
+{
+  "version": "12.0.0",
+  "checks": [
+    {
+      "name": "existing-city-placement",
+      "provinceId": 213,
+      "city": "Silverford",
+      "width": 38,
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 95
+      }
+    },
+    {
+      "name": "real-geometry",
+      "triangles": 221213,
+      "parts": 10,
+      "bounds": {
+        "min": [
+          -18.62,
+          0,
+          -20.62
+        ],
+        "max": [
+          18.62,
+          54.3303,
+          20.6845
+        ]
+      },
+      "modules": {
+        "pointed-arch": 482,
+        "connected-grand-stair": 3,
+        "guardian-sculpture": 14,
+        "ribbed-dome": 8,
+        "traceried-window": 116,
+        "double-flying-buttress": 12,
+        "crocketed-pinnacle": 85,
+        "gable-roof": 8,
+        "radial-stained-glass": 1,
+        "ritual-sun": 7,
+        "open-belfry-tower": 5,
+        "audience-hall": 4,
+        "open-arch": 130,
+        "formal-garden": 4,
+        "pine-tree": 4,
+        "banner": 6,
+        "cistern": 2
+      },
+      "sha256": "6abb79013968d0a7ebff19a17aef8a400acd412d66943699b697fe6e57fe7533"
+    },
+    {
+      "name": "same-recipe-at-three-scales",
+      "signature": "ab063dc3/great-sanctuary-1",
+      "placedHeight": 49.233936471812996
+    },
+    {
+      "name": "nine-existing-towns",
+      "rows": [
+        {
+          "id": 213,
+          "name": "Silverford",
+          "blocks": 95,
+          "sanctuary": 38
+        },
+        {
+          "id": 240,
+          "name": "Moonmead",
+          "blocks": 80,
+          "sanctuary": 38
+        },
+        {
+          "id": 258,
+          "name": "Starwatch",
+          "blocks": 104,
+          "sanctuary": 38
+        },
+        {
+          "id": 259,
+          "name": "Ironhall",
+          "blocks": 85,
+          "sanctuary": 38
+        },
+        {
+          "id": 297,
+          "name": "Moonport",
+          "blocks": 56,
+          "sanctuary": 38
+        },
+        {
+          "id": 343,
+          "name": "Reedbridge",
+          "blocks": 95,
+          "sanctuary": 38
+        },
+        {
+          "id": 403,
+          "name": "Amberwatch",
+          "blocks": 80,
+          "sanctuary": 38
+        },
+        {
+          "id": 452,
+          "name": "Whitefall 4",
+          "blocks": 72,
+          "sanctuary": 38
+        },
+        {
+          "id": 462,
+          "name": "Dawnhaven 3",
+          "blocks": 88,
+          "sanctuary": 38
+        }
+      ]
+    },
+    {
+      "name": "architectural-variants-and-water-constraint",
+      "uniqueVariants": 4
+    },
+    {
+      "name": "save-load-recipe",
+      "crown": "dome",
+      "faith": "stars"
+    },
+    {
+      "name": "embedded-GLB",
+      "bytes": 23898656,
+      "meshes": 10
+    }
+  ]
+}

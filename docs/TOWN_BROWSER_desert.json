@@ -1,0 +1,49 @@
+{
+  "styles": [
+    {
+      "name": "Stonereach 4",
+      "style": "desert",
+      "stats": {
+        "modules": 79,
+        "structures": 329,
+        "grammar": "labyrinth",
+        "buildings": 86,
+        "landmarks": 7,
+        "streets": 81,
+        "districts": 7,
+        "waterPercent": 33.6076817558299,
+        "bridges": 0,
+        "piers": 5,
+        "weights": {
+          "home": 10,
+          "workshop": 11,
+          "market": 8,
+          "temple": 16,
+          "academy": 0,
+          "harbor": 2,
+          "civic": 21,
+          "garden": 18
+        }
+      },
+      "audit": {
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 86
+      },
+      "signature": "71309450",
+      "software": true
+    }
+  ],
+  "screenshotsAreActualApplication": true,
+  "baseline": {
+    "geo": "dfd91476",
+    "towns": "77c3b21f",
+    "politics": "973dace6",
+    "year": 400
+  },
+  "errors": [],
+  "externalRequests": []
+}

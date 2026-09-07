@@ -1,0 +1,33 @@
+{
+  "baseline": {
+    "geo": "dfd91476",
+    "towns": "77c3b21f",
+    "politics": "973dace6",
+    "year": 400
+  },
+  "registry": 127,
+  "externalRequests": [],
+  "renderer": "Software z-buffer + cached light-space shadows",
+  "rayPicking": {
+    "x": 532,
+    "y": 228,
+    "id": "observatory-2"
+  },
+  "recipeAndGlbExport": {
+    "glbBytes": 4966060,
+    "signature": "0e63e595"
+  },
+  "worldCityEntry": {
+    "province": 288,
+    "savedSite": "site-288-civic-",
+    "keptSignature": "40b81d12"
+  },
+  "worldSaveResume": true,
+  "mobileWidth": {
+    "width": 390,
+    "scroll": 390
+  },
+  "directFileNavigation": false,
+  "directFileNote": "Page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///mnt/data/landmark_work/telluric-explorer/dist/telluric-atelier.html\nCall log:\n  - navigating to \"file:///mnt/data/landmark_work/telluric-explorer/dist/telluric-atel",
+  "errors": []
+}

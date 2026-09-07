@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-fjord",
+  "style": "fjord",
+  "seed": "Artisan11-fjord",
+  "name": "The Whitewake Hall",
+  "material": "northern",
+  "faith": "ancestors",
+  "culture": "Clan craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 2,
+  "roofPitch": 1.0881617996655404,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "fjord"
+}

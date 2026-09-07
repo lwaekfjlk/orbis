@@ -1,0 +1,7 @@
+import {scripts} from './manifest.mjs';import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';import {resolve,dirname} from 'node:path';import {fileURLToPath} from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');const code=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');const E=Function(code+'\nreturn {SacredCityKit,LandmarkCatalog,LandmarkTemplates,exportGeometryGLB};')();
+const out=resolve(root,'assets/sanctuaries');mkdirSync(out,{recursive:true});const manifest=[];
+for(const [name,faith,crown]of[['solar-sanctuary','sun','spire'],['astral-sanctuary','stars','crystal']]){
+ const recipe=E.LandmarkCatalog.recipe('basilica','Sacred-12-'+name,{name,sacred:true,sacredVersion:1,faith,crown,geography:{freshwater:.65,cold:false}}),model=E.SacredCityKit.build(recipe),buffer=E.exportGeometryGLB(E.LandmarkTemplates.meshes(model),{recipe,units:'art units',notes:'Reusable model from the same builder used INSIDE the town. Not a converted concept picture.'});
+ writeFileSync(resolve(out,name+'.glb'),Buffer.from(buffer));writeFileSync(resolve(out,name+'.recipe.json'),JSON.stringify(recipe,null,2));manifest.push({name,faith,crown,triangles:model.stats.triangles,parts:model.parts.length,bytes:buffer.byteLength,bounds:model.bounds});
+}writeFileSync(resolve(out,'manifest.json'),JSON.stringify(manifest,null,2));console.log(manifest);

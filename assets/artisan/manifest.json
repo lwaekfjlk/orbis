@@ -1,0 +1,65 @@
+[
+  {
+    "style": "river",
+    "file": "river.glb",
+    "triangles": 50286,
+    "parts": 4,
+    "bytes": 5434176
+  },
+  {
+    "style": "basilica",
+    "file": "basilica.glb",
+    "triangles": 38426,
+    "parts": 4,
+    "bytes": 4153308
+  },
+  {
+    "style": "arcane",
+    "file": "arcane.glb",
+    "triangles": 24122,
+    "parts": 4,
+    "bytes": 2608444
+  },
+  {
+    "style": "mountain",
+    "file": "mountain.glb",
+    "triangles": 33634,
+    "parts": 4,
+    "bytes": 3635772
+  },
+  {
+    "style": "forest",
+    "file": "forest.glb",
+    "triangles": 2225,
+    "parts": 4,
+    "bytes": 243580
+  },
+  {
+    "style": "desert",
+    "file": "desert.glb",
+    "triangles": 27044,
+    "parts": 4,
+    "bytes": 2924044
+  },
+  {
+    "style": "delta",
+    "file": "delta.glb",
+    "triangles": 22298,
+    "parts": 4,
+    "bytes": 2411456
+  },
+  {
+    "style": "basalt",
+    "file": "basalt.glb",
+    "triangles": 42902,
+    "parts": 4,
+    "bytes": 4636716
+  },
+  {
+    "style": "fjord",
+    "file": "fjord.glb",
+    "triangles": 32394,
+    "parts": 4,
+    "bytes": 3501844
+  }
+]

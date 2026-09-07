@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-mountain",
+  "style": "mountain",
+  "seed": "Artisan11-mountain",
+  "name": "The Deepgate Holds",
+  "material": "granite",
+  "faith": "hearth",
+  "culture": "Dwarven craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 0,
+  "wings": 3,
+  "roofPitch": 0.859318926781416,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "mountain"
+}

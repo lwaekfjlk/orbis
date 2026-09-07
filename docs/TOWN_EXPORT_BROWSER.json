@@ -1,0 +1,22 @@
+{
+  "checks": {
+    "realGLB": true,
+    "worldSaveResume": true,
+    "mobileNoHorizontalOverflow": true
+  },
+  "glbBytes": 14841680,
+  "layout": "b64fdba2",
+  "baseline": {
+    "geo": "dfd91476",
+    "towns": "77c3b21f",
+    "politics": "973dace6",
+    "year": 400
+  },
+  "width": {
+    "viewport": 430,
+    "scroll": 430
+  },
+  "errors": [],
+  "externalRequests": [],
+  "software": true
+}

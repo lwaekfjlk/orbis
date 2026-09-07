@@ -1,0 +1,108 @@
+{
+  "checks": [
+    {
+      "name": "Startup stays a single inhabited world map",
+      "data": {
+        "realms": 38,
+        "towns": 96
+      }
+    },
+    {
+      "name": "Visit a grand sanctuary opens a populated existing town without changing the world",
+      "data": {
+        "id": 297,
+        "name": "Moonport",
+        "hasSanctuary": true,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 56
+        }
+      }
+    },
+    {
+      "name": "Search enters Silverford with a grand sanctuary and one visible map",
+      "data": true
+    },
+    {
+      "name": "In-town sanctuary has an inspectable building record and focus target",
+      "data": {
+        "x": 800.000013113022,
+        "y": 506.4007430329771,
+        "id": "b0"
+      }
+    },
+    {
+      "name": "Detailed view uses the exact same recipe and real geometry as the town",
+      "data": {
+        "triangles": 221213,
+        "parts": 10,
+        "modules": {
+          "pointed-arch": 482,
+          "connected-grand-stair": 3,
+          "guardian-sculpture": 14,
+          "ribbed-dome": 8,
+          "traceried-window": 116,
+          "double-flying-buttress": 12,
+          "crocketed-pinnacle": 85,
+          "gable-roof": 8,
+          "radial-stained-glass": 1,
+          "ritual-sun": 7,
+          "open-belfry-tower": 5,
+          "audience-hall": 4,
+          "open-arch": 130,
+          "formal-garden": 4,
+          "pine-tree": 4,
+          "banner": 6,
+          "cistern": 2
+        },
+        "moduleCount": 891
+      }
+    },
+    {
+      "name": "Town camera rotates and zooms actual 3D geometry, not an illustration",
+      "data": true
+    },
+    {
+      "name": "Annual simulation continues from a sacred town without changing geography",
+      "data": 401
+    },
+    {
+      "name": "Regenerate from a sacred town produces new visible countries and towns",
+      "data": {
+        "seed": "Sacred-world-regression-12",
+        "year": 400,
+        "realms": 34,
+        "towns": 107,
+        "settlements": 123,
+        "population": 12986247.411919845,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10710,
+        "frontierVertices": 11808,
+        "settlementsVisible": true,
+        "frontiersVisible": true
+      }
+    },
+    {
+      "name": "Save/load restores the same world, year and in-town sanctuary recipe",
+      "data": true
+    },
+    {
+      "name": "Single-map mobile shell has no horizontal overflow",
+      "data": true
+    },
+    {
+      "name": "No JavaScript errors or external requests during offline integration test",
+      "data": true
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [],
+  "network": [],
+  "renderer": "Software triangle z-buffer, Chromium; hardware GPU not tested"
+}

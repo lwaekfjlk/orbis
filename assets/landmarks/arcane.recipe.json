@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-arcane",
+  "style": "arcane",
+  "seed": "AERETH / 01",
+  "name": "The Aether Collegium",
+  "material": "moonstone",
+  "faith": "stars",
+  "culture": "Mixed traditions",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 3,
+  "roofPitch": 0.8980454826541244,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": false,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

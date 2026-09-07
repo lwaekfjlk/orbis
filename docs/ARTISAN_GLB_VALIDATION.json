@@ -1,0 +1,56 @@
+[
+  {
+    "file": "arcane.glb",
+    "geometries": 4,
+    "faces": 24122,
+    "boundsFinite": true
+  },
+  {
+    "file": "basalt.glb",
+    "geometries": 4,
+    "faces": 42902,
+    "boundsFinite": true
+  },
+  {
+    "file": "basilica.glb",
+    "geometries": 4,
+    "faces": 38426,
+    "boundsFinite": true
+  },
+  {
+    "file": "delta.glb",
+    "geometries": 4,
+    "faces": 22298,
+    "boundsFinite": true
+  },
+  {
+    "file": "desert.glb",
+    "geometries": 4,
+    "faces": 27044,
+    "boundsFinite": true
+  },
+  {
+    "file": "fjord.glb",
+    "geometries": 4,
+    "faces": 32394,
+    "boundsFinite": true
+  },
+  {
+    "file": "forest.glb",
+    "geometries": 4,
+    "faces": 2225,
+    "boundsFinite": true
+  },
+  {
+    "file": "mountain.glb",
+    "geometries": 4,
+    "faces": 33634,
+    "boundsFinite": true
+  },
+  {
+    "file": "river.glb",
+    "geometries": 4,
+    "faces": 50286,
+    "boundsFinite": true
+  }
+]

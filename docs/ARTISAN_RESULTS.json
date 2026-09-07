@@ -1,0 +1,82 @@
+{
+  "version": "11.0.0",
+  "checks": {
+    "nineGeometricFamilies": true,
+    "highland": {
+      "name": "Valehold",
+      "footprints": 154,
+      "wallSegments": 241,
+      "towers": 24,
+      "gates": 1,
+      "approaches": 1,
+      "citadelWidth": 26,
+      "terrainUnchanged": true
+    },
+    "boundedParcels": 17
+  },
+  "models": [
+    {
+      "style": "river",
+      "triangles": 50286,
+      "parts": 4,
+      "sha256": "0990994a1f1a6c995b65560ccb28a50cf147f588ee15fd9386a719aca044fd13",
+      "glbBytes": 5434144
+    },
+    {
+      "style": "basilica",
+      "triangles": 38426,
+      "parts": 4,
+      "sha256": "96c68ff5b9134d86555fb2e7b940cbba3ea7e25c9a246b1a20d8a2ff7a351819",
+      "glbBytes": 4153268
+    },
+    {
+      "style": "arcane",
+      "triangles": 24122,
+      "parts": 4,
+      "sha256": "37f73bdacfda394d909b91b11094100ec1dc5e560f962fcae74dfb06d713e5db",
+      "glbBytes": 2608408
+    },
+    {
+      "style": "mountain",
+      "triangles": 33634,
+      "parts": 4,
+      "sha256": "cc32fea62cdcc018e2bde82a7ef55559639da0bb8039b25483dd6b946291141c",
+      "glbBytes": 3635736
+    },
+    {
+      "style": "forest",
+      "triangles": 2225,
+      "parts": 4,
+      "sha256": "0d57e5c57210c4922bdf1179312ccbebd72d09cf30819fbc68c9a3db2a4b40df",
+      "glbBytes": 243544
+    },
+    {
+      "style": "desert",
+      "triangles": 27044,
+      "parts": 4,
+      "sha256": "92bc058e6aac0c7403cf65723022323421474b4c2809e3e5ac6acfe9bcfdbcfe",
+      "glbBytes": 2924008
+    },
+    {
+      "style": "delta",
+      "triangles": 22298,
+      "parts": 4,
+      "sha256": "46c822f09d429ed3421cc5d8904adf68612faaec7f7ec34e895c4263b2c3c63e",
+      "glbBytes": 2411420
+    },
+    {
+      "style": "basalt",
+      "triangles": 42902,
+      "parts": 4,
+      "sha256": "e0c6c52515b0062fc47c027b4f242d8e07972d9bfc082873d626f5a460c7b162",
+      "glbBytes": 4636684
+    },
+    {
+      "style": "fjord",
+      "triangles": 32394,
+      "parts": 4,
+      "sha256": "ce746f0e280b0bcf6f050794dc9db08bd6b47cc687e4b2d943cdcc54a90db2c9",
+      "glbBytes": 3501808
+    }
+  ]
+}

@@ -1,0 +1,536 @@
+{
+  "checks": [
+    {
+      "name": "Initial map visibly includes countries, towns, borders and clickable country labels",
+      "result": {
+        "seed": "Aereth-47",
+        "year": 400,
+        "realms": 38,
+        "towns": 96,
+        "settlements": 103,
+        "population": 12070795.470445402,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10290,
+        "frontierVertices": 11688,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 33,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 38,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "Opening and cancelling Regenerate do not mutate world or history",
+      "result": true
+    },
+    {
+      "name": "Regenerate from plate view with all civilization overlays off restores living world",
+      "result": {
+        "seed": "OneMap-regression-10",
+        "year": 400,
+        "realms": 36,
+        "towns": 92,
+        "settlements": 102,
+        "population": 10554843.786177319,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 9954,
+        "frontierVertices": 11064,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 28,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 36,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "Natural landscape retains settlement symbols, names and optional borders",
+      "result": true
+    },
+    {
+      "name": "A randomly proposed seed still produces a visible civilization",
+      "result": {
+        "seed": "World-6k8bfe-n807",
+        "year": 400,
+        "realms": 34,
+        "towns": 91,
+        "settlements": 97,
+        "population": 10614694.143199308,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 9498,
+        "frontierVertices": 9660,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 31,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 34,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "Consecutive regeneration has new model references, not stale civilization",
+      "result": {
+        "seed": "Regen-Civilization-02",
+        "year": 400,
+        "realms": 36,
+        "towns": 99,
+        "settlements": 107,
+        "population": 13168015.610243397,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10248,
+        "frontierVertices": 13896,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 30,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 36,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "Same seed rebuilds the same geography, settlements and states",
+      "result": true
+    },
+    {
+      "name": "Cold eight-province world retains visible geography-first civilization",
+      "result": {
+        "seed": "Regen-Cold-03",
+        "year": 400,
+        "realms": 25,
+        "towns": 78,
+        "settlements": 90,
+        "population": 11282978.675038164,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 7788,
+        "frontierVertices": 7836,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 21,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 25,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "Newly generated city can be entered and uses the new world, not a cached old town",
+      "result": true
+    },
+    {
+      "name": "Regenerate from a city returns to the populated world viewport",
+      "result": {
+        "seed": "Regen-From-Town-04",
+        "year": 400,
+        "realms": 36,
+        "towns": 100,
+        "settlements": 107,
+        "population": 11606874.00689821,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10422,
+        "frontierVertices": 14124,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 29,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 36,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "History advances normally after repeated regeneration",
+      "result": 410
+    },
+    {
+      "name": "Save from a regenerated world reloads its civilization and year",
+      "result": true
+    },
+    {
+      "name": "Civilization generation error preserves the previous complete map and timeline",
+      "result": true
+    },
+    {
+      "name": "Mesh attachment failure also rolls back to previous population, borders and history",
+      "result": true
+    },
+    {
+      "name": "A new attempt succeeds after failure without reloading the application",
+      "result": {
+        "seed": "Regen-Recovery-06",
+        "year": 400,
+        "realms": 33,
+        "towns": 95,
+        "settlements": 106,
+        "population": 11921934.142468251,
+        "layer": "realms",
+        "rendererBound": true,
+        "settlementVertices": 10044,
+        "frontierVertices": 10368,
+        "settlementsVisible": true,
+        "frontiersVisible": true,
+        "software": true,
+        "labels": 30,
+        "checks": {
+          "invalidOwners": 0,
+          "badShares": 0,
+          "badPop": 0,
+          "badCapitals": 0,
+          "waterClaims": 0,
+          "routeErrors": 0,
+          "finiteRealms": true,
+          "year": 400
+        },
+        "scene": "world",
+        "domRealms": 33,
+        "onlyMap": [
+          "map"
+        ]
+      }
+    },
+    {
+      "name": "Single-map mobile UI and controls remain usable",
+      "result": true
+    },
+    {
+      "name": "No unexpected JavaScript errors or external requests",
+      "result": true
+    }
+  ],
+  "pageErrors": [],
+  "unexpectedConsoleErrors": [],
+  "externalRequests": [],
+  "generations": [
+    {
+      "seed": "OneMap-regression-10",
+      "year": 400,
+      "realms": 36,
+      "towns": 92,
+      "settlements": 102,
+      "population": 10554843.786177319,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 9954,
+      "frontierVertices": 11064,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 28,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 36,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "World-6k8bfe-n807",
+      "year": 400,
+      "realms": 34,
+      "towns": 91,
+      "settlements": 97,
+      "population": 10614694.143199308,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 9498,
+      "frontierVertices": 9660,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 31,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 34,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "Regen-Civilization-02",
+      "year": 400,
+      "realms": 36,
+      "towns": 99,
+      "settlements": 107,
+      "population": 13168015.610243397,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 10248,
+      "frontierVertices": 13896,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 30,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 36,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "Regen-Civilization-02",
+      "year": 400,
+      "realms": 36,
+      "towns": 99,
+      "settlements": 107,
+      "population": 13168015.610243397,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 10248,
+      "frontierVertices": 13896,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 30,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 36,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "Regen-Cold-03",
+      "year": 400,
+      "realms": 25,
+      "towns": 78,
+      "settlements": 90,
+      "population": 11282978.675038164,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 7788,
+      "frontierVertices": 7836,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 21,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 25,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "Regen-From-Town-04",
+      "year": 400,
+      "realms": 36,
+      "towns": 100,
+      "settlements": 107,
+      "population": 11606874.00689821,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 10422,
+      "frontierVertices": 14124,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 29,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 36,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "Regen-After-Save-05",
+      "year": 400,
+      "realms": 30,
+      "towns": 91,
+      "settlements": 103,
+      "population": 10895349.258749295,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 9162,
+      "frontierVertices": 9516,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 26,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 30,
+      "onlyMap": [
+        "map"
+      ]
+    },
+    {
+      "seed": "Regen-Recovery-06",
+      "year": 400,
+      "realms": 33,
+      "towns": 95,
+      "settlements": 106,
+      "population": 11921934.142468251,
+      "layer": "realms",
+      "rendererBound": true,
+      "settlementVertices": 10044,
+      "frontierVertices": 10368,
+      "settlementsVisible": true,
+      "frontiersVisible": true,
+      "software": true,
+      "labels": 30,
+      "checks": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      },
+      "scene": "world",
+      "domRealms": 33,
+      "onlyMap": [
+        "map"
+      ]
+    }
+  ],
+  "renderer": "Canvas software fallback"
+}

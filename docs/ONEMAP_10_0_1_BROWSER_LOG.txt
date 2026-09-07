@@ -1,0 +1,17 @@
+PASS Full-viewport map, no dashboard or page scroll, one visible map
+PASS Advance ten years without changing geography
+PASS Play / pause stops at the current year
+PASS Political map without a side dashboard
+PASS Town drill-down occupies the same viewport with shared time controls
+PASS Advance history while looking at the town
+PASS Inherited town setting is preserved
+PASS Landmark in same viewport, no asset-library dashboard
+PASS Part detail opens only after explicit selection
+PASS Back restores the exact world camera
+PASS Save simulation from the map menu
+PASS Regenerate drawer proposes a new seed; cancel preserves all state
+PASS Generate replaces the world and starts at year 400
+PASS Load restores physical, settlement, political and year fingerprints
+PASS 390px mobile layout and town navigation without horizontal scrolling
+PASS Zero application errors and zero network requests
+ALL PASSED 16

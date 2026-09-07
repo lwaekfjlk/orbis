@@ -1,0 +1,77 @@
+{
+  "INITIAL": {
+    "ready": true,
+    "error": null,
+    "seed": "Aereth-47",
+    "layer": "relief",
+    "rendererLayer": "relief",
+    "simMatches": true,
+    "worldMatches": true,
+    "realms": 38,
+    "towns": 96,
+    "settled": 103,
+    "settlementsMesh": 10290,
+    "visible": false,
+    "options": {
+      "trees": true,
+      "volcanoes": true,
+      "rivers": true,
+      "borders": false,
+      "wind": false,
+      "ice": true
+    },
+    "labels": 23,
+    "scene": "world",
+    "software": true
+  },
+  "REGENERATED": {
+    "ready": true,
+    "error": null,
+    "seed": "OneMap-regression-10",
+    "layer": "relief",
+    "rendererLayer": "relief",
+    "simMatches": true,
+    "worldMatches": true,
+    "realms": 36,
+    "towns": 92,
+    "settled": 102,
+    "settlementsMesh": 9954,
+    "visible": false,
+    "options": {
+      "trees": true,
+      "volcanoes": true,
+      "rivers": true,
+      "borders": false,
+      "wind": false,
+      "ice": true
+    },
+    "labels": 23,
+    "scene": "world",
+    "software": true
+  },
+  "REALMS": {
+    "ready": true,
+    "error": null,
+    "seed": "OneMap-regression-10",
+    "layer": "realms",
+    "rendererLayer": "realms",
+    "simMatches": true,
+    "worldMatches": true,
+    "realms": 36,
+    "towns": 92,
+    "settled": 102,
+    "settlementsMesh": 9954,
+    "visible": true,
+    "options": {
+      "trees": true,
+      "volcanoes": true,
+      "rivers": true,
+      "borders": false,
+      "wind": false,
+      "ice": true
+    },
+    "labels": 36,
+    "scene": "world",
+    "software": true
+  }
+}

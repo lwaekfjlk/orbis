@@ -1,0 +1,106 @@
+TAP version 13
+# Subtest: World and existing towns precede city detail
+ok 1 - World and existing towns precede city detail
+  ---
+  duration_ms: 4539.897877
+  type: 'test'
+  ...
+# Subtest: Every default town has deterministic, dry, non-overlapping detail
+ok 2 - Every default town has deterministic, dry, non-overlapping detail
+  ---
+  duration_ms: 21217.007437
+  type: 'test'
+  ...
+# Subtest: Non-settled districts do not get invented cities
+ok 3 - Non-settled districts do not get invented cities
+  ---
+  duration_ms: 1.428066
+  type: 'test'
+  ...
+# Subtest: Political reroll preserves local street geometry
+ok 4 - Political reroll preserves local street geometry
+  ---
+  duration_ms: 1427.226983
+  type: 'test'
+  ...
+# Subtest: Project pays once, finishes at due year, survives JSON save, preserves geography
+ok 5 - Project pays once, finishes at due year, survives JSON save, preserves geography
+  ---
+  duration_ms: 392.782613
+  type: 'test'
+  ...
+# Subtest: Project preconditions, upgrade cap and malformed save validation
+ok 6 - Project preconditions, upgrade cap and malformed save validation
+  ---
+  duration_ms: 22.514116
+  type: 'test'
+  ...
+# Subtest: Journey follows graph, unreachable towns do not get teleport routes
+ok 7 - Journey follows graph, unreachable towns do not get teleport routes
+  ---
+  duration_ms: 44.606609
+  type: 'test'
+  ...
+# Subtest: 120 years remain finite and city projects do not mutate natural fields
+ok 8 - 120 years remain finite and city projects do not mutate natural fields
+  ---
+  duration_ms: 1451.404912
+  type: 'test'
+  ...
+# Subtest: GLB exporter creates aligned glTF buffers and rejects nonfinite coordinates
+ok 9 - GLB exporter creates aligned glTF buffers and rejects nonfinite coordinates
+  ---
+  duration_ms: 2.023217
+  type: 'test'
+  ...
+# Subtest: catalog has nine palace families and six separately composed regional landmarks
+ok 10 - catalog has nine palace families and six separately composed regional landmarks
+  ---
+  duration_ms: 1.594673
+  type: 'test'
+  ...
+# Subtest: all fifteen assemblies are deterministic finite meshes, with separate named roof groups
+ok 11 - all fifteen assemblies are deterministic finite meshes, with separate named roof groups
+  ---
+  duration_ms: 12916.889087
+  type: 'test'
+  ...
+# Subtest: seed recombination, tower-crown substitution and roof substitution change actual mesh geometry
+ok 12 - seed recombination, tower-crown substitution and roof substitution change actual mesh geometry
+  ---
+  duration_ms: 2979.979871
+  type: 'test'
+  ...
+# Subtest: religious geometry changes without relocating the structural foundation
+ok 13 - religious geometry changes without relocating the structural foundation
+  ---
+  duration_ms: 1059.802431
+  type: 'test'
+  ...
+# Subtest: invalid recipes are rejected or normalized without accepting unknown templates
+ok 14 - invalid recipes are rejected or normalized without accepting unknown templates
+  ---
+  duration_ms: 1.443487
+  type: 'test'
+  ...
+# Subtest: exported GLB files have named real meshes, not image planes
+ok 15 - exported GLB files have named real meshes, not image planes
+  ---
+  duration_ms: 397.044526
+  type: 'test'
+  ...
+# Subtest: world landmarks and city miniatures inherit the same recipe and never modify natural or settlement fields
+ok 16 - world landmarks and city miniatures inherit the same recipe and never modify natural or settlement fields
+  ---
+  duration_ms: 6263.692284
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 31754.067698

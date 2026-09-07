@@ -1,0 +1,9 @@
+{
+  "format": "telluric-town-recipe",
+  "version": 1,
+  "style": "arcane",
+  "seed": "Town-assembly-9",
+  "variety": 0.6,
+  "provinceId": 269,
+  "sourceCell": 24040
+}
