@@ -40,7 +40,7 @@ test('Named wonders read the finished world and change none of it',async()=>{
  const E=loadEngine(),w=await E.generateWorld(defaults);
  // The hash geography.js used to be locked by. Legends are a labelling pass that
  // runs last, so the physical model must come out bit-identical to the baseline.
- assert.equal(E.physicalFingerprint(w),'dfd91476');
+ assert.equal(E.physicalFingerprint(w),'4b02963c');
  assert(w.legends.length>=5,'a full world should carry its wonders');
  for(const f of w.legends){
   assert(Number.isInteger(f.i)&&f.i>=0&&f.i<E.GN,f.id+' must name a real cell');
@@ -119,6 +119,55 @@ test('A country is a name and a line, not a coat of paint over the land',async()
  }
  assert.equal(washed,eligible,'the faith layer still colours every cell it covers');
 });
+test('A basin lake has a shoreline, and a collision belt has a roof',async()=>{
+ const {loadEngine,defaults}=await import('./engine-loader.mjs');
+ const E=loadEngine();
+ const w=await E.generateWorld(defaults);
+ // Lakes. The interior depressions were exact ellipses with a smooth quadratic floor
+ // and 18 m of noise in a 700 m bowl, so the water filled to the contour of the bowl:
+ // measured circularity .59 where real lakes run .15-.5. 1.00 is a perfect disc.
+ const seen=new Uint8Array(E.GN),lakes=[];
+ for(let i=0;i<E.GN;i++){
+  if(seen[i]||!(w.lake[i]>0))continue;
+  const q=[i];seen[i]=1;let perimeter=0;
+  for(let a=0;a<q.length;a++){
+   const j=q[a],x=j%E.GW,y=j/E.GW|0;
+   for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+    const xx=x+dx,yy=y+dy;
+    if(xx<0||xx>=E.GW||yy<0||yy>=E.GH){perimeter++;continue;}
+    const k=yy*E.GW+xx;
+    if(!(w.lake[k]>0)){perimeter++;continue;}
+    if(!seen[k]){seen[k]=1;q.push(k);}
+   }
+  }
+  if(q.length>=12)lakes.push(4*Math.PI*q.length/(perimeter*perimeter));
+ }
+ assert(lakes.length>=4,'this world should hold several lakes');
+ const mean=lakes.reduce((a,b)=>a+b,0)/lakes.length;
+ assert(mean<.48,`lakes average ${mean.toFixed(2)} circularity — they are still discs`);
+ assert(Math.max(...lakes)<.72,'no lake may be a plain ellipse');
+ // Plateaus. Before the prior, 1 of 2426 cells above 2000 m had local relief low
+ // enough to read as one, so the alpine and cold-desert climates the biome table
+ // already knows how to draw had nowhere to sit.
+ assert(w.plateaus.length>=2,'a collision world should raise uplands');
+ const relief=i=>{const x=i%E.GW,y=i/E.GW|0;let lo=1/0,hi=-1/0;
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+   const k=Math.max(0,Math.min(E.GH-1,y+dy))*E.GW+((x+dx)%E.GW+E.GW)%E.GW;
+   lo=Math.min(lo,w.height[k]);hi=Math.max(hi,w.height[k]);}
+  return hi-lo;};
+ let high=0,flat=0;
+ for(let i=0;i<E.GN;i++)
+  if(w.height[i]>=2000){high++;if(relief(i)<600)flat++;}
+ assert(high>800,'a world of ranges');
+ assert(flat>=25,`only ${flat} of ${high} cells above 2000 m are flat enough to be a plateau`);
+ // And the high flat ground must actually be classified as a high-altitude climate,
+ // not left as whatever the lowland around it is.
+ const cold=new Set([1,2,3,12,16]);
+ let onPlateau=0,classified=0;
+ for(let i=0;i<E.GN;i++)
+  if(w.height[i]>=2000&&relief(i)<600){onPlateau++;if(cold.has(w.biome[i]))classified++;}
+ assert(classified/onPlateau>.7,`only ${classified} of ${onPlateau} plateau cells read as a cold high climate`);
+});
 test('Continent names outrank the wonders that share their ground',()=>{
  // makeLabels() hands its list to a first-come box packer, so list order IS the
  // label priority. Putting the seven legends first cost three of seven continent
@@ -135,8 +184,8 @@ test('The climate work changed how the world is DRAWN, not what the world IS',as
  // actually matters is asserted here on behaviour instead.
  const {loadEngine,defaults}=await import('./engine-loader.mjs');
  const E=loadEngine(),w=await E.generateWorld(defaults);
- assert.equal(E.physicalFingerprint(w),'dfd91476','height, biome, rain, temp, lake, flow, ice and plate must be untouched');
- assert.equal(E.settlementFingerprint(E.createCivilization(w,{realms:18,historySeed:'First-dawn'})),'77c3b21f');
+ assert.equal(E.physicalFingerprint(w),'4b02963c','height, biome, rain, temp, lake, flow, ice and plate must be untouched');
+ assert.equal(E.settlementFingerprint(E.createCivilization(w,{realms:18,historySeed:'First-dawn'})),'73c1127f');
  // BIOME is a display table only: same count, same names, colours free to change.
  const names=['Open ocean','Persistent snow','Tundra','Cold desert','Sand desert','Dry steppe','Savanna','Temperate forest','Boreal forest','Temperate rainforest','Monsoon woodland','Tropical rainforest','Alpine meadow','Rock desert','Salt basin','Lake','Glacier / ice sheet','Sea ice','Freshwater marsh','Mangrove wetland','Floodplain meadow'];
  assert.deepEqual(E.BIOME?.map(b=>b[0])??names,names,'biome identities are part of the model and may not be renamed or reordered');
@@ -146,7 +195,7 @@ test('Geography-driven district names leave the society itself untouched, and ne
  const E=loadEngine(),w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
  // The naming rewrite draws its two rolls where the old cName(rng) drew two, so the
  // random stream — and therefore every population and polity — is bit-identical.
- assert.equal(E.settlementFingerprint(s),'77c3b21f');
+ assert.equal(E.settlementFingerprint(s),'73c1127f');
  const names=s.provinces.map(p=>p.name);
  assert.equal(new Set(names).size,names.length,'district names must be unique');
  const numbered=names.filter(n=>/\d/.test(n));

@@ -1,3 +1,35 @@
+# 13.4.0 — Lakes with a shoreline, and a roof on the ranges
+
+Two landform priors. Unlike everything since 13.0.0, these move the world: `physicalFingerprint`
+goes `dfd91476` → `4b02963c` and `settlementFingerprint` `77c3b21f` → `73c1127f`, by design.
+
+- **Basin lakes were discs.** The interior depressions were carved as exact ellipses with a
+  smooth quadratic floor and 18 m of noise inside a 700 m bowl, so the water filled to the
+  contour of the bowl and nothing else. Measured over two worlds, every lake sitting in one
+  came out at **0.59–0.60 circularity** where real lakes run 0.15–0.5. The rim now wanders with
+  bearing and the floor carries real relief, so the water finds bays, headlands and islands:
+  **0.36**, with the largest lakes at 0.28–0.43.
+- **There was no plateau anywhere, so there was no high-altitude climate.** Collision built
+  ranges and nothing else: of 2426 cells above 2000 m, **1** had local relief low enough to
+  read as a plateau, and `Alpine meadow` only ever appeared as ribbons along ridge crests.
+  The interiors of the widest collision belts are now planed into uplands — valleys filled to
+  the roof, isolated spires cut back to a fraction of what rises above it, great peaks left
+  standing on the rim, the way Tibet sits behind the Himalaya. Three per world, and flat high
+  ground goes from 1 cell to **132**, carrying cold desert, alpine meadow, tundra and ice.
+  Placed before climate, so an upland casts its own rain shadow rather than having one
+  painted on.
+- Several tests were measuring the world by address rather than by property, and a landform
+  prior is exactly what exposes that. A hardcoded province id that stopped being a town, a
+  town count, "the tallest building" (0.37 atlas units in nine towns of ten and 1.25 in the
+  one with a cathedral), "the first non-landmark building in the array" (0.026 to 0.148
+  across eight towns), a hull's cell found by rounding x and y separately onto a headland
+  it was 599 m of water away from, and "all fifteen traditions appear in *this* seed" — all
+  now ask for the thing they were actually checking.
+- New checks: lake circularity and plateau flatness, and that high flat ground is classified
+  as a cold high climate, in `tests/onemap.test.mjs`.
+
+---
+
 # 13.3.1 — A town is many houses
 
 - **Every building in a town was still the same colour.** 13.3.0 gave each tradition a

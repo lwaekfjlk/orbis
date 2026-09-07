@@ -8,8 +8,8 @@
     },
     "architectureIndependentGeography": {
       "styles": 4,
-      "signature": "a7fd4e15",
-      "contextSignature": "1ceed810"
+      "signature": "4f7bec5a",
+      "contextSignature": "c8da1e4b"
     },
     "provinceAverageIgnored": true,
     "legacyRecipeMigration": true,
@@ -17,7 +17,7 @@
       "edgeSamples": 440
     },
     "allTowns": {
-      "count": 96,
+      "count": 84,
       "parentWorldUnchanged": true,
       "civilizationUnchanged": true
     },
@@ -28,25 +28,26 @@
   "site": {
     "id": 507,
     "name": "Glassbeck",
-    "sourceCell": 38502,
-    "siteTemperature": 11.143096923828125,
+    "sourceCell": 38505,
+    "siteTemperature": 11.294659614562988,
     "siteBiome": "Salt basin",
     "siteIce": 0,
-    "closestGlacierGridDistance": 3,
-    "maximumSurroundingElevation": 7524.6962890625,
+    "closestGlacierGridDistance": 4.47213595499958,
+    "maximumSurroundingElevation": 7373.7294921875,
     "oldStyle": "desert",
     "newStyle": "mountain",
-    "buildingCount": 577,
+    "buildingCount": 674,
     "localBiomes": [
       14,
       15,
-      5,
-      7,
-      8,
+      13,
       3,
+      5,
+      8,
+      7,
       2,
       16
     ],
-    "iceSampleCount": 746
+    "iceSampleCount": 69
   }
 }

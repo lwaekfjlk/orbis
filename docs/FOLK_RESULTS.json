@@ -2,49 +2,49 @@
   "version": 1,
   "checks": {
     "mixture": {
-      "town": "Whitebeck",
-      "roster": 60,
+      "town": "Scorchwell",
+      "roster": 55,
       "peoplesSeen": 7,
       "maxDeviation": 0
     },
     "parity": {
       "distinctSpeedsAcrossPeoples": 1,
-      "distinctGaits": 58,
+      "distinctGaits": 55,
       "accents": 7
     },
     "townsfolk": {
-      "roster": 60,
-      "samples": 360,
-      "walkers": 49,
-      "idlers": 11
+      "roster": 55,
+      "samples": 330,
+      "walkers": 42,
+      "idlers": 13
     },
     "purity": {
       "deterministic": true,
       "cycleCloses": true
     },
     "travellers": {
-      "total": 180,
+      "total": 179,
       "road": 140,
-      "sea": 40,
+      "sea": 39,
       "kinds": {
-        "walker": 94,
-        "cart": 34,
-        "rider": 12,
-        "boat": 40
+        "cart": 23,
+        "walker": 103,
+        "rider": 14,
+        "boat": 39
       }
     },
     "pace": {
-      "compoundCrossingSeconds": 6.8,
-      "roundTripSeconds": 87,
-      "cellCrossingSeconds": 87.7,
-      "bodyLengthsPerSecond": 0.179
+      "compoundCrossingSeconds": 4.3,
+      "roundTripSeconds": 81,
+      "cellCrossingSeconds": 88.7,
+      "bodyLengthsPerSecond": 0.191
     },
     "scale": {
-      "buildingFootprint": 0.0526,
-      "mooredHull": 0.0408,
+      "buildingFootprint": 0.0484,
+      "mooredHull": 0.0305,
       "seaHull": 0.0757,
-      "hullRatio": 1.9,
-      "symbolInBuildings": 1.9
+      "hullRatio": 2.5,
+      "symbolInBuildings": 2.1
     },
     "figure": {
       "trianglesPerAccent": {

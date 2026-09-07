@@ -91,8 +91,12 @@ test('travellers stay on their road, and hulls stay on the water',()=>{
   assert(a.road.path.includes(q.cell),'a traveller stays on the cells of its own road');
  }
  for(const a of afloat)for(const t of TIMES){
-  const q=E.Folk.travellerAt(a,t),i=E.GW*Math.round(q.y)+Math.round(q.x);
-  assert(w.height[i]<=0,'a hull stays at sea');
+  // The agent's own cell, the way the road branch above asks it. Rounding x and y
+  // separately snaps a hull sitting at 41.33, 81.33 onto the 34 m headland at 41, 81
+  // while its actual cell is 599 m under water — which is what this started
+  // reporting the moment a coastline moved.
+  const q=E.Folk.travellerAt(a,t);
+  assert(w.height[q.cell]<=0,'a hull stays at sea');
  }
  // A convoy on a trunk road, a lone walker on a footpath.
  const highway=onRoad.find(a=>a.road.cls==='highway'),trail=onRoad.find(a=>a.road.cls==='trail');
@@ -136,7 +140,12 @@ test('a ship is a ship, not a district',()=>{
   .map(p=>({p,c:p.id===town.id?city:E.generateCity(w,s,p.id)})).find(x=>x.c.port?.moorings.length);
  assert(harbour,'this world has a town with moored hulls to compare against');
  const frame=E.AtlasSpace.cityFrame(w,harbour.p,harbour.c,1);
- const block=harbour.c.buildings.find(b=>!b.landmark).w*frame.sx;
+ // A typical house, not whichever one happens to be first in the array: across eight
+ // harbour towns that first house ranges 0.026 to 0.148 atlas units, so the ratio
+ // below swung between 0.7 and 3.9 on nothing but which town got picked. Against the
+ // median it sits at 1.7-2.4 everywhere.
+ const blocks=harbour.c.buildings.filter(b=>!b.landmark).map(b=>b.w*frame.sx).sort((a,b)=>a-b);
+ const block=blocks[blocks.length>>1];
  const moored=Math.max(...harbour.c.port.moorings.map(m=>m.length))*frame.sx;
  const shipLength=S.near*S.ship*S.hullLength;
  const ratio=shipLength/moored;

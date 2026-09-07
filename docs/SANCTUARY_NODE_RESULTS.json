@@ -55,12 +55,12 @@
     },
     {
       "name": "same-recipe-at-three-scales",
-      "signature": "769d69fb/great-sanctuary-1",
+      "signature": "117c575a/great-sanctuary-1",
       "placedHeight": 49.23393647181299
     },
     {
       "name": "native-sacred-towns",
-      "count": 7,
+      "count": 5,
       "rows": [
         {
           "id": 259,
@@ -71,7 +71,7 @@
         {
           "id": 288,
           "name": "Whitebeck",
-          "blocks": 294,
+          "blocks": 308,
           "sanctuary": 38
         },
         {
@@ -81,27 +81,15 @@
           "sanctuary": 38
         },
         {
-          "id": 452,
-          "name": "Kelplanding",
-          "blocks": 443,
-          "sanctuary": 38
-        },
-        {
-          "id": 462,
-          "name": "Larkfield",
-          "blocks": 460,
-          "sanctuary": 38
-        },
-        {
-          "id": 480,
-          "name": "Sedgecombe",
-          "blocks": 747,
+          "id": 443,
+          "name": "Clearwell",
+          "blocks": 324,
           "sanctuary": 38
         },
         {
           "id": 485,
           "name": "Netherford",
-          "blocks": 290,
+          "blocks": 295,
           "sanctuary": 34
         }
       ]
@@ -117,7 +105,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23898648,
+      "bytes": 23898652,
       "meshes": 10
     }
   ]

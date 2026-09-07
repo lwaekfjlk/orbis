@@ -2,13 +2,13 @@
   "version": 1,
   "checks": {
     "paths": {
-      "roads": 182,
+      "roads": 167,
       "overWater": 0,
       "contiguous": true,
       "uniquePairs": true
     },
     "bridges": {
-      "count": 147,
+      "count": 123,
       "allOnChannels": true,
       "noUnflaggedFords": true
     },
@@ -17,55 +17,54 @@
       "componentsPerLandmass": 1
     },
     "classes": {
-      "trail": 100,
-      "road": 56,
-      "highway": 26
+      "trail": 91,
+      "road": 52,
+      "highway": 24
     },
     "ports": {
-      "count": 79,
-      "sea": 73,
-      "lake": 6,
-      "landlockedSkipped": 24
+      "count": 77,
+      "sea": 72,
+      "lake": 5,
+      "landlockedSkipped": 22
     },
     "townPort": {
-      "town": "Great Saltlanding",
-      "quays": 4,
+      "town": "Birchgrove",
+      "quays": 9,
       "jetties": 3,
       "moorings": 3,
       "sheds": 0,
       "kind": "sea",
       "beacon": true,
-      "inlandTown": "Larkcistern"
+      "inlandTown": "Crowstead"
     },
     "readOnly": {
       "cached": true,
       "deterministic": true,
-      "physicalHash": "dfd91476",
-      "settlementHash": "77c3b21f"
+      "physicalHash": "4b02963c",
+      "settlementHash": "73c1127f"
     },
     "seating": {
       "roads": {
         "under": 0.079,
         "over": 0.085,
-        "triangles": 38712
+        "triangles": 35100
       },
       "near": {
         "under": 0.004,
         "over": 0.006,
-        "triangles": 2256
+        "triangles": 1680
       },
       "bridgeDeck": [
         0.3,
-        0.8664
+        0.8635
       ],
       "bridgeFooting": [
-        -0.1335,
+        -0.1379,
         -0.02
       ]
     },
     "symbolScale": {
-      "townWidth": 3.69,
-      "tallestBuilding": 1.25,
+      "townWidth": 5.67,
       "portWidth": 0.76,
       "portHeight": 0.4,
       "shipWidth": 0.13,
@@ -73,11 +72,11 @@
     }
   },
   "stats": {
-    "nodes": 103,
-    "roads": 182,
-    "bridges": 147,
-    "ports": 79,
-    "highways": 26,
-    "cells": 3122
+    "nodes": 99,
+    "roads": 167,
+    "bridges": 123,
+    "ports": 77,
+    "highways": 24,
+    "cells": 2787
   }
 }
