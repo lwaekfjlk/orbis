@@ -6,7 +6,7 @@ import {resolve} from 'node:path';
 import {loadEngine,defaults,root} from './engine-loader.mjs';
 const E=loadEngine(),digest=a=>createHash('sha256').update(Buffer.from(a.buffer,a.byteOffset,a.byteLength)).digest('hex');
 let w,s,p,c,geo,society;const report={version:'9.1.0',seed:defaults.seed,checks:{}};
-test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces.find(p=>p.city&&p.name.startsWith('Stonefall'));assert(p);geo=E.physicalFingerprint(w);society=JSON.stringify(s);c=E.generateCity(w,s,p.id);});
+test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces[507];assert(p?.city);geo=E.physicalFingerprint(w);society=JSON.stringify(s);c=E.generateCity(w,s,p.id);});
 test('Stonefall is a dry basin beside glacier-bearing mountains, not a hot-desert theme',()=>{
  assert.equal(p.i,38502);assert.equal(c.siteEnvironment.biome,14);assert(c.siteEnvironment.temperature>0);assert.equal(c.siteEnvironment.ice,0);
  assert(c.siteEnvironment.glacialFoothills);assert(c.siteEnvironment.nearestGlacier<=3.1);assert(c.siteEnvironment.maxElevation>6000);

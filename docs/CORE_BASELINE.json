@@ -1,8 +1,11 @@
 {
   "baseline": "Townsmith 9.1 supplied in this conversation",
+  "notes": {
+    "src/civilization/simulation.js": "Re-baselined in v13 for geography-driven district names only. The random stream is unchanged (naming draws two rolls at the same point cName(rng) drew two), so settlementFingerprint stays 77c3b21f and every population, polity and district id is byte-identical. Locked by the settlementFingerprint assertion in tests/onemap.test.mjs."
+  },
   "sha256": {
     "src/world/geography.js": "b147b5bd79be4b6731c85099644fc75c969bd86f2b1071a790eb1854c611b2bb",
-    "src/civilization/simulation.js": "8dbf2d9f3876278f3f53dce249e40fd5c87643880891ff6d1ed8acc9505187d2",
+    "src/civilization/simulation.js": "f84eb0013644852e33f1c0f19a96a60007d10230f09fa991e651a9a09cb695cf",
     "src/city/environment.js": "9c8562ff086bb7244509a23fb5168549f3055d744983e16bed3fce0378748f19",
     "src/city/generator.js": "5fc24373aabb214fac5c75d3b994d27b5f1df1911a37a97b86efc35e39103977",
     "src/city/actions.js": "7c0d28e21c5100f784a68e1e6bd6c4ad182c30a8aa47d46a7818d72c448fba4e",

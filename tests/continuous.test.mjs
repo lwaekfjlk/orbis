@@ -7,7 +7,7 @@ import {root,defaults} from './engine-loader.mjs';
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');
 const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,createCityRenderer,ContinuousCityLayer,GW,GH,Geometry};')();
 let w,s,city,p;
-test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces.find(p=>p.name==='Stonefall 5'&&p.settled);assert(p);city=E.generateCity(w,s,p.id);});
+test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces[507];assert(p?.settled);city=E.generateCity(w,s,p.id);});
 test('A single parent surface is preserved at every original grid vertex',()=>{
  for(let y=0;y<E.GH;y++)for(let x=0;x<E.GW;x++)assert(Math.abs(E.AtlasSpace.height(w,y*E.GW+x)-E.AtlasSpace.surface(w,x,y))<1e-10);
 });

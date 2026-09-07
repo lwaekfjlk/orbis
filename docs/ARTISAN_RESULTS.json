@@ -3,7 +3,7 @@
   "checks": {
     "nineGeometricFamilies": true,
     "highland": {
-      "name": "Valehold",
+      "name": "Tinyard",
       "footprints": 154,
       "wallSegments": 241,
       "towers": 24,

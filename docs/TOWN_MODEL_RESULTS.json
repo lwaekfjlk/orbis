@@ -23,7 +23,7 @@
     {
       "style": "river",
       "provinceId": 288,
-      "town": "Ashgrove",
+      "town": "Whitebeck",
       "modules": 104,
       "landmarks": 7,
       "roads": 50,
@@ -37,7 +37,7 @@
     {
       "style": "basilica",
       "provinceId": 297,
-      "town": "Moonport",
+      "town": "Great Saltlanding",
       "modules": 48,
       "landmarks": 6,
       "roads": 46,
@@ -51,7 +51,7 @@
     {
       "style": "arcane",
       "provinceId": 269,
-      "town": "Valegrove 2",
+      "town": "Ivoryness",
       "modules": 98,
       "landmarks": 7,
       "roads": 57,
@@ -65,7 +65,7 @@
     {
       "style": "forest",
       "provinceId": 317,
-      "town": "Cinderport",
+      "town": "Pineshore",
       "modules": 100,
       "landmarks": 7,
       "roads": 43,
@@ -79,7 +79,7 @@
     {
       "style": "mountain",
       "provinceId": 500,
-      "town": "Ashgate 3",
+      "town": "Lower Ashness",
       "modules": 102,
       "landmarks": 7,
       "roads": 35,
@@ -93,7 +93,7 @@
     {
       "style": "desert",
       "provinceId": 347,
-      "town": "Oakwatch 4",
+      "town": "Cloudbury",
       "modules": 171,
       "landmarks": 6,
       "roads": 87,
@@ -107,7 +107,7 @@
     {
       "style": "delta",
       "provinceId": 288,
-      "town": "Ashgrove",
+      "town": "Whitebeck",
       "modules": 129,
       "landmarks": 7,
       "roads": 48,
@@ -121,7 +121,7 @@
     {
       "style": "basalt",
       "provinceId": 288,
-      "town": "Ashgrove",
+      "town": "Whitebeck",
       "modules": 131,
       "landmarks": 7,
       "roads": 94,
@@ -135,7 +135,7 @@
     {
       "style": "fjord",
       "provinceId": 532,
-      "town": "Ironford 2",
+      "town": "Ochrewick",
       "modules": 65,
       "landmarks": 7,
       "roads": 34,

@@ -22,7 +22,77 @@ const REALM_COLORS = ['#ccaa62', '#89b2c8', '#a989c0', '#72996d', '#b48168', '#8
 const cPair = (a, b) => a < b ? a + ':' + b : b + ':' + a;
 const cDominant = a => a.indexOf(Math.max(...a));
 function cNormalize(a) { const sum = a.reduce((s, v) => s + Math.max(v, 0), 0); return a.map(v => sum ? Math.max(v, 0) / sum : 1 / a.length); }
-function cName(rng) { const a = ['Ash', 'Bright', 'Moss', 'Silver', 'Dawn', 'Moon', 'Reed', 'Oak', 'Stone', 'Amber', 'Cinder', 'White', 'Star', 'Rose', 'Grey', 'Blue', 'Sun', 'Vale', 'Mist', 'Iron']; const b = ['haven', 'watch', 'mere', 'ford', 'gate', 'hall', 'reach', 'port', 'well', 'grove', 'crest', 'bridge', 'fall', 'quay', 'hold', 'mead']; return a[Math.floor(rng() * a.length)] + b[Math.floor(rng() * b.length)]; }
+/* PLACE NAMES. Two rolls are drawn when a district is created (so the random stream is
+ * independent of naming), but the words are chosen later, once terrain averages exist.
+ * The suffix states what the site IS; the prefix carries local material, cover or climate. */
+const NAME_STEMS = {
+    common: ['Ash', 'Bright', 'Grey', 'White', 'Blue', 'Green', 'Black', 'Red', 'Rose', 'Amber', 'Clear', 'Wild', 'Long', 'High', 'Nether', 'Hart', 'Hawk', 'Lark', 'Wren', 'Crow', 'Raven', 'Rook', 'Fox', 'Wolf', 'Storm', 'Swift', 'Sharp', 'Quill', 'Bower', 'Vale'],
+    coast: ['Gull', 'Salt', 'Tern', 'Cobble', 'Anchor', 'Kelp', 'Herring', 'Sail', 'Foam', 'Shell'],
+    lake: ['Reed', 'Heron', 'Otter', 'Still', 'Glass', 'Swan', 'Rush', 'Sedge'],
+    river: ['Mill', 'Willow', 'Alder', 'Trout', 'Osier', 'Silt', 'Kingfisher', 'Weir'],
+    upland: ['Stone', 'Slate', 'Flint', 'Granite', 'Eagle', 'Cloud', 'Cairn', 'Scree', 'Wind', 'Crag'],
+    forest: ['Oak', 'Birch', 'Elm', 'Hazel', 'Holly', 'Pine', 'Yew', 'Larch', 'Rowan', 'Fern', 'Moss', 'Thorn', 'Bramble', 'Spruce'],
+    marsh: ['Mist', 'Bog', 'Peat', 'Snipe', 'Fen', 'Cotton', 'Marl'],
+    arid: ['Sun', 'Dust', 'Ochre', 'Sand', 'Bone', 'Tamarisk', 'Gold', 'Scorch'],
+    cold: ['Frost', 'Winter', 'Rime', 'Snow', 'Pale', 'North', 'Hoar', 'Cinder'],
+    ore: ['Iron', 'Copper', 'Tin', 'Forge', 'Ember', 'Anvil', 'Coal'],
+    arcane: ['Star', 'Moon', 'Silver', 'Dawn', 'Vesper', 'Ivory', 'Lantern', 'Ember']
+};
+const NAME_TAILS = {
+    common: ['field', 'meadow', 'dale', 'stead', 'croft', 'garth', 'fold', 'ley', 'thorpe', 'bury', 'combe', 'down', 'hall', 'gate', 'watch', 'reach', 'cross', 'close', 'march', 'wick', 'bourne'],
+    coast: ['port', 'quay', 'wharf', 'strand', 'shore', 'ness', 'haven', 'landing', 'cliff'],
+    lake: ['mere', 'pool', 'water', 'tarn', 'shallows', 'bank'],
+    river: ['ford', 'bridge', 'beck', 'brook', 'mill', 'fall', 'run', 'weir'],
+    upland: ['crest', 'tor', 'cairn', 'hold', 'spire', 'keep', 'scar', 'ridge', 'rise', 'mount'],
+    forest: ['grove', 'shaw', 'hurst', 'wold', 'holt', 'chase', 'dell', 'hollow', 'glen'],
+    marsh: ['marsh', 'fen', 'mire', 'moss', 'carr', 'moor'],
+    arid: ['well', 'cistern', 'drift', 'waystead', 'burgh'],
+    cold: ['hold', 'watch', 'shelter', 'barrow', 'keep'],
+    ore: ['forge', 'delve', 'pit', 'minster', 'yard'],
+    arcane: ['spire', 'minster', 'close', 'sanctuary', 'vigil']
+};
+const NAME_QUALIFIERS = ['Upper', 'Lower', 'Little', 'Great', 'Old', 'New', 'North', 'South', 'East', 'West', 'Far', 'Inner'];
+/* Which pools a district draws from. A site can be several things at once (a river mouth on a
+ * cold coast); every matching pool contributes, so the vocabulary widens with the geography. */
+function cNamePools(p) {
+    const keys = ['common'];
+    if (p.harbor > .35 || p.coast > .30) keys.push('coast');
+    if (p.lake > .12 || p.siteLake > 0) keys.push('lake');
+    if (p.river > .35) keys.push('river');
+    if (p.altitude > 1100) keys.push('upland');
+    if (p.forest > .40) keys.push('forest');
+    if (p.wet > .28) keys.push('marsh');
+    if (p.aridity > .58) keys.push('arid');
+    if (p.temp < 2) keys.push('cold');
+    if (p.ore > .55) keys.push('ore');
+    if (p.mana > .55) keys.push('arcane');
+    return keys;
+}
+function cName(p) {
+    const keys = cNamePools(p), terrain = keys.filter(k => k !== 'common');
+    // Terrain pools are weighted above the common pool, so a harbour district usually reads
+    // as one. Weighting only biases the draw; the set of possible names is unchanged.
+    const pool = (table) => [...table.common, ...terrain.flatMap(k => [table[k], table[k], table[k]]).flat()];
+    const stems = pool(NAME_STEMS), tails = pool(NAME_TAILS);
+    const stem = stems[Math.floor(p.nameRoll[0] * stems.length)], tail = tails[Math.floor(p.nameRoll[1] * tails.length)];
+    // 'Stonestone' and 'Fenfen' read as bugs; step to the neighbouring tail instead.
+    return stem + (stem.toLowerCase() === tail ? tails[(tails.indexOf(tail) + 1) % tails.length] : tail);
+}
+/* Collision fallback: qualify the place ('Lower Ashford') before ever numbering it. */
+function cNameDistricts(sim) {
+    const taken = new Set();
+    for (const p of sim.provinces) {
+        const base = cName(p);
+        let name = base;
+        if (taken.has(name))
+            for (let k = 0; k < NAME_QUALIFIERS.length && taken.has(name); k++)
+                name = NAME_QUALIFIERS[(Math.floor(p.nameRoll[0] * NAME_QUALIFIERS.length) + k) % NAME_QUALIFIERS.length] + ' ' + base;
+        for (let k = 2; taken.has(name); k++)
+            name = base + ' ' + k;
+        taken.add(name);
+        p.name = name;
+    }
+}
 function habitable(w, i) { return w.height[i] > 0 && w.lake[i] < 0 && w.ice[i] < 180 && w.temp[i] > -13; }
 /* GEOGRAPHY-FIRST INITIALIZATION.
  * Physical fields are read-only inputs. Districts are accounting units, not towns.
@@ -211,7 +281,7 @@ function initializeSettlements(w, options = {}) {
             if (i < 0)
                 continue;
             const id = sim.provinces.length;
-            sim.provinces.push({ id, i, x: i % GW, y: i / GW | 0, cells: [], neighbors: [], owner: -1, name: cName(rng), city: false, settled: false, urbanPop: 0, urbanSupport: 0, ruralPop: 0, pop: 0, capacity: 0, foodCapacity: 0, waterCapacity: 0, ruralCapacity: 0, fertility: 0, mana: 0, ore: 0, forest: 0, wet: 0, lake: 0, coast: 0, altitude: 0, temp: 0, aridity: 0, people: [], faith: [], unrest: 5 + rng() * 8, dev: .4 + rng() * .25, occupation: 0, river: g.river[i], fresh: g.fresh[i], harbor: g.harbor[i], sitePotential: g.potential[i], siteLake: g.lake[i], saltShore: g.salt[i], lakeIds: [], siteReason: '' });
+            sim.provinces.push({ id, i, x: i % GW, y: i / GW | 0, cells: [], neighbors: [], owner: -1, name: '', nameRoll: [rng(), rng()], city: false, settled: false, urbanPop: 0, urbanSupport: 0, ruralPop: 0, pop: 0, capacity: 0, foodCapacity: 0, waterCapacity: 0, ruralCapacity: 0, fertility: 0, mana: 0, ore: 0, forest: 0, wet: 0, lake: 0, coast: 0, altitude: 0, temp: 0, aridity: 0, people: [], faith: [], unrest: 5 + rng() * 8, dev: .4 + rng() * .25, occupation: 0, river: g.river[i], fresh: g.fresh[i], harbor: g.harbor[i], sitePotential: g.potential[i], siteLake: g.lake[i], saltShore: g.salt[i], lakeIds: [], siteReason: '' });
             grid[i] = id;
             cost[i] = 0;
             heap.push(i, 0);
@@ -236,14 +306,7 @@ function initializeSettlements(w, options = {}) {
             }
         }
     }
-    const edges = new Set(), names = new Set();
-    for (const p of sim.provinces) {
-        const base = p.name;
-        let k = 2;
-        while (names.has(p.name))
-            p.name = base + ' ' + k++;
-        names.add(p.name);
-    }
+    const edges = new Set();
     for (let i = 0; i < GN; i++)
         if (grid[i] >= 0) {
             const p = sim.provinces[grid[i]];
@@ -293,6 +356,8 @@ function initializeSettlements(w, options = {}) {
         p.landmass = w.landmassId[p.i];
         p.moveCost = 1 + p.altitude / 3500 + p.forest * .27 + p.wet * .9 + Math.max(0, .25 - p.fresh) * 5;
     }
+    // Named only now: the suffix reports the averaged terrain, which does not exist until here.
+    cNameDistricts(sim);
     w.provinceId = grid;
     w.fertility = g.farm;
     w.mana = g.mana;

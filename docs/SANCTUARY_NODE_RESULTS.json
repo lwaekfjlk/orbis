@@ -4,7 +4,7 @@
     {
       "name": "existing-city-placement",
       "provinceId": 213,
-      "city": "Silverford",
+      "city": "Wildcombe",
       "width": 38,
       "audit": {
         "iceBuildings": 0,
@@ -63,55 +63,55 @@
       "rows": [
         {
           "id": 213,
-          "name": "Silverford",
+          "name": "Wildcombe",
           "blocks": 95,
           "sanctuary": 38
         },
         {
           "id": 240,
-          "name": "Moonmead",
+          "name": "Foxwaystead",
           "blocks": 80,
           "sanctuary": 38
         },
         {
           "id": 258,
-          "name": "Starwatch",
+          "name": "Terngarth",
           "blocks": 104,
           "sanctuary": 38
         },
         {
           "id": 259,
-          "name": "Ironhall",
+          "name": "Scorchquay",
           "blocks": 85,
           "sanctuary": 38
         },
         {
           "id": 297,
-          "name": "Moonport",
+          "name": "Great Saltlanding",
           "blocks": 56,
           "sanctuary": 38
         },
         {
           "id": 343,
-          "name": "Reedbridge",
+          "name": "Ravenness",
           "blocks": 95,
           "sanctuary": 38
         },
         {
           "id": 403,
-          "name": "Amberwatch",
+          "name": "Gullley",
           "blocks": 80,
           "sanctuary": 38
         },
         {
           "id": 452,
-          "name": "Whitefall 4",
+          "name": "Kelplanding",
           "blocks": 72,
           "sanctuary": 38
         },
         {
           "id": 462,
-          "name": "Dawnhaven 3",
+          "name": "Larkfield",
           "blocks": 88,
           "sanctuary": 38
         }
@@ -128,7 +128,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23898656,
+      "bytes": 23898652,
       "meshes": 10
     }
   ]

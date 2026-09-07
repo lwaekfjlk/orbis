@@ -44,3 +44,19 @@ test('Parent geography, society and world-map renderer retain the pre-art-upgrad
   assert.equal(actual,expected,file+' unexpectedly changed');
  }
 });
+test('Geography-driven district names leave the society itself untouched, and never number a town',async()=>{
+ const {loadEngine,defaults}=await import('./engine-loader.mjs');
+ const E=loadEngine(),w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
+ // The naming rewrite draws its two rolls where the old cName(rng) drew two, so the
+ // random stream — and therefore every population and polity — is bit-identical.
+ assert.equal(E.settlementFingerprint(s),'77c3b21f');
+ const names=s.provinces.map(p=>p.name);
+ assert.equal(new Set(names).size,names.length,'district names must be unique');
+ const numbered=names.filter(n=>/\d/.test(n));
+ assert.deepEqual(numbered,[],'qualifiers must absorb collisions before numbering does');
+ // The suffix has to report the site: harbour districts get coastal words, not inland ones.
+ const inland=['ford','bridge','beck','brook','tor','cairn','fen','mire'];
+ const harbours=s.provinces.filter(p=>p.coast>.75&&p.settled);
+ assert(harbours.length>3);
+ assert(!harbours.every(p=>inland.some(t=>p.name.endsWith(t))));
+});
