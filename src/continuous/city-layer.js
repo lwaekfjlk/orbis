@@ -79,13 +79,13 @@ const ExcavationTerrain=(()=>{
 })();
 const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
- constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.lastExcavationKey='closed';this.retess=0;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
+ constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
- remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);
+ remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);this.lastRiverKey=null;if(this.world&&this.r.world===this.world)this.r.buildRivers?.();
   if(a.excavations?.length){this.lastTerrainKey=null;if(this.world&&this.r.world===this.world){this.r.buildTerrain?.();this.r.request?.();}}
  }
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
- reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
+ reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.reriver);this.lastRiverKey=null;clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
  bind(w,s){if(w!==this.world||(this.sim&&s!==this.sim))this.reset(w,s);else this.sim=s;}
  activeExcavations(){if(this.r.world&&this.r.world!==this.world)return[];return this.r.zoom>=AtlasSpace.DETAIL_ZOOM?[...this.models.values()].filter(m=>this.visible(`cm:${m.p.id}:buildings`)===true).flatMap(m=>m.excavations||[]):[];}
  excavationKey(){const holes=this.activeExcavations();return holes.length?holes.map(h=>[h.buildingId,h.floorY,...h.outline.flat()].join(',')).join(';'):'closed';}
@@ -312,9 +312,9 @@ class ContinuousCityLayer {
    }
    const key=`cm:${p.id}:${name}`;this.r.upload(key,g,m.shadow,m.unlit,1);model.meshNames.push(key);model.triangles+=g.data.length/27;
   }
-  // The city detail's inherited river centerlines remain attached to the atlas.
-  const streams=new Geometry();for(const a of c.rivers){const n=18;for(let j=1;j<=n;j++){const t0=(j-1)/n,t1=j/n,x0=lerp(a.a.x,a.b.x,t0),z0=lerp(a.a.z,a.b.z,t0),x1=lerp(a.a.x,a.b.x,t1),z1=lerp(a.a.z,a.b.z,t1);const A=frame.vertex(x0,frame.localGround(x0,z0)+.16,z0),B=frame.vertex(x1,frame.localGround(x1,z1)+.16,z1);streams.line(A,B,a.width*frame.scale,CityEnvironment.waterColor(3));}}
-  this.r.upload(`cm:${p.id}:streams`,streams,false,.35);model.meshNames.push(`cm:${p.id}:streams`);
+  // RiverDetail renders inherited city tributaries with the parent channels.
+  // A second fixed-resolution stream ribbon would overlap the same river.
+
   const vegetation=new Geometry();
   for(let dy=-9;dy<=9;dy+=.43)for(let dx=-11;dx<=11;dx+=.43){const gx=p.x+dx+noise(dx*3,dy*3,w.seed)*.10,gy=p.y+dy+noise(dx*3,dy*3,w.seed+6)*.10;if(gx<0||gx>=GW||gy<0||gy>=GH)continue;
    const e=CityEnvironment.sample(w,gx,gy);if(e.water||e.ice>12||hash2(Math.round(dx*100),Math.round(dy*100),w.seed+11)>e.treeDensity*.65)continue;
@@ -359,7 +359,7 @@ class ContinuousCityLayer {
   await new Promise(resolve=>setTimeout(resolve,15));
   if(epoch!==this.epoch){this.pending.delete(key);return null;}
   try{this.remove(id);while(this.models.size>=this.maxModels){const entries=[...this.models.values()].sort((a,b)=>a.last-b.last),victim=entries.find(m=>m.p.id!==this.focusId)||entries[0];this.remove(victim.p.id);}
-   const model=await this.workerBuild(p);if(epoch!==this.epoch)return null;this.models.set(id,model);while(this.models.size>this.maxModels){const victims=[...this.models.values()].filter(m=>m.p.id!==id).sort((a,b)=>a.last-b.last);this.remove((victims.find(m=>m.p.id!==this.focusId)||victims[0]).p.id);}this.r.continuousModels=this.models;this.r.buildTerrain();this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();return model;
+   const model=await this.workerBuild(p);if(epoch!==this.epoch)return null;this.models.set(id,model);while(this.models.size>this.maxModels){const victims=[...this.models.values()].filter(m=>m.p.id!==id).sort((a,b)=>a.last-b.last);this.remove((victims.find(m=>m.p.id!==this.focusId)||victims[0]).p.id);}this.r.continuousModels=this.models;this.r.buildTerrain();this.r.buildRivers?.();this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();return model;
   }catch(error){if(epoch!==this.epoch)return null;this.failed.add(key);console.error('Atlas town detail',p.name,error);window.__continuousError=error.message;return null;}
   finally{this.pending.delete(key);this.loading=this.pending.size>0;this.preparing=null;this.onChange();}
  }
@@ -391,9 +391,11 @@ class ContinuousCityLayer {
   // The scatter follows the camera, on the same settle-first rule as the terrain: it is
   // a remesh, and it must not run inside a wheel or a drag.
   if(this.environmentKey()!==this.lastEnvironmentKey){clearTimeout(this.reflora);this.reflora=setTimeout(()=>{if(this.environmentKey()!==this.lastEnvironmentKey&&!busy){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}},190);}
-  // The ground-seated road ribbon follows the camera too, and keys itself, so this is
-  // free when nothing has moved far enough to matter.
-  if(close)this.r.buildNearRoads?.();  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
+  // Water follows settled zoom, pan and viewport changes without rebuilding
+  // unrelated atlas overlays. An unchanged camera reuses the existing buffer.
+  if(typeof RiverDetail!=='undefined'&&this.r.buildRivers&&RiverDetail.key(this)!==this.lastRiverKey){clearTimeout(this.reriver);this.reriver=setTimeout(()=>{if(!busy&&RiverDetail.key(this)!==this.lastRiverKey){this.r.buildRivers();this.r.request();}},160);}
+  if(close)this.r.buildNearRoads?.();
+  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
   // settle rather than running inside a wheel or drag gesture.
   if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
   if(!close){this.onChange();return;}clearTimeout(this.timer);this.timer=setTimeout(()=>this.stream(),180);this.onChange();

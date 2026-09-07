@@ -106,14 +106,14 @@ function generateCity(w, sim, provinceId, design = {}) {
     const scale = p.detailSupport ?? p.urbanSupport ?? p.urbanPop ?? 0;
     const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
     const wanted = (6.4 + 7.0 * crowd) * (capital ? 1.10 : 1);
-    const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / 7.8;
+    const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / CityEnvironment.cityDimensions.span;
     // Population controls the built radius as well as the block target. A high
     // floor made neighboring hamlets fill almost as much ground as capitals.
     // Retain a modest core for gates and civic buildings, with room to grow.
     const settled = .55 + .45 * crowd;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
-    const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;
+    const n = 111, width = CityEnvironment.cityDimensions.width * grow, depth = CityEnvironment.cityDimensions.depth * grow, nn = n * n;
     // Survey the exact parent-world footprint that the atlas displays. Sampling the
     // wider contextual span moved local shores, cliffs and rivers under the city.
     const terrainSpan = span * CityEnvironment.cityFootprint;
@@ -166,7 +166,7 @@ function generateCity(w, sim, provinceId, design = {}) {
             const from = { x: (xx - p.x) / terrainSpan * width, z: (yy - p.y) / terrainSpan * width }, to = { x: (j % GW - p.x) / terrainSpan * width, z: (Math.floor(j / GW) - p.y) / terrainSpan * width };
             if (Math.min(from.x, to.x) > width * .65 || Math.max(from.x, to.x) < -width * .65 || Math.min(from.z, to.z) > depth * .65 || Math.max(from.z, to.z) < -depth * .65)
                 continue;
-            const r = { a: from, b: to, width: cityClamp(Math.log1p(w.flow[i] / w.riverThreshold) * .8, .45, 2) };
+            const r = { a: from, b: to, width: CityEnvironment.riverWidth(w,i) };
             city.rivers.push(r);
             for (let k = 0; k < nn; k++) {
                 if (city.water[k])
