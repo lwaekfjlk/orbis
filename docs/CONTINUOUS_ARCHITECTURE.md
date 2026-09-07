@@ -34,3 +34,5 @@ Cartographic borders and large map-symbol trees recede at local zoom. Smaller su
 ## Scope
 
 This is continuous camera navigation and co-located geometry, not a claim of continuous physical resolution. Original geography is still coarse and stylized; LOD objects can appear after loading. Software rendering and large city upload remain expensive. No first-person collision, interior simulation, photogrammetry, new erosion detail, or surveyed metric scale is provided.
+
+Roads, quays and walking figures are a further display layer over the same surface, described in `docs/ROADS_PORTS_FOLK.md`. They change over at the existing town-detail threshold — the cartographic road ribbon hands off to a ground-seated near band, and map-symbol traffic hands off to true-scale figures — so nothing changes representation twice on the way in. Figures are decoration derived from population: they carry no cargo, spread no faith and make no contact, and no simulation quantity depends on a road, a quay or a traveller.

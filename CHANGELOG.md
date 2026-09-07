@@ -1,3 +1,24 @@
+# 13.2.0 — Roads, ports and the peoples on them
+
+- Land routes between settlements, derived from one multi-source search over the unchanged
+  raster: bridges only on real channels, never a metre of road over open water.
+- Trunk roads emerge from modelled traffic across the network, not from settlement size.
+- Working waterfronts at both scales: quay symbols on the atlas, and quays, jetties, moored
+  hulls, sheds, a derrick and a beacon inside a town that has genuine shore.
+- Walking figures of the world's seven peoples, each one a sample of its province's live
+  population mixture. Appearance differs; speed, routes and capability do not.
+- Residents on a town's own streets and door connectors; carts, riders and hulls on the
+  roads and the sea lanes the simulation already computed.
+- New **Roads & ports** and **Townsfolk** toggles. Figures animate on WebGL2 and hold
+  position on the Canvas software fallback or under prefers-reduced-motion.
+- Nothing here feeds back into the simulation: physical, settlement and political
+  fingerprints, the save format and `city.fingerprint` are all unchanged.
+- New regressions: `tests/roads.test.mjs` and `tests/folk.test.mjs`; notes in
+  `docs/ROADS_PORTS_FOLK.md`, measurements and limits in
+  `docs/ROADS_PORTS_FOLK_VERIFICATION.md`.
+
+---
+
 # 13.1.0 — A sharper map, and places worth naming
 
 - Terrain refinement follows the camera: a grid cell is subdivided up to eight ways once it

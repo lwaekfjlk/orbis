@@ -69,7 +69,7 @@ class ContinuousCityLayer {
   const find=(x,z)=>{const options=buckets.get(Math.floor(x/5)+','+Math.floor(z/5));if(!options)return null;return options.find(a=>Math.abs(a.b.x-x)<=a.b.w*.5+.85&&Math.abs(a.b.z-z)<=a.b.d*.5+.85)||null;};
   const rigid=['buildings','roofs','details'];
   for(const[name,m]of Object.entries(collector.meshes)){
-   if(!['buildings','roofs','details','streets','farms','cityWalls','trees'].includes(name))continue;
+   if(!['buildings','roofs','details','streets','farms','cityWalls','trees','port'].includes(name))continue;
    const g=new Geometry(),data=m.vertices;
    for(let k=0;k<data.length;k+=27){const x=(data[k]+data[k+9]+data[k+18])/3,z=(data[k+2]+data[k+11]+data[k+20])/3,anchor=rigid.includes(name)?find(x,z):null,pts=[];
     for(let j=0;j<3;j++){const t=k+j*9;const q=frame.vertex(data[t],data[t+1],data[t+2],anchor);
@@ -123,7 +123,7 @@ class ContinuousCityLayer {
   }catch(error){if(epoch!==this.epoch)return null;this.failed.add(key);console.error('Atlas town detail',p.name,error);window.__continuousError=error.message;return null;}
   finally{this.pending.delete(key);this.loading=this.pending.size>0;this.preparing=null;this.onChange();}
  }
- visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>4.2;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=4.8&&this.r.zoom<18;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<18)return false;return this.r.zoom>=4.8&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false);}
+ visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>4.2;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=4.8&&this.r.zoom<18;if(['buildings','roofs','details','cityWalls','port'].includes(type)&&this.r.zoom<18)return false;return this.r.zoom>=4.8&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
   if(this.r.zoom>=4.8){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false&&this.r.zoom<14;}
   return null;
  }

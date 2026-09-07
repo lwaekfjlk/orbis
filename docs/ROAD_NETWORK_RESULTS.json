@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "checks": {
+    "paths": {
+      "roads": 182,
+      "overWater": 0,
+      "contiguous": true,
+      "uniquePairs": true
+    },
+    "bridges": {
+      "count": 147,
+      "allOnChannels": true,
+      "noUnflaggedFords": true
+    },
+    "connectivity": {
+      "landmasses": 11,
+      "componentsPerLandmass": 1
+    },
+    "classes": {
+      "trail": 100,
+      "road": 56,
+      "highway": 26
+    },
+    "ports": {
+      "count": 79,
+      "sea": 73,
+      "lake": 6,
+      "landlockedSkipped": 24
+    },
+    "townPort": {
+      "town": "Great Saltlanding",
+      "quays": 4,
+      "jetties": 3,
+      "moorings": 3,
+      "sheds": 0,
+      "kind": "sea",
+      "beacon": true,
+      "inlandTown": "Larkcistern"
+    },
+    "readOnly": {
+      "cached": true,
+      "deterministic": true,
+      "physicalHash": "dfd91476",
+      "settlementHash": "77c3b21f"
+    },
+    "seating": {
+      "roads": {
+        "under": 0.079,
+        "over": 0.085,
+        "triangles": 38712
+      },
+      "near": {
+        "under": 0.004,
+        "over": 0.006,
+        "triangles": 2256
+      },
+      "bridgeDeck": [
+        0.3,
+        0.8664
+      ],
+      "bridgeFooting": [
+        -0.1335,
+        -0.02
+      ]
+    }
+  },
+  "stats": {
+    "nodes": 103,
+    "roads": 182,
+    "bridges": 147,
+    "ports": 79,
+    "highways": 26,
+    "cells": 3122
+  }
+}

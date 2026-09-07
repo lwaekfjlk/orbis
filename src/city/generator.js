@@ -416,7 +416,88 @@ function generateCity(w, sim, provinceId, design = {}) {
         Object.assign(ordinary[6], { type: 'well', name: 'The Common Cistern', landmark: true, h: .9 });
         city.landmarks.push(ordinary[6].id);
     }
+    // A working waterfront, where the harbour district already sits on real parent water.
+    // Quays, jetties, sheds, cranes and hulls are port FITTINGS, not city.buildings: the
+    // block plan, the LOD triangle budget and city.fingerprint are all left alone, and the
+    // whole assembly is placed on existing shore. No basin is dug and no water is created.
+    // Everything here is hashed rather than drawn from rng(), so the tree, field and wall
+    // streams that follow stay bit-identical to a town without a port.
+    city.port = null;
+    const harborDistrict = city.districts.find(d => d.type === 'harbor');
+    const openWater = j => city.water[j] && city.waterKind[j] !== 3;
+    const portBand = [];
+    if (harborDistrict && shore.length) {
+        const seaward = k => {
+            const j = [k - 1, k + 1, k - n, k + n].find(openWater);
+            if (j == null)
+                return null;
+            const q = city.xy(k), a = city.xy(j), len = Math.hypot(a.x - q.x, a.z - q.z) || 1;
+            return { k, q, nx: (a.x - q.x) / len, nz: (a.z - q.z) / len, y: Math.max(city.height[k], city.height[j]) };
+        };
+        const reach = 26 * grow;
+        const candidates = shore.map(seaward).filter(Boolean)
+            .filter(s => Math.hypot(s.q.x - harborDistrict.x, s.q.z - harborDistrict.z) < reach)
+            .sort((a, b) => Math.hypot(a.q.x - harborDistrict.x, a.q.z - harborDistrict.z) - Math.hypot(b.q.x - harborDistrict.x, b.q.z - harborDistrict.z));
+        if (candidates.length >= 3) {
+            // Order the waterfront along the shore itself, using the tangent the street
+            // grammar already estimated from actual water samples.
+            const anchor = candidates[0], [ax, az] = city.shoreAxis || [1, 0];
+            const along = s => (s.q.x - anchor.q.x) * ax + (s.q.z - anchor.q.z) * az;
+            const across = s => Math.abs(-(s.q.x - anchor.q.x) * az + (s.q.z - anchor.q.z) * ax);
+            const band = candidates.filter(s => across(s) < 4).sort((a, b) => along(a) - along(b));
+            portBand.push(...band.map(s => s.k));
+            const quays = [], jetties = [], moorings = [], sheds = [], bollards = [];
+            for (let k = 1; k < band.length; k++) {
+                const a = band[k - 1], b = band[k];
+                if (Math.hypot(b.q.x - a.q.x, b.q.z - a.q.z) > 4.5)
+                    continue;
+                quays.push({ a: a.q, b: b.q, y: Math.max(a.y, b.y) + .30, width: 1.5 });
+            }
+            const berths = band.filter((_, k) => k % Math.max(2, Math.floor(band.length / 4)) === 0).slice(0, 4);
+            for (const s of berths) {
+                // A jetty must actually stand in water for its whole length.
+                let length = 0;
+                for (let d = 1.2; d <= 6.5; d += .8) {
+                    if (!openWater(city.index(s.q.x + s.nx * d, s.q.z + s.nz * d)))
+                        break;
+                    length = d;
+                }
+                if (length < 2)
+                    continue;
+                const tip = { x: s.q.x + s.nx * length, z: s.q.z + s.nz * length };
+                jetties.push({ a: s.q, b: tip, y: s.y + .32, width: .55 });
+                const roll = hash2(s.k, city.buildings.length, seed);
+                moorings.push({ x: tip.x + s.nz * (roll < .5 ? 1.1 : -1.1), z: tip.z - s.nx * (roll < .5 ? 1.1 : -1.1),
+                    y: s.y + .06, angle: Math.atan2(-s.nx, s.nz), length: 2.1 + roll * 1.9, beam: .78 + roll * .30,
+                    kind: roll < .38 ? 'barge' : 'boat' });
+                bollards.push({ x: s.q.x - s.nx * .5, z: s.q.z - s.nz * .5, y: s.y + .30 });
+                // Landward sheds, on dry road-free ground that no compound already holds.
+                for (const back of [2.9, 4.6]) {
+                    const x = s.q.x - s.nx * back, z = s.q.z - s.nz * back, j = city.index(x, z);
+                    if (city.water[j] || city.road[j] || city.slope[j] > .8 || distanceRoad[j] > 10)
+                        continue;
+                    const sw = 3.0 + hash2(j, 7, seed) * 1.6, sd = 2.2 + hash2(j, 13, seed) * 1.2;
+                    if (usedGrid.near(x - sw / 2, z - sd / 2, x + sw / 2, z + sd / 2).some(v => Math.abs(v.x - x) < (v.w + sw) / 2 && Math.abs(v.z - z) < (v.d + sd) / 2))
+                        continue;
+                    if (sheds.some(v => Math.abs(v.x - x) < (v.w + sw) / 2 + .4 && Math.abs(v.z - z) < (v.d + sd) / 2 + .4))
+                        continue;
+                    sheds.push({ x, z, y: city.height[j], w: sw, d: sd, h: 2.0 + hash2(j, 19, seed) * 1.1, angle: Math.atan2(s.nz, s.nx) });
+                }
+            }
+            if (quays.length || jetties.length) {
+                const head = band[band.length - 1], cranePost = berths[0] || anchor;
+                city.port = { district: harborDistrict.id, kind: city.waterKind[[anchor.k - 1, anchor.k + 1, anchor.k - n, anchor.k + n].find(openWater)] === 2 ? 'lake' : 'sea',
+                    quays, jetties, moorings, sheds, bollards,
+                    cranes: jetties.length ? [{ x: cranePost.q.x - cranePost.nx * 1.3, z: cranePost.q.z - cranePost.nz * 1.3, y: cranePost.y + .30, angle: Math.atan2(cranePost.nz, cranePost.nx), h: 4.2 }] : [],
+                    // A light is worth building only where the harbour is genuinely exposed.
+                    beacon: p.harbor > .45 && head !== anchor ? { x: head.q.x + head.nx * .6, z: head.q.z + head.nz * .6, y: head.y + .30, h: 5.4 } : null };
+            }
+        }
+    }
+    // Landings elsewhere on the shore, away from the built waterfront.
     for (const k of shore.filter((_, j) => j % 16 === 0).slice(0, 7)) {
+        if (portBand.includes(k))
+            continue;
         const q = city.xy(k), j = [k - 1, k + 1, k - n, k + n].find(j => city.water[j] && city.waterKind[j] !== 3);
         if (j == null)
             continue;
@@ -505,7 +586,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     const weights = { home: 0, workshop: 0, market: 0, temple: 0, academy: 0, harbor: 0, civic: 0, garden: 0 };
     for (const d of city.districts)
         weights[d.type] += d.buildings;
-    city.stats = { modules: city.buildings.filter(b=>!b.landmark).length, structures: city.buildings.reduce((n,b)=>n+(b.components||1),0), grammar: profile.plan, buildings: city.buildings.length, landmarks: city.landmarks.length, streets: city.roads.length, districts: city.districts.length, waterPercent: city.water.reduce((a, b) => a + b, 0) / nn * 100, bridges: city.roads.reduce((a, r) => a + r.points.filter(p => p.bridge).length, 0), piers: city.piers.length, weights };
+    city.stats = { modules: city.buildings.filter(b=>!b.landmark).length, structures: city.buildings.reduce((n,b)=>n+(b.components||1),0), grammar: profile.plan, buildings: city.buildings.length, landmarks: city.landmarks.length, streets: city.roads.length, districts: city.districts.length, waterPercent: city.water.reduce((a, b) => a + b, 0) / nn * 100, bridges: city.roads.reduce((a, r) => a + r.points.filter(p => p.bridge).length, 0), piers: city.piers.length, port: city.port ? { quays: city.port.quays.length, jetties: city.port.jetties.length, moorings: city.port.moorings.length, sheds: city.port.sheds.length, kind: city.port.kind, beacon: !!city.port.beacon } : null, weights };
     city.fingerprint = cityHash(JSON.stringify({ recipe: TownCatalog.signature(city.townRecipe), center: city.center, roads: city.roads.map(r => r.nodes), buildings: city.buildings.map(b => [b.id, b.x, b.z, b.w, b.d, b.type]) }));
     return city;
 }

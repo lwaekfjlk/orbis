@@ -95,7 +95,7 @@ function createCityRenderer(canvas, onChange, config = {}) {
         this.realm = realm;
         this.cityState = state;
         this.world = null;
-        const terrain = new Geometry(), sea = new Geometry(), roads = new Geometry(), buildings = new Geometry(), roofs = new Geometry(), details = new Geometry(), trees = new Geometry(), farms = new Geometry(), walls = new Geometry();
+        const terrain = new Geometry(), sea = new Geometry(), roads = new Geometry(), buildings = new Geometry(), roofs = new Geometry(), details = new Geometry(), trees = new Geometry(), farms = new Geometry(), walls = new Geometry(), port = new Geometry();
         const dry = c.siteEnvironment.aridity<.6&&c.siteEnvironment.temperature>=16;
         const colorAt=(grid,ids)=>{const col=[0,0,0];for(const i of ids)for(let j=0;j<3;j++)col[j]+=grid.color[i*3+j]/ids.length;return col;};
         const elevation = (x, z) => this.ground(x, z);
@@ -187,10 +187,62 @@ function createCityRenderer(canvas, onChange, config = {}) {
             cityBox(details, x, y + .92, z, 1.25, .12, 1.05, rgb(k % 2 ? '#c3a16d' : '#9eb6a3'));
         }
         for (const p of c.piers) {
-            details.line([p.a.x, p.y, p.a.z], [p.b.x, p.y, p.b.z], .7, rgb('#9c977d'));
+            port.line([p.a.x, p.y, p.a.z], [p.b.x, p.y, p.b.z], .7, rgb('#9c977d'));
             for (let t = 0; t <= 1; t += .25) {
                 const x = lerp(p.a.x, p.b.x, t), z = lerp(p.a.z, p.b.z, t);
-                cityBox(details, x, p.y - 1.4, z, .16, 1.7, .16, rgb('#797d67'));
+                cityBox(port, x, p.y - 1.4, z, .16, 1.7, .16, rgb('#797d67'));
+            }
+        }
+        // The working waterfront. Its footprint was validated against real shore, dry
+        // ground and the existing compounds during generation; nothing is placed here.
+        if (c.port) {
+            const kit = ArtisanCityKit.palettes[c.townProfile.id], stone = rgb(kit.wall), timber = rgb(kit.wood);
+            const deckCol = colorScale(stone, .93), hullCol = colorScale(timber, 1.05), sailCol = rgb(kit.trim);
+            for (const q of c.port.quays) {
+                port.line([q.a.x, q.y, q.a.z], [q.b.x, q.y, q.b.z], q.width, deckCol);
+                for (const e of [q.a, q.b])
+                    cityBox(port, e.x, q.y - 1.5, e.z, .34, 1.5, .34, colorScale(stone, .80));
+            }
+            for (const j of c.port.jetties) {
+                port.line([j.a.x, j.y, j.a.z], [j.b.x, j.y, j.b.z], j.width, timber);
+                for (let t = .15; t <= 1; t += .28) {
+                    const x = lerp(j.a.x, j.b.x, t), z = lerp(j.a.z, j.b.z, t);
+                    cityBox(port, x, j.y - 1.8, z, .13, 1.8, .13, colorScale(timber, .84));
+                }
+            }
+            for (const b of c.port.bollards)
+                port.cone(b.x, b.y, b.z, .16, .13, .42, colorScale(stone, .74), 5);
+            for (const m of c.port.moorings) {
+                const ca = Math.cos(m.angle), sa = Math.sin(m.angle);
+                const at = (u, v, h) => [m.x + u * ca - v * sa, m.y + h, m.z + u * sa + v * ca];
+                const bow = at(m.length * .5, 0, .30), stern = at(-m.length * .5, 0, .22);
+                for (const side of [-1, 1]) {
+                    const gunwale = at(0, side * m.beam * .5, .34), keel = at(0, side * m.beam * .18, -.16);
+                    port.tri(bow, gunwale, keel, hullCol);
+                    port.tri(stern, keel, gunwale, hullCol);
+                    port.tri(bow, keel, gunwale, hullCol);
+                }
+                port.quad(at(m.length * .42, -m.beam * .42, .34), at(m.length * .42, m.beam * .42, .34), at(-m.length * .42, m.beam * .42, .30), at(-m.length * .42, -m.beam * .42, .30), colorScale(timber, .92));
+                if (m.kind === 'boat') {
+                    port.cone(m.x, m.y + .34, m.z, .07, .05, m.length * .95, timber, 4);
+                    port.tri([m.x, m.y + .34 + m.length * .95, m.z], at(m.length * .40, 0, .34 + m.length * .48), [m.x, m.y + .52, m.z], sailCol);
+                }
+            }
+            for (const s of c.port.sheds) {
+                cityBox(port, s.x, s.y, s.z, s.w, s.h, s.d, colorScale(stone, .96));
+                port.cone(s.x, s.y + s.h, s.z, Math.max(s.w, s.d) * .56, 0, Math.min(s.w, s.d) * .30, rgb(kit.roof), 4, s.angle);
+            }
+            for (const cr of c.port.cranes) {
+                port.cone(cr.x, cr.y, cr.z, .22, .16, cr.h, timber, 5);
+                const tipX = cr.x + Math.cos(cr.angle) * cr.h * .62, tipZ = cr.z + Math.sin(cr.angle) * cr.h * .62;
+                port.line([cr.x, cr.y + cr.h, cr.z], [tipX, cr.y + cr.h * .72, tipZ], .10, timber);
+                port.line([tipX, cr.y + cr.h * .72, tipZ], [tipX, cr.y + cr.h * .30, tipZ + .02], .05, colorScale(timber, .8));
+            }
+            if (c.port.beacon) {
+                const b = c.port.beacon;
+                port.cone(b.x, b.y, b.z, .95, .55, b.h, stone, 8);
+                port.cone(b.x, b.y + b.h, b.z, .62, .48, .55, rgb(kit.metal), 8);
+                port.cone(b.x, b.y + b.h + .55, b.z, .55, 0, .60, rgb(kit.roof), 8);
             }
         }
         // Defensive circuits are built around the actual urban footprint, with
@@ -225,6 +277,7 @@ function createCityRenderer(canvas, onChange, config = {}) {
         this.upload('farms', farms, false);
         this.upload('streets', roads, false);
         this.upload('cityWalls', walls, true);
+        this.upload('port', port, true);
         this.upload('buildings', buildings, true);
         this.upload('roofs', roofs, true);
         this.upload('details', details, true);

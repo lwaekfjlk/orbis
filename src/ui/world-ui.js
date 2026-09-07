@@ -16,7 +16,7 @@ async function stageProgress(text) { $('loadingText').textContent = text; await 
 function resetWorldPresentation() {
     currentLayer = DEFAULT_WORLD_LAYER;
     renderer.layer = currentLayer;
-    for (const id of ['settlements', 'frontiers', 'names']) {
+    for (const id of ['settlements', 'frontiers', 'roads', 'folk', 'names']) {
         $(id).checked = true;
         if (id !== 'names') renderer.options[id] = true;
     }
@@ -779,7 +779,7 @@ function boot() {
     document.querySelectorAll('[data-layer]').forEach(b => b.onclick = () => setLayer(b.dataset.layer));
     $('moreLayer').onchange = () => { if ($('moreLayer').value)
         setLayer($('moreLayer').value); };
-    for (const id of ['frontiers', 'settlements', 'trees', 'rivers'])
+    for (const id of ['frontiers', 'settlements', 'trees', 'rivers', 'roads', 'folk'])
         $(id).onchange = () => { renderer.options[id] = $(id).checked; renderer.dirtyShadow = true; renderer.request(); };
     if ($('legends'))
         $('legends').onchange = () => { renderer.options.legends = $('legends').checked; renderer.dirtyShadow = true; makeLabels(); renderer.request(); };
