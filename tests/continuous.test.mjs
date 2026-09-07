@@ -77,6 +77,30 @@ test('Exploration routes delegate to a camera operation, with no city dialog ope
  const c=readFileSync(resolve(root,'src/ui/city-ui.js'),'utf8');assert(c.includes('if(window.ContinuousMap?.active)return ContinuousMap.focusTown(id)'));
  const u=readFileSync(resolve(root,'src/ui/continuous-map.js'),'utf8');assert(!u.includes('.showModal('));assert(!u.includes("setScene('city')"));assert(!u.includes("setScene('landmark')"));assert(u.includes('max(1,pinch.d),.6,180'));
 });
+test('The cartographic quay hands over to the town waterfront, exactly where the town marker does',()=>{
+ // A quay symbol is drawn to the same scale as the town marker beside it, which is about
+ // forty ordinary buildings across. Leaving it on once the architecture resolves puts a
+ // giant pier through the middle of the streets — which is what happened. The symbol
+ // travels with the town marker, so pin them together rather than to a bare number.
+ const layer=Object.create(E.ContinuousCityLayer.prototype);
+ const at=zoom=>{layer.r={zoom,options:{},continuousRoofs:true};return layer;};
+ for(const zoom of [1,3,4.7]){
+  const l=at(zoom);
+  assert.equal(l.visible('ports'),l.visible('settlements'),`at zoom ${zoom} the quay symbol must follow the town symbol`);
+  assert.equal(l.visible('seaLanes'),l.visible('settlements'));
+ }
+ for(const zoom of [4.8,12,18,30,120]){
+  const l=at(zoom);
+  assert.equal(l.visible('settlements'),false,`town markers are already gone at zoom ${zoom}`);
+  assert.equal(l.visible('ports'),false,`a quay symbol forty buildings across is still drawn at zoom ${zoom}`);
+  assert.equal(l.visible('seaLanes'),false);
+  // What replaces it is the town's own waterfront, at the town's own scale.
+  assert.equal(l.visible('cm:7:port'),true,`the real waterfront must be showing by zoom ${zoom}`);
+ }
+ // And it is still the roads-and-ports toggle that turns it off.
+ layer.r={zoom:30,options:{roads:false},continuousRoofs:true};
+ assert.equal(layer.visible('cm:7:port'),false);
+});
 test('Geometry worker includes trusted modules and transfers reusable model buffers',()=>{
  const worker=readFileSync(resolve(root,'src/continuous/generated-worker.js'),'utf8');assert(worker.includes('self.onmessage'));assert(worker.includes('ContinuousCityLayer'));assert(worker.includes('self.postMessage'));
  // The road network and the walking crowd are built on the main thread, but the town

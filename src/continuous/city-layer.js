@@ -123,8 +123,12 @@ class ContinuousCityLayer {
   }catch(error){if(epoch!==this.epoch)return null;this.failed.add(key);console.error('Atlas town detail',p.name,error);window.__continuousError=error.message;return null;}
   finally{this.pending.delete(key);this.loading=this.pending.size>0;this.preparing=null;this.onChange();}
  }
- visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>4.2;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=4.8&&this.r.zoom<18;if(['buildings','roofs','details','cityWalls','port'].includes(type)&&this.r.zoom<18)return false;return this.r.zoom>=4.8&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
-  if(this.r.zoom>=4.8){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false&&this.r.zoom<14;}
+ visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>4.2;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=4.8&&this.r.zoom<18;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<18)return false;return this.r.zoom>=4.8&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
+  // The cartographic overlay stops where the town itself begins. A quay symbol is drawn
+  // to the same scale as the town marker beside it — about forty buildings across — so
+  // leaving it on once the architecture resolves puts a giant pier through the streets.
+  // Its replacement is the town's own cm:*:port waterfront, which appears at this zoom.
+  if(this.r.zoom>=4.8){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false&&this.r.zoom<14;}
   return null;
  }
  cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=4.8;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.request();}
