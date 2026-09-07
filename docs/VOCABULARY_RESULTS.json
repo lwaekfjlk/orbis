@@ -4,29 +4,29 @@
   "checks": {
     "coverage": {
       "roofs": {
-        "deepeave": 316,
-        "gable": 889,
-        "hip": 249,
-        "northern": 79,
+        "deepeave": 331,
+        "gable": 878,
+        "hip": 243,
+        "northern": 78,
         "conic": 592,
-        "vault": 86,
-        "rockcut": 24,
-        "parapet": 453,
-        "upturned": 517,
-        "leaf": 315
+        "vault": 87,
+        "rockcut": 16,
+        "parapet": 438,
+        "upturned": 545,
+        "leaf": 312
       },
       "materials": {
-        "timber": 1261,
-        "log": 126,
-        "masonry": 461,
-        "felt": 470,
+        "timber": 1272,
+        "log": 122,
+        "felt": 468,
         "firedbrick": 71,
-        "cutstone": 44,
-        "adobe": 555,
-        "rockface": 55,
-        "thatch": 477
+        "masonry": 460,
+        "cutstone": 43,
+        "adobe": 552,
+        "rockface": 48,
+        "thatch": 484
       },
-      "formsPerTown": 2.56
+      "formsPerTown": 2.52
     },
     "weather": {
       "snowy": {
@@ -84,7 +84,7 @@
     },
     "size": {
       "ratio": 44.92,
-      "correlation": 0.38,
+      "correlation": 0.4,
       "smallest": {
         "name": "Gulldrift",
         "pop": 5843,
