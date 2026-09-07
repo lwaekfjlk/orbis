@@ -14,7 +14,23 @@ class ContinuousCityLayer {
  // screen once the camera closes in, and its two flat faces then read as two
  // wedges rather than as ground. Refined vertices sample the same parent surface,
  // so nothing new is invented — only the sampling rate follows the camera.
- tessellation(){const r=this.r;if(!r.width||!r.zoom)return 1;r.updateCamera();const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;return Math.round(clamp(perCell/9,1,8));}
+ /* Refinement was capped at 8 subdivisions a cell. That was calibrated when the camera
+  * stopped at zoom 180; it now reaches 620, where a cell covers 2,187 pixels and eight
+  * steps leave one triangle every 273 of them — the ground stays a handful of flat
+  * facets however far you push in. The cap is also the wrong shape: what a cell costs
+  * depends on how many cells are on screen, and at high zoom that is a handful.
+  *
+  * Aim for roughly a triangle every TARGET pixels and then spend no more than BUDGET
+  * triangles on the terrain, which is what actually bounds the frame. Powers of two
+  * only, so neighbouring patches at different refinements still land on each other's
+  * vertices along the coarser steps. */
+ tessellation(){const r=this.r;if(!r.width||!r.zoom)return 1;r.updateCamera();
+  const TARGET=11,BUDGET=420000;
+  const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;
+  const b=this.viewBox(),cells=Math.max(1,(b.x1-b.x0)*(b.y1-b.y0));
+  const want=perCell/TARGET,afford=Math.sqrt(BUDGET/(2*cells));
+  const n=clamp(Math.min(want,afford),1,64);
+  return Math.pow(2,Math.round(Math.log2(n)));}
  // Grid-space bounds of the ground the camera can currently see. A tilted
  // orthographic view stretches along its forward axis, so screen height covers
  // halfH/sin(elevation) of ground rather than halfH; a square reach around the
@@ -39,16 +55,22 @@ class ContinuousCityLayer {
  buildTerrain(){const r=this.r,w=r.world;if(!w)return;const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p);
   const field=this.normalField(),tess=this.tessellation(),box=this.viewBox();
   // Corner samples are shared by up to four cells, so they are memoised on an
-  // integer key rather than recomputed. 840 is divisible by every refinement step
-  // up to eight, so two neighbouring cells refined differently still agree on the
-  // vertices they share instead of colliding onto one rounded key.
+  // integer key rather than recomputed. 4096 resolves every power-of-two refinement
+  // step up to 64, so two neighbouring cells refined differently still agree on the
+  // vertices they share instead of colliding onto one rounded key. The stride has to
+  // clear the largest y key (180*4096) or the two axes fold onto each other.
   const vertices=new Map();
-  const vertex=(x,y)=>{const k=Math.round(x*840)*262144+Math.round(y*840);let a=vertices.get(k);if(a)return a;
+  const vertex=(x,y)=>{const k=Math.round(x*4096)*2097152+Math.round(y*4096);let a=vertices.get(k);if(a)return a;
    const p=AtlasSpace.point(w,x,y,r.relief);
    const ax=Math.min(GW-1,Math.floor(x)),ay=Math.min(GH-1,Math.floor(y)),u=x-ax,v=y-ay;
    const i0=cell(ax,ay)*3,i1=cell(ax+1,ay)*3,i2=cell(ax,ay+1)*3,i3=cell(ax+1,ay+1)*3;
    const nx=lerp(lerp(field[i0],field[i1],u),lerp(field[i2],field[i3],u),v),ny=lerp(lerp(field[i0+1],field[i1+1],u),lerp(field[i2+1],field[i3+1],u),v),nz=lerp(lerp(field[i0+2],field[i1+2],u),lerp(field[i2+2],field[i3+2],u),v);
-   const l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
+   // Tilt the interpolated field normal by the sub-cell relief. For a surface y=f(x,z)
+   // the normal runs (-df/dx, 1, -df/dz), so the relief's own gradient simply adds in.
+   // Scaled by relief so the flat-map setting stays flat.
+   let mx=nx,my=ny,mz=nz;
+   if(near){const gd=AtlasSpace.reliefGradient(w,x,y);mx-=gd[0]*r.relief*my;mz-=gd[1]*r.relief*my;}
+   const l=Math.sqrt(mx*mx+my*my+mz*mz)||1;
    const[ids,q]=AtlasSpace.weights(x,y);let cr=0,cg=0,cb=0;
    for(let n=0;n<3;n++){let c=r.palette(ids[n]);
     if(near&&w.height[ids[n]]>0){
@@ -59,7 +81,7 @@ class ContinuousCityLayer {
      if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));
     }
     cr+=q[n]*c[0];cg+=q[n]*c[1];cb+=q[n]*c[2];}
-   a=[p[0],p[1],p[2],nx/l,ny/l,nz/l,cr,cg,cb];vertices.set(k,a);return a;
+   a=[p[0],p[1],p[2],mx/l,my/l,mz/l,cr,cg,cb];vertices.set(k,a);return a;
   };
   for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){
    let n=tess>1&&x+1>=box.x0&&x<=box.x1&&y+1>=box.y0&&y<=box.y1?tess:1;

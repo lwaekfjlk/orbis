@@ -217,11 +217,17 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
             return;
         this.nearRoadKey = key;
         const g = new Geometry();
+        // CLASS_STYLE widths are cartographic: sized to read as a line across the whole
+        // atlas. Down here the ribbon is a road on the ground beside actual houses, and
+        // since the town model became CITY_FOOTPRINT of its window a highway at map width
+        // came out 4.9x the width of a house. Scaled to the same footprint it is 1.5x,
+        // which is what it measured before the town shrank.
+        const near = AtlasSpace.CITY_FOOTPRINT;
         for (const road of net.roads) {
             const style = CLASS_STYLE[road.cls] || CLASS_STYLE.trail;
             for (const run of nearSlice(road.path, areas, view)) {
-                ribbon(this, g, run, style.width * 1.30, rgb('#a2916f'), NEAR_LIFT);
-                ribbon(this, g, run, style.width, rgb('#d3c09c'), NEAR_LIFT + .002);
+                ribbon(this, g, run, style.width * 1.30 * near, rgb('#a2916f'), NEAR_LIFT);
+                ribbon(this, g, run, style.width * near, rgb('#d3c09c'), NEAR_LIFT + .002);
             }
         }
         const wasDirty = this.dirtyShadow;
@@ -293,10 +299,14 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
                 return false;
             // The cartographic ribbon hands over to the ground-seated one where a town's
             // own streets appear, so the two are never drawn at the same time.
+            // Handover moved from FOLK_ZOOM to TOWN_ZOOM. The cartographic ribbon is a map
+            // symbol at map width; leaving it on until 60 meant that across the whole
+            // 16-60 band a full-width road ran past a town only a fifth as wide as the
+            // road was long. Ports already hand over at TOWN_ZOOM for the same reason.
             if (name === 'roads' || name === 'bridges')
-                return this.zoom < AtlasRenderer.FOLK_ZOOM;
+                return this.zoom < AtlasSpace.TOWN_ZOOM;
             if (name === 'roadsNear')
-                return this.zoom >= AtlasRenderer.FOLK_ZOOM;
+                return this.zoom >= AtlasSpace.TOWN_ZOOM;
             // The atlas symbol for a harbour gives way to the harbour. ContinuousCityLayer
             // draws the same line at 4.8, where the town's own cm:*:port waterfront
             // appears, and its answer wins; this is the same rule for a renderer with no
