@@ -13,7 +13,7 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 226
+        "buildings": 231
       }
     },
     {
@@ -56,7 +56,7 @@
     },
     {
       "name": "same-recipe-at-three-scales",
-      "signature": "2070a442/great-sanctuary-1",
+      "signature": "3114bd9d/great-sanctuary-1",
       "placedHeight": 50.11336070244246
     },
     {
@@ -66,37 +66,37 @@
         {
           "id": 259,
           "name": "Scorchquay",
-          "blocks": 226,
+          "blocks": 231,
           "sanctuary": 38
         },
         {
           "id": 288,
           "name": "Whitebeck",
-          "blocks": 308,
+          "blocks": 328,
           "sanctuary": 38
         },
         {
           "id": 289,
           "name": "Whitecombe",
-          "blocks": 322,
+          "blocks": 375,
           "sanctuary": 38
         },
         {
           "id": 442,
           "name": "Foxmeadow",
-          "blocks": 295,
+          "blocks": 308,
           "sanctuary": 38
         },
         {
           "id": 452,
           "name": "Kelplanding",
-          "blocks": 421,
+          "blocks": 294,
           "sanctuary": 38
         },
         {
           "id": 464,
           "name": "Shellford",
-          "blocks": 522,
+          "blocks": 537,
           "sanctuary": 38
         }
       ]

@@ -4,29 +4,29 @@
   "checks": {
     "coverage": {
       "roofs": {
-        "deepeave": 213,
-        "gable": 1122,
-        "northern": 66,
-        "hip": 382,
-        "conic": 468,
-        "rockcut": 83,
-        "vault": 268,
-        "parapet": 404,
-        "upturned": 500,
-        "leaf": 334
+        "deepeave": 316,
+        "gable": 889,
+        "hip": 249,
+        "northern": 79,
+        "conic": 592,
+        "vault": 86,
+        "rockcut": 24,
+        "parapet": 453,
+        "upturned": 517,
+        "leaf": 315
       },
       "materials": {
-        "timber": 1278,
-        "log": 110,
-        "felt": 339,
-        "rockface": 57,
-        "masonry": 636,
-        "cutstone": 69,
-        "firedbrick": 131,
-        "adobe": 671,
-        "thatch": 549
+        "timber": 1261,
+        "log": 126,
+        "masonry": 461,
+        "felt": 470,
+        "firedbrick": 71,
+        "cutstone": 44,
+        "adobe": 555,
+        "rockface": 55,
+        "thatch": 477
       },
-      "formsPerTown": 2.44
+      "formsPerTown": 2.56
     },
     "weather": {
       "snowy": {
@@ -83,19 +83,19 @@
       ]
     },
     "size": {
-      "ratio": 2.47,
-      "correlation": 0.44,
+      "ratio": 44.92,
+      "correlation": 0.38,
       "smallest": {
-        "name": "Oakforge",
-        "pop": 3360,
-        "span": 4.7,
-        "blocks": 199
+        "name": "Gulldrift",
+        "pop": 5843,
+        "span": 8.5,
+        "blocks": 24
       },
       "largest": {
-        "name": "Great Saltlanding",
-        "pop": 93150,
-        "span": 11.6,
-        "blocks": 617
+        "name": "Wrencombe",
+        "pop": 23280,
+        "span": 10.8,
+        "blocks": 1078
       }
     },
     "geometry": {

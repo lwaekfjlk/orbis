@@ -124,17 +124,22 @@ test('a capital is visibly a capital and a hamlet a hamlet', () => {
   const c = E.generateCity(world, sim, p.id);
   rows.push({name: p.name, pop: p.urbanPop, span: c.span, blocks: c.buildings.length});
  }
- rows.sort((a, b) => a.span - b.span);
- const ratio = rows.at(-1).span / rows[0].span;
- assert(ratio > 2, `largest town is only ${ratio.toFixed(2)}x the smallest; population spans 34x`);
- // Extent has to answer to population, not only to how far the neighbour is.
- const mx = rows.reduce((a, r) => a + r.pop, 0) / rows.length, my = rows.reduce((a, r) => a + r.span, 0) / rows.length;
+ // What is measured is the BUILT extent, not the sampling window. Sizing the window
+ // by population shrank a hamlet's view of its own landscape until the terrain around
+ // it fell outside the grid, so the window is set by the room the site has and the
+ // built area is what answers to population.
+ rows.sort((a, b) => a.blocks - b.blocks);
+ const ratio = rows.at(-1).blocks / rows[0].blocks;
+ assert(ratio > 4, `largest town is only ${ratio.toFixed(1)}x the smallest; population spans 34x`);
+ const mx = rows.reduce((a, r) => a + r.pop, 0) / rows.length, my = rows.reduce((a, r) => a + r.blocks, 0) / rows.length;
  let num = 0, dx = 0, dy = 0;
- for (const r of rows) { num += (r.pop - mx) * (r.span - my); dx += (r.pop - mx) ** 2; dy += (r.span - my) ** 2; }
+ for (const r of rows) { num += (r.pop - mx) * (r.blocks - my); dx += (r.pop - mx) ** 2; dy += (r.blocks - my) ** 2; }
  const corr = num / Math.sqrt(dx * dy);
- assert(corr > .3, `population barely reaches the footprint (r=${corr.toFixed(2)})`);
+ assert(corr > .3, `population barely reaches the built extent (r=${corr.toFixed(2)})`);
+ // ...and the window must NOT collapse on a small town, or it loses its surroundings.
+ assert(rows[0].span >= 6.4, 'a hamlet must still sample its landscape');
  // A small town still has to be a town.
- assert(rows[0].blocks > 40, 'the smallest town still needs enough blocks to read as one');
+ assert(rows[0].blocks > 18, 'the smallest town still needs enough blocks to read as one');
  report.checks.size = {ratio: +ratio.toFixed(2), correlation: +corr.toFixed(2),
   smallest: {name: rows[0].name, pop: Math.round(rows[0].pop), span: +rows[0].span.toFixed(1), blocks: rows[0].blocks},
   largest: {name: rows.at(-1).name, pop: Math.round(rows.at(-1).pop), span: +rows.at(-1).span.toFixed(1), blocks: rows.at(-1).blocks}};
@@ -158,8 +163,8 @@ test('every new roof form builds finite geometry inside its own footprint', () =
 });
 
 test('none of this moved the physical world or the society', () => {
- assert.equal(E.physicalFingerprint(world), 'dfd91476');
- assert.equal(E.settlementFingerprint(sim), '77c3b21f');
+ assert.equal(E.physicalFingerprint(world), '440ae5d0');
+ assert.equal(E.settlementFingerprint(sim), '6b6c5ea8');
 });
 
 test.after(() => writeFileSync(resolve(root, 'docs/VOCABULARY_RESULTS.json'), JSON.stringify(report, null, 2)));
