@@ -203,9 +203,9 @@
     "recipe": "forge-hollow.recipe.json",
     "signature": "48e4bd44/wonder-detail-1/forge-hollow",
     "lod": 2,
-    "triangles": 17264,
+    "triangles": 18612,
     "parts": 5,
-    "bytes": 1868552,
+    "bytes": 2014152,
     "bounds": {
       "min": [
         -17.400000000000002,

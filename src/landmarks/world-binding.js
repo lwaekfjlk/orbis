@@ -10,9 +10,10 @@ const LandmarkBinding = (()=>{
   if(!['civic','temple','academy','harbor'].includes(b.type))return null;
   const recipe=resolve(w,s,p,b.type),key=LandmarkCatalog.signature(recipe)+'/mini';let model=cache.get(key);
   if(!model){model=LandmarkTemplates.build({...recipe,complexity:0},{base:false,lod:0});cache.set(key,model);while(cache.size>24)cache.delete(cache.keys().next().value)}
-  const lo=model.bounds.min,hi=model.bounds.max,sc=Math.min(b.w/(hi[0]-lo[0]),b.d/(hi[2]-lo[2]))*.94;
-  const g=new Geometry();for(const part of model.parts){const t=LandmarkTemplates.transformGeometry(part.geometry,sc,[b.x-(lo[0]+hi[0])*.5*sc,b.y-lo[1]*sc,b.z-(lo[2]+hi[2])*.5*sc]);for(const v of t.data)g.data.push(v)}
-  return {geometry:g,recipe,height:(hi[1]-lo[1])*sc};
+  if(model.excavation&&typeof ArtisanCityKit!=='undefined'){const placed=ArtisanCityKit.meshAt(model,b),geometry=new Geometry();for(const part of[placed.body,placed.roof])for(const v of part.data)geometry.data.push(v);return{geometry,recipe,height:placed.height,depth:placed.depth,excavation:placed.excavation};}
+  const lo=model.bounds.min,hi=model.bounds.max,groundY=model.groundY??lo[1],sc=Math.min(b.w/(hi[0]-lo[0]),b.d/(hi[2]-lo[2]))*.94;
+  const g=new Geometry();for(const part of model.parts){const t=LandmarkTemplates.transformGeometry(part.geometry,sc,[b.x-(lo[0]+hi[0])*.5*sc,b.y-groundY*sc,b.z-(lo[2]+hi[2])*.5*sc]);for(const v of t.data)g.data.push(v)}
+  return {geometry:g,recipe,height:(hi[1]-groundY)*sc};
  }
  function worldSymbol(g,w,s,p,x,y,z,sc){
   const r=resolve(w,s,p),style=r.style,wall=rgb(LandmarkCatalog.palettes[r.material].wall),roof=rgb(LandmarkCatalog.palettes[r.material].roof),trim=rgb(LandmarkCatalog.palettes[r.material].trim);

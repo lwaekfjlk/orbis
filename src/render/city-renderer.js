@@ -149,6 +149,7 @@ function createCityRenderer(canvas, onChange, config = {}) {
         const sx=-.60,sz=.80;this.sunDirection=sacredScene?[sx*Math.cos(angle)-sz*Math.sin(angle),1, sx*Math.sin(angle)+sz*Math.cos(angle)]:[-.65,1,-.48];
         this.lightVP=mul4(ortho(-112,112,-92,98,1,430),lookAt(this.sunDirection.map((v,j)=>v*160+(j===1?12:0)),[0,12,0],[0,1,0]));
         this.landmarkHeights = {};
+        this.excavations = [];
         this.province = p;
         this.realm = realm;
         this.cityState = state;
@@ -219,18 +220,23 @@ function createCityRenderer(canvas, onChange, config = {}) {
                 b.h += state.levels.academy;
             const foundation=Math.max(.08,b.y-(b.foundationBed??b.y)+.05);
             const fcol=rgb(ArtisanCityKit.palettes[c.townProfile.id].wall);
-            cityBox(buildings,b.x,b.y-foundation,b.z,b.w*.98,foundation,b.d*.98,colorScale(fcol,.82));
+            const layFoundation=()=>cityBox(buildings,b.x,b.y-foundation,b.z,b.w*.98,foundation,b.d*.98,colorScale(fcol,.82));
             const district = c.districts[b.district], tint = this.mode === 'districts' ? rgb(CITY_TYPES[district.type].color) : b.type === 'academy' ? rgb('#c9c9d4') : body;
             const color = colorScale(tint, .93 + hash2(b.x, b.z, c.seed + 1) * .12), roof = rgb(roofColors[Math.floor(hash2(b.x, b.z, c.seed) * roofColors.length)]);
             if (b.landmark && ['civic','temple','academy'].includes(b.type) && typeof LandmarkBinding !== 'undefined' && window.world && window.sim) {
                 const recipe=TownCityBinding.resolve(window.world, window.sim, p, c, b.type);
                 const monument=TownCityBinding.miniature(recipe,b);
+                // The wonder already supplies its retaining structure; a complete
+                // parcel slab here would seal its authored opening at ground level.
+                if(monument.excavation)this.excavations.push({buildingId:b.id,...monument.excavation});
+                else layFoundation();
                 for (const value of monument.body.data) details.data.push(value);
                 for (const value of monument.roof.data) roofs.data.push(value);
                 this.landmarkHeights[b.id]=monument.height;
                 own(b,start);
                 continue;
             }
+            layFoundation();
             const compound = ArtisanCityKit.compound(b,c,p,realm);
             if(this.mode==='districts') { const tint=rgb(CITY_TYPES[district.type].color);for(const mesh of [compound.body,compound.roof])for(let i=0;i<mesh.data.length;i+=9)for(let k=0;k<3;k++)mesh.data[i+6+k]=mesh.data[i+6+k]*.45+tint[k]*.55; }
             if(this.mode==='blocks') {
@@ -339,6 +345,13 @@ function createCityRenderer(canvas, onChange, config = {}) {
                     cityBox(details, b.x + dx * (b.w / 2 + .35), b.y, b.z + dz * (b.d / 2 + .35), .12, b.h + 1, .12, rgb('#aa916e'));
             details.line([b.x - b.w / 2 - .35, b.y + b.h, b.z + b.d / 2 + .35], [b.x + b.w / 2 + .35, b.y + b.h, b.z + b.d / 2 + .35], .09, rgb('#ae946a'));
             own(b,start);
+        }
+        // The standalone city view and its GLB export use the collected terrain.
+        // Cut their actual mesh too; the continuous atlas clips its own surface.
+        if(this.excavations.length&&typeof ExcavationTerrain!=='undefined'){
+            const holes=this.excavations.map(h=>({...ExcavationTerrain.prepare(h.outline,h.floorY,h.buildingId),groundY:c.buildings.find(b=>b.id===h.buildingId)?.y})).filter(h=>h.outline),cut=new Geometry();
+            for(let i=0;i<terrain.data.length;i+=27)ExcavationTerrain.triangle(cut,terrain.data.slice(i,i+9),terrain.data.slice(i+9,i+18),terrain.data.slice(i+18,i+27),holes);
+            terrain.data=cut.data;
         }
         this.upload('terrain', terrain, true);
         this.upload('water', sea, false, .4);

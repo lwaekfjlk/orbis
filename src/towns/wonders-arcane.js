@@ -148,7 +148,11 @@ function createArcaneWonders({TAU,palette,stair,statue,path,lancet,pointed,stone
    for(let j=0;j<12;j++){const a=j*TAU/12+.24,x=Math.cos(a)*12,z=Math.sin(a)*12;k.column(x,1.2,z,.20,1.10,'wall',8);k.lathe(x,2.3,z,[[0,0],[.48,0],[.48,.15],[.30,.25],[0,.25]],'metal',8)}
    k.emblem(0,7.2,15.0,1.1);for(const s of[-1,1])k.banner(s*6,1.2,16.5,3.8);
   });
-  return k.finish();
+  // Match the pierced court's 48-sided inner edge, inside the shaft lining's
+  // 10.4–11.0 wall thickness. The entrance, not the bottom, is the ground datum.
+  return {...k.finish(),groundY:0,excavation:{
+   outline:Array.from({length:48},(_,j)=>[Math.cos(j*TAU/48)*10.65,Math.sin(j*TAU/48)*10.65]),floorY:-25.6,entrance:[0,19.15]
+  }};
  }
  function skyCourt(recipe,options){
   const k=new LandmarkKit({...recipe,roofLanguage:'native'},options);k.palette={...palette(recipe),wall:'#c8af86',trim:'#ecdbb4',roof:'#bfa170',wood:'#594738',metal:'#b88c54',dark:'#4b4035'};

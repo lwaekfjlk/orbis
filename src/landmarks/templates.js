@@ -1,15 +1,26 @@
 /** Authored compositions assembled from the reusable kit. Fifteen palace families + six landmarks. */
 const LandmarkTemplates = (() => {
+ const LABYRINTH_OPENING=[[-9,-14],[9,-14],[9,12],[-9,12]],LABYRINTH_FLOOR=-6.25;
  function pavilion(k,x,y,z,r=2,h=3){k.mark('open-pavilion');k.cylinder(x,y,z,r*1.14,.3,'trim',8);for(let i=0;i<8;i++){const a=i*Math.PI/4;k.cylinder(x+Math.cos(a)*r*.83,y+.3,z+Math.sin(a)*r*.83,.11,h,'wall',6)}k.using('roof',()=>{k.lathe(x,y+h+.3,z,[[0,0],[r*1.3,0],[r*.92,.25],[r*.54,r*.6],[r*.2,r*1.15],[0,r*1.5]],'roof',8);k.cone(x,y+h+.3+r*1.5,z,.16,.65,'metal',0,6)})}
  function gate(k,x,y,z,w=7,h=7){k.mark('gatehouse');for(const s of[-1,1])k.tower(x+s*(w*.5+.6),y,z,1.2,h,'battlement');k.arch(x,y,z,w,h-1,1.5,'wall');k.box(x,y+h-.8,z,w,.6,1.8,'trim');k.using('ornament',()=>{k.emblem(x,y+h+1,z+.3,.7);k.cultureDetail(x,y,z+1.2)})}
  function stairsN(k,x,y,z,w,n,dy=.25,dz=.45){ // Compact forward-facing stair, no buried mega-blocks.
   k.mark('ceremonial-stair');for(let i=0;i<n;i++)k.box(x,y,z-i*dz,w,(i+1)*dy, dz+.02,'trim');
  }
  function stage(k){if(k.options.base===false)return;const id=k.recipe.style,r=k.random,p=k.palette;
+ // The Ninth Stair's illustrative setting uses the same opening as its masonry.
+ // Cut BOTH the thick base and the small surface tiles; a surface-only hole would
+ // still expose a solid slab halfway down the excavation.
+ const groundBox=(x,y,z,w,h,d,m)=>{
+  if(id!=='labyrinth'){k.box(x,y,z,w,h,d,m);return;}
+  const x0=x-w/2,x1=x+w/2,z0=z-d/2,z1=z+d/2,ix0=Math.max(x0,-9),ix1=Math.min(x1,9),iz0=Math.max(z0,-14),iz1=Math.min(z1,12);
+  if(ix0>=ix1||iz0>=iz1){k.box(x,y,z,w,h,d,m);return;}
+  const rect=(a,b,c,e)=>{if(b>a&&e>c)k.box((a+b)/2,y,(c+e)/2,b-a,h,e-c,m);};
+  rect(x0,ix0,z0,z1);rect(ix1,x1,z0,z1);rect(ix0,ix1,z0,iz0);rect(ix0,ix1,iz1,z1);
+ };
  k.part('site','The inherited setting','site',()=>{
   const wet=['delta','fjord','river','lighthouse','bridge','monsoon'].includes(id);const groundY=wet?-.65:-.12;
-  k.box(0,-2.4,0,59,1.9,47,colorScale(k.color('ground'),.83));
-  const n=20;for(let z=0;z<16;z++)for(let x=0;x<n;x++){const xx=(x-(n-1)/2)*2.95,zz=(z-7.5)*2.94;let mat=colorScale(k.color('ground'),.97+r()*.07);if(wet&&(id==='delta'||zz>11.8||id==='bridge'&&Math.abs(xx)<5))mat=colorScale(k.color('water'),.94+r()*.08);k.box(xx,groundY,zz,2.965,.21,2.96,mat)}
+  groundBox(0,-2.4,0,59,1.9,47,colorScale(k.color('ground'),.83));
+  const n=20;for(let z=0;z<16;z++)for(let x=0;x<n;x++){const xx=(x-(n-1)/2)*2.95,zz=(z-7.5)*2.94;let mat=colorScale(k.color('ground'),.97+r()*.07);if(wet&&(id==='delta'||zz>11.8||id==='bridge'&&Math.abs(xx)<5))mat=colorScale(k.color('water'),.94+r()*.08);groundBox(xx,groundY,zz,2.965,.21,2.96,mat)}
   if(id==='delta'){for(let i=0;i<18;i++){const x=(r()-.5)*52,z=(r()-.5)*42;if(Math.abs(x)<19&&Math.abs(z)<17)continue;k.rock(x,-.3,z,1.1+r()*2,.35,1.2,7,'ground');for(let a=0;a<3;a++)k.cone(x+(a-1)*.35,.05,z,.07,1.1+r(),'leaf',.03,4)}}
   if(['mountain','ice','fjord'].includes(id)){for(let i=0;i<8;i++){const x=(i-3.5)*6.3,z=-16-r()*3;const h=id==='mountain'?8+r()*8:4+r()*7;k.rock(x,-.1,z,5.4,h,5.6,9,'wall');if(id!=='mountain')k.rock(x,h*.6,z,3.1,h*.52,3.7,8,'trim')}}
   if(id==='basalt')for(let i=0;i<12;i++){const a=i/12*Math.PI*2;k.rock(Math.cos(a)*25,-.1,Math.sin(a)*20,2.5,2+r()*2.7,2.5,6,'wall')}
@@ -170,9 +181,46 @@ const LandmarkTemplates = (() => {
   k.part('archive','The curved star archive','architecture',()=>{for(let i=0;i<5;i++){const a=Math.PI+i*Math.PI/4;pavilion(k,Math.cos(a)*12,2.4,Math.sin(a)*12,2,3.8)}k.hall(0,1,12,7,4,3.2,{roof:'hip'});k.using('ornament',()=>k.emblem(0,6.7,14,.8))});
  }
  function labyrinth(k){
-  k.part('excavation','The stepped excavation court','foundation',()=>{k.terrace(0,0,-5,32,24,1.2);for(const s of[-1,1]){k.box(s*10,1.2,3,10,2.2,12,'wall');k.box(s*13,3.4,-5,4,1.5,18,'wall')}k.box(0,1.22,0,10,.10,16,'dark');stairsN(k,0,1.25,11,7,9,.2,.5)});
-  k.part('portal','The sealed subterranean threshold','architecture',()=>{k.hall(0,1.2,-10,18,7,9,{roof:'flat',entrance:false});k.box(0,1.3,-6.43,6.4,6.8,.12,'dark');k.arch(0,1.3,-6.2,6.7,7.5,1,'trim');for(const s of[-1,1]){k.box(s*7.5,1.2,-5.8,1.1,10,1.5,'wall');k.cone(s*7.5,11.2,-5.8,.95,1.7,'trim',0,4)}k.using('ornament',()=>k.emblem(0,11.7,-6.3,1.1))});
-  k.part('survey-camp','The survey lodges and pylons','architecture',()=>{for(const s of[-1,1]){k.hall(s*13,1.2,8,3.8,5,2.4,{roof:'flat'});k.cylinder(s*7,1.2,12,1,5,'wall',4);k.using('ornament',()=>k.emblem(s*7,6.9,12,.5))}});
+  const floor=LABYRINTH_FLOOR+.25;
+  k.part('excavation','The open court below the surrounding ground','foundation',()=>{
+   k.mark('subterranean-excavation-court');k.box(0,LABYRINTH_FLOOR,-1,18,.25,26,'dark');
+   for(const sign of[-1,1]){
+    k.box(sign*9.55,LABYRINTH_FLOOR,-1,1.1,6.50,26,'wall');k.box(sign*9.57,.12,-1,1.40,.22,26.5,'trim');
+    k.box(sign*5.90,LABYRINTH_FLOOR,12.55,6.2,6.50,1.1,'wall');k.box(sign*6.03,.12,12.55,6.45,.22,1.35,'trim');
+    for(let row=0;row<4;row++)k.box(sign*8.99,floor+.60+row*1.4,-1,.045,.07,25.7,colorScale(k.color('wall'),.76));
+   }
+   k.box(0,LABYRINTH_FLOOR,-14.55,20.2,6.50,1.1,'wall');k.box(0,.12,-14.55,20.6,.22,1.35,'trim');
+   // A level entrance crosses the site opening; every subsequent tread descends.
+   k.box(0,-.16,12.62,5.6,.16,1.25,'trim');
+   for(const sign of[-1,1])for(const z of[-12,-6,0,6]){k.box(sign*8.50,floor,z,1.0,.30,1.5,'trim');k.box(sign*8.74,floor+.30,z,.52,5.2,1.0,'wall');k.box(sign*8.71,-.50,z,.66,.28,1.25,'trim');}
+  });
+  k.part('descending-stair','Twenty-four connected treads into the excavation','architecture',()=>{
+   k.mark('continuous-underground-stair');const n=24,run=.58,rise=.25;
+   for(let j=0;j<n;j++){const y=-(j+1)*rise,z=12-(j+.5)*run;k.box(0,LABYRINTH_FLOOR,z,5.6,y-LABYRINTH_FLOOR,run+.02,'trim');
+    for(const sign of[-1,1]){k.box(sign*2.91,y-.10,z,.18,.83,.22,'wall');if(j<n-1)k.beam([sign*2.91,y+.74,z],[sign*2.91,y+.74-rise,z-run],.055,'metal',5,true);}
+   }
+   k.box(0,floor-.08,-2.40,6.0,.08,1.05,'trim');
+   for(const sign of[-1,1])k.box(sign*3.50,floor,-5.3,.20,.08,4.8,'metal');
+  });
+  k.part('portal','The recessed underground threshold and tunnel','architecture',()=>{
+   k.mark('recessed-underground-threshold');
+   // Masonry surrounds an actual opening. Its back wall is four units behind
+   // the arch, and the roof stays at the surface while the sill meets the pit.
+   for(const sign of[-1,1])k.box(sign*5.20,floor,-11.35,5.2,5.35,5.3,'wall');
+   k.box(0,floor,-13.75,15.6,5.35,.5,'dark');k.box(0,floor-.10,-11.30,5.2,.10,5.6,'trim');
+   k.arch(0,floor,-8.63,4.6,4.8,1.0,'trim');k.arch(0,floor,-11.85,4.6,4.8,.35,'wall');
+   k.using('roof',()=>{k.box(0,-.65,-11.35,16.1,.65,5.55,'wall');k.box(0,-.12,-11.35,16.45,.22,5.80,'ground');});
+   for(const sign of[-1,1]){k.column(sign*3.50,floor,-8.60,.35,5.45,'wall',8);k.box(sign*3.50,-.55,-8.60,.95,.30,1.15,'trim');
+    for(const z of[-10.0,-12.0]){k.box(sign*2.52,-4.40,z,.20,1.35,.28,'metal');k.crystal(sign*2.48,-3.08,z,.18,.55);}
+   }
+   k.using('ornament',()=>k.emblem(0,-.28,-8.25,.68));
+  });
+  k.part('survey-camp','The ground-level survey lodges and excavation pylons','architecture',()=>{
+   for(const sign of[-1,1]){k.hall(sign*13,.10,8,3.8,5,2.4,{roof:'flat'});k.cylinder(sign*10.8,0,11.7,.85,4.7,'wall',4);
+    k.box(sign*10.8,4.60,11.7,1.7,.25,1.7,'trim');k.box(sign*10.8,0,-9,1.9,8.8,2.3,'wall');k.box(sign*10.8,8.65,-9,2.25,.30,2.65,'trim');
+    k.using('roof',()=>k.cone(sign*10.8,8.95,-9,1.25,1.65,'trim',0,4));k.using('ornament',()=>k.emblem(sign*10.8,5.35,11.7,.55));
+   }
+  });
  }
  function bridge(k){
   k.part('span','The five-arched Crownspan','architecture',()=>{k.bridge(0,.3,0,39,4.5);for(const s of[-1,1]){k.terrace(s*21,0,0,8,12,3.5);k.hall(s*18,3.65,0,4.8,7,4.3,{roof:'hip'});k.arch(s*18,3.65,4,3.5,3.1,.5,'trim')}k.rail(-24,-2.7,24,-2.7,3.65);k.rail(-24,2.7,24,2.7,3.65)});
@@ -258,7 +306,7 @@ const LandmarkTemplates = (() => {
   },'Planting follows the site climate; no watercourse or clearing is created.');
  }
  const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,steppe,paddy,delve,lagoon,taiga,monsoon,lighthouse,observatory,labyrinth,bridge,ice,grove};
- function build(recipe,options={}){if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.build(recipe,options);if(recipe.artisan&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.precinct(recipe,options);const r=LandmarkCatalog.validate(recipe),k=new LandmarkKit(r,options);stage(k);builders[r.style](k);return k.finish()}
+ function build(recipe,options={}){if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.build(recipe,options);if(recipe.artisan&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.precinct(recipe,options);const r=LandmarkCatalog.validate(recipe),k=new LandmarkKit(r,options);stage(k);builders[r.style](k);const model=k.finish();return r.style==='labyrinth'?{...model,groundY:0,excavation:{outline:LABYRINTH_OPENING.map(p=>p.slice()),floorY:LABYRINTH_FLOOR,entrance:[0,13.245]}}:model}
  function transformGeometry(g,scale=1,offset=[0,0,0],angle=0){const out=new Geometry(),c=Math.cos(angle),s=Math.sin(angle);for(let i=0;i<g.data.length;i+=9){const a=g.data,x=a[i],z=a[i+2],nx=a[i+3],nz=a[i+5];out.data.push((x*c-z*s)*scale+offset[0],a[i+1]*scale+offset[1],(x*s+z*c)*scale+offset[2],nx*c-nz*s,a[i+4],nx*s+nz*c,a[i+6],a[i+7],a[i+8])}return out}
  function meshes(model){const m={};for(const p of model.parts)m[p.id]={vertices:new Float32Array(p.geometry.data)};return m}
  return {build,builders,transformGeometry,meshes};

@@ -26,7 +26,7 @@ window.ContinuousMap = (() => {
  function restFolk(){if(walking||!renderer.buildFolk)return;clearTimeout(staticTimer);staticTimer=setTimeout(()=>{if(!walking&&ready()){renderer.buildFolk(clock);renderer.request();}},150);}
  function init(){if(enabled||!renderer)return;enabled=true;document.body.classList.add('continuous-map');
   layer=new ContinuousCityLayer(renderer);renderer.continuousLayer=layer;renderer.continuousModels=layer.models;renderer.continuousRoofs=true;
-  renderer.ground=function(x,y){return this.world?(layer.natural?AtlasSpace.surface:AtlasSpace.coarseSurface)(this.world,x,y,this.relief):0;};
+  renderer.ground=function(x,y){return this.world?layer.ground(x,y):0;};
   renderer.buildTerrain=function(){return layer.buildTerrain();};
   installDepthRasterizer(renderer);renderer.renderQuality=1;renderer.backgroundColor=rgb('#79999d');renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));
   const visible=renderer.visible;renderer.visible=function(name){const v=layer.visible(name);return v===null?visible.call(this,name):v;};
@@ -74,10 +74,11 @@ window.ContinuousMap = (() => {
   const model=await layer.ensure(p.id);await flight;if(model){window.__cityReady=true;window.__cityError=null;window.__continuousFocus=p.id;updateTitle();}else toast('This location has no buildable detailed layout. The original terrain is unchanged.');return model;
  }
  async function focusBuilding(pid,bid){if(!ready())return;const p=sim.provinces[pid];if(!p)return;layer.focusId=pid;const m=await layer.ensure(pid);if(!m)return;const b=typeof bid==='string'?m.city.buildings.find(a=>a.id===bid):bid;const chosen=b||m.city.buildings.find(b=>b.sacred)||m.city.buildings.find(b=>b.landmark);if(!chosen)return;const a=m.frame.anchors.get(chosen.id);const h=(m.heights[chosen.id]||chosen.h)*a.scale;
-  const size=Math.max(chosen.w*m.frame.sx,chosen.d*m.frame.sz,h),aspect=renderer.width/renderer.height;
+  const excavation=m.excavations?.find(h=>h.buildingId===chosen.id),depth=excavation?Math.max(0,a.y-excavation.floorY):0;
+  const size=Math.max(chosen.w*m.frame.sx,chosen.d*m.frame.sz,h+depth),aspect=renderer.width/renderer.height;
   const fit=Math.max(49,94/aspect)*1.25/Math.max(.05,size);
   const zoom=clamp(fit,AtlasSpace.DETAIL_ZOOM,AtlasSpace.MAX_ZOOM);
-  select({model:m,building:chosen,anchor:a});return animate([a.x,a.y+h*.35,a.z],zoom,.87);
+  select({model:m,building:chosen,anchor:a});return animate([a.x,a.y+(h-depth)*.35,a.z],zoom,excavation?1.16:.87);
  }
  async function focusSite(id){const site=LandmarkUI.registry.find(s=>s.id===id);if(!site)return;if(site.provinceId!=null){const m=await focusTown(site.provinceId);if(m){const b=m.city.buildings.find(b=>b.sacred&&site.recipe.sacred)||m.city.buildings.find(b=>b.type===(site.recipe.kind||'temple'))||m.city.buildings.find(b=>b.landmark);if(b)return focusBuilding(site.provinceId,b.id);}}else return animate(AtlasSpace.point(world,site.x,site.y,renderer.relief),30,.94);}
  function wider(){if(!ready())return;const id=layer.focusId,m=layer.models.get(id);if(m){const a=AtlasSpace.point(world,m.p.x,m.p.y,renderer.relief);a[1]+=.2;return animate(a,10,1.02);}return animate(renderer.target.slice(),Math.max(1,renderer.zoom*.45),1.02);}

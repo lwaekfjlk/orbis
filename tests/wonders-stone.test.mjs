@@ -49,6 +49,11 @@ test('forge excavation has closed retaining rings and fifty continuous descendin
  for(let j=0;j<50;j++){const z=17-(j+.5)*.26,hits=ray(parts('forge-hollow','gallery-rings'),1,0,z);assert.ok(hits.length,'missing tread '+j);assert.ok(Math.abs(Math.max(...hits)+j*.19)<.001,'incorrect rise at tread '+j);}
  const opening=ray(parts('forge-hollow','great-forge'),2,0,-7);assert.ok(opening.every(z=>z<1.2),'furnace mouth remains open in front of its inner chamber');
 });
+test('forge stair shoulders and its full bottom shell block views through the excavated earth',()=>{
+ const model=models.get('forge-hollow');assert.equal(model.bounds.min[1],-9.8,'closing the shell must not deepen the authored floor');
+ for(const x of[-2.1,2.1])for(const z of[16,13,10,7,4.7]){const hits=ray(parts('forge-hollow','gallery-rings'),1,x,z);assert.ok(hits.length,'unfilled stair shoulder at '+x+','+z);assert.ok(Math.max(...hits)>-9.6,'shoulder reaches its tread level');}
+ for(const [x,z]of[[2.1,16],[-2.1,13],[4.2,4.2],[-8,2],[10,-7]]){const hits=ray(parts('forge-hollow','quarried-bowl'),1,x,z);assert.ok(hits.some(y=>Math.abs(y+9.6)<.001),'full excavation has no bottom at '+x+','+z);}
+});
 test('dragon court is a joined curved hall with a closed roof and outward-facing court windows',()=>{
  const pp=parts('dragon-court','long-hall-roof');assert.ok(pp.length);assertClosed(pp);
  const hall=parts('dragon-court','long-hall');const front=ray(hall,2,0,11.9);assert.ok(front.some(z=>z<-6),'continuous inner gallery wall');

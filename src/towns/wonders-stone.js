@@ -225,6 +225,12 @@ function createStoneWonders({TAU,palette,stair,statue,path,lancet,pointed,stoneR
      if(j%2===0)k.window(Math.sin(a)*(inner-.02),top-1.6,Math.cos(a)*(inner-.02),.95,1.12,Math.PI-a,'lattice');
     }
    }
+   // The excavated volume needs a bottom below its stair-side seams as well
+   // as beneath the hearth. Match the outer opening facets, keeping minY -9.8.
+   k.mark('closed-forge-bottom-shell');const edgeGap=Math.asin(2.25/14.4),boundary=Array.from({length:37},(_,j)=>{const a=edgeGap+(TAU-edgeGap*2)*j/36;return[Math.sin(a)*17,Math.cos(a)*17]});
+   for(let j=0;j<boundary.length;j++){const a=boundary[j],b=boundary[(j+1)%boundary.length],A=[a[0],-9.8,a[1]],B=[b[0],-9.8,b[1]],C=[b[0],-9.6,b[1]],D=[a[0],-9.6,a[1]];
+    k.tri([0,-9.6,0],D,C,'dark');k.tri([0,-9.8,0],B,A,'dark');k.quad(A,B,C,D,'wall');
+   }
    k.cylinder(0,-9.8,0,4.25,.3,'dark',24);
   });
   k.part('great-forge','The furnace hearth, riveted hood and breathing stacks','architecture',()=>{
@@ -250,6 +256,15 @@ function createStoneWonders({TAU,palette,stair,statue,path,lancet,pointed,stoneR
    for(let level=0;level<5;level++){
     const outer=17-level*2.6,inner=outer-2.6,top=-level*1.9,gap=Math.asin(2.25/inner);
     for(let j=0;j<10;j++)k.box(0,top-1.9,outer-(j+.5)*.26,3.6,1.9-j*.19,.275,'trim');
+    // The radial cut is wider than the treads. Solid stepped shoulders bridge
+    // that strip to the retaining stone; railing rods alone leave open sky below.
+    k.mark('retained-forge-stair-shoulders');
+    for(let j=0;j<10;j++)for(const side of[-1,1]){
+     const front=outer-j*.26,back=front-.26,upper=top-j*.19,foot=-9.6;
+     let plan=[[1.8,front],[front*Math.tan(gap)+.05,front],[back*Math.tan(gap)+.05,back],[1.8,back]].map(([x,z])=>[side*x,z]);if(side<0)plan.reverse();
+     const up=plan.map(([x,z])=>[x,upper,z]),down=plan.map(([x,z])=>[x,foot,z]);k.quad(...up,'wall');k.quad(down[3],down[2],down[1],down[0],'wall');
+     for(let q=0;q<4;q++){const n=(q+1)%4;k.quad(down[q],down[n],up[n],up[q],'wall');}
+    }
     for(const s of[-1,1]){k.beam([s*1.9,top+.85,outer],[s*1.9,top-1.05,inner],.075,'metal',6,true);for(let j=0;j<=5;j++)k.box(s*1.9,top-j*.38,outer-j*.52,.09,.83,.09,'metal');}
     const rad=inner+.38,segments=24;
     for(let j=0;j<segments;j++){const a=gap+(TAU-gap*2)*j/segments,b=gap+(TAU-gap*2)*(j+1)/segments;
@@ -267,7 +282,12 @@ function createStoneWonders({TAU,palette,stair,statue,path,lancet,pointed,stoneR
    }
    for(const s of[-1,1]){k.box(s*2.9,-1.9,17,1.3,2.15,1.4,'wall');k.box(s*2.9,.25,17,1.55,.22,1.6,'trim');}
   });
-  return k.finish();
+  // Follow the actual outer retaining wall facets. The closing edge crosses the
+  // level entrance tread, leaving every descending tread inside the excavation.
+  const gap=Math.asin(2.25/14.4);
+  return {...k.finish(),groundY:0,excavation:{
+   outline:Array.from({length:37},(_,j)=>{const a=gap+(TAU-gap*2)*j/36;return[Math.sin(a)*17,Math.cos(a)*17]}).reverse(),floorY:-9.8,entrance:[0,17.13]
+  }};
  }
  function gildedPalace(recipe,options){
   const k=new LandmarkKit({...recipe,roofLanguage:'native'},options);k.palette={...palette(recipe),wall:'#e3d8be',trim:'#f5e8c8',roof:'#587e79',metal:'#c8a14f',wood:'#76573c',dark:'#3d4d4c'};

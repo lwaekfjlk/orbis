@@ -45,9 +45,10 @@ test('every wonder remains grounded inside a rotated native parcel with separate
   for(const g of[m.body,m.roof])for(let i=0;i<g.data.length;i+=9){const [x,y,z]=g.data.slice(i,i+3);bottom=Math.min(bottom,y);
    assert(x>=lot.x-lot.w/2-1e-5&&x<=lot.x+lot.w/2+1e-5,id+' exceeds x parcel');
    assert(z>=lot.z-lot.d/2-1e-5&&z<=lot.z+lot.d/2+1e-5,id+' exceeds z parcel');
-   assert(y>=lot.y-1e-5,id+' sinks through its placed foundation');
+   assert(y>=lot.y-(m.depth||0)-1e-5,id+' exceeds its declared underground depth');
   }
-  assert(Math.abs(bottom-lot.y)<1e-5,id+' floats above its foundation');
+  if(m.excavation){assert(['forge-hollow','sunless-well'].includes(id));assert(m.depth>0);assert(Math.abs(bottom-m.excavation.floorY)<1e-5,id+' floor does not match its excavation');}
+  else assert(Math.abs(bottom-lot.y)<1e-5,id+' floats above its foundation');
  }
 });
 
