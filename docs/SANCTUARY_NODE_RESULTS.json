@@ -13,7 +13,7 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 241
+        "buildings": 199
       }
     },
     {
@@ -66,37 +66,37 @@
         {
           "id": 259,
           "name": "Scorchquay",
-          "blocks": 241,
+          "blocks": 199,
           "sanctuary": 38
         },
         {
           "id": 288,
           "name": "Whitebeck",
-          "blocks": 349,
+          "blocks": 302,
           "sanctuary": 38
         },
         {
           "id": 289,
           "name": "Whitecombe",
-          "blocks": 385,
+          "blocks": 305,
           "sanctuary": 38
         },
         {
           "id": 442,
           "name": "Foxmeadow",
-          "blocks": 318,
+          "blocks": 275,
           "sanctuary": 38
         },
         {
           "id": 452,
           "name": "Kelplanding",
-          "blocks": 289,
+          "blocks": 301,
           "sanctuary": 38
         },
         {
           "id": 464,
           "name": "Shellford",
-          "blocks": 512,
+          "blocks": 466,
           "sanctuary": 38
         }
       ]
