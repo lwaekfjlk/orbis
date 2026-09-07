@@ -48,8 +48,35 @@ const BCOL = { 1: rgb('#9e4f4a'), 2: rgb('#d47847'), 3: rgb('#d47847'), 4: rgb('
  * Forms come from CityEnvironment.canopy(), which reads the same temperature and
  * aridity fields the ground colour reads.
  */
-function plantForm(g, p, form, unit, col, jitter = () => .5) {
+/* `coarse` halves the silhouette down to the parts that carry the form — a trunk and
+ * one crown — for the scatter that fills a whole visible landscape. A full broadleaf
+ * runs about 38 triangles, and twelve thousand of them is 419k triangles and most of a
+ * second of remesh; the same field at coarse detail is a third of that and still reads
+ * as a palm, an acacia or a fir at the range it is drawn. Towns keep the full form. */
+function plantForm(g, p, form, unit, col, jitter = () => .5, coarse = false) {
     const trunk = rgb('#79644a'), r = unit * .34;
+    if (coarse) {
+        if (form === 'none')
+            return;
+        if (form === 'cushion' || form === 'scrub') {
+            g.cone(p[0], p[1], p[2], r * .70, r * .30, unit * .34, col, 4, jitter() * 6);
+            return;
+        }
+        const bare = form === 'acacia' || form === 'palm' || form === 'rainforest';
+        g.cone(p[0], p[1], p[2], r * .17, r * .12, unit * (bare ? .80 : .40), trunk, 4);
+        const y = p[1] + unit * (bare ? .80 : .40);
+        if (form === 'conifer' || form === 'pine')
+            g.cone(p[0], y - unit * .22, p[2], r * .86, 0, unit * 1.02, col, 5, jitter() * 6);
+        else if (form === 'acacia')
+            g.cone(p[0], y, p[2], r * 1.18, r * .70, unit * .16, col, 5, jitter() * 6);
+        else if (form === 'palm')
+            g.cone(p[0], y - unit * .06, p[2], r * .18, r * 1.05, unit * .22, col, 5, jitter() * 6);
+        else if (form === 'hardleaf')
+            g.cone(p[0], y, p[2], r * .80, r * .50, unit * .34, col, 5, jitter() * 6);
+        else
+            g.cone(p[0], y, p[2], r * .92, r * .34, unit * (form === 'laurel' ? .52 : .60), col, 5, jitter() * 6);
+        return;
+    }
     if (form === 'cushion') { // Above the treeline: dwarf tufts, no trunk.
         g.blob(p[0], p[1] + unit * .05, p[2], r * .52, col, .40);
         return;
@@ -320,21 +347,11 @@ class AtlasRenderer {
                 }
                 duneCount++;
             }
-        for (const v of w.volcanoes) {
-            const p = this.coord(v.x, v.y), r = .60 + Math.min(v.magnitude / 2500, 1) * .33, h = .78 + Math.min(v.magnitude / 1900, 1.7) * .46, base = p[1] - .20, rad = r * .31, top = base + h, col = rgb(v.active ? '#686761' : '#818377');
-            vents.cone(p[0], base, p[2], r, rad, h, col, 10, .17);
-            for (let k = 0; k < 10; k++) {
-                const a = k / 10 * Math.PI * 2 + .17, b = (k + 1) / 10 * Math.PI * 2 + .17, outer = a => [p[0] + Math.cos(a) * rad, top, p[2] + Math.sin(a) * rad], inner = a => [p[0] + Math.cos(a) * rad * .70, top - .05, p[2] + Math.sin(a) * rad * .70];
-                vents.quad(outer(a), inner(a), inner(b), outer(b), rgb('#aa9981'));
-                vents.tri(inner(a), [p[0], top - .22, p[2]], inner(b), rgb(v.active ? '#d36f39' : '#514f48'));
-            }
-            if (v.active) {
-                const sun = [p[0] + r * .2, top - .12, p[2] + r * .1], end = [p[0] + r * .71, base + h * .27, p[2] + r * .38];
-                vents.line(sun, end, .047, rgb('#df8650'));
-                for (let k = 0; k < 4; k++)
-                    smoke.blob(p[0] + .08 + k * .14, top + .20 + k * .42, p[2] - k * .07, .16 + k * .065, rgb('#d6d4c4'), 1.1);
-            }
-        }
+        // No volcano symbol. A vent's cone is already IN the terrain — geography adds its
+        // magnitude to w.height — so this drew a second, schematic cone on top of the real
+        // mountain, at a size that had nothing to do with it, with a crater rim and a lava
+        // streak that read as a game icon rather than as ground. The volcano is still in
+        // the model, still in the relief, and still named where it earns a legend.
         this.symbolStats = { trees: treeCount, dunes: duneCount, forms };
         this.upload('trees', trees, true);
         this.upload('volcanoes', vents, true);

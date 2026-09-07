@@ -1,3 +1,37 @@
+# 13.8.0 — Closing in fills the landscape in, instead of emptying it
+
+- **Zooming in used to strip the world.** Past zoom 4.8 the atlas hides its own symbols —
+  trees, dunes, glacier tongues, sea ice, reeds — because they are sized for the whole map.
+  The only thing that replaced them was a patch of vegetation inside each *loaded town's*
+  22×18 cell box. Beyond that box the ground went bare, and rivers were cut entirely past
+  zoom 14, so approaching a lake or a mountain showed you **less** of it than the world view
+  did. A local environment layer now follows the camera across everything on screen: trees in
+  the same climate vocabulary the towns use, meadow tufts on open ground, scree on slopes
+  above 62% grade, reeds in wetland, ice on glaciers — and rivers stay.
+- **Waterfalls.** Where a channel carrying real discharge drops more than 160 m at better
+  than 55% grade, it falls: a white cascade and a plume at its foot. Chosen by the same
+  measurement the Weeping Stair legend is, applied everywhere the camera can see it.
+- **The cost is flat.** Spacing is solved against a sample budget rather than set by zoom, and
+  the scatter uses a coarse silhouette — a full broadleaf is 38 triangles and twelve thousand
+  of them was 419k triangles and 731 ms. Across the whole zoom range it is now 35k–91k
+  triangles and 81–225 ms, rebuilt only when the camera settles.
+- **A road no longer stops halfway across a valley.** The ground-seated ribbon was cut to a
+  box around each loaded town, so past zoom 18 every road outside those boxes simply ended.
+  It follows the camera now.
+- **The volcano symbol is gone.** A vent's cone is already in `w.height` — the geography adds
+  its magnitude to the terrain — so this drew a second, schematic cone on top of the real
+  mountain, at a size unrelated to it, with a crater rim and a lava streak that read as a game
+  icon rather than as ground. The volcano is still in the model, still in the relief, and
+  still named where it earns a legend.
+- New checks: local scatter present and bounded at every zoom, climate-driven, and answering
+  its toggles, in `tests/continuous.test.mjs`.
+
+---
+
+# 13.7.0 — Every town has something it remembers
+
+---
+
 # 13.7.0 — Every town has somebody who will tell you about it
 
 - Click a settlement and a resident turns up to tell you its history: a **cartoon bust**,
