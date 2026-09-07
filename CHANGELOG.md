@@ -1,3 +1,23 @@
+# 13.1.0 — A sharper map, and places worth naming
+
+- Terrain refinement follows the camera: a grid cell is subdivided up to eight ways once it
+  covers enough screen, so relief stops reading as a fan of flat triangles. Refined vertices
+  sample the same parent surface — more triangles, the same landscape.
+- Terrain carries per-vertex shading normals from one continuous field, so coarse and refined
+  patches meet without a seam and slopes read as ground rather than facets.
+- The map renders above CSS resolution (at least 1.6x on a 1x display), bounded by a pixel
+  budget. The software fallback keeps its old ceiling.
+- Seven legendary places are named from the finished physical model — The Dragonwell at the
+  greatest river's headwater, The Skymirror on the highest standing water, The Nightspire,
+  The Drowned Choir, The Emberthroat, The Weeping Stair, The Hollow Crown. Each carries its
+  lore and the measurement it was chosen by, and appears as a gilt map marker, a name, a
+  search hit and a detail card. A world without the landform simply has no legend there.
+- The **Legends** toggle sits with Names, Borders and Rivers.
+- New checks: refinement bounds and parent-surface parity in `tests/continuous.test.mjs`;
+  legend derivation and render resolution in `tests/onemap.test.mjs`.
+
+---
+
 # 13.0.0 — Continuous Atlas
 
 - One original canvas, coordinate reference and renderer for world, towns and buildings.

@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {scripts} from '../scripts/manifest.mjs';
 import {root,defaults} from './engine-loader.mjs';
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');
-const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,createCityRenderer,ContinuousCityLayer,GW,GH,Geometry};')();
+const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,createCityRenderer,ContinuousCityLayer,AtlasRenderer,GW,GH,Geometry};')();
 let w,s,city,p;
 test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces[507];assert(p?.settled);city=E.generateCity(w,s,p.id);});
 test('A single parent surface is preserved at every original grid vertex',()=>{
@@ -13,6 +13,36 @@ test('A single parent surface is preserved at every original grid vertex',()=>{
 });
 test('Subdivided terrain shares both sides of every original grid edge',()=>{
  for(let y=1;y<E.GH-1;y+=6)for(let x=1;x<E.GW-1;x+=5){for(const t of[.15,.5,.83]){const left=E.AtlasSpace.surface(w,x-1e-8,y+t),right=E.AtlasSpace.surface(w,x+1e-8,y+t);assert(Math.abs(left-right)<1e-6);}}
+});
+test('Terrain refinement follows the camera, stays on the parent surface and stays bounded',()=>{
+ const meshes={};
+ const r=Object.create(E.AtlasRenderer.prototype);
+ Object.assign(r,{world:w,sim:s,layer:'relief',relief:1,zoom:1,width:1440,height:900,azimuth:.018,elevation:1.19,
+  target:[0,0,0],meshes,options:{},upload(name,g){meshes[name]=g;}});
+ const layer=new E.ContinuousCityLayer(r);layer.world=w;layer.sim=s;
+ const detail={};
+ for(const zoom of [1,3,6,12,30,90]){
+  r.zoom=zoom;layer.buildTerrain();
+  detail[zoom]=layer.terrainDetail;
+  // A refinement that grows without bound would remesh the whole grid at 64x.
+  assert(layer.terrainTriangles<4e5,`zoom ${zoom} produced ${layer.terrainTriangles} triangles`);
+ }
+ assert.equal(detail[1],1,'the whole world needs no extra triangles');
+ assert(detail[12]>detail[3],'closing in must add detail');
+ assert(detail[90]>=detail[12],'refinement must not fall back when closer');
+ // The point of the refinement: more triangles, the SAME landscape. Every vertex
+ // has to sit on the parent surface, and every normal has to be a unit vector.
+ const d=meshes.terrain.data;let checked=0;
+ for(let k=0;k<d.length;k+=9){
+  const x=d[k],y=d[k+1],z=d[k+2];
+  if(y<0)continue;
+  const [gx,gy]=E.AtlasSpace.grid(x,z);
+  if(gx<0||gx>E.GW-1||gy<0||gy>E.GH-1)continue;
+  assert(Math.abs(y-E.AtlasSpace.surface(w,gx,gy))<1e-6,`vertex at ${gx},${gy} left the parent surface`);
+  assert(Math.abs(Math.hypot(d[k+3],d[k+4],d[k+5])-1)<1e-5,'shading normals must be unit length');
+  checked++;
+ }
+ assert(checked>1e5,'expected the whole terrain to be checked, saw '+checked);
 });
 test('City coordinates refer to the actual Stonefall source and preserve nearby glacial relief',()=>{
  const h=E.physicalFingerprint(w),f=E.AtlasSpace.cityFrame(w,p,city);assert.equal(city.source.parentWorldCell,p.i);assert(city.siteEnvironment.glacialFoothills);assert(city.siteEnvironment.maxElevation>city.siteEnvironment.minElevation+1000);

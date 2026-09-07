@@ -11,6 +11,8 @@ body.onemap .maploading p{color:#4c7061;font-size:12px}
 body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6da9c}
 body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
 body.onemap .maplabel em{font:italic 15px Georgia,serif}
+body.onemap .maplabel.legendLabel{color:#5a3d10;text-shadow:0 1px 3px #fffbe8,0 0 10px #f4dda3c4}
+body.onemap .maplabel.legendLabel em{font:17px Georgia,serif;letter-spacing:.7px}
 body.onemap .world-landmark-pin{width:23px;height:23px;font-size:12px;opacity:.88;background:#f4efd7db;border:1px solid #8b977c80}
 body.onemap .world-landmark-pin:hover{opacity:1;transform:translate(-50%,-50%) scale(1.13)}
 body.onemap[data-scene='city'] #stage,body.onemap[data-scene='landmark'] #stage{visibility:hidden;pointer-events:none}

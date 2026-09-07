@@ -201,15 +201,15 @@ window.OneMap = (() => {
     }
     function inspectWorld(i){
         if(!world||!sim||busy||scene!=='world'||i<0)return;
-        const p=sim.provinces[world.provinceId[i]],f=world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],realm=p&&sim.realms[p.owner];
+        const p=sim.provinces[world.provinceId[i]],f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],realm=p&&sim.realms[p.owner];
         if(world.height[i]<=0&&!f&&!b){clearSelection();return;}
         selection={kind:'world',i};
         const title=p?.settled?p.name:f?.name||b?.name||BIOME[world.biome[i]][0];
-        const subtitle=[BIOME[world.biome[i]][0],`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
+        const subtitle=f?.legend?f.text:[BIOME[world.biome[i]][0],`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});
         buttons.push({label:'Details',run:()=>openDrawer('detail')});
-        selectionCard(realm?.name||'NATURAL WORLD',title,subtitle,buttons);
+        selectionCard(f?.legend?'LEGENDARY PLACE · '+f.kind:realm?.name||'NATURAL WORLD',title,subtitle,buttons);
     }
     function inspectBuilding(b){
         if(scene!=='city'||!b)return;selection={kind:'building',id:b.id};
@@ -249,7 +249,7 @@ window.OneMap = (() => {
         if(!sim||!world)return;
         if(lastWorld!==world){lastWorld=world;clearSelection();closeMenus();closeDrawer();lastEvent=null;}
         const towns=sim.provinces.filter(p=>p.settled).sort((a,b)=>b.urbanPop-a.urbanPop);
-        searchIndex=[...towns.map(p=>({type:'town',id:p.id,i:p.i,x:p.x,y:p.y,name:p.name,subtitle:`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`})),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:c.title,subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'}))];
+        searchIndex=[...towns.map(p=>({type:'town',id:p.id,i:p.i,x:p.x,y:p.y,name:p.name,subtitle:`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`})),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:c.title,subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
         const latest=sim.events.slice().reverse().find(e=>e.type!=='founding'&&e.year>400);
         show('omEvent',!!latest&&sim.year>400);
         if(latest){E('omEventText').textContent=`${latest.year} · ${latest.text}`;if(latest!==lastEvent)lastEvent=latest;}

@@ -524,6 +524,34 @@ header {
 .maplabel.plateLabel em {
   font:9px ui-monospace,monospace
 }
+/* Legendary places: gilt small caps and a diamond pin, so a wonder is not read
+   as one more town or biome region. */
+.maplabel.legendLabel {
+  color:#5c3f12;
+  text-shadow:0 1px 3px #fff8e0,1px 0 2px #fff8e0,-1px 0 2px #fff8e0,0 0 10px #f2d79ab8
+}
+.maplabel.legendLabel em {
+  font:15px/1.25 Georgia,serif;
+  font-style:normal;
+  letter-spacing:.7px
+}
+.maplabel.legendLabel small {
+  color:#8a6416;
+  font-size:6px;
+  letter-spacing:1.5px
+}
+.maplabel.legendLabel:after {
+  width:5px;
+  height:5px;
+  background:#e3b64f;
+  border:1px solid #6b4c10;
+  border-radius:1px;
+  transform:rotate(45deg);
+  margin:4px auto 0
+}
+.maplabel.legendLabel:hover {
+  background:#fbeec2d9
+}
 .maploading {
   position:absolute;
   inset:0;

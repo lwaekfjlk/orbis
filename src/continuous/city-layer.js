@@ -3,24 +3,65 @@
  * Local building assemblies are rigidly seated on that field; no baked backdrops.
  */
 class ContinuousCityLayer {
- constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
+ constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.retess=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
  remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);}
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
- reset(w,s){this.epoch++;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
+ reset(w,s){this.epoch++;clearTimeout(this.retess);this.lastTerrainKey=null;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
  bind(w,s){if(w!==this.world||(this.sim&&s!==this.sim))this.reset(w,s);else this.sim=s;}
+ // Screen-space tessellation: one parent grid cell can cover a large part of the
+ // screen once the camera closes in, and its two flat faces then read as two
+ // wedges rather than as ground. Refined vertices sample the same parent surface,
+ // so nothing new is invented — only the sampling rate follows the camera.
+ tessellation(){const r=this.r;if(!r.width||!r.zoom)return 1;r.updateCamera();const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;return Math.round(clamp(perCell/9,1,8));}
+ // Grid-space bounds of the ground the camera can currently see. A tilted
+ // orthographic view stretches along its forward axis, so screen height covers
+ // halfH/sin(elevation) of ground rather than halfH; a square reach around the
+ // target would refine several times more terrain than is ever on screen.
+ viewBox(){const r=this.r;r.updateCamera();const fw=r.halfH/Math.max(.2,Math.sin(r.elevation)),fx=-Math.sin(r.azimuth),fz=-Math.cos(r.azimuth);
+  let x0=1/0,x1=-1/0,z0=1/0,z1=-1/0;
+  for(const a of[-1,1])for(const b of[-1,1]){const px=r.target[0]+r.right[0]*r.halfW*a+fx*fw*b,pz=r.target[2]+r.right[2]*r.halfW*a+fz*fw*b;x0=Math.min(x0,px);x1=Math.max(x1,px);z0=Math.min(z0,pz);z1=Math.max(z1,pz);}
+  const lo=AtlasSpace.grid(x0,z0),hi=AtlasSpace.grid(x1,z1);return{x0:lo[0]-2,x1:hi[0]+2,y0:lo[1]-2,y1:hi[1]+2};}
+ // Terrain is only rebuilt when this changes, so a continuous zoom crosses a
+ // handful of discrete refinement steps instead of remeshing every frame.
+ terrainKey(){const n=this.tessellation();if(n<=1&&!this.natural)return 'base/'+this.r.layer;const b=this.viewBox(),q=v=>Math.round(v/6);return [n,q(b.x0),q(b.y0),q(b.x1),q(b.y1),this.natural,this.r.layer,[...this.models.keys()].join(',')].join('/');}
+ // One continuous normal field for shading, derived once per world from the same
+ // height field by central differences. Refined vertices interpolate it, so coarse
+ // and refined patches meet without a shading seam. Shading only: every vertex
+ // still sits exactly on the parent surface.
+ normalField(){const r=this.r,w=r.world;if(this.normalWorld===w&&this.normalRelief===r.relief)return this.normals;
+  const n=new Float32Array(GN*3),ix=1/(2*AtlasSpace.X),iz=1/(2*AtlasSpace.Z),h=(x,y)=>AtlasSpace.height(w,cell(x,y),r.relief);
+  for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const o=cell(x,y)*3,dx=(h(x+1,y)-h(x-1,y))*ix,dz=(h(x,y+1)-h(x,y-1))*iz,l=Math.sqrt(dx*dx+1+dz*dz);n[o]=-dx/l;n[o+1]=1/l;n[o+2]=-dz/l;}
+  this.normals=n;this.normalWorld=w;this.normalRelief=r.relief;return n;
+ }
  // This renders the whole world, not a circular/square platform beneath the town.
- buildTerrain(){const r=this.r,w=r.world;if(!w)return;const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p),cache=new Map();
-  const color=(x,y)=>{const k=x+','+y;if(cache.has(k))return cache.get(k);const[ids,q]=AtlasSpace.weights(x,y);let c=[0,0,0];for(let n=0;n<3;n++){let a;if(near&&w.height[ids[n]]>0)a=CityEnvironment.cellColor(w,ids[n]);else a=r.palette(ids[n]);for(let j=0;j<3;j++)c[j]+=q[n]*a[j];}cache.set(k,c);return c;};
-  const v=(x,y)=>AtlasSpace.point(w,x,y,r.relief);
-  const tri=(a,b,c)=>{const col=[0,0,0];for(const q of[a,b,c]){const z=color(q[0],q[1]);for(let j=0;j<3;j++)col[j]+=z[j]/3;}g.tri(v(...a),v(...b),v(...c),col);};
+ buildTerrain(){const r=this.r,w=r.world;if(!w)return;const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p);
+  const field=this.normalField(),tess=this.tessellation(),box=this.viewBox();
+  // Corner samples are shared by up to four cells, so they are memoised on an
+  // integer key rather than recomputed. 840 is divisible by every refinement step
+  // up to eight, so two neighbouring cells refined differently still agree on the
+  // vertices they share instead of colliding onto one rounded key.
+  const vertices=new Map();
+  const vertex=(x,y)=>{const k=Math.round(x*840)*262144+Math.round(y*840);let a=vertices.get(k);if(a)return a;
+   const p=AtlasSpace.point(w,x,y,r.relief);
+   const ax=Math.min(GW-1,Math.floor(x)),ay=Math.min(GH-1,Math.floor(y)),u=x-ax,v=y-ay;
+   const i0=cell(ax,ay)*3,i1=cell(ax+1,ay)*3,i2=cell(ax,ay+1)*3,i3=cell(ax+1,ay+1)*3;
+   const nx=lerp(lerp(field[i0],field[i1],u),lerp(field[i2],field[i3],u),v),ny=lerp(lerp(field[i0+1],field[i1+1],u),lerp(field[i2+1],field[i3+1],u),v),nz=lerp(lerp(field[i0+2],field[i1+2],u),lerp(field[i2+2],field[i3+2],u),v);
+   const l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
+   const[ids,q]=AtlasSpace.weights(x,y);let cr=0,cg=0,cb=0;
+   for(let n=0;n<3;n++){const c=near&&w.height[ids[n]]>0?CityEnvironment.cellColor(w,ids[n]):r.palette(ids[n]);cr+=q[n]*c[0];cg+=q[n]*c[1];cb+=q[n]*c[2];}
+   a=[p[0],p[1],p[2],nx/l,ny/l,nz/l,cr,cg,cb];vertices.set(k,a);return a;
+  };
   for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){
-   const n=near&&areas.some(p=>Math.abs(p.x-x)<9&&Math.abs(p.y-y)<8)?4:1;
-   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const a=[x+i/n,y+j/n],b=[x+(i+1)/n,y+j/n],c=[x+i/n,y+(j+1)/n],d=[x+(i+1)/n,y+(j+1)/n];if((x+y)%2){tri(a,c,b);tri(b,c,d);}else{tri(a,c,d);tri(a,d,b);}}
+   let n=tess>1&&x+1>=box.x0&&x<=box.x1&&y+1>=box.y0&&y<=box.y1?tess:1;
+   if(near&&areas.some(p=>Math.abs(p.x-x)<9&&Math.abs(p.y-y)<8))n=Math.max(n,4);
+   const s=n+1,V=[];
+   for(let j=0;j<s;j++)for(let i=0;i<s;i++)V.push(vertex(x+i/n,y+j/n));
+   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const a=j*s+i,b=a+1,c=a+s,d=c+1;if((x+y)%2){g.smoothTri(V[a],V[c],V[b]);g.smoothTri(V[b],V[c],V[d]);}else{g.smoothTri(V[a],V[c],V[d]);g.smoothTri(V[a],V[d],V[b]);}}
   }
   const c=rgb('#4d859e'),a=-MAP_X/2,b=MAP_X/2,n=-MAP_Z/2,s=MAP_Z/2,R=500;
   g.quad([-R,-.015,-R],[-R,-.015,n],[R,-.015,n],[R,-.015,-R],c);g.quad([-R,-.015,s],[-R,-.015,R],[R,-.015,R],[R,-.015,s],c);g.quad([-R,-.015,n],[-R,-.015,s],[a,-.015,s],[a,-.015,n],c);g.quad([b,-.015,n],[b,-.015,s],[R,-.015,s],[R,-.015,n],c);
-  r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;
+  r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=tess;this.lastTerrainKey=this.terrainKey();
  }
  build(p){const w=this.world,s=this.sim,c=generateCity(w,s,p.id),collector=createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(c,p,s.realms[p.owner],s.cityState?.[p.id]||{});
   const frame=AtlasSpace.cityFrame(w,p,c,this.r.relief),model={p,city:c,frame,key:this.key(p),meshNames:[],last:++this.sequence,heights:collector.landmarkHeights,triangles:0};
@@ -87,6 +128,9 @@ class ContinuousCityLayer {
   return null;
  }
  cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=4.8;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.request();}
+  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
+  // settle rather than running inside a wheel or drag gesture.
+  else if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
   if(!close){this.onChange();return;}clearTimeout(this.timer);this.timer=setTimeout(()=>this.stream(),180);this.onChange();
  }
  async stream(){if(this.loading||!this.world||busy||this.r.zoom<4.8)return;const r=this.r,a=AtlasSpace.grid(r.target[0],r.target[2]);
