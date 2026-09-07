@@ -3,6 +3,7 @@ export const scripts = [
     'src/civilization/simulation.js',
     'src/world/roads.js',
     'src/civilization/folk.js',
+    'src/civilization/saga.js',
     'src/city/environment.js', 'src/towns/catalog.js',
     'src/towns/vocabulary.js',
     'src/towns/grammar.js', 'src/towns/fortifications.js',

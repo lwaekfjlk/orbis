@@ -86,10 +86,44 @@ window.ContinuousMap = (() => {
  function home(){if(!ready())return;OneMap.clearSelection();OneMap.closeDrawer();selection=null;layer.focusId=null;layer.select(null);return animate([0,0,0],1,HOME_ELEVATION,1000,HOME_AZIMUTH);}
  function zoomBy(factor,sx=renderer.width/2,sy=renderer.height/2){if(!ready())return;cancel();const r=renderer,before=AtlasSpace.pickGround(r,sx,sy);r.zoom=clamp(r.zoom*factor,.6,180);r.updateCamera();const after=before?AtlasSpace.pickGround(r,sx,sy):null;if(before&&after){r.target[0]+=before.point[0]-after.point[0];r.target[2]+=before.point[2]-after.point[2];}r.request();}
  function select(hit){selection=hit;layer.focusId=hit.model.p.id;layer.select(hit);const b=hit.building,m=hit.model;E('omSelection').classList.remove('hidden');E('omSelectionBody').innerHTML=`<small class="om-eyebrow">${escapeHTML(m.p.name)} / ${escapeHTML(m.city.siteEnvironment.label)}</small><h3>${escapeHTML(b.name)}</h3><p>${escapeHTML(CITY_TYPES[b.type]?.description||'An assembled part of this town.')}</p><div class="om-actions"><button id="cmFocusBuilding">Closer</button><button id="cmShowDetails">Details</button><button id="cmShowContext">Wider setting</button></div>`;E('cmFocusBuilding').onclick=()=>focusBuilding(m.p.id,b.id);E('cmShowDetails').onclick=()=>details(m,b);E('cmShowContext').onclick=wider;}
- function details(m,b=null,open=true){if(!m)return;if(open)OneMap.openDrawer('detail');const p=sim.provinces[m.p.id],e=m.city.siteEnvironment;E('omDrawerTitle').textContent=b?.name||p.name;
-  E('inspector').innerHTML=`<div class="overline">SAME MAP · WORLD CELL ${p.i}</div><h2>${escapeHTML(p.name)}</h2><p class="identity">${escapeHTML(e.label)}. These slopes, lake shores, glaciers and river valleys are the parent world's own geography. No replacement scenery is loaded.</p><div class="metrics"><div><b>${fmtPop(p.urbanPop)}</b><small>TOWN POPULATION</small></div><div><b>${e.temperature.toFixed(1)}°</b><small>SITE TEMPERATURE</small></div><div><b>${Math.round(e.minElevation)}–${Math.round(e.maxElevation)}</b><small>SURROUNDING ELEVATION</small></div><div><b>${m.city.stats.modules}</b><small>BUILDING COMPOUNDS</small></div></div><div class="inspectbuttons"><button id="cmPullBack">Wider setting</button><button id="cmTownGLB">Export town GLB</button></div><h3>Landmarks in this city</h3><div class="cm-building-list">${m.city.buildings.filter(b=>b.landmark).map(b=>`<button data-cm-building="${b.id}">${escapeHTML(b.name)} ↗</button>`).join('')}</div><h3>Public works</h3><div class="cm-building-list">${Object.entries(CITY_PROJECTS).map(([k,d])=>{const q=cityProjectQuote(sim,p.id,k);return `<button data-cm-project="${k}" ${q.ok?'':'disabled'} title="${escapeHTML(q.reason)}">${d.name}${q.ok?' · '+q.cost.toFixed(1):''}</button>`;}).join('')}</div><p class="smallnote">The camera stays in the atlas. Architecture is synthetic, relief and building scales are exaggerated; detailed residents and interiors are not simulated.</p>`;
+ /* THE SAGA PANEL.
+  * Each settlement's epic, composed from its own model state. Two things in it are
+  * interaction points rather than text: the place a chapter is about, and the other
+  * towns the chronicle ties this one to. Following either is how a reader gets from one
+  * telling to the telling that argues with it.
+  */
+ const NUMERAL=['I','II','III','IV','V','VI','VII'];
+ function sagaHTML(p){
+  if(typeof Saga==='undefined')return '';
+  const g=Saga.of(world,sim,p);
+  if(!g)return '';
+  const chapters=g.chapters.map((c,k)=>`<section class="cm-chapter"><h4><i>${NUMERAL[k]||k+1}</i>${escapeHTML(c.heading)}</h4><p>${escapeHTML(c.text)}</p>`+
+   (c.anchor?`<button class="cm-saga-link" data-saga-place="${c.anchor.x}|${c.anchor.y}">Go to ${escapeHTML(c.anchor.name)} ↗</button>`:'')+
+   `<small class="cm-basis">${escapeHTML(c.basis)}</small></section>`).join('');
+  const told=g.links.length?`<h4 class="cm-elsewhere">Told elsewhere</h4>`+g.links.map(l=>
+   `<button class="cm-saga-link" data-saga-town="${l.province}">${escapeHTML(l.name)} · ${escapeHTML(l.relation)} ↗</button><small class="cm-basis">${escapeHTML(l.record)}</small>`).join(''):'';
+  return `<h3>The saga of ${escapeHTML(p.name)}</h3><div class="cm-saga">`+
+   `<p class="cm-saga-title">${escapeHTML(g.title)}</p>`+
+   `<p class="cm-saga-cast"><b>${escapeHTML(g.hero.name)} ${escapeHTML(g.hero.rank)}</b>, ${escapeHTML(PEOPLES[g.hero.people].name)} <i>against</i> <b>${escapeHTML(g.adversary.name)}</b></p>`+
+   chapters+told+
+   `<p class="smallnote">Every line is composed from this world's own state — the district's live people and faith mixtures, its chronicle, and the physical fields beneath it; each chapter shows the fact it was built from. No people is cast as an enemy: an adversary here is a state, a disaster or a place, and both sides of a war tell it as their own.</p></div>`;
+ }
+ function bindSaga(host,p){
+  host.querySelectorAll('[data-saga-town]').forEach(el=>el.onclick=async()=>{
+   const id=+el.dataset.sagaTown,q=sim.provinces[id];
+   if(!q?.settled)return;
+   const model=await focusTown(id);
+   if(model)details(model);
+  });
+  host.querySelectorAll('[data-saga-place]').forEach(el=>el.onclick=()=>{
+   const [x,y]=el.dataset.sagaPlace.split('|').map(Number);
+   OneMap.closeDrawer();
+   animate(AtlasSpace.point(world,x,y,renderer.relief),12,1.02,1100);
+  });
+ }
+ function details(m,b=null,open=true){if(!m)return;if(open)OneMap.openDrawer('detail');const p=sim.provinces[m.p.id],e=m.city.siteEnvironment;E('omDrawerTitle').textContent=b?.name||p.name;  E('inspector').innerHTML=`<div class="overline">SAME MAP · WORLD CELL ${p.i}</div><h2>${escapeHTML(p.name)}</h2><p class="identity">${escapeHTML(e.label)}. These slopes, lake shores, glaciers and river valleys are the parent world's own geography. No replacement scenery is loaded.</p><div class="metrics"><div><b>${fmtPop(p.urbanPop)}</b><small>TOWN POPULATION</small></div><div><b>${e.temperature.toFixed(1)}°</b><small>SITE TEMPERATURE</small></div><div><b>${Math.round(e.minElevation)}–${Math.round(e.maxElevation)}</b><small>SURROUNDING ELEVATION</small></div><div><b>${m.city.stats.modules}</b><small>BUILDING COMPOUNDS</small></div></div><div class="inspectbuttons"><button id="cmPullBack">Wider setting</button><button id="cmTownGLB">Export town GLB</button></div>${sagaHTML(p)}<h3>Landmarks in this city</h3><div class="cm-building-list">${m.city.buildings.filter(b=>b.landmark).map(b=>`<button data-cm-building="${b.id}">${escapeHTML(b.name)} ↗</button>`).join('')}</div><h3>Public works</h3><div class="cm-building-list">${Object.entries(CITY_PROJECTS).map(([k,d])=>{const q=cityProjectQuote(sim,p.id,k);return `<button data-cm-project="${k}" ${q.ok?'':'disabled'} title="${escapeHTML(q.reason)}">${d.name}${q.ok?' · '+q.cost.toFixed(1):''}</button>`;}).join('')}</div><p class="smallnote">The camera stays in the atlas. Architecture is synthetic, relief and building scales are exaggerated; detailed residents and interiors are not simulated.</p>`;
   E('cmPullBack').onclick=wider;E('cmTownGLB').onclick=()=>{const meshes={};for(const name of m.meshNames)if(renderer.meshes[name]&&!name.endsWith(':silhouettes'))meshes[name]=renderer.meshes[name];saveBlob(new Blob([exportGeometryGLB(meshes,{city:p.name,crs:'TELLURIC_RECTANGULAR_ATLAS',note:'Town structures in original atlas coordinates; surrounding world terrain is not included in this town-only export.'})],{type:'model/gltf-binary'}),p.name+'-atlas-town.glb');};
-  E('inspector').querySelectorAll('[data-cm-building]').forEach(el=>el.onclick=()=>focusBuilding(p.id,el.dataset.cmBuilding));E('inspector').querySelectorAll('[data-cm-project]').forEach(el=>el.onclick=async()=>{pause();const result=startCityProject(sim,world,p.id,el.dataset.cmProject);toast(result.message);refreshAll();await layer.ensure(p.id);details(layer.models.get(p.id));});
+  E('inspector').querySelectorAll('[data-cm-building]').forEach(el=>el.onclick=()=>focusBuilding(p.id,el.dataset.cmBuilding));bindSaga(E('inspector'),p);E('inspector').querySelectorAll('[data-cm-project]').forEach(el=>el.onclick=async()=>{pause();const result=startCityProject(sim,world,p.id,el.dataset.cmProject);toast(result.message);refreshAll();await layer.ensure(p.id);details(layer.models.get(p.id));});
  }
  function makePins(){if(!enabled||!world||!sim)return;const sig=world.params.seed+'/'+[...layer.models.values()].map(m=>m.p.id+':'+m.key).join('/');if(sig===lastPins)return;lastPins=sig;const node=E('cmLabels');node.replaceChildren();pins=[];
   for(const p of sim.provinces.filter(p=>p.settled)){const button=document.createElement('button');button.className='cm-pin cm-town-pin';button.textContent=p.name;button.onclick=()=>focusTown(p.id);node.appendChild(button);pins.push({button,town:p});}
