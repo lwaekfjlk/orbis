@@ -45,8 +45,17 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
     // A figure is 1.5 town-plan units tall. Buildings in the same plan are 1.5 to 4, so a
     // person reads as a person beside them. Everything here is the atlas's own exaggerated
     // scale; none of it is metric.
-    const LOCAL_HEIGHT = 1.5, NOMINAL = .043;
-    const SYMBOL = .30;
+    //
+    // SYMBOL is the regional-zoom marker height. It has to stay near one building, because
+    // a town's whole footprint is only about 3.7 atlas units: a marker sized like a town
+    // marker makes a single cart look bigger than the place it is travelling to.
+    //
+    // SHIP scales the sea-lane hull against the boats moored at the town's own quay, which
+    // are 2 to 4 town-plan units long. It is the INPUT size; `vehicle` turns that into a
+    // hull 1.1x as long, so the two have to be read together — halving one and the other
+    // separately is how a ship ends up smaller than the dinghies tied up beside it.
+    const LOCAL_HEIGHT = 1.5, NOMINAL = .043, SYMBOL = .10, SHIP = 5, HULL = 1.1;
+    AtlasRenderer.FOLK_SCALE = { near: NOMINAL, symbol: SYMBOL, ship: SHIP, hullLength: HULL };
     const GRID_X = MAP_X / (GW - 1), GRID_Z = MAP_Z / (GH - 1);
     const skinOf = (cloth, tone) => colorMix(cloth, rgb('#e7d3b6'), .34 + tone * .22);
     const clothOf = (people, tone) => colorScale(rgb(PEOPLES[people].color), .84 + tone * .34);
@@ -67,7 +76,10 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
             // and its sail tip 5.4x the cart's height, which put a single ship on a sea
             // lane at 0.72 atlas units — a fifth of the width of an entire town, and
             // half the height of the tallest building in it.
-            g.obb(x, y, z, size * .55, size * .20, size * .20, angle, rgb('#6d6350'));
+            // The length factor is HULL, published on AtlasRenderer.FOLK_SCALE, so the
+            // test that compares a sea hull to the town's own moorings measures this
+            // geometry rather than a copy of the number.
+            g.obb(x, y, z, size * HULL * .5, size * .20, size * .20, angle, rgb('#6d6350'));
             g.cone(x, y + size * .20, z, size * .04, size * .028, size * .62, timber, 4);
             g.tri([x, y + size * .78, z], [x + Math.cos(angle) * size * .34, y + size * .46, z + Math.sin(angle) * size * .34], [x, y + size * .26, z], rgb('#e4dcc4'));
         }
@@ -158,7 +170,7 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
             const p = r.coord(q.x, q.y, agent.scope === 'sea' ? r.ground(q.x, q.y) : r.ground(q.x, q.y) + (close ? .006 : .09));
             const heading = q.heading;
             if (agent.kind === 'boat') {
-                vehicle(g, 'boat', p[0], p[1], p[2], scale * (close ? 6 : 1.15), heading, agent.tone);
+                vehicle(g, 'boat', p[0], p[1], p[2], scale * (close ? SHIP : 1.15), heading, agent.tone);
                 drawn++;
                 continue;
             }

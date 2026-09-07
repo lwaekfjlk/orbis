@@ -100,6 +100,55 @@ test('travellers stay on their road, and hulls stay on the water',()=>{
  report.checks.travellers={total:travellers.length,road:onRoad.length,sea:afloat.length,kinds:travellers.reduce((a,x)=>(a[x.kind]=(a[x.kind]||0)+1,a),{})};
 });
 
+test('nobody skates across the map: motion is slow against the scenery it passes',()=>{
+ // A "building" in a town plan is a whole compound and a parent grid cell is a large
+ // piece of a continent. Anything near a real walking pace reads as figures skating
+ // across the map — the first cut had a resident crossing a courtyard in 0.9s and a
+ // carter crossing a province in 2s. These bounds are what the eye actually judges.
+ const frame=E.AtlasSpace.cityFrame(w,town,city,1),block=city.buildings.find(b=>!b.landmark);
+ const walker=roster.find(a=>a.kind==='walker'&&a.route.len>8);
+ assert(walker,'this town has a street walker');
+ const crossing=block.w/walker.speed;
+ assert(crossing>=4,`a resident crosses a whole compound in ${crossing.toFixed(1)}s`);
+ const trip=2*walker.route.len/walker.speed;
+ assert(trip>=40,`a resident completes a round trip in ${trip.toFixed(0)}s; the street should not read as pacing`);
+ assert(walker.speed/1.5<=.35,'a figure covers at most a third of its own height each second');
+ const idler=roster.find(a=>a.kind==='idler');
+ if(idler){
+  const circuit=6.2831853*Math.max(.5,idler.radius)/idler.speed;
+  assert(circuit>=30,`a market loiterer laps the square every ${circuit.toFixed(0)}s`);
+ }
+ const carter=travellers.find(a=>a.scope==='road');
+ assert(1/carter.speed>=8,`a traveller crosses a whole parent cell in ${(1/carter.speed).toFixed(1)}s`);
+ const hull=travellers.find(a=>a.scope==='sea');
+ assert(1/hull.speed>=6,'shipping crosses a parent cell no faster than a cart');
+ report.checks.pace={compoundCrossingSeconds:+crossing.toFixed(1),roundTripSeconds:+trip.toFixed(0),
+  cellCrossingSeconds:+(1/carter.speed).toFixed(1),bodyLengthsPerSecond:+(walker.speed/1.5).toFixed(3)};
+});
+
+test('a ship is a ship, not a district',()=>{
+ // The sea-lane hull is measured against the hulls moored at the town's own quay, which
+ // are 2-4 town-plan units long. It was ten times one of those, and at regional zoom a
+ // single ship was fourteen buildings long against a town footprint of seventy.
+ const S=E.AtlasRenderer.FOLK_SCALE;
+ assert(S,'the folk renderer publishes its scale constants');
+ const harbour=[town,...s.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)]
+  .map(p=>({p,c:p.id===town.id?city:E.generateCity(w,s,p.id)})).find(x=>x.c.port?.moorings.length);
+ assert(harbour,'this world has a town with moored hulls to compare against');
+ const frame=E.AtlasSpace.cityFrame(w,harbour.p,harbour.c,1);
+ const block=harbour.c.buildings.find(b=>!b.landmark).w*frame.sx;
+ const moored=Math.max(...harbour.c.port.moorings.map(m=>m.length))*frame.sx;
+ const shipLength=S.near*S.ship*S.hullLength;
+ const ratio=shipLength/moored;
+ assert(ratio>=1.5&&ratio<=5,`a sea-going hull is ${ratio.toFixed(1)}x the boats at the town's own quay`);
+ // At regional zoom a marker must not outweigh the place it is travelling between.
+ const townFootprint=harbour.c.width*frame.sx;
+ assert(S.symbol*1.15*S.hullLength<townFootprint/8,'a ship symbol dwarfs the town');
+ assert(S.symbol<=block*2.5,`a figure marker is ${(S.symbol/block).toFixed(1)} buildings tall`);
+ report.checks.scale={buildingFootprint:+block.toFixed(4),mooredHull:+moored.toFixed(4),
+  seaHull:+shipLength.toFixed(4),hullRatio:+ratio.toFixed(1),symbolInBuildings:+(S.symbol/block).toFixed(1)};
+});
+
 test('a figure is a small bounded mesh, and every accent is real geometry',()=>{
  // Build away from the origin on all three axes. A helper that mixes offsets with
  // absolute heights looks correct at 0,0,0 and puts the horns in the sky everywhere else.
