@@ -4,9 +4,9 @@
     "geometricFamilies": 13,
     "highland": {
       "name": "Tinyard",
-      "footprints": 207,
-      "wallSegments": 228,
-      "towers": 23,
+      "footprints": 434,
+      "wallSegments": 235,
+      "towers": 22,
       "gates": 2,
       "approaches": 2,
       "citadelWidth": 26,
@@ -19,91 +19,91 @@
       "style": "river",
       "triangles": 50070,
       "parts": 4,
-      "sha256": "1e1c997bc2ef100f2bbac894a35311628585f00fe5c57e40bcf432c6b1ff8c56",
+      "sha256": "51bd9ff8f6c645545765c34b4ba9340d1cd0e96d95505550853058397973d870",
       "glbBytes": 5410816
     },
     {
       "style": "basilica",
       "triangles": 38210,
       "parts": 4,
-      "sha256": "64f5a1f5f1835274a37fb2ac39f4e3fa1c35e5902259c1c2b14223d469d6767a",
+      "sha256": "20bcf14d0668d2cca463a3c3306eb07336c740f658cdadb6c645126b6e45efd5",
       "glbBytes": 4129940
     },
     {
       "style": "arcane",
       "triangles": 24050,
       "parts": 4,
-      "sha256": "8194738ce65edcb6f568d766751594a538588fa824b5ad2fe8a9bf29c4d092bd",
+      "sha256": "12ceae102b82886bcd10d07b5628771ef44ea4c5b02b4b7369235c630c7e7ecc",
       "glbBytes": 2600632
     },
     {
       "style": "mountain",
       "triangles": 33034,
       "parts": 4,
-      "sha256": "d07c282933fa90d9757ef77d9bb88104d5554e39ed52b4a598adc111f07e0097",
+      "sha256": "2f1db807ef485fbe50ff2f4d4daa59078c2f8e9e5f86c20d118209eb4361e374",
       "glbBytes": 3570936
     },
     {
       "style": "forest",
       "triangles": 2225,
       "parts": 4,
-      "sha256": "0d57e5c57210c4922bdf1179312ccbebd72d09cf30819fbc68c9a3db2a4b40df",
+      "sha256": "1148f59b4161d6492ce5724cf89ec048818765a307ee25c4f3adace69d8cede1",
       "glbBytes": 243544
     },
     {
       "style": "desert",
       "triangles": 26948,
       "parts": 4,
-      "sha256": "1296e9e8037bb70cd82cee76cb39953113eda2a777d01aae697cd63713cfded7",
+      "sha256": "fac148adbdc4857448109c0bd6833be08ecc00aa8f78236fb766cd63be8652d7",
       "glbBytes": 2913640
     },
     {
       "style": "delta",
       "triangles": 22082,
       "parts": 4,
-      "sha256": "f21c4a2a85a2fa400bc4787a5ec15957d150746209b3320f1f27a7eb9d5d237b",
+      "sha256": "33d4b7e47dcaa4b179595a792d14334315ec9e473238c643e0b6dc9eb79301da",
       "glbBytes": 2388092
     },
     {
       "style": "basalt",
       "triangles": 42302,
       "parts": 4,
-      "sha256": "1d2cf2ce027662f51f90a9887a4bbd1fe407fc3780b0f9c4c0ea8ddae6c1820f",
+      "sha256": "b4ff73fed57775a4cda51ebde3a46f2235ccb334d58ac2aa831997e204bf6457",
       "glbBytes": 4571884
     },
     {
       "style": "fjord",
       "triangles": 32178,
       "parts": 4,
-      "sha256": "6d4a507ad0873c3a3a436b773c442fb27e953b0da4613a503234f669eb49977f",
+      "sha256": "fd7acf2d1c798d80e5d172c9130fd76c14fc5f95cd589eeada12faa2709b5bb7",
       "glbBytes": 3478480
     },
     {
       "style": "steppe",
       "triangles": 17816,
       "parts": 4,
-      "sha256": "5f8b5c134bfe718848d3d2c5687e82c5fde039db3d1f633b34c3cb1c6b98914b",
+      "sha256": "d7d053848da81e52fa3157b7d75dd38888e79da06cde063c9983178bd331258f",
       "glbBytes": 1927416
     },
     {
       "style": "paddy",
       "triangles": 18588,
       "parts": 4,
-      "sha256": "77683f81f8fd87dda699f3e48ce69605595477958586222666a12261386c59b5",
+      "sha256": "9ff9bb4ca82fdf93eae5b00c335ccbed9d3a2df1a128d37df23fa8a8deefa615",
       "glbBytes": 2010760
     },
     {
       "style": "delve",
       "triangles": 9944,
       "parts": 4,
-      "sha256": "20416ea03a18ee2eb0a7d9a5d82cdfd5893c74434d8da6fb9c00cc45a989b1f2",
+      "sha256": "0fa2e40fed084583311a15bd9fdb3998da794de2516611cac82f5b1e15378199",
       "glbBytes": 1077204
     },
     {
       "style": "lagoon",
       "triangles": 32620,
       "parts": 4,
-      "sha256": "97e7de7bd83db36df44b40e9193c4546c27a03bfc7d8a11305c6cd47e5ca531a",
+      "sha256": "3c821fdebe87c780566ea963b120f71b2ba91adf37bd72e0780524e2d59477d7",
       "glbBytes": 3526268
     }
   ]

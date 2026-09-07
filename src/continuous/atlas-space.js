@@ -19,7 +19,11 @@ const AtlasSpace = (() => {
   const ground=(x,z)=>{const a=at(x,z);return surface(w,a[0],a[1],relief);};
   const localGround=(x,z)=>{const xx=clamp((x/c.width+.5)*(c.n-1),0,c.n-1),zz=clamp((z/c.depth+.5)*(c.n-1),0,c.n-1),a=Math.floor(xx),b=Math.floor(zz),u=xx-a,v=zz-b,read=(i,j)=>c.height[Math.min(c.n-1,j)*c.n+Math.min(c.n-1,i)];return lerp(lerp(read(a,b),read(a+1,b),u),lerp(read(a,b+1),read(a+1,b+1),u),v);};
   const anchors=new Map();
-  for(const b of c.buildings){let top=-Infinity,low=Infinity;for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const y=ground(b.x+dx*b.w,b.z+dz*b.d);top=Math.max(top,y);low=Math.min(low,y);}anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:top+.006,low,b,scale});}
+  // The atlas reads elevation almost linearly while the town grid compresses it through
+  // asinh, so a slope the generator judged mild can render as a tall skirt here. Seat the
+  // block a quarter of the way up its own fall: the uphill side buries into the bank and
+  // only the downhill quarter shows as masonry. A citadel keeps its full podium.
+  for(const b of c.buildings){let top=-Infinity,low=Infinity;for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const y=ground(b.x+dx*b.w,b.z+dz*b.d);top=Math.max(top,y);low=Math.min(low,y);}const seat=b.precinct?top:low+(top-low)*.25;anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:seat+.006,low,top,b,scale});}
   function vertex(x,y,z,anchor=null){return[origin[0]+x*sx,anchor?anchor.y+(y-anchor.b.y)*scale:ground(x,z)+(y-localGround(x,z))*scale+.003,origin[2]+z*sz];}
   return{origin,sx,sz,scale,at,ground,localGround,anchors,vertex};
  }
