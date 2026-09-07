@@ -4,6 +4,8 @@ One visible map canvas, one georeference, one camera. Zoom towards a real settle
 
 Open `dist/telluric-onemap.html`, or run `npm run dev` with Node.js 20+. There are no npm dependencies or external assets. Run `npm run build` after changing source; it rebuilds both the trusted Blob Worker source and the self-contained HTML.
 
+Countries draw recognizable names from ten mythological traditions, including Asgard, Avalon, Olympus and Kunlun. Inspired by Azgaar's namebases, each short name has a separate government title and a visible explanation of its mythological source. New worlds, new political histories and secessions use these names; loaded saves retain their existing names, and manual renaming clears the generated origin. See [realm names and sources](docs/REALM_NAMES.md).
+
 Scroll to approach, drag to pan, Shift-drag to orbit, click a building to inspect, and use **Wider setting** to pull back. Search → **Zoom** flies the same camera to the town. The timeline, regeneration and world saves remain available.
 
 Heavy meshes are synthesized in a Worker and mounted in atlas coordinates. The model cache is bounded to two detailed towns; regional silhouettes are replaced with finer geometry nearby. This does not promise zero LOD popping or real-time frame rates on software graphics.

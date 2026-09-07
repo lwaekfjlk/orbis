@@ -608,104 +608,9 @@ function administrationDistances(sim, start, limit = Infinity) {
     }
     return dist;
 }
-/* WHAT A COUNTRY CALLS ITSELF.
- * A realm was named for its capital and nothing else — "Kingdom of Dustshaw" beside
- * "Dustshaw Merchant League" — while the world already carried names nobody used: seven
- * legendary places, sixteen named landforms, twenty-four volcanoes, its continents. A realm
- * is named for the most particular of those it holds or overlooks, so the name is an
- * allusion to somewhere real on the map rather than a template wrapped around a town.
- *
- * Deliberately NOT named after a people. Population is a live mixture everywhere, conquest
- * changes rulers and not identities, and no place in this world is labelled by ancestry —
- * a realm called after one of them would quietly contradict all three.
- *
- * Naming runs after the claim pass: before it a realm holds nothing to allude to.
- */
-const REALM_FORMS = {
-    0: ['Kingdom of $', 'Crown of $', 'the $ Throne'],
-    1: ['Sanctuary of $', 'the $ Covenant', 'See of $'],
-    2: ['the $ Collegium', 'the $ Athenaeum', 'Scholars of $'],
-    3: ['the $ Confederacy', 'the Clans of $', 'the $ Accord'],
-    4: ['the $ Merchant League', 'the $ Concession', 'Factors of $'],
-    5: ['the $ Holds', 'the $ Marches', 'Wardens of $'],
-    6: ['Republic of $', 'the $ Commonwealth', 'the Free State of $'],
-    7: ['the $ City League', 'the $ Compact', 'the $ Assembly']
-};
-const REALM_QUARTERS = ['Upper', 'Lower', 'Inner', 'Outer', 'Greater', 'Lesser', 'North', 'South', 'East', 'West'];
-/** "The Verdant Reach" -> "Verdant", "Lake Silvermere" -> "Silvermere", "Ashen Peak" ->
- * "Ashen". The generic half is what the FORM already supplies, so keeping both gives
- * "Republic of Lake Silvermere". */
-const REALM_GENERIC = /^(the|lake|mount|cape)\s+|\s+(peak|caldera|crown|spire|vent|fjord|isles|glaciers|icefields|fens|canopy|expanse|reach|rift|sea|lake|arc|inland|field|fields|basin|sound|range|valley|coast|shore|bay|gulf|strait|delta|marsh|steppe|tundra|wastes|plain|plains)$/gi;
-function cStem(name) {
-    let out = String(name || '').trim();
-    for (let k = 0; k < 3; k++)
-        out = out.replace(REALM_GENERIC, '').trim();
-    return out || String(name || '').trim();
-}
-function nameRealms(sim, w, rng) {
-    const taken = new Set(), claimed = new Set();
-    const held = sim.provinces.reduce((map, p) => { if (p.owner >= 0) (map[p.owner] ||= []).push(p); return map; }, {});
-    const site = f => f && (Number.isFinite(f.x) && Number.isFinite(f.y) ? { x: f.x, y: f.y } : Number.isFinite(f.i) ? { x: f.i % GW, y: f.i / GW | 0 } : null);
-    // Most particular first. A landmark need only be held or overlooked: a realm along a
-    // mountain wall is named for the wall whether or not the summit fell inside its border.
-    const sources = [
-        { tier: 'legend', items: w.legends || [], reach: 16 },
-        { tier: 'landform', items: w.features || [], reach: 14 },
-        { tier: 'volcano', items: w.volcanoes || [], reach: 9 }
-    ];
-    // Larger realms choose first, so a great power takes the landmark rather than a
-    // city-state that happens to sit on the same ridge.
-    for (const c of sim.realms.filter(c => c.alive).sort((a, b) => b.foundingProvinces - a.foundingProvinces)) {
-        const mine = held[c.id] || [], capital = sim.provinces[c.capital];
-        let stem = null, tier = 'capital';
-        for (const { tier: t, items, reach } of sources) {
-            let best = null;
-            for (const f of items) {
-                const at = site(f), key = f.name;
-                if (!at || !key || claimed.has(key))
-                    continue;
-                let d = Infinity;
-                for (const p of mine)
-                    d = Math.min(d, Math.hypot(p.x - at.x, p.y - at.y));
-                if (d <= reach && (!best || d < best.d))
-                    best = { d, key, stem: cStem(key) };
-            }
-            if (best && best.stem && !taken.has(best.stem)) {
-                claimed.add(best.key);
-                stem = best.stem;
-                tier = t;
-                break;
-            }
-        }
-        // The plate under the capital: a deep name for a country that overlooks nothing.
-        if (!stem) {
-            const plate = w.plates?.[w.plate?.[capital.i] ?? -1];
-            if (plate?.name && !taken.has(plate.name) && !claimed.has(plate.name)) {
-                claimed.add(plate.name);
-                stem = cStem(plate.name);
-                tier = 'plate';
-            }
-        }
-        if (!stem) {
-            const continent = (w.continents || []).find(l => l.id === capital.landmass);
-            if (continent?.name) {
-                const quarter = REALM_QUARTERS[Math.floor(rng() * REALM_QUARTERS.length)], tried = `${quarter} ${cStem(continent.name)}`;
-                if (!taken.has(tried)) {
-                    stem = tried;
-                    tier = 'continent';
-                }
-            }
-        }
-        if (!stem)
-            stem = capital.name;
-        for (let k = 2; taken.has(stem); k++)
-            stem = `${capital.name} ${k}`;
-        taken.add(stem);
-        const forms = REALM_FORMS[c.gov] || REALM_FORMS[0];
-        c.name = stem;
-        c.title = forms[Math.floor(rng() * forms.length)].replace('$', stem);
-        c.namedFor = tier;
-    }
+/* Namebases and formal titles are independent of the institutions above. */
+function nameRealms(sim) {
+    RealmNames.generate(sim);
 }
 function localPoliticalDifference(a, b) {
     // Small institutional-coordination term; no species gets an inherent state/war bonus.
@@ -811,7 +716,7 @@ function formPolities(sim, w) {
     }
     for (const c of sim.realms)
         c.foundingProvinces = sim.provinces.filter(p => p.owner === c.id).length;
-    nameRealms(sim, w, rng);
+    nameRealms(sim);
     assignPoliticalColors(sim);
     if (settlementFingerprint(sim) !== before)
         throw Error('State formation moved or created a settlement.');
@@ -1404,13 +1309,14 @@ function stepCivilization(sim, w) {
             if (!old?.alive || old.provinces.length < 4 || p.occupation > 0 || p.unrest < 62 || rng() > .022)
                 continue;
             const id = sim.realms.length, c = { ...old, id, name: p.name, title: 'Free State of ' + p.name, color: REALM_COLORS[id % REALM_COLORS.length], capital: p.id, gov: 6, faith: cDominant(p.faith), originPeople: cDominant(p.people), policy: 'Concord', ambition: .35, identity: 'A secession born from local unrest. The new government inherits the resident population, beliefs and economic constraints.', army: Math.max(1, old.army * .08), navy: 0, treasury: old.treasury * .06, stability: 57, warWeariness: 0, alive: true, founded: sim.year, provinces: [] };
+            RealmNames.assign(sim, c, { baseId: old.nameOrigin?.baseId });
             old.army *= .92;
             old.treasury *= .94;
             p.owner = id;
             p.unrest = 30;
             sim.realms.push(c);
             sim.totalSplits++;
-            logEvent(sim, 'secession', `${p.name} breaks from ${old.name} and establishes a free state.`, [old.id, id]);
+            logEvent(sim, 'secession', `${p.name} breaks from ${old.name} and establishes ${c.title}.`, [old.id, id]);
             break;
         }
     }
@@ -1448,6 +1354,8 @@ function civilizationAction(sim, action, a, b, value) {
             return { ok: false, message: 'A realm needs a name.' };
         A.name = v;
         A.title = v;
+        A.namedFor = 'custom';
+        A.nameOrigin = null;
         return { ok: true, message: 'Realm renamed.' };
     }
     if (action === 'war')
