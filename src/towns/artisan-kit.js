@@ -16,12 +16,15 @@ const ArtisanCityKit=(()=>{
  };
  function kit(recipe,lod=1){const k=new LandmarkKit(recipe,{base:false,lod});k.palette={...(PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material])};return k}
  function append(dst,src){for(const n of src.data)dst.data.push(n)}
- function windowN(k,x,y,z,w=.55,h=.9,angle=0,stone=true){k.transform(x,y,z,angle,1,()=>{
+ // Openings are the single largest triangle cost in a town, so they carry the LOD split:
+ // nothing on the outskirts, a recessed panel mid-town, full joinery in the core.
+ function windowN(k,x,y,z,w=.55,h=.9,angle=0,stone=true){if(k.lod<1)return;k.transform(x,y,z,angle,1,()=>{
   k.box(0,0,0,w,h,.07,'dark');k.box(0,.08,.042,w*.66,h*.79,.025,stone?'water':'metal');
+  if(k.lod<2)return;
   k.box(0,-.08,.08,w+.19,.08,.19,'trim');k.box(0,h-.04,.02,w+.12,.07,.1,'trim');k.box(0,.06,.06,.045,h-.09,.04,'trim');k.box(0,h*.48,.06,w*.9,.04,.04,'trim');
   if(!stone)for(const s of[-1,1])k.box(s*(w*.66),0,.035,w*.24,h,.09,'wood');
  })}
- function courses(k,x,y,z,w,h,angle=0){k.transform(x,y,z,angle,1,()=>{
+ function courses(k,x,y,z,w,h,angle=0){if(k.lod<1)return;k.transform(x,y,z,angle,1,()=>{
   for(let row=0;row<Math.floor(h/.52);row++){
    const yy=row*.52+.1;k.box(0,yy,.018,w,.018,.025,colorScale(k.color('wall'),.76));
    const unit=1.06;for(let col=-w/2+.35+(row%2)*.45;col<w/2-.15;col+=unit){
@@ -35,7 +38,7 @@ const ArtisanCityKit=(()=>{
   k.roof(x,y,z,w,d,h,'roof',kind);
   k.using('roof',()=>{
    const D=d*.55,W=w*.55,hip=kind!=='gable';
-   for(let row=1;row<8;row++)for(const side of[-1,1]){
+   for(let row=1;row<8;row+=k.lod<2?7:1)for(const side of[-1,1]){
     const t=row/8,xx=W*(1-t)*side,yy=y+h*t+.025,span=hip?D-(W*.65)*t:D;
     k.beam([x+xx,yy,z-span],[x+xx,yy,z+span],.024,colorScale(k.color('roof'),.76),3);
    }
@@ -55,20 +58,23 @@ const ArtisanCityKit=(()=>{
     windowN(k,side*(w/2+.018),yy,0,.38,.7,side<0?-Math.PI/2:Math.PI/2,!timber);
    }
    for(const s of[-1,1])for(const t of[-1,1]){
+    if(k.lod<1)break;
     k.box(s*(w/2-.10),.22,t*(d/2+.035),.17,h+.05,.13,'trim');
-    for(let j=0;j<Math.floor(h/.62);j++)k.box(s*(w/2-.16),j*.62+.25,t*(d/2+.045),.29,.18,.08,'trim');
+    if(k.lod>=2)for(let j=0;j<Math.floor(h/.62);j++)k.box(s*(w/2-.16),j*.62+.25,t*(d/2+.045),.29,.18,.08,'trim');
    }
-   if(timber){for(const sign of[-1,1]){
+   if(timber&&k.lod>=1){for(const sign of[-1,1]){
     k.box(0,h*.55,sign*(d/2+.08),w,.08,.08,'trim');
     k.beam([-w*.4,.35,sign*(d/2+.1)],[0,h*.55,sign*(d/2+.1)],.04,'trim',4);
     k.beam([0,h*.55,sign*(d/2+.1)],[w*.4,.35,sign*(d/2+.1)],.04,'trim',4);
    }}
    const ph=flat?.3:Math.min(w,d)*(style==='fjord'?.81:.56);
    slateRoof(k,0,h+.30,0,w+.14,d+.15,ph,roof,style==='arcane');
-   k.box(0,.27,d/2+.08,.6,1.0,.10,'dark');k.box(0,.3,d/2+.14,.44,.88,.05,'wood');k.box(0,.26,d/2+.39,1,.13,.54,'trim');
-   if(!flat&&variant%3!==1){k.box(w*.27,h*.9,-d*.20,.42,ph+1,.5,'wall');k.box(w*.27,h*.9+ph+.9,-d*.2,.56,.15,.62,'trim');k.box(w*.27,h*.9+ph+1.06,-d*.2,.32,.02,.34,'dark');}
+   k.box(0,.27,d/2+.08,.6,1.0,.10,'dark');
+   if(k.lod>=1){k.box(0,.3,d/2+.14,.44,.88,.05,'wood');k.box(0,.26,d/2+.39,1,.13,.54,'trim');}
+   if(!flat&&variant%3!==1&&k.lod>=1){k.box(w*.27,h*.9,-d*.20,.42,ph+1,.5,'wall');k.box(w*.27,h*.9+ph+.9,-d*.2,.56,.15,.62,'trim');k.box(w*.27,h*.9+ph+1.06,-d*.2,.32,.02,.34,'dark');}
    // Projecting dormers, not a painted roof texture.
-   if(!flat&&w>2.2){k.transform(-w*.35,h+.48,.35,0,1,()=>{k.box(0,0,0,.65,.63,.72,'wall');slateRoof(k,0,.63,0,.76,.81,.48,'gable');windowN(k,0,.08,.40,.27,.43,0);});}
+   if(!flat&&w>2.2&&k.lod>=2){k.transform(-w*.35,h+.48,.35,0,1,()=>{k.box(0,0,0,.65,.63,.72,'wall');slateRoof(k,0,.63,0,.76,.81,.48,'gable');windowN(k,0,.08,.40,.27,.43,0);});}
+   if(k.lod<1)return;
    if(style==='desert'){
     if(variant%3===0){k.box(w*.27,h, -d*.26,.68,1.40,.7,'wall');for(const sign of[-1,1])k.box(w*.27+sign*.36,h+.5,-d*.26,.025,.63,.38,'dark');k.box(w*.27,h+1.4,-d*.26,.92,.12,.92,'trim')}
     if(variant%3===1)k.dome(0,h+.35,-d*.1,w*.26,w*.29,'roof');
@@ -165,7 +171,7 @@ const ArtisanCityKit=(()=>{
   return{body,roof,height:(hi[1]-lo[1])*scale,model};
  }
  function compound(b,c,p,realm){
-  const style=c.townProfile.id,faith=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular',recipe=LandmarkCatalog.recipe(c.townProfile.palace,c.townRecipe.seed+'/'+b.id,{urbanStyle:style,faith,geography:{freshwater:p.fresh||0,cold:c.siteEnvironment.temperature<4}}),K=kit(recipe,1),rng=K.random;
+  const style=c.townProfile.id,faith=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular',recipe=LandmarkCatalog.recipe(c.townProfile.palace,c.townRecipe.seed+'/'+b.id,{urbanStyle:style,faith,geography:{freshwater:p.fresh||0,cold:c.siteEnvironment.temperature<4}}),K=kit(recipe,b.lod??2),rng=K.random;
   if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true}),b);
   let count=0;K.part('courtyard','The inhabited urban block','architecture',()=>{
    K.box(0,0,0,9.8,.18,9.8,colorScale(K.color('ground'),1.04));
@@ -179,16 +185,17 @@ const ArtisanCityKit=(()=>{
     for(const [x,z,w,d]of entries){const h=(style==='fjord'?3.5:style==='desert'?3.5:4.6)+rng()*1.2;house(K,x,.18,z,w,d,h,style,(count+arrangement)%5);count++;}
     if(style==='mountain'||style==='basalt'){for(const x of[-4.5,4.5])K.box(x,.2,0,.45,2.4,8.5,'wall');}
    }
+   if(K.lod<1)return;
    if(b.type==='workshop'||b.program==='market'||b.type==='market'){
     for(const x of[-1.1,1.1]){K.box(x,.2,0,1.0,.65,1,'wood');K.box(x,1.4,0,1.6,.09,1.65,x<0?'roof':'trim');for(const z of[-.7,.7])K.box(x+.6,.2,z,.07,1.2,.07,'wood');}
    }else if(style!=='forest'){K.cylinder(.2,.2,.15,.48,.55,'wall',10);K.cylinder(.2,.75,.15,.34,.04,'water',10);}
-   for(let j=0;j<3;j++)K.cylinder(-4.15+j*.5,.19,4,.21,.5+(j%2)*.1,'wood',8);
+   if(K.lod>=2)for(let j=0;j<3;j++)K.cylinder(-4.15+j*.5,.19,4,.21,.5+(j%2)*.1,'wood',8);
    if(style==='arcane')K.ring(0,.21,0,1.25,.05,'metal','xz',16);
   });
   const result=meshAt(K.finish(),b);result.structures=count;return result;
  }
  function fortificationMeshes(c,p){
-  const profile=c.townProfile,recipe=LandmarkCatalog.recipe(profile.palace,c.townRecipe.seed+'/defenses',{urbanStyle:profile.id,geography:{freshwater:p.fresh||0}}),K=kit(recipe,0),D=c.defenses;
+  const profile=c.townProfile,recipe=LandmarkCatalog.recipe(profile.palace,c.townRecipe.seed+'/defenses',{urbanStyle:profile.id,geography:{freshwater:p.fresh||0}}),K=kit(recipe,1),D=c.defenses;
   if(!D)return {body:new Geometry(),roof:new Geometry()};
   K.part('defenses','Connected curtain walls and gatehouses','architecture',()=>{
    for(const w of D.walls){const a=w.a,b=w.b,L=Math.hypot(b.x-a.x,b.z-a.z),angle=-Math.atan2(b.z-a.z,b.x-a.x),base=Math.min(a.y,b.y)-.3,h=w.height+Math.abs(a.y-b.y);

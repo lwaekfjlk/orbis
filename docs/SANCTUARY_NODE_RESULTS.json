@@ -13,7 +13,7 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 95
+        "buildings": 217
       }
     },
     {
@@ -64,55 +64,55 @@
         {
           "id": 213,
           "name": "Wildcombe",
-          "blocks": 95,
+          "blocks": 217,
           "sanctuary": 38
         },
         {
           "id": 240,
           "name": "Foxwaystead",
-          "blocks": 80,
+          "blocks": 183,
           "sanctuary": 38
         },
         {
           "id": 258,
           "name": "Terngarth",
-          "blocks": 104,
+          "blocks": 218,
           "sanctuary": 38
         },
         {
           "id": 259,
           "name": "Scorchquay",
-          "blocks": 85,
+          "blocks": 135,
           "sanctuary": 38
         },
         {
           "id": 297,
           "name": "Great Saltlanding",
-          "blocks": 56,
+          "blocks": 130,
           "sanctuary": 38
         },
         {
           "id": 343,
           "name": "Ravenness",
-          "blocks": 95,
+          "blocks": 224,
           "sanctuary": 38
         },
         {
           "id": 403,
           "name": "Gullley",
-          "blocks": 80,
+          "blocks": 108,
           "sanctuary": 38
         },
         {
           "id": 452,
           "name": "Kelplanding",
-          "blocks": 72,
+          "blocks": 157,
           "sanctuary": 38
         },
         {
           "id": 462,
           "name": "Larkfield",
-          "blocks": 88,
+          "blocks": 171,
           "sanctuary": 38
         }
       ]

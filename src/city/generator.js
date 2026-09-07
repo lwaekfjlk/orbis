@@ -28,13 +28,39 @@ function cityHash(value) { let h = 2166136261; for (const c of value) {
     h ^= c.charCodeAt(0);
     h = Math.imul(h, 16777619);
 } return (h >>> 0).toString(16); }
+/** A uniform bucket grid. Footprint collision and street-socket search are otherwise
+ * quadratic in the block count, which a several-hundred-compound town cannot afford.
+ * Items are filed under every cell their box covers, so an overlapping query box always
+ * shares a cell with them; `near` may repeat an item, which callers only re-test. */
+function cityGrid(cell) {
+    const map = new Map();
+    const span = (x0, z0, x1, z1, fn) => { for (let z = Math.floor(z0 / cell); z <= Math.floor(z1 / cell); z++) for (let x = Math.floor(x0 / cell); x <= Math.floor(x1 / cell); x++) fn(x + ',' + z); };
+    return {
+        add(item, x0, z0, x1, z1) { span(x0, z0, x1, z1, k => { let a = map.get(k); if (!a) map.set(k, a = []); a.push(item); }); },
+        near(x0, z0, x1, z1) { const out = []; span(x0, z0, x1, z1, k => { const a = map.get(k); if (a) for (const v of a) out.push(v); }); return out; }
+    };
+}
+/** Distance, in parent cells, to the nearest other settlement that can also be detailed. */
+function cityReach(sim, p) {
+    let best = Infinity;
+    for (const q of sim.provinces)
+        if (q.id !== p.id && q.settled && q.urbanPop >= 650)
+            best = Math.min(best, Math.hypot(q.x - p.x, q.y - p.y));
+    return best;
+}
 function generateCity(w, sim, provinceId, design = {}) {
     const p = sim.provinces[provinceId];
     if (!p || !p.settled || p.urbanPop < 650)
         throw Error('City detail requires an existing village or town.');
     const recipe = TownCatalog.resolve(w, sim, p, design), profile = TownCatalog.styles.find(t => t.id === recipe.style);
-    const seed = seedHash(`${w.params.seed}/city/${p.i}/v9/${TownCatalog.signature(recipe)}`), rng = random32(seed);
-    const n = 81, width = 152, depth = 124, span = 7.8, nn = n * n;
+    const seed = seedHash(`${w.params.seed}/city/${p.i}/v13/${TownCatalog.signature(recipe)}`), rng = random32(seed);
+    // Footprint is limited by the room the site actually has. The built disc reaches
+    // 0.375*span parent cells, so a close neighbour keeps this town from growing into it.
+    // width/depth track span, leaving on-atlas building size unchanged; only extent grows.
+    const span = Math.min(10.5, Math.max(7.8, cityReach(sim, p) / .79)), grow = span / 7.8;
+    // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
+    // must land exactly on the parent cell, neither of which survives an even grid.
+    const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;
     const city = { version: 3, seed, townRecipe: recipe, townProfile: profile, provinceId, name: p.name, n, width, depth, span, center: [p.x, p.y],
         height: new Float32Array(nn), water: new Uint8Array(nn), waterKind: new Uint8Array(nn),
         slope: new Float32Array(nn), wet: new Float32Array(nn), road: new Uint8Array(nn),
@@ -167,6 +193,29 @@ function generateCity(w, sim, provinceId, design = {}) {
         goals.sort((a,b)=>Math.hypot(city.xy(a).x-city.market.x,city.xy(a).z-city.market.z)-Math.hypot(city.xy(b).x-city.market.x,city.xy(b).z-city.market.z));
         for(const goal of goals){const nodes=route(center,goal);if(nodes.length<2)continue;nodes.forEach(i=>city.road[i]=1);city.roads.push({kind:'arterial',nodes,points:nodes.map(i=>({...city.xy(i),y:city.height[i]+.13,bridge:!!city.water[i]}))});a.gateway=goal;break;}
     }
+    // Gate roads. FortressPlan grows its wall approaches outward from the street network,
+    // and a fully built-out town leaves no gap to do that after the fact. Four radials to
+    // the rim of the buildable disc keep those corridors open, and read as highways besides.
+    // Their outer shoulders are withheld from lots: a street alone is not a corridor, since
+    // blocks pack right up against it and seal the perimeter again.
+    city.gateReserve = new Uint8Array(nn);
+    for (let k = 0; k < 4; k++) {
+        const a = k / 4 * Math.PI * 2 + .4, tx = city.market.x + Math.cos(a) * width * .36, tz = city.market.z + Math.sin(a) * depth * .36;
+        const goal = candidates.reduce((best, c0) => { const q = city.xy(c0.k), v = Math.hypot(q.x - tx, q.z - tz) + city.slope[c0.k] * 9; return v < best.v ? { k: c0.k, v } : best; }, { k: -1, v: Infinity });
+        if (goal.k < 0) continue;
+        const nodes = route(center, goal.k);
+        if (nodes.length < 2) continue;
+        nodes.forEach(i => city.road[i] = 1);
+        city.roads.push({ kind: 'arterial', nodes, points: nodes.map(i => ({ ...city.xy(i), y: city.height[i] + .13, bridge: !!city.water[i] })), role: 'gate-road' });
+        for (const i of nodes) {
+            const q = city.xy(i);
+            if (Math.hypot(q.x - city.market.x, q.z - city.market.z) < width * .17)
+                continue;
+            for (let dz = -6; dz <= 6; dz += 1.5) for (let dx = -6; dx <= 6; dx += 1.5)
+                if (dx * dx + dz * dz <= 36)
+                    city.gateReserve[city.index(q.x + dx, q.z + dz)] = 1;
+        }
+    }
     const shore = [];
     for (const c of candidates) {
         const k = c.k;
@@ -188,8 +237,8 @@ function generateCity(w, sim, provinceId, design = {}) {
     for (let k = 0; k < nn; k++)
         if (city.road[k]) {
             const x = k % n, y = Math.floor(k / n);
-            for (let dy = -8; dy <= 8; dy++)
-                for (let dx = -8; dx <= 8; dx++) {
+            for (let dy = -10; dy <= 10; dy++)
+                for (let dx = -10; dx <= 10; dx++) {
                     const xx = x + dx, yy = y + dy;
                     if (xx >= 0 && xx < n && yy >= 0 && yy < n)
                         distanceRoad[yy * n + xx] = Math.min(distanceRoad[yy * n + xx], Math.hypot(dx * width / (n - 1), dy * depth / (n - 1)));
@@ -199,19 +248,21 @@ function generateCity(w, sim, provinceId, design = {}) {
     for (let y = 4; y < n - 4; y++)
         for (let x = 4; x < n - 4; x++) {
             const k = y * n + x, q = city.xy(k);
-            if (city.water[k] || city.road[k] || city.slope[k] > .8 || distanceRoad[k] < 1.4 || distanceRoad[k] > 11)
+            if (city.water[k] || city.road[k] || city.gateReserve[k] || city.slope[k] > .8 || distanceRoad[k] < 1.4 || distanceRoad[k] > 11)
                 continue;
             const d = Math.hypot(q.x - city.market.x, q.z - city.market.z);
-            if (d > 57)
+            if (d > width * .375)
                 continue;
-            lots.push({ k, rank: rng() * .9 + d / 100 + city.wet[k] * .2 });
+            // Concentric, not random: sequential placement in random order saturates near 45%
+            // occupancy, which is what kept these towns thin. The hash only breaks ties.
+            lots.push({ k, rank: d / 100 + city.wet[k] * .2 + ((Math.imul(k, 2654435761) >>> 0) % 997) / 1e6 });
         }
     lots.sort((a, b) => a.rank - b.rank);
-    const target = cityClamp(Math.round(80 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * .55), 80, 280);
-    const used = [];
+    const target = cityClamp(Math.round(120 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 1.05), 120, 620);
+    const used = [], usedGrid = cityGrid(8);
     let infill=false;
-    function buildingAt(k, type, landmark = false, precinctSize = 3) {
-        const q = city.xy(k), ww = landmark ? precinctSize : infill ? 2.4+rng()*.9 : (4.0 + rng() * (1.8 + recipe.variety)) * profile.scale, dd = landmark ? precinctSize : infill ? 2.6+rng()*.8 : (4.2 + rng() * (1.9 + recipe.variety)) * profile.scale;
+    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1) {
+        const q = city.xy(k), ww = landmark ? precinctSize : (infill ? 2.4+rng()*.9 : (4.0 + rng() * (1.8 + recipe.variety)) * profile.scale) * shrink, dd = landmark ? precinctSize : (infill ? 2.6+rng()*.8 : (4.2 + rng() * (1.9 + recipe.variety)) * profile.scale) * shrink;
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
         if (ww > 3 || dd > 3) {
             for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1) {
@@ -226,13 +277,15 @@ function generateCity(w, sim, provinceId, design = {}) {
                 if (city.water[j] || city.environment.ice[j]>25 || city.environment.snow[j]>.5 || city.road[j] || city.slope[j] > .9)
                     return null;
             }
-        if (used.some(b => Math.abs(b.x - q.x) < (b.w + ww) / 2 + .28 * profile.spacing && Math.abs(b.z - q.z) < (b.d + dd) / 2 + .28 * profile.spacing))
+        const gap = .28 * profile.spacing;
+        if (usedGrid.near(q.x - ww / 2 - gap, q.z - dd / 2 - gap, q.x + ww / 2 + gap, q.z + dd / 2 + gap).some(b => Math.abs(b.x - q.x) < (b.w + ww) / 2 + gap && Math.abs(b.z - q.z) < (b.d + dd) / 2 + gap))
             return null;
         const district = city.districts.reduce((best, d) => { const dis = Math.hypot(d.x - q.x, d.z - q.z); return dis < best.dist ? { d, dist: dis } : best; }, { d: city.districts[0], dist: Infinity }).d;
         const actual = type || (['garden', 'market', 'civic', 'temple', 'academy', 'harbor'].includes(district.type) ? 'home' : district.type);
         const h = landmark ? (actual === 'academy' ? 10 : actual === 'temple' ? 7 : actual === 'civic' ? 7 : 3.2) : 1.5 + rng() * 2.3;
         const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[k], angle: a, district: district.id, landmark, condition: 1, infill };
         used.push(b);
+        usedGrid.add(b, b.x - b.w / 2, b.z - b.d / 2, b.x + b.w / 2, b.z + b.d / 2);
         TownGrammar.moduleFor(city, b, rng);
         city.buildings.push(b);
         district.buildings++;
@@ -261,12 +314,16 @@ function generateCity(w, sim, provinceId, design = {}) {
     for (const lot of lots) {
         if (city.buildings.length >= target)
             break;
-        buildingAt(lot.k, null, false);
+        // The landmark size ladder above, applied to ordinary blocks: a corner plot that
+        // cannot take a full compound still takes a smaller one.
+        for (const size of [1, .82, .66])
+            if (buildingAt(lot.k, null, false, 3, size))
+                break;
     }
     // Fine-grained frontage fills gaps left between civic compounds. Every new
     // footprint passes the same land, road and collision tests; no new population.
     infill=true;
-    for(const lot of lots){if(city.buildings.length>=Math.min(300,target*2.1))break;buildingAt(lot.k,'home',false);}
+    for(const lot of lots){if(city.buildings.length>=Math.min(760,target*2.1))break;buildingAt(lot.k,'home',false);}
     infill=false;
     // A granary and public well are selected from dry, road-served existing lots.
     const ordinary = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
@@ -286,18 +343,18 @@ function generateCity(w, sim, provinceId, design = {}) {
         if (city.water[city.index(end.x, end.z)])
             city.piers.push({ a: q, b: end, y: Math.max(city.height[k], city.height[j]) + .35 });
     }
-    for (let k = 0; k < 1700; k++) {
+    for (let k = 0, trees = Math.round(1700 * grow * grow); k < trees; k++) {
         const x = (rng() - .5) * width * .95, z = (rng() - .5) * depth * .95, i = city.index(x, z);
         if (city.water[i] || city.road[i] || distanceRoad[i] < 1.2 || used.some(b => Math.abs(b.x - x) < b.w / 2 + 1.3 && Math.abs(b.z - z) < b.d / 2 + 1.3))
             continue;
         const d = Math.hypot(x - city.market.x, z - city.market.z);
-        if (d < (profile.id === 'forest' ? 6 : 16) || city.environment.ice[i]>5 || city.environment.snow[i]>.2 || rng()>city.environment.treeDensity[i])
+        if (d < (profile.id === 'forest' ? 6 : 16) * grow || city.environment.ice[i]>5 || city.environment.snow[i]>.2 || rng()>city.environment.treeDensity[i])
             continue;
         city.trees.push({ x, z, y: city.height[i], h: 2 + rng() * 2.1, kind: CityEnvironment.treeKind(city.environment,i) });
     }
-    for (let k = 0; k < 100; k++) {
+    for (let k = 0, plots = Math.round(100 * grow * grow); k < plots; k++) {
         const x = (rng() - .5) * width * .85, z = (rng() - .5) * depth * .85, i = city.index(x, z), d = Math.hypot(x - city.market.x, z - city.market.z);
-        if (d < 42 || d > 68 || city.water[i] || city.slope[i] > .18 || city.road[i] || city.environment.farm[i]<.2 || city.environment.ice[i]>1 || city.environment.snow[i]>.1 || city.environment.temperature[i]<3)
+        if (d < 42 * grow || d > 68 * grow || city.water[i] || city.slope[i] > .18 || city.road[i] || city.environment.farm[i]<.2 || city.environment.ice[i]>1 || city.environment.snow[i]>.1 || city.environment.temperature[i]<3)
             continue;
         if (used.some(b => Math.hypot(b.x - x, b.z - z) < 7))
             continue;
@@ -307,7 +364,7 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.farms.push({ x, z, y: city.height[i], w: fw, d: fd });
     }
     // Historical precinct walls protect the old core; gaps are gates or open waterfronts.
-    const wallRadius = 20;
+    const wallRadius = 20 * grow;
     for (let k = 0; k < (profile.wall ? 76 : 0); k++) {
         const a = k / 76 * Math.PI * 2, b = (k + 1) / 76 * Math.PI * 2, A = { x: city.market.x + Math.cos(a) * wallRadius, z: city.market.z + Math.sin(a) * wallRadius * .85 }, B = { x: city.market.x + Math.cos(b) * wallRadius, z: city.market.z + Math.sin(b) * wallRadius * .85 }, i = city.index(A.x, A.z), j = city.index(B.x, B.z);
         if (city.water[i] || city.water[j] || distanceRoad[i] < 2.5 || distanceRoad[j] < 2.5 || city.buildings.some(v => cityPointSegment(v, A, B) < Math.max(v.w, v.d) * .7))
@@ -315,17 +372,19 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.walls.push({ a: A, b: B, y: Math.max(city.height[i], city.height[j]) });
     }
     city.connectors = [];
-    const roadSites = [];
-    for (let k=0;k<nn;k++) if (city.road[k]) roadSites.push({i:k,...city.xy(k)});
+    const roadGrid = cityGrid(12), blockGrid = cityGrid(8);
+    for (let k=0;k<nn;k++) if (city.road[k]) { const q = {i:k,...city.xy(k)}; roadGrid.add(q, q.x, q.z, q.x, q.z); }
+    for (const b of city.buildings) blockGrid.add(b, b.x-b.w/2-.09, b.z-b.d/2-.09, b.x+b.w/2+.09, b.z+b.d/2+.09);
     for(const b of city.buildings) {
         let best=null;
-        for(const q of roadSites) {
+        // A socket beyond 12 is rejected below anyway, so only that neighbourhood is searched.
+        for(const q of roadGrid.near(b.x-b.w/2-12,b.z-b.d/2-12,b.x+b.w/2+12,b.z+b.d/2+12)) {
             const dx=q.x-b.x,dz=q.z-b.z;
             const px=b.x+cityClamp(dx,-b.w/2-.08,b.w/2+.08), pz=b.z+cityClamp(dz,-b.d/2-.08,b.d/2+.08);
             const dist=Math.hypot(q.x-px,q.z-pz);
             if(best&&dist>=best.dist)continue;
             let valid=true;
-            for(let t=0;t<=1;t+=.1){const x=lerp(px,q.x,t),z=lerp(pz,q.z,t);if(city.water[city.index(x,z)]||city.buildings.some(v=>v!==b&&Math.abs(v.x-x)<v.w/2+.08&&Math.abs(v.z-z)<v.d/2+.08)){valid=false;break}}
+            for(let t=0;t<=1;t+=.1){const x=lerp(px,q.x,t),z=lerp(pz,q.z,t);if(city.water[city.index(x,z)]||blockGrid.near(x,z,x,z).some(v=>v!==b&&Math.abs(v.x-x)<v.w/2+.08&&Math.abs(v.z-z)<v.d/2+.08)){valid=false;break}}
             if(valid)best={dist,a:{x:px,z:pz},b:q};
         }
         if(best&&best.dist<12){b.streetSocket=best.b.i;b.angle=Math.round(Math.atan2(-(best.b.x-b.x),best.b.z-b.z)/(Math.PI/2))*(Math.PI/2);city.connectors.push({blockId:b.id,...best});}
@@ -335,6 +394,19 @@ function generateCity(w, sim, provinceId, design = {}) {
     for(const d of city.districts)d.buildings=city.buildings.filter(b=>b.district===d.id).length;
     // Masonry foundations support each footprint; they do not flatten its terrain.
     for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=Math.max(b.y,hi+.07);}
+    // Fidelity is bought against a triangle budget rather than granted to every block.
+    // The core keeps full joinery, the outskirts fall back to massed volumes, and a
+    // larger town simply gets a smaller detailed core instead of a larger download.
+    const LOD_COST = [1600, 3200, 7600], LOD_BUDGET = 850000;
+    const graded = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
+    const spare = Math.max(0, LOD_BUDGET - LOD_COST[0] * graded.length);
+    const full = Math.min(graded.length, Math.floor(spare * .62 / (LOD_COST[2] - LOD_COST[0])));
+    const mid = Math.min(graded.length - full, Math.floor(spare * .38 / (LOD_COST[1] - LOD_COST[0])));
+    graded.forEach((b, k) => { b.lod = k < full ? 2 : k < full + mid ? 1 : 0; });
+    for (const b of city.buildings)
+        if (b.landmark)
+            b.lod = 2;
+    city.lod = { full, mid, plain: graded.length - full - mid, estimate: graded.reduce((n, b) => n + LOD_COST[b.lod], 0) };
     if(typeof FortressPlan!=='undefined')FortressPlan.build(city);
     city.blocks = city.buildings.filter(b=>!b.landmark).map(b=>({id:b.id,template:b.module,district:b.district,components:b.components,streetSocket:b.streetSocket??null,x:b.x,z:b.z,width:b.w,depth:b.d}));
     const weights = { home: 0, workshop: 0, market: 0, temple: 0, academy: 0, harbor: 0, civic: 0, garden: 0 };

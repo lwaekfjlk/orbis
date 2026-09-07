@@ -3,14 +3,17 @@
 const TownGrammar = (()=>{
  function plan(city,profile,rng,candidates,route){
   const c=city.market,center=city.marketIndex,n=city.n,hubs=[center],roles={market:center},keyset=new Set();
+  // Every hub offset below is authored against the original 152-unit town; S restates
+  // them for whatever footprint this site earned, so the street net reaches its edge.
+  const S=city.width/152;
   const snap=(x,z)=>candidates.reduce((best,k)=>{const q=city.xy(k.k),v=(q.x-x)**2+(q.z-z)**2+city.slope[k.k]*80;return v<best.v?{i:k.k,v}:best},{i:center,v:Infinity}).i;
   const add=(a,b,kind='street')=>{if(a===b)return;const key=[a,b].sort((x,y)=>x-y).join(':');if(keyset.has(key))return;const path=route(a,b);if(path.length<2)return;keyset.add(key);path.forEach(i=>city.road[i]=1);city.roads.push({kind,nodes:path,points:path.map(i=>({...city.xy(i),y:city.height[i]+.13,bridge:!!city.water[i]}))});if(!hubs.includes(b))hubs.push(b)};
-  const at=(x,z)=>snap(c.x+x,c.z+z),chain=(pts,kind='street')=>{let a=center;for(const pt of pts){const b=at(...pt);add(a,b,kind);a=b}return a};
+  const at=(x,z)=>snap(c.x+x*S,c.z+z*S),chain=(pts,kind='street')=>{let a=center;for(const pt of pts){const b=at(...pt);add(a,b,kind);a=b}return a};
   const axis=(dx,dz,t)=>at(dx*t,dz*t);
   let axisX=1,axisZ=0;
   // Principal shoreline tangent is estimated from actual water samples.
   let sx=0,sz=0,count=0;
-  for(let i=0;i<city.water.length;i++)if(city.water[i]){const q=city.xy(i),d=Math.hypot(q.x-c.x,q.z-c.z);if(d<72){const a=1/(d+4);sx+=(q.x-c.x)*a;sz+=(q.z-c.z)*a;count++}}
+  for(let i=0;i<city.water.length;i++)if(city.water[i]){const q=city.xy(i),d=Math.hypot(q.x-c.x,q.z-c.z);if(d<72*S){const a=1/(d+4);sx+=(q.x-c.x)*a;sz+=(q.z-c.z)*a;count++}}
   const length=Math.hypot(sx,sz);if(length>1){axisX=-sz/length;axisZ=sx/length}
   city.shoreAxis=[axisX,axisZ];
   if(profile.plan==='axial'||profile.plan==='processional'){
@@ -37,7 +40,7 @@ const TownGrammar = (()=>{
    for(let r=1;r<grids.length;r++)for(let k=0;k<7;k+=2)add(grids[r-1][k],grids[r][k],'lane');add(center,grids[1][3],'street');roles.civic=at(rx*23,rz*23);roles.temple=at(dx*30+rx*16,dz*30+rz*16);roles.academy=at(-dx*28+rx*13,-dz*28+rz*13);
   }
   // Sparse feeder lanes fill remaining districts, avoiding an identical radial city.
-  for(let k=0;k<(profile.plan==='groves'?5:8);k++){const q=candidates[Math.floor(rng()*Math.min(candidates.length,1900))],t=city.xy(q.k),near=hubs.reduce((a,b)=>Math.hypot(city.xy(a).x-t.x,city.xy(a).z-t.z)<Math.hypot(city.xy(b).x-t.x,city.xy(b).z-t.z)?a:b);add(near,q.k,'lane')}
+  for(let k=0;k<(profile.plan==='groves'?5:8);k++){const q=candidates[Math.floor(rng()*Math.min(candidates.length,Math.round(1900*S*S)))],t=city.xy(q.k),near=hubs.reduce((a,b)=>Math.hypot(city.xy(a).x-t.x,city.xy(a).z-t.z)<Math.hypot(city.xy(b).x-t.x,city.xy(b).z-t.z)?a:b);add(near,q.k,'lane')}
   // Attach any accidentally isolated road subgraph to the market over valid ground.
   const flood=()=>{const seen=new Uint8Array(city.road.length),q=[center];seen[center]=1;for(let n0=0;n0<q.length;n0++){const k=q[n0],x=k%n,y=Math.floor(k/n);for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||xx>=n||yy<0||yy>=n)continue;const j=yy*n+xx;if(!seen[j]&&city.road[j]){seen[j]=1;q.push(j)}}}return seen};
   let seen=flood();for(const h of [...hubs])if(!seen[h]){add(center,h,'lane');seen=flood()}
