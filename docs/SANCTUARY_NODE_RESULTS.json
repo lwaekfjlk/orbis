@@ -102,6 +102,92 @@
       ]
     },
     {
+      "name": "declared-wonders",
+      "count": 15,
+      "ids": [
+        "cathedral",
+        "grove-sanctuary",
+        "suspended-tower",
+        "sky-crystal",
+        "dragon-court",
+        "dread-keep",
+        "deep-city",
+        "forge-hollow",
+        "gilded-palace",
+        "sunless-well",
+        "reed-throne",
+        "whale-moot",
+        "sky-court",
+        "water-pagoda",
+        "tide-palace"
+      ]
+    },
+    {
+      "name": "wonders-per-tradition",
+      "kinds": [
+        {
+          "wonder": "deep-city",
+          "town": "Scorchspire",
+          "triangles": 16208
+        },
+        {
+          "wonder": "gilded-palace",
+          "town": "Bluewell",
+          "triangles": 54666
+        },
+        {
+          "wonder": "sky-court",
+          "town": "Scorchwell",
+          "triangles": 11678
+        },
+        {
+          "wonder": "forge-hollow",
+          "town": "Pineshore",
+          "triangles": 13036
+        },
+        {
+          "wonder": "cathedral",
+          "town": "Whitebeck",
+          "triangles": 219323
+        },
+        {
+          "wonder": "tide-palace",
+          "town": "Great Saltlanding",
+          "triangles": 37756
+        },
+        {
+          "wonder": "water-pagoda",
+          "town": "Oakdell",
+          "triangles": 22270
+        },
+        {
+          "wonder": "sunless-well",
+          "town": "Stormbeck",
+          "triangles": 27466
+        },
+        {
+          "wonder": "grove-sanctuary",
+          "town": "Foamcliff",
+          "triangles": 8287
+        },
+        {
+          "wonder": "suspended-tower",
+          "town": "Herringburgh",
+          "triangles": 6748
+        },
+        {
+          "wonder": "dread-keep",
+          "town": "Wildcombe",
+          "triangles": 54216
+        },
+        {
+          "wonder": "dragon-court",
+          "town": "Sailwick",
+          "triangles": 52474
+        }
+      ]
+    },
+    {
       "name": "architectural-variants-and-water-constraint",
       "uniqueVariants": 4
     },
@@ -112,7 +198,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23940984,
+      "bytes": 23941008,
       "meshes": 10
     }
   ]

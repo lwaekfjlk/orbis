@@ -103,18 +103,6 @@
         "span": 12.4
       },
       {
-        "style": "mountain",
-        "coldC": 6.4,
-        "hotC": 18.4,
-        "span": 11.9
-      },
-      {
-        "style": "lagoon",
-        "coldC": 17.1,
-        "hotC": 27.7,
-        "span": 10.7
-      },
-      {
         "style": "desert",
         "coldC": 17.1,
         "hotC": 26.8,
