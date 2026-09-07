@@ -27,7 +27,24 @@ const AtlasSpace = (() => {
   return{origin,sx,sz,scale,cells,at,ground,localGround,anchors,vertex};
  }
  function ray(r,sx,sy){r.updateCamera();const nx=(sx/r.width*2-1)*r.halfW,ny=(1-sy/r.height*2)*r.halfH,origin=r.target.map((v,i)=>v+r.right[i]*nx+r.up[i]*ny-r.dir[i]*180);return{origin,dir:r.dir};}
- function pickGround(r,sx,sy){if(!r.world)return null;const sample=r.ground?.bind(r)||((x,y)=>surface(r.world,x,y,r.relief)),{origin,dir}=ray(r,sx,sy);let last=null;const start=(24-origin[1])/dir[1],end=(-.1-origin[1])/dir[1];for(let k=0;k<=96;k++){const t=lerp(start,end,k/96),p=origin.map((v,j)=>v+dir[j]*t),g=grid(p[0],p[2]),d=p[1]-sample(g[0],g[1]);if(d<=0&&last){let lo=last.t,hi=t;for(let it=0;it<22;it++){const m=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*m),a=grid(q[0],q[2]);if(q[1]>sample(a[0],a[1]))lo=m;else hi=m;}const t2=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*t2),a=grid(q[0],q[2]);if(a[0]<0||a[0]>GW-1||a[1]<0||a[1]>GH-1)return null;return{point:q,x:a[0],y:a[1],i:cell(Math.round(a[0]),Math.round(a[1]))};}last={t,d};}return null;}
+ function pickGround(r,sx,sy){
+  if(!r.world)return null;
+  const sample=r.ground?.bind(r)||((x,y)=>surface(r.world,x,y,r.relief)),{origin,dir}=ray(r,sx,sy);
+  const start=(24-origin[1])/dir[1],end=(Math.min(-.1,r.continuousLayer?.lowestFloor??-.1)-.01-origin[1])/dir[1];
+  // A narrow shaft can fit between the regular samples. Visit its rim crossings
+  // and floor explicitly, so the height-field discontinuity cannot skip a wall.
+  const steps=Array.from({length:97},(_,k)=>lerp(start,end,k/96));
+  steps.push(...(r.continuousLayer?.groundBreakpoints?.(origin,dir,start,end)||[]));steps.sort((a,b)=>a-b);
+  let last=null;
+  for(const t of steps){const p=origin.map((v,j)=>v+dir[j]*t),g=grid(p[0],p[2]),d=p[1]-sample(g[0],g[1]);
+   if(d<=0&&last){let lo=last.t,hi=t;
+    for(let it=0;it<22;it++){const m=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*m),a=grid(q[0],q[2]);if(q[1]>sample(a[0],a[1]))lo=m;else hi=m;}
+    const t2=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*t2),a=grid(q[0],q[2]);
+    if(a[0]<0||a[0]>GW-1||a[1]<0||a[1]>GH-1)return null;
+    return{point:q,x:a[0],y:a[1],i:cell(Math.round(a[0]),Math.round(a[1]))};
+   }last={t};
+  }return null;
+ }
  function hitBox(origin,dir,lo,hi){let t0=0,t1=Infinity;for(let k=0;k<3;k++){if(Math.abs(dir[k])<1e-10){if(origin[k]<lo[k]||origin[k]>hi[k])return Infinity;continue;}const a=(lo[k]-origin[k])/dir[k],b=(hi[k]-origin[k])/dir[k];t0=Math.max(t0,Math.min(a,b));t1=Math.min(t1,Math.max(a,b));}return t0<=t1?t0:Infinity;}
  function matrixFor(frame){return{origin:frame.origin.slice(),horizontalScale:[frame.sx,frame.sz],verticalScale:frame.scale,crs:'TELLURIC_RECTANGULAR_ATLAS'};}
  return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};

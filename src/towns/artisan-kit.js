@@ -611,9 +611,18 @@ const ArtisanCityKit=(()=>{
  function meshAt(model,b){
   const lo=model.bounds.min,hi=model.bounds.max,angle=b.angle||0,cs=Math.cos(angle),sn=Math.sin(angle),W=hi[0]-lo[0],D=hi[2]-lo[2];
   const scale=Math.min(b.w/(Math.abs(cs)*W+Math.abs(sn)*D),b.d/(Math.abs(sn)*W+Math.abs(cs)*D))*.985;
-  const cx=(lo[0]+hi[0])/2,cz=(lo[2]+hi[2])/2,offset=[b.x-(cx*cs-cz*sn)*scale,b.y-lo[1]*scale,b.z-(cx*sn+cz*cs)*scale];
+  // Excavated wonders seat their entrance at the surveyed ground, retaining the
+  // authored negative-Y rooms below it. Other models still rest on their bounds.
+  const groundY=Number.isFinite(model.groundY)?model.groundY:lo[1];
+  const cx=(lo[0]+hi[0])/2,cz=(lo[2]+hi[2])/2,offset=[b.x-(cx*cs-cz*sn)*scale,b.y-groundY*scale,b.z-(cx*sn+cz*cs)*scale];
   const body=new Geometry(),roof=new Geometry();for(const p of model.parts)append(p.role==='roof'?roof:body,LandmarkTemplates.transformGeometry(p.geometry,scale,offset,angle));
-  return{body,roof,height:(hi[1]-lo[1])*scale,model};
+  const placed={body,roof,height:Math.max(0,hi[1]-groundY)*scale,depth:Math.max(0,groundY-lo[1])*scale,model};
+  if(model.excavation)placed.excavation={
+   outline:model.excavation.outline.map(([x,z])=>[offset[0]+(x*cs-z*sn)*scale,offset[2]+(x*sn+z*cs)*scale]),
+   floorY:offset[1]+model.excavation.floorY*scale,
+   ...(model.excavation.entrance?{entrance:[offset[0]+(model.excavation.entrance[0]*cs-model.excavation.entrance[1]*sn)*scale,offset[2]+(model.excavation.entrance[0]*sn+model.excavation.entrance[1]*cs)*scale]}:{})
+  };
+  return placed;
  }
  // The climate at THIS block's own cell, and the paint that follows from it. Both the
  // detailed mesh and the regional silhouette come through these, so a town cannot

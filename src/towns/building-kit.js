@@ -203,7 +203,9 @@ const TownCityBinding = (()=>{
  function miniature(recipe,b){
   if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.miniature(recipe,b);
   if(recipe.artisan&&typeof ArtisanCityKit!=="undefined")return ArtisanCityKit.meshAt(ArtisanCityKit.precinct(recipe,{lod:1}),b);
-  const m=recipe.artisan&&typeof ArtisanCityKit!=='undefined'?ArtisanCityKit.precinct(recipe,{lod:1}):LandmarkTemplates.build({...recipe,complexity:1},{base:false,lod:1}),lo=m.bounds.min,hi=m.bounds.max,sc=Math.min(b.w/(hi[0]-lo[0]),b.d/(hi[2]-lo[2]))*.95,offset=[b.x-(lo[0]+hi[0])*.5*sc,b.y-lo[1]*sc,b.z-(lo[2]+hi[2])*.5*sc],body=new Geometry(),roof=new Geometry();
+  const m=LandmarkTemplates.build({...recipe,complexity:1},{base:false,lod:1});
+  if(m.excavation&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.meshAt(m,b);
+  const lo=m.bounds.min,hi=m.bounds.max,sc=Math.min(b.w/(hi[0]-lo[0]),b.d/(hi[2]-lo[2]))*.95,offset=[b.x-(lo[0]+hi[0])*.5*sc,b.y-lo[1]*sc,b.z-(lo[2]+hi[2])*.5*sc],body=new Geometry(),roof=new Geometry();
   for(const part of m.parts){const g=LandmarkTemplates.transformGeometry(part.geometry,sc,offset),target=part.role==='roof'?roof:body;for(const x of g.data)target.data.push(x)}
   return {body,roof,height:(hi[1]-lo[1])*sc};
  }

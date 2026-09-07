@@ -196,9 +196,9 @@
       "file": "labyrinth.glb",
       "recipe": "labyrinth.recipe.json",
       "signature": "96450a37",
-      "triangles": 22850,
-      "groups": 9,
-      "bytes": 2474236
+      "triangles": 11258,
+      "groups": 10,
+      "bytes": 1222856
     },
     {
       "id": "bridge",

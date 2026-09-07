@@ -2,14 +2,114 @@
  * Fine terrain resolves the same four-corner height patches used to seat towns.
  * Local building assemblies are rigidly seated on that field; no baked backdrops.
  */
+// Render-only excavation masks. Subtract convex outlines from terrain triangles;
+// interpolate the original surface attributes at every new edge intersection.
+// This also produces ordinary meshes for the software renderer and GLB export.
+const ExcavationTerrain=(()=>{
+ const EPS=1e-11;
+ function prepare(outline,floorY,buildingId){
+  if(!Number.isFinite(floorY)||!Array.isArray(outline)||outline.length<3)return null;
+  const points=outline.map(p=>[p[0],p[1]]);if(points.some(p=>!p.every(Number.isFinite)))return null;
+  let area=0;for(let j=0;j<points.length;j++){const a=points[j],b=points[(j+1)%points.length];area+=a[0]*b[1]-b[0]*a[1];}
+  if(Math.abs(area)<EPS)return null;if(area<0)points.reverse();
+  const bounds={minX:Infinity,maxX:-Infinity,minZ:Infinity,maxZ:-Infinity};
+  for(const p of points){bounds.minX=Math.min(bounds.minX,p[0]);bounds.maxX=Math.max(bounds.maxX,p[0]);bounds.minZ=Math.min(bounds.minZ,p[1]);bounds.maxZ=Math.max(bounds.maxZ,p[1]);}
+  return{buildingId,outline:points,floorY,bounds};
+ }
+ function contains(hole,x,z){const b=hole.bounds;if(x<b.minX-EPS||x>b.maxX+EPS||z<b.minZ-EPS||z>b.maxZ+EPS)return false;
+  for(let j=0;j<hole.outline.length;j++){const a=hole.outline[j],b=hole.outline[(j+1)%hole.outline.length];if((b[0]-a[0])*(z-a[1])-(b[1]-a[1])*(x-a[0])< -EPS)return false;}return true;
+ }
+ function mix(a,b,t){return a.map((v,j)=>v+(b[j]-v)*t);}
+ function normalise(v){const n=Math.hypot(v[3],v[4],v[5])||1;if(Math.abs(n-1)<1e-9)return v;const p=v.slice();for(let j=3;j<6;j++)p[j]/=n;return p;}
+ function split(poly,a,b){const inside=[],outside=[],distance=p=>(b[0]-a[0])*(p[2]-a[1])-(b[1]-a[1])*(p[0]-a[0]);
+  for(let j=0;j<poly.length;j++){const p=poly[j],q=poly[(j+1)%poly.length];let dp=distance(p),dq=distance(q);if(Math.abs(dp)<EPS)dp=0;if(Math.abs(dq)<EPS)dq=0;
+   if(dp>=0)inside.push(p);if(dp<=0)outside.push(p);
+   if(dp*dq<0){const hit=mix(p,q,dp/(dp-dq));inside.push(hit);outside.push(hit);}
+  }return{inside,outside};
+ }
+ function overlaps(poly,hole){const b=hole.bounds;let minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;for(const p of poly){minX=Math.min(minX,p[0]);maxX=Math.max(maxX,p[0]);minZ=Math.min(minZ,p[2]);maxZ=Math.max(maxZ,p[2]);}
+  return maxX>b.minX+EPS&&minX<b.maxX-EPS&&maxZ>b.minZ+EPS&&minZ<b.maxZ-EPS;
+ }
+ function subtract(poly,hole){if(!overlaps(poly,hole))return[poly];const fragments=[];let remaining=poly;
+  for(let j=0;j<hole.outline.length&&remaining.length>=3;j++){
+   const{inside,outside}=split(remaining,hole.outline[j],hole.outline[(j+1)%hole.outline.length]);if(outside.length>=3)fragments.push(outside);remaining=inside;
+  }return fragments;
+ }
+ // Close the soil at the exact clipped edge, where the sloped terrain meets
+ // a level retaining wall. Reusing intersection vertices prevents hairline gaps.
+ function skirts(g,poly,holes){
+  const wall=(a,b,y)=>{const da=a[1]-y,db=b[1]-y;if(Math.abs(da)<EPS&&Math.abs(db)<EPS)return;
+   if(da*db<0){const m=mix(a,b,da/(da-db));m[1]=y;wall(a,m,y);wall(m,b,y);return;}
+   const A=a.slice(0,3),B=b.slice(0,3),C=[a[0],y,a[2]],D=[b[0],y,b[2]],color=[6,7,8].map(j=>(a[j]+b[j])*.38);
+   if(Math.abs(da)>EPS)g.tri(A,C,B,color);if(Math.abs(db)>EPS)g.tri(C,D,B,color);
+  };
+  for(let j=0;j<poly.length;j++){const a=poly[j],b=poly[(j+1)%poly.length];if(Math.hypot(a[0]-b[0],a[2]-b[2])<EPS)continue;
+   for(const h of holes){if(!Number.isFinite(h.groundY))continue;
+    for(let k=0;k<h.outline.length;k++){const p=h.outline[k],q=h.outline[(k+1)%h.outline.length],dx=q[0]-p[0],dz=q[1]-p[1],length2=dx*dx+dz*dz;
+     if(length2<EPS*EPS)continue;
+     const on=v=>Math.abs(dx*(v[2]-p[1])-dz*(v[0]-p[0]))<EPS;
+     if(on(a)&&on(b)){const u=((a[0]-p[0])*dx+(a[2]-p[1])*dz)/length2,v=((b[0]-p[0])*dx+(b[2]-p[1])*dz)/length2,lo=Math.max(0,Math.min(u,v)),hi=Math.min(1,Math.max(u,v));
+      if(hi-lo>EPS)wall(mix(a,b,(lo-u)/(v-u)),mix(a,b,(hi-u)/(v-u)),h.groundY);break;
+     }
+    }
+   }
+  }
+ }
+ function triangle(g,a,b,c,holes){const minX=Math.min(a[0],b[0],c[0]),maxX=Math.max(a[0],b[0],c[0]),minZ=Math.min(a[2],b[2],c[2]),maxZ=Math.max(a[2],b[2],c[2]),near=[];
+  for(const hole of holes){const b=hole.bounds;if(maxX>b.minX+EPS&&minX<b.maxX-EPS&&maxZ>b.minZ+EPS&&minZ<b.maxZ-EPS)near.push(hole);}
+  if(!near.length){g.smoothTri(a,b,c);return;}let fragments=[[a,b,c]];
+  for(const hole of near){const next=[];for(const poly of fragments)next.push(...subtract(poly,hole));fragments=next;if(!fragments.length)return;}
+  for(const poly of fragments){skirts(g,poly,near);for(let j=1;j<poly.length-1;j++){const p=poly[0],q=poly[j],r=poly[j+1];if(Math.abs((q[0]-p[0])*(r[2]-p[2])-(q[2]-p[2])*(r[0]-p[0]))>EPS)g.smoothTri(normalise(p),normalise(q),normalise(r));}}
+ }
+ // Subterranean courts enter at one authored street threshold. Seat that point
+ // on the inherited terrain instead of lifting the whole court to a parcel summit.
+ function seat(items,frame){for(const item of items||[]){const p=item.entrance,anchor=frame.anchors.get(item.buildingId);if(!anchor||!Array.isArray(p)||p.length<2||!p.every(Number.isFinite))continue;
+  const y=frame.ground(p[0],p[1]);if(Number.isFinite(y))anchor.y=y;
+ }return frame;}
+ // Geometry was already mounted in the worker. Restore its exact entry anchor
+ // after cityFrame reconstruction so selection and camera targets agree with it.
+ function restore(holes,frame){for(const hole of holes||[]){const anchor=frame.anchors.get(hole.buildingId);if(anchor&&Number.isFinite(hole.groundY))anchor.y=hole.groundY;}return frame;}
+ function map(items,frame){const result=[];for(const item of items||[]){const anchor=frame.anchors.get(item.buildingId);if(!anchor)continue;
+  const outline=item.outline.map(([x,z])=>{const p=frame.vertex(x,item.floorY,z,anchor);return[p[0],p[2]];}),first=item.outline[0];if(!first)continue;
+  const hole=prepare(outline,frame.vertex(first[0],item.floorY,first[1],anchor)[1],item.buildingId);if(hole){
+   hole.groundY=anchor.y;if(Array.isArray(item.entrance)&&item.entrance.length>=2&&item.entrance.every(Number.isFinite)){const p=frame.vertex(item.entrance[0],anchor.b.y,item.entrance[1],anchor);hole.entrance=[p[0],p[2]];}result.push(hole);
+  }
+ }return result;}
+ return{prepare,contains,subtract,triangle,seat,restore,map};
+})();
 const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
- constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.retess=0;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
+ constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.lastExcavationKey='closed';this.retess=0;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
- remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);}
+ remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);
+  if(a.excavations?.length){this.lastTerrainKey=null;if(this.world&&this.r.world===this.world){this.r.buildTerrain?.();this.r.request?.();}}
+ }
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
- reset(w,s){this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
+ reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
  bind(w,s){if(w!==this.world||(this.sim&&s!==this.sim))this.reset(w,s);else this.sim=s;}
+ activeExcavations(){if(this.r.world&&this.r.world!==this.world)return[];return this.r.zoom>=AtlasSpace.DETAIL_ZOOM?[...this.models.values()].filter(m=>this.visible(`cm:${m.p.id}:buildings`)===true).flatMap(m=>m.excavations||[]):[];}
+ excavationKey(){const holes=this.activeExcavations();return holes.length?holes.map(h=>[h.buildingId,h.floorY,...h.outline.flat()].join(',')).join(';'):'closed';}
+ // Grid coordinates and atlas heights, matching renderer.ground/AtlasSpace.surface.
+ ground(x,y){const w=this.r.world||this.world;if(!w)return 0;const holes=this.activeExcavations(),px=(x/(GW-1)-.5)*MAP_X,pz=(y/(GH-1)-.5)*MAP_Z;let floor=Infinity;
+  for(const hole of holes)if(ExcavationTerrain.contains(hole,px,pz))floor=Math.min(floor,hole.floorY);
+  return Number.isFinite(floor)?floor:(this.natural?AtlasSpace.surface:AtlasSpace.coarseSurface)(w,x,y,this.r.relief);
+ }
+ get lowestFloor(){return Math.min(-.1,...this.activeExcavations().map(h=>h.floorY));}
+ // A thin opening can sit entirely between the regular terrain-ray samples.
+ // Add its exact entry/exit and floor intersections, plus samples on either side
+ // of each discontinuity, so the caller can retain its existing bracket/bisect.
+ groundBreakpoints(origin,dir,start,end){if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return[];const values=new Set(),epsilon=1e-7;
+  const add=t=>{if(!Number.isFinite(t)||t<=start||t>=end)return;for(const d of[-epsilon,0,epsilon]){const at=t+d;if(at>start&&at<end)values.add(at);}};
+  for(const hole of this.activeExcavations()){
+   for(let j=0;j<hole.outline.length;j++){const a=hole.outline[j],b=hole.outline[(j+1)%hole.outline.length],ex=b[0]-a[0],ez=b[1]-a[1],qx=a[0]-origin[0],qz=a[1]-origin[2],det=dir[0]*ez-dir[2]*ex;
+    if(Math.abs(det)<1e-14)continue;const t=(qx*ez-qz*ex)/det,u=(qx*dir[2]-qz*dir[0])/det;
+    if(u>=-1e-10&&u<=1+1e-10)add(t);
+   }
+   if(Math.abs(dir[1])>1e-14){const t=(hole.floorY-origin[1])/dir[1],x=origin[0]+dir[0]*t,z=origin[2]+dir[2]*t;if(ExcavationTerrain.contains(hole,x,z))add(t);}
+  }return[...values].sort((a,b)=>a-b);
+ }
+
+
  // Screen-space tessellation: one parent grid cell can cover a large part of the
  // screen once the camera closes in, and its two flat faces then read as two
  // wedges rather than as ground. Resolve the curved four-corner patches at about
@@ -26,7 +126,7 @@ class ContinuousCityLayer {
   const lo=AtlasSpace.grid(x0,z0),hi=AtlasSpace.grid(x1,z1);return{x0:lo[0]-2,x1:hi[0]+2,y0:lo[1]-2,y1:hi[1]+2};}
  // Terrain is only rebuilt when this changes, so a continuous zoom crosses a
  // handful of discrete refinement steps instead of remeshing every frame.
- terrainKey(){const n=this.tessellation();if(n<=1&&!this.natural)return 'base/'+this.r.layer+'/'+this.r.relief;const b=this.viewBox();return [n,Math.floor(b.x0+2),Math.floor(b.y0+2),Math.ceil(b.x1-2),Math.ceil(b.y1-2),this.natural,this.r.layer,this.r.relief,this.r.width,this.r.height,[...this.models.keys()].join(',')].join('/');}
+ terrainKey(){const n=this.tessellation(),openings=this.excavationKey();if(n<=1&&!this.natural)return 'base/'+this.r.layer+'/'+this.r.relief+'/'+openings;const b=this.viewBox();return [n,Math.floor(b.x0+2),Math.floor(b.y0+2),Math.ceil(b.x1-2),Math.ceil(b.y1-2),this.natural,this.r.layer,this.r.relief,this.r.width,this.r.height,[...this.models.keys()].join(','),openings].join('/');}
  // One continuous normal field for shading, derived once per world from the same
  // height field by central differences. Refined vertices interpolate it, so coarse
  // and refined patches meet without a shading seam. Shading only: every vertex
@@ -38,7 +138,8 @@ class ContinuousCityLayer {
  }
  // This renders the whole world, not a circular/square platform beneath the town.
  buildTerrain(){const r=this.r,w=r.world;if(!w)return;const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p);
-  const field=this.normalField(),tess=this.tessellation(),box=this.viewBox();
+  const field=this.normalField(),tess=this.tessellation(),box=this.viewBox(),openings=this.activeExcavations();
+  const emit=openings.length?(a,b,c)=>ExcavationTerrain.triangle(g,a,b,c,openings):(a,b,c)=>g.smoothTri(a,b,c);
   // Only visible cells receive the finest level. A coarse collar and cached town
   // surroundings keep panning continuous without subdividing the entire world.
   const core={x0:Math.floor(box.x0+2),x1:Math.ceil(box.x1-2),y0:Math.floor(box.y0+2),y1:Math.ceil(box.y1-2)},levels=new Uint8Array(GN);
@@ -78,13 +179,13 @@ class ContinuousCityLayer {
      if(j===n-1)for(let k=1;k<bottom/n;k++)edge.push(vertex(x+i/n+k/bottom,y+1));edge.push(V[d]);
      if(i===n-1)for(let k=1;k<right/n;k++)edge.push(vertex(x+1,y+(j+1)/n-k/right));edge.push(V[b]);
      if(j===0)for(let k=1;k<top/n;k++)edge.push(vertex(x+(i+1)/n-k/top,y));
-     const center=vertex(x+(i+.5)/n,y+(j+.5)/n);for(let k=0;k<edge.length;k++)g.smoothTri(center,edge[k],edge[(k+1)%edge.length]);
-    }else if((x+y)%2){g.smoothTri(V[a],V[c],V[b]);g.smoothTri(V[b],V[c],V[d]);}else{g.smoothTri(V[a],V[c],V[d]);g.smoothTri(V[a],V[d],V[b]);}
+     const center=vertex(x+(i+.5)/n,y+(j+.5)/n);for(let k=0;k<edge.length;k++)emit(center,edge[k],edge[(k+1)%edge.length]);
+    }else if((x+y)%2){emit(V[a],V[c],V[b]);emit(V[b],V[c],V[d]);}else{emit(V[a],V[c],V[d]);emit(V[a],V[d],V[b]);}
    }
   }
   const c=rgb('#4d859e'),a=-MAP_X/2,b=MAP_X/2,n=-MAP_Z/2,s=MAP_Z/2,R=500;
   g.quad([-R,-.015,-R],[-R,-.015,n],[R,-.015,n],[R,-.015,-R],c);g.quad([-R,-.015,s],[-R,-.015,R],[R,-.015,R],[R,-.015,s],c);g.quad([-R,-.015,n],[-R,-.015,s],[a,-.015,s],[a,-.015,n],c);g.quad([b,-.015,n],[b,-.015,s],[R,-.015,s],[R,-.015,n],c);
-  r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=detail;this.terrainTarget=tess;this.lastTerrainKey=this.terrainKey();
+  r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=detail;this.terrainTarget=tess;this.lastTerrainKey=this.terrainKey();this.lastExcavationKey=this.excavationKey();r.selectionKey=null;
  }
  // Zooming in used to STRIP the world. Everything the atlas draws to say what a place
  // is — trees, dunes, glacier tongues, sea ice, reeds — is hidden past 4.8 because those
@@ -194,7 +295,9 @@ class ContinuousCityLayer {
   this.lastEnvironmentKey=this.environmentKey();
  }
  build(p){const w=this.world,s=this.sim,c=generateCity(w,s,p.id),collector=createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(c,p,s.realms[p.owner],s.cityState?.[p.id]||{});
-  const frame=AtlasSpace.cityFrame(w,p,c,this.r.relief),model={p,city:c,frame,key:this.key(p),meshNames:[],last:++this.sequence,heights:collector.landmarkHeights,triangles:0};
+  const frame=AtlasSpace.cityFrame(w,p,c,this.r.relief);ExcavationTerrain.seat(collector.excavations,frame);
+  const model={p,city:c,frame,key:this.key(p),meshNames:[],last:++this.sequence,heights:collector.landmarkHeights,excavations:ExcavationTerrain.map(collector.excavations,frame),triangles:0};
+  const excavatedBuildings=new Set(model.excavations.map(h=>h.buildingId));
   for(const[name,m]of Object.entries(collector.meshes)){
    if(!['buildings','roofs','details','streets','farms','cityWalls','trees','port'].includes(name))continue;
    const g=new Geometry(),data=m.vertices,ranges=collector.buildingRanges[name]||[];let rangeIndex=0;
@@ -203,7 +306,7 @@ class ContinuousCityLayer {
     const range=ranges[rangeIndex],anchor=range&&range.start<=k?frame.anchors.get(range.id):null,pts=[];
     for(let j=0;j<3;j++){const t=k+j*9;const q=frame.vertex(data[t],data[t+1],data[t+2],anchor);
      // Footings reach the actual slope instead of hovering below flat compounds.
-     if(anchor&&data[t+1]<anchor.b.y-.015)q[1]=Math.min(q[1],frame.ground(data[t],data[t+2])-.006);
+     if(anchor&&!excavatedBuildings.has(range.id)&&data[t+1]<anchor.b.y-.015)q[1]=Math.min(q[1],frame.ground(data[t],data[t+2])-.006);
      pts.push(q);
     }g.tri(pts[0],pts[1],pts[2],[data[k+6],data[k+7],data[k+8]]);
    }
@@ -245,7 +348,8 @@ class ContinuousCityLayer {
   return new Promise((resolve,reject)=>{this.workerJobs.set(id,{resolve,reject});this.worker.postMessage(data);}).then(data=>{
    if(requestEpoch!==this.epoch)throw Error('World replaced');const c=data.city;c.xy=k=>({x:(k%c.n/(c.n-1)-.5)*c.width,z:(Math.floor(k/c.n)/(c.n-1)-.5)*c.depth});c.index=(x,z)=>clamp(Math.round((z/c.depth+.5)*(c.n-1)),0,c.n-1)*c.n+clamp(Math.round((x/c.width+.5)*(c.n-1)),0,c.n-1);
    c.context.xy=k=>({x:(k%c.context.n/(c.context.n-1)-.5)*c.context.width,z:(Math.floor(k/c.context.n)/(c.context.n-1)-.5)*c.context.depth});
-   const model={p,city:c,frame:AtlasSpace.cityFrame(this.world,p,c,this.r.relief),key:requestKey,heights:data.heights,triangles:data.triangles,last:++this.sequence,meshNames:[]};
+   const model={p,city:c,frame:AtlasSpace.cityFrame(this.world,p,c,this.r.relief),key:requestKey,heights:data.heights,excavations:data.excavations||[],triangles:data.triangles,last:++this.sequence,meshNames:[]};
+   ExcavationTerrain.restore(model.excavations,model.frame);
    for(const[name,m]of Object.entries(data.meshes)){this.r.upload(name,{data:m.vertices},m.shadow,m.unlit,m.alpha);model.meshNames.push(name);}return model;
   });
  }
@@ -281,9 +385,12 @@ class ContinuousCityLayer {
   return null;
  }
  cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.roadKey=null;this.r.nearRoadKey=null;this.r.buildRoads?.();this.r.buildLines?.();this.buildEnvironment();this.r.request();}
+  // A detail/range LOD transition changes whether the well exists in the visible
+  // scene. Match the terrain immediately, before the delayed refinement rebuild.
+  if(this.excavationKey()!==this.lastExcavationKey){clearTimeout(this.retess);this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}
   // The scatter follows the camera, on the same settle-first rule as the terrain: it is
   // a remesh, and it must not run inside a wheel or a drag.
-  else if(this.environmentKey()!==this.lastEnvironmentKey){clearTimeout(this.reflora);this.reflora=setTimeout(()=>{if(this.environmentKey()!==this.lastEnvironmentKey&&!busy){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}},190);}
+  if(this.environmentKey()!==this.lastEnvironmentKey){clearTimeout(this.reflora);this.reflora=setTimeout(()=>{if(this.environmentKey()!==this.lastEnvironmentKey&&!busy){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}},190);}
   // The ground-seated road ribbon follows the camera too, and keys itself, so this is
   // free when nothing has moved far enough to matter.
   if(close)this.r.buildNearRoads?.();  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
@@ -296,7 +403,7 @@ class ContinuousCityLayer {
   for(const{p}of candidates){const [x,y]=r.screen(p.x,p.y,0);if(x< -120||x>r.width+120||y< -120||y>r.height+120)continue;if(this.models.get(p.id)?.key!==this.key(p)&&!this.failed.has(this.key(p))){await this.ensure(p.id);break;}}
  }
  pick(sx,sy){if(this.r.zoom<AtlasSpace.TOWN_ZOOM)return null;const{origin,dir}=AtlasSpace.ray(this.r,sx,sy),surface=AtlasSpace.pickGround(this.r,sx,sy),floorT=surface?Math.hypot(...sub(surface.point,origin)):Infinity;let best=null,bestT=Infinity;
-  for(const m of this.models.values())for(const a of m.frame.anchors.values()){const b=a.b,h=(m.heights[b.id]||b.h)*a.scale,t=AtlasSpace.hitBox(origin,dir,[a.x-b.w*m.frame.sx*.55,a.low,a.z-b.d*m.frame.sz*.55],[a.x+b.w*m.frame.sx*.55,a.y+h,a.z+b.d*m.frame.sz*.55]);if(t<bestT&&t<floorT+.012){bestT=t;best={model:m,building:b,anchor:a};}}
+  for(const m of this.models.values())for(const a of m.frame.anchors.values()){const b=a.b,h=(m.heights[b.id]||b.h)*a.scale,excavation=this.r.zoom>=AtlasSpace.DETAIL_ZOOM?m.excavations?.find(h=>h.buildingId===b.id):null,low=Math.min(a.low,excavation?.floorY??a.low),t=AtlasSpace.hitBox(origin,dir,[a.x-b.w*m.frame.sx*.55,low,a.z-b.d*m.frame.sz*.55],[a.x+b.w*m.frame.sx*.55,a.y+h,a.z+b.d*m.frame.sz*.55]);if(t<bestT&&t<floorT+.012){bestT=t;best={model:m,building:b,anchor:a};}}
   return best;
  }
  select(hit){const g=new Geometry();if(hit){const{anchor:a,building:b,model:m}=hit,x=b.w*m.frame.sx*.55,z=b.d*m.frame.sz*.55,y=a.y+.013,pts=[[a.x-x,y,a.z-z],[a.x+x,y,a.z-z],[a.x+x,y,a.z+z],[a.x-x,y,a.z+z]];for(let i=0;i<4;i++)g.line(pts[i],pts[(i+1)%4],.008,rgb('#f6d987'));}this.r.upload('cm:selection',g,false,1);this.r.request();}
