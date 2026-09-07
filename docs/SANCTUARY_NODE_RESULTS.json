@@ -102,6 +102,36 @@
       ]
     },
     {
+      "name": "wonders-per-tradition",
+      "kinds": [
+        {
+          "wonder": "deep-city",
+          "town": "Scorchspire",
+          "triangles": 16208
+        },
+        {
+          "wonder": "cathedral",
+          "town": "Whitebeck",
+          "triangles": 219323
+        },
+        {
+          "wonder": "grove-sanctuary",
+          "town": "Foamcliff",
+          "triangles": 8287
+        },
+        {
+          "wonder": "sky-crystal",
+          "town": "Herringburgh",
+          "triangles": 6074
+        },
+        {
+          "wonder": "dread-keep",
+          "town": "Wildcombe",
+          "triangles": 54216
+        }
+      ]
+    },
+    {
       "name": "architectural-variants-and-water-constraint",
       "uniqueVariants": 4
     },
@@ -112,7 +142,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23940984,
+      "bytes": 23941008,
       "meshes": 10
     }
   ]

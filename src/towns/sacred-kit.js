@@ -126,7 +126,137 @@ const SacredCityKit = (() => {
   k.mark('connected-grand-stair');
   for(let j=0;j<count;j++){k.box(x,y+j*rise,z-j*run,w,rise,run+.04,'trim');for(const s of[-1,1])k.box(x+s*(w/2+.18),y+j*rise,z-j*run,.28,.6,run+.05,'wall');}
  }
+ /* THE OTHER WONDERS.
+  * Only the pilgrimage towns ever raised anything above a citadel, so however far you
+  * travelled every skyline resolved to the same cathedral or the same keep. A tradition
+  * with the surplus to build now builds ITS OWN monument, and each is authored around the
+  * thing that tradition actually has: living timber, suspended stone, black rock, a cliff.
+  * All four are ordinary triangle geometry in the same kit, on the same reserved parcel.
+  */
+ function groveSanctuary(recipe,options){
+  const k=new LandmarkKit({...recipe,roofLanguage:'leaf'},options);k.palette=palette(recipe);
+  k.part('root-court','The root court and still water','foundation',()=>{
+   k.terrace(0,0,0,34,34,1.1);k.terrace(0,1.1,-2,26,24,.9);
+   k.pool(0,2.0,7,17,11);stair(k,0,1.1,13,7,7,.157,.42);
+   for(const s of[-1,1])for(const z of[-9,-2,5])k.hedge(s*12.5,2.0,z,2.4,5.2);
+  });
+  k.part('bearing-trees','The bearing trees and their halls','architecture',()=>{
+   // Each hall is CARRIED: a trunk, a spreading collar, then the room. Nothing is a
+   // pillar pretending to be a tree — the collar is what the floor rests on.
+   for(const [x,z,h,r]of[[0,-8,17,2.5],[-10.5,1,13,2.0],[10.5,1,13,2.0],[-6,10,10,1.7],[6,10,10,1.7]]){
+    k.cylinder(x,2.0,z,r,h,'wood',12);
+    for(let j=0;j<6;j++){const a2=j*TAU/6+.3;k.beam([x+Math.cos(a2)*r*.8,2.0+h*.34,z+Math.sin(a2)*r*.8],[x+Math.cos(a2)*r*2.5,2.0+h*.08,z+Math.sin(a2)*r*2.5],r*.24,'wood',5);}
+    k.cylinder(x,2.0+h,z,r*2.9,.5,'wood',14);
+    k.cylinder(x,2.0+h+.5,z,r*2.3,r*1.9,'wall',12);
+    k.rail(x-r*2.3,z+r*2.3,x+r*2.3,z+r*2.3,2.0+h+.5,'wood');
+    for(let j=0;j<5;j++){const a2=j*TAU/5;k.window(x+Math.cos(a2)*r*2.32,2.0+h+1.1,z+Math.sin(a2)*r*2.32,r*.7,1.5,a2);}
+    k.using('roof',()=>{k.cone(x,2.0+h+.5+r*1.9,z,r*3.0,r*3.4,'roof',0,14);k.cone(x,2.0+h+.5+r*1.9+r*3.4,z,.18,.9,'metal',0,6);});
+   }
+   // Canopy walks, so the halls read as one building rather than five towers.
+   for(const [a2,b2]of[[[0,-8,17],[-10.5,1,13]],[[0,-8,17],[10.5,1,13]],[[-10.5,1,13],[-6,10,10]],[[10.5,1,13],[6,10,10]],[[-6,10,10],[6,10,10]]])
+    k.beam([a2[0],2.0+a2[2]*.62,a2[1]],[b2[0],2.0+b2[2]*.62,b2[1]],.30,'wood',6);
+  });
+  k.part('leaf-crown','The living crown','ornament',()=>{
+   k.tree(0,2.0,-8,26,'broad');for(const s of[-1,1])k.tree(s*14,2.0,-13,15,'broad');
+   k.emblem(0,7.5,12.5,1.1);for(const s of[-1,1])k.banner(s*7,2.0,12.5,4.2);
+  });
+  return k.finish();
+ }
+ function skyCrystal(recipe,options){
+  const k=new LandmarkKit({...recipe,roofLanguage:'native'},options);k.palette=palette(recipe);
+  k.part('resonator-drum','The stepped resonator drum','foundation',()=>{
+   for(let j=0;j<4;j++)k.lathe(0,j*1.5,0,[[0,0],[17-j*2.6,0],[17-j*2.6,1.5],[0,1.5]],'wall',24);
+   k.ring(0,6.1,0,11.5,.16,'metal','xz',40);k.pool(0,6.05,0,9,9);stair(k,0,0,17,8,8,.19,.44);
+  });
+  k.part('suspension-ring','The buttresses and the suspension rings','architecture',()=>{
+   // Eight raking buttresses carry two rings; the stone above them is what the rings hold.
+   for(let j=0;j<8;j++){const a2=j*TAU/8+.2,x=Math.cos(a2)*10.5,z=Math.sin(a2)*10.5;
+    k.beam([x,6.1,z],[Math.cos(a2)*3.4,20.5,Math.sin(a2)*3.4],.55,'wall',7);
+    k.cylinder(x,6.1,z,.85,3.2,'wall',9);k.crystal(x,9.3,z,.42,2.1);
+   }
+   k.ring(0,20.5,0,4.2,.34,'metal','xz',36);k.ring(0,23.0,0,3.1,.26,'metal','xz',30);
+   for(let j=0;j<6;j++){const a2=j*TAU/6;k.beam([Math.cos(a2)*4.2,20.5,Math.sin(a2)*4.2],[Math.cos(a2)*3.1,23.0,Math.sin(a2)*3.1],.14,'metal',4);}
+  });
+  k.part('suspended-stone','The suspended crystal','architecture',()=>{
+   // Nothing touches it. The gap under the point is the whole claim of the building.
+   k.crystal(0,26.2,0,4.6,15.5);
+   k.lathe(0,26.2,0,[[0,0],[3.1,-1.9],[4.6,0]],'water',10);
+   k.using('roof',()=>{for(let j=0;j<10;j++){const a2=j*TAU/10;k.beam([Math.cos(a2)*3.2,26.4,Math.sin(a2)*3.2],[Math.cos(a2)*1.1,24.0,Math.sin(a2)*1.1],.07,'metal',4);}});
+   k.ring(0,31.5,0,2.4,.10,'metal','xy',26);k.ring(0,31.5,0,2.4,.10,'metal','yz',26);
+  });
+  k.part('observers','The instrument galleries','ornament',()=>{
+   for(const s of[-1,1]){k.arcade(s*13,0,4,5,1.7,2.9,Math.PI/2);k.emblem(s*9,7.2,11,.8);}
+   k.arch(0,0,17.5,3.6,4.6,.8,'trim');
+  });
+  return k.finish();
+ }
+ function dreadKeep(recipe,options){
+  const k=new LandmarkKit({...recipe,roofLanguage:'native'},options);k.palette=palette(recipe);
+  k.part('black-terraces','The scorched terraces and the barbed circuit','foundation',()=>{
+   k.terrace(0,0,0,36,34,2.0);k.terrace(0,2.0,-4,27,22,1.8);k.terrace(0,3.8,-7,19,14,1.6);
+   stair(k,0,0,17,6,9,.222,.42);stair(k,0,2.0,11.5,5,8,.225,.40);
+   for(const [x,z,W,D]of[[0,-16,32,.9],[-16,-2,.9,28],[16,-2,.9,28],[-10,15,14,.9],[10,15,14,.9]]){k.box(x,0,z,W,4.2,D,'wall');k.parapet(x,4.2,z,W,D);}
+   for(let j=-15;j<=15;j+=2.6)for(const z of[-16,15])k.cone(j,4.8,z,.20,1.5,'dark',0,4);
+  });
+  k.part('dread-spires','The keep and its horned spires','architecture',()=>{
+   k.hall(0,5.4,-8,13,11,15,{roof:'gable',roofHeight:5.0});
+   for(const s of[-1,1]){
+    k.tower(s*8.6,5.4,-8,2.1,23,'spire');
+    // Horns, not finials: they lean out over the court so the silhouette reads as menace.
+    for(const t of[-1,1])k.beam([s*8.6,26.5,-8],[s*8.6+s*4.4,31.5,-8+t*3.6],.34,'dark',5);
+    k.tower(s*11.5,3.8,4,1.6,13,'spire');k.hall(s*12,2.0,-9,4.4,10,5.2,{roof:'gable',entrance:false});
+   }
+   k.tower(0,5.4,-8,3.0,30,'spire');
+   for(const t of[-1,1])k.beam([0,33.5,-8],[t*6.0,39.0,-8],.40,'dark',5);
+   k.using('roof',()=>k.cone(0,35.4,-8,3.4,5.2,'roof',0,8));
+  });
+  k.part('gate-of-horns','The gate of horns and the brazier court','ornament',()=>{
+   k.arch(0,0,16,4.4,5.6,1.4,'wall');
+   for(const s of[-1,1]){k.tower(s*4.2,0,16,1.5,9,'spire');k.cone(s*4.2,9,16,.9,3.4,'dark',0,6);
+    k.fountain(s*7,3.8,6,1.2);k.banner(s*6.5,3.8,10,4.6);}
+   k.emblem(0,7.4,16.6,1.2);
+  });
+  return k.finish();
+ }
+ function deepCity(recipe,options){
+  const k=new LandmarkKit({...recipe,roofLanguage:'native'},options);k.palette=palette(recipe);
+  k.part('cut-face','The cut cliff face','foundation',()=>{
+   // The mountain is the building. A wall of worked rock stands where the face was, and
+   // everything else is carved back INTO it rather than stacked in front.
+   k.box(0,0,-13,36,30,10,'wall');
+   for(let y=1;y<28;y+=2.4)k.box(0,y,-7.9,36,.30,.5,colorScale(k.color('wall'),.82));
+   k.terrace(0,0,2,34,22,1.4);k.terrace(0,1.4,6,26,12,1.2);stair(k,0,1.4,13,8,8,.15,.44);
+  });
+  k.part('deep-portal','The great portal and its wardens','architecture',()=>{
+   k.arch(0,1.4,-7.6,11,15,2.2,'wall');
+   k.box(0,16.6,-7.6,14.5,1.6,2.6,'trim');k.box(0,18.2,-7.6,11.5,.9,2.2,'dark');
+   for(const s of[-1,1]){
+    // Wardens cut from the same face, shoulders level with the lintel.
+    k.box(s*8.2,1.4,-7.2,3.6,13.5,3.0,'wall');k.box(s*8.2,14.9,-7.2,4.4,1.1,3.6,'trim');
+    k.cylinder(s*8.2,16.0,-7.2,1.5,3.2,'wall',10);k.box(s*8.2,19.2,-7.2,3.0,.8,3.0,'metal');
+   }
+   for(let j=0;j<5;j++)k.box(0,1.4+j*.22,-4.6+j*.44,10.5,.22,.5,'trim');
+  });
+  k.part('gallery-terraces','The worked galleries and forge stacks','architecture',()=>{
+   for(let t=0;t<4;t++){const y=6.5+t*4.6,w=30-t*4.4;
+    k.box(0,y,-8.6,w,.7,1.9,'trim');k.rail(-w/2,-7.7,w/2,-7.7,y+.7,'metal');
+    for(let x=-w/2+2.4;x<w/2-1;x+=3.6)k.window(x,y+1.0,-7.55,1.1,2.0,0);
+   }
+   for(const s of[-1,1]){k.cylinder(s*13.5,1.4,4,1.5,11,'dark',10);k.cylinder(s*13.5,12.4,4,1.9,.8,'metal',10);
+    k.hall(s*11,1.4,10,5.2,6.4,4.2,{roof:'gable',entrance:false});}
+  });
+  k.part('chasm-bridge','The chasm bridge and lamp posts','ornament',()=>{
+   k.box(0,1.4,14,5.0,.55,10,'trim');
+   for(const s of[-1,1]){k.rail(s*2.5,9,s*2.5,19,2.0,'metal');
+    for(const z of[10.5,14,17.5]){k.cylinder(s*2.5,1.95,z,.16,2.1,'metal',6);k.crystal(s*2.5,4.05,z,.30,.9);}}
+   k.emblem(0,20.4,-7.3,1.3);
+  });
+  return k.finish();
+ }
+ const WONDERS={'grove-sanctuary':groveSanctuary,'sky-crystal':skyCrystal,'dread-keep':dreadKeep,'deep-city':deepCity};
  function build(recipe,options={}){
+  const other=WONDERS[recipe.wonder];
+  if(other)return other(recipe,options);
   const k=new LandmarkKit({...recipe,roofLanguage:'native'},options);k.palette=palette(recipe);
   const stellar=recipe.faith==='stars',crown=recipe.crown&&recipe.crown!=='native'?recipe.crown:(stellar?'crystal':'spire');
   const tier=recipe.variant||0,mainHeight=29+tier*.6;
@@ -229,12 +359,12 @@ const SacredCityKit = (() => {
  }
  function miniature(recipe,b){return ArtisanCityKit.meshAt(build(recipe,{lod:1}),b);}
  function site(w,s,p){
-  const r=TownCatalog.resolve(w,s,p);if(r.style!=='basilica'||(p.detailSupport??p.urbanSupport)<6500)return null;
+  const r=TownCatalog.resolve(w,s,p);if(!wonderFor(r.style,p.detailSupport??p.urbanSupport))return null;
   let cache=siteCache.get(w);if(!cache){cache=new Map();siteCache.set(w,cache)}
   const key=p.id+'/'+TownCatalog.signature(r)+'/'+(p.detailSupport??p.urbanSupport);let entry=cache.get(key);
   if(entry===undefined){const c=generateCity(w,s,p.id),b=c.buildings.find(b=>b.sacred);entry=b?{townRecipe:c.townRecipe,townProfile:c.townProfile,buildings:[b]}:null;cache.set(key,entry)}
   if(!entry)return null;const recipe=TownCityBinding.resolve(w,s,p,entry,'temple');
-  return{id:recipe.id,name:recipe.name,recipe,provinceId:p.id,i:p.i,x:p.x,y:p.y,priority:p.urbanPop*2.5,kind:'Grand sanctuary · in-town 3D',building:entry.buildings[0]};
+  return{id:recipe.id,name:recipe.name,recipe,provinceId:p.id,i:p.i,x:p.x,y:p.y,priority:p.urbanPop*2.5,kind:(TOWN_WONDERS[r.style]?.name||'Wonder')+' · in-town 3D',building:entry.buildings[0]};
  }
  return{build,miniature,pointed,lancet,statue,rose,palette,site,version:1};
 })();

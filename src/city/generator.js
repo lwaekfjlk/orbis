@@ -387,7 +387,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     }
     if(city.citadelSite&&city.citadelSite.gateway!=null){
         const a=city.citadelSite,b=buildingAt(a.k,a.sacred?'temple':'civic',true,a.w,1,null,CITADEL_SLOPE);
-        if(b){b.y=a.deck;b.foundationBed=a.bed;b.precinct=true;b.sacred=!!a.sacred;b.name=a.sacred?p.name+' · Grand Sanctuary':'The High Citadel';b.h=a.sacred?44:13;city.primaryMonumentId=b.id;}
+        if(b){b.y=a.deck;b.foundationBed=a.bed;b.precinct=true;b.sacred=!!a.sacred;b.wonder=a.wonder?.id||null;b.name=a.wonder?p.name+' · '+a.wonder.name:'The High Citadel';b.h=a.sacred?44:13;city.primaryMonumentId=b.id;}
     }
     for (const d of city.districts.filter(d => d.type !== 'home' && d.type !== 'garden' && !city.buildings.some(b=>b.precinct&&b.type===d.type))) {
         const sorted = lots.slice().sort((a, b) => Math.hypot(city.xy(a.k).x - d.x, city.xy(a.k).z - d.z) - Math.hypot(city.xy(b.k).x - d.x, city.xy(b.k).z - d.z));

@@ -34,8 +34,8 @@
       }
     },
     "pace": {
-      "compoundCrossingSeconds": 9.1,
-      "roundTripSeconds": 139,
+      "compoundCrossingSeconds": 13.3,
+      "roundTripSeconds": 146,
       "cellCrossingSeconds": 119.6,
       "bodyLengthsPerSecond": 0.213
     },

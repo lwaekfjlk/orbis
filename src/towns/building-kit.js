@@ -194,8 +194,11 @@ const TownCityBinding = (()=>{
   const faithKey=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular';
   const faithCrown=typeof TownVocabulary!=='undefined'?(TownVocabulary.ORNAMENT[faithKey]||{}).crown:null;
   const saved=s.landmarkRecipes?.[base.id];
-  const sacred=kind==='temple'&&c.buildings.some(b=>b.sacred&&b.type===kind);
-  return LandmarkCatalog.recipe(style,`${c.townRecipe.seed}/${kind}`,{...base,...(sacred?{sacred:true,sacredVersion:1,name:p.name+' · Grand Sanctuary',material:'ivory'}:{}),style,material:sacred?'ivory':f.material,roofLanguage:saved?.roofLanguage||f.roof,crown:saved?.crown||faithCrown||'native',seed:`${c.townRecipe.seed}/${kind}`,townRecipe:c.townRecipe,artisan:kind==='civic',urbanStyle:f.id,provenance:base.provenance+' The urban ensemble supplies the material and roof family.'});
+  // The wonder carries its own material and name; ivory was the cathedral's, and applying
+  // it to all of them would put a marble crystal on a moonstone town.
+  const shrine=kind==='temple'?c.buildings.find(b=>b.sacred&&b.type===kind):null;
+  const wonder=shrine?TOWN_WONDERS[c.townProfile.id]||TOWN_WONDERS.basilica:null,sacred=!!wonder;
+  return LandmarkCatalog.recipe(style,`${c.townRecipe.seed}/${kind}`,{...base,...(sacred?{sacred:true,sacredVersion:1,wonder:wonder.id,name:p.name+' · '+wonder.name,material:wonder.material}:{}),style,material:sacred?wonder.material:f.material,roofLanguage:saved?.roofLanguage||f.roof,crown:saved?.crown||faithCrown||'native',seed:`${c.townRecipe.seed}/${kind}`,townRecipe:c.townRecipe,artisan:kind==='civic',urbanStyle:f.id,provenance:base.provenance+' The urban ensemble supplies the material and roof family.'});
  }
  function miniature(recipe,b){
   if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.miniature(recipe,b);

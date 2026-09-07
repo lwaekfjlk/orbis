@@ -569,7 +569,11 @@ const ArtisanCityKit=(()=>{
   const result=meshAt(K.finish(),b);result.structures=count;return result;
  }
  function fortificationMeshes(c,p){
-  const profile=c.townProfile,recipe=LandmarkCatalog.recipe(profile.palace,c.townRecipe.seed+'/defenses',{urbanStyle:profile.id,geography:{freshwater:p.fresh||0}}),K=kit(recipe,1),D=c.defenses;
+  // lod 0. A curtain wall is sampled every 1.4 units, and courses() was drawing masonry on
+  // BOTH faces of every one of those segments — 467 triangles per 1.4 units of wall, a sixth
+  // of the whole town's budget spent on brickwork nobody can resolve. The parapet, merlons
+  // and towers carry the form; the mortar lines do not.
+  const profile=c.townProfile,recipe=LandmarkCatalog.recipe(profile.palace,c.townRecipe.seed+'/defenses',{urbanStyle:profile.id,geography:{freshwater:p.fresh||0}}),K=kit(recipe,0),D=c.defenses;
   if(!D)return {body:new Geometry(),roof:new Geometry()};
   K.part('defenses','Connected curtain walls and gatehouses','architecture',()=>{
    for(const w of D.walls){const a=w.a,b=w.b,L=Math.hypot(b.x-a.x,b.z-a.z),angle=-Math.atan2(b.z-a.z,b.x-a.x),base=Math.min(a.y,b.y)-.3,h=w.height+Math.abs(a.y-b.y);
