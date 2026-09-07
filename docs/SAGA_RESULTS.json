@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "checks": {
+    "coverage": {
+      "settlements": 102,
+      "titles": 102,
+      "heroes": 97,
+      "kinds": {
+        "sea": 39,
+        "hunger": 9,
+        "rift": 18,
+        "delve": 1,
+        "legend": 29,
+        "thirst": 3,
+        "flood": 1,
+        "mountain": 2
+      }
+    },
+    "parity": {
+      "heroShare": [
+        0.157,
+        0.176,
+        0.127,
+        0.167,
+        0.147,
+        0.186,
+        0.039
+      ],
+      "populationShare": [
+        0.171,
+        0.168,
+        0.151,
+        0.145,
+        0.166,
+        0.152,
+        0.047
+      ]
+    },
+    "derivation": {
+      "legendsInWorld": 7,
+      "checked": 102
+    },
+    "history": {
+      "year": 520,
+      "warTellings": 28,
+      "linkedTowns": 28,
+      "kinds": {
+        "sea": 29,
+        "hunger": 6,
+        "rift": 13,
+        "delve": 1,
+        "conqueror": 21,
+        "legend": 21,
+        "thirst": 2,
+        "flood": 1,
+        "siege": 7,
+        "mountain": 1
+      }
+    },
+    "names": {
+      "realmsWithWarlords": 13,
+      "recurringAcrossTowns": 7,
+      "heroWarlordCollisions": 2
+    },
+    "determinism": true,
+    "acrossWorlds": {
+      "worldA": 102,
+      "worldB": 99,
+      "repeatedTitles": 0,
+      "kindsB": {
+        "legend": 42,
+        "sea": 29,
+        "rift": 13,
+        "thirst": 5,
+        "hunger": 9,
+        "delve": 1
+      }
+    }
+  }
+}

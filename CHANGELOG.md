@@ -1,3 +1,25 @@
+# 13.7.0 — Every town has something it remembers
+
+- Each settlement composes a five-chapter epic from its own state: the peoples who came,
+  the polity that formed, the trial it survived, the deed that answered it, and what is
+  still standing. Every chapter shows the model fact it was built from.
+- The trial is the chronicle's when the chronicle has one — a real conquest or siege, with
+  its real year — and the landscape's when it does not: the arcane rift beneath a district,
+  a legendary place within reach, a live volcano, ice, flood, thirst, the workings, the
+  open coast, or a hinterland that fed fewer people than it needed to.
+- **No people is an enemy.** An adversary is a state, a disaster or a place, never a race,
+  and heroes are drawn from each province's live mixture so their spread tracks the
+  population within nine points. Both pinned by test, not left to the prose.
+- A conqueror belongs to the realm, so one warlord recurs across every town that realm
+  took, and reading along a frontier assembles one war.
+- Interaction points: the saga title on a town's selection card, the full telling in its
+  drawer, a button to the legendary place a chapter is about, buttons to the towns the
+  chronicle ties this one to, and search by hero, warlord or adversary.
+- Derived, not simulated: composed on read, cached in a WeakMap, nothing added to the
+  simulation or the save. New `tests/saga.test.mjs`; notes in `docs/CITY_SAGAS.md`.
+
+---
+
 # 13.6.0 — Nothing is built up a cliff, and a scarp may stand in for a wall
 
 One root cause behind all of it: the layout and the atlas were reading different surfaces.
