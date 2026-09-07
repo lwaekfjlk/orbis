@@ -4,15 +4,15 @@
     "geometricFamilies": 15,
     "highland": {
       "name": "Tinyard",
-      "footprints": 518,
-      "wallSegments": 235,
-      "towers": 23,
-      "gates": 2,
-      "approaches": 2,
+      "footprints": 320,
+      "wallSegments": 197,
+      "towers": 19,
+      "gates": 3,
+      "approaches": 3,
       "citadelWidth": 26,
       "terrainUnchanged": true
     },
-    "boundedParcels": 17,
+    "boundedParcels": 15,
     "buildingColour": [
       {
         "town": "Whitebeck",
@@ -25,10 +25,10 @@
       {
         "town": "Great Saltlanding",
         "style": "lagoon",
-        "buildings": 500,
-        "wallSaturation": 0.081,
+        "buildings": 617,
+        "wallSaturation": 0.085,
         "wallBrightness": 0.099,
-        "roofSaturation": 0.155
+        "roofSaturation": 0.162
       },
       {
         "town": "Cloudbury",

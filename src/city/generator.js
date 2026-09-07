@@ -61,7 +61,17 @@ function generateCity(w, sim, provinceId, design = {}) {
     // sprawl: at 1.16 a town's edge keeps a gap of roughly half its own diameter, which is
     // the separation the fixed-7.8 atlas had. Sizing merely to avoid overlap is far too
     // tight — the discs miss each other and the map still looks like a conurbation.
-    const span = cityClamp(cityReach(sim, p) / 1.16, 6.4, 10.5), grow = span / 7.8;
+    // Extent follows POPULATION, capped by the neighbour so two towns never merge.
+    // Sizing on spacing alone gave a 115,000-resident capital and a 3,400-resident
+    // village almost the same footprint: population spans 34x and the footprint 1.6x.
+    // Neighbour spacing is TIGHT — median reach is 9.2 cells, so the 1.16 separation
+    // divisor caps most towns near 7.9 and clipped every one of them to the same size.
+    // The range therefore has to come from the bottom: a hamlet is genuinely small,
+    // which leaves the large end room to grow under its own cap.
+    const capital = sim.realms.some(r => r.alive && r.capital === p.id);
+    const crowd = Math.sqrt(cityClamp((p.urbanPop || 0) / 115000, 0, 1));
+    const wanted = (3.2 + 8.8 * crowd) * (capital ? 1.12 : 1);
+    const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 4.2, 16), grow = span / 7.8;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
     const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;

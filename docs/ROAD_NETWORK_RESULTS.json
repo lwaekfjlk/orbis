@@ -29,9 +29,9 @@
     },
     "townPort": {
       "town": "Great Saltlanding",
-      "quays": 4,
-      "jetties": 3,
-      "moorings": 3,
+      "quays": 18,
+      "jetties": 4,
+      "moorings": 4,
       "sheds": 0,
       "kind": "sea",
       "beacon": true,

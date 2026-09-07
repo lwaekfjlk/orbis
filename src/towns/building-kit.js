@@ -177,10 +177,25 @@ const TownBuildingKit = (()=>{
 const TownCityBinding = (()=>{
  function resolve(w,s,p,c,kind){
   const base=LandmarkBinding.resolve(w,s,p,kind),f=c.townProfile;
-  let style=kind==='civic'?f.palace:kind==='academy'?'arcane':f.id==='forest'?'grove':['desert','mountain','delta','fjord','basalt','steppe','paddy','delve','lagoon','taiga','monsoon'].includes(f.id)?f.id:'basilica';
+  /* A seat of government belonged to its CLIMATE and nothing else: style was simply
+   * the town tradition's palace, so two towns of different nations and different
+   * religions came out with the same hall whenever they shared a landscape. The realm
+   * now chooses the massing, the province's faith the crown and ornament, and the
+   * town's own tradition still supplies material and roof so the building keeps
+   * belonging to its landscape. */
+  const realm=s.realms?.[p.owner];
+  const BY_ARCHETYPE={forest:'forest',maritime:'lagoon',granary:'river',forge:'delve',arcane:'arcane',lake:'delta',frontier:'basalt'};
+  const BY_GOV={1:'basilica',2:'arcane'};
+  let style=kind==='academy'?'arcane'
+   :kind==='civic'?(BY_GOV[realm?.gov]||BY_ARCHETYPE[realm?.archetype]||f.palace)
+   :f.id==='forest'?'grove'
+   :['desert','mountain','delta','fjord','basalt','steppe','paddy','delve','lagoon','taiga','monsoon'].includes(f.id)?f.id:'basilica';
+  // The crown is belief, and it reads from a long way off.
+  const faithKey=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular';
+  const faithCrown=typeof TownVocabulary!=='undefined'?(TownVocabulary.ORNAMENT[faithKey]||{}).crown:null;
   const saved=s.landmarkRecipes?.[base.id];
   const sacred=kind==='temple'&&c.buildings.some(b=>b.sacred&&b.type===kind);
-  return LandmarkCatalog.recipe(style,`${c.townRecipe.seed}/${kind}`,{...base,...(sacred?{sacred:true,sacredVersion:1,name:p.name+' · Grand Sanctuary',material:'ivory'}:{}),style,material:sacred?'ivory':f.material,roofLanguage:saved?.roofLanguage||f.roof,crown:saved?.crown||'native',seed:`${c.townRecipe.seed}/${kind}`,townRecipe:c.townRecipe,artisan:kind==='civic',urbanStyle:f.id,provenance:base.provenance+' The urban ensemble supplies the material and roof family.'});
+  return LandmarkCatalog.recipe(style,`${c.townRecipe.seed}/${kind}`,{...base,...(sacred?{sacred:true,sacredVersion:1,name:p.name+' · Grand Sanctuary',material:'ivory'}:{}),style,material:sacred?'ivory':f.material,roofLanguage:saved?.roofLanguage||f.roof,crown:saved?.crown||faithCrown||'native',seed:`${c.townRecipe.seed}/${kind}`,townRecipe:c.townRecipe,artisan:kind==='civic',urbanStyle:f.id,provenance:base.provenance+' The urban ensemble supplies the material and roof family.'});
  }
  function miniature(recipe,b){
   if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.miniature(recipe,b);

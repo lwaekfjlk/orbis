@@ -13,12 +13,12 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 226
+        "buildings": 208
       }
     },
     {
       "name": "real-geometry",
-      "triangles": 221213,
+      "triangles": 222085,
       "parts": 10,
       "bounds": {
         "min": [
@@ -36,13 +36,13 @@
         "pointed-arch": 482,
         "connected-grand-stair": 3,
         "guardian-sculpture": 14,
-        "ribbed-dome": 8,
+        "ribbed-dome": 10,
         "traceried-window": 116,
         "double-flying-buttress": 12,
         "crocketed-pinnacle": 85,
         "gable-roof": 8,
         "radial-stained-glass": 1,
-        "ritual-sun": 7,
+        "ritual-sun": 5,
         "open-belfry-tower": 5,
         "audience-hall": 4,
         "open-arch": 130,
@@ -51,12 +51,12 @@
         "banner": 6,
         "cistern": 2
       },
-      "sha256": "7aca6a119bef5b63e483b83e313806944473b3ef4898b043c0ff9eb151c6b6de"
+      "sha256": "9f30dfb1fd0223cb773f8bd10d70db73eef09052d857763a587f6d5d4f94cf21"
     },
     {
       "name": "same-recipe-at-three-scales",
-      "signature": "769d69fb/great-sanctuary-1",
-      "placedHeight": 49.23393647181299
+      "signature": "3e60510f/great-sanctuary-1",
+      "placedHeight": 49.233936471812996
     },
     {
       "name": "native-sacred-towns",
@@ -65,7 +65,7 @@
         {
           "id": 259,
           "name": "Scorchquay",
-          "blocks": 226,
+          "blocks": 208,
           "sanctuary": 38
         },
         {
@@ -77,31 +77,31 @@
         {
           "id": 289,
           "name": "Whitecombe",
-          "blocks": 322,
+          "blocks": 315,
           "sanctuary": 38
         },
         {
           "id": 452,
           "name": "Kelplanding",
-          "blocks": 443,
+          "blocks": 164,
           "sanctuary": 38
         },
         {
           "id": 462,
           "name": "Larkfield",
-          "blocks": 460,
+          "blocks": 189,
           "sanctuary": 38
         },
         {
           "id": 480,
           "name": "Sedgecombe",
-          "blocks": 747,
+          "blocks": 483,
           "sanctuary": 38
         },
         {
           "id": 485,
           "name": "Netherford",
-          "blocks": 290,
+          "blocks": 301,
           "sanctuary": 34
         }
       ]
@@ -117,7 +117,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23898648,
+      "bytes": 23992820,
       "meshes": 10
     }
   ]

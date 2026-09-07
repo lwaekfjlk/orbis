@@ -8,8 +8,8 @@
     },
     "architectureIndependentGeography": {
       "styles": 4,
-      "signature": "a7fd4e15",
-      "contextSignature": "1ceed810"
+      "signature": "c147bb88",
+      "contextSignature": "88beb3e3"
     },
     "provinceAverageIgnored": true,
     "legacyRecipeMigration": true,
@@ -36,17 +36,17 @@
     "maximumSurroundingElevation": 7524.6962890625,
     "oldStyle": "desert",
     "newStyle": "mountain",
-    "buildingCount": 577,
+    "buildingCount": 447,
     "localBiomes": [
-      14,
       15,
-      5,
+      14,
       7,
-      8,
       3,
+      5,
+      8,
       2,
       16
     ],
-    "iceSampleCount": 746
+    "iceSampleCount": 705
   }
 }

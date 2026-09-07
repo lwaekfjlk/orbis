@@ -4,6 +4,7 @@ export const scripts = [
     'src/world/roads.js',
     'src/civilization/folk.js',
     'src/city/environment.js', 'src/towns/catalog.js',
+    'src/towns/vocabulary.js',
     'src/towns/grammar.js', 'src/towns/fortifications.js',
     'src/city/generator.js',
     'src/city/actions.js',
