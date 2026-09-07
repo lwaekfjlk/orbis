@@ -22,12 +22,34 @@ const ArtisanCityKit=(()=>{
  };
  const hex2=v=>Math.round(clamp(v,0,1)*255).toString(16).padStart(2,'0');
  const hexOf=c=>'#'+c.map(v=>Math.round(clamp(v)*255).toString(16).padStart(2,'0')).join('');
+ function toHSV(c){const mx=Math.max(...c),mn=Math.min(...c),d=mx-mn;
+  const h=d<1e-9?0:mx===c[0]?((c[1]-c[2])/d+6)%6:mx===c[1]?(c[2]-c[0])/d+2:(c[0]-c[1])/d+4;
+  return[h*60,mx?d/mx:0,mx];}
+ function fromHSV(h,s,v){h=((h%360)+360)%360/60;const i=Math.floor(h),f=h-i,p=v*(1-s),q=v*(1-s*f),t=v*(1-s*(1-f));
+  return[[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i%6];}
+ // Saturation moves proportionally AND absolutely: a grey-stone town starts at about
+ // .09, and a pure multiplier leaves every one of its houses just as grey.
+ const shift=(hex,[dh,ds,dv])=>{const[h,s,v]=toHSV(rgb(hex));return hexOf(fromHSV(h+dh,clamp(s*(1+ds)+ds*.10,0,.93),clamp(v*(1+dv),.05,.98)));};
+ // Five building materials inside one construction language, as hue/saturation/value
+ // moves off whatever that town builds in: the profile's own stock, a limewashed
+ // version of it, a warmer fired earth, a colder weathered stone and a deeper tint of
+ // the base. Before this a whole town was one hue — measured across five towns, walls
+ // varied by 2-6 degrees and 8% in brightness, which is one house repeated, not a
+ // quarter. This runs inside weather(), so it lands on the climate-toned palette and
+ // a hot dry town's materials are five variations of ITS whitewash, not of the
+ // tradition's generic stock.
+ const WALL_STOCK=[[0,0,0],[7,-.36,.10],[-16,.44,-.07],[14,-.14,-.14],[-6,.18,.05]];
+ const ROOF_STOCK=[[0,0,0],[-14,.32,-.06],[10,-.30,.09],[-5,.12,-.15]];
  /** One town keeps one construction language, but not one paint pot. Each block shifts its
   * masonry, roof and timber a little — a value change plus a warm/cool lean — so a quarter
   * reads as many separate houses instead of one asset stamped over and over. Drawn from its
   * own stream, so the shift never disturbs the mesh the seed already decided. */
  function weather(palette,seed){
   const r=LandmarkCatalog.rng(seed+'/paint'),out={...palette};
+  // Pick the house's material first, then weather it. Both draws come off the paint
+  // stream, so the mesh the seed already decided is untouched.
+  if(out.wall)out.wall=shift(out.wall,WALL_STOCK[Math.floor(r()*WALL_STOCK.length)%WALL_STOCK.length]);
+  if(out.roof)out.roof=shift(out.roof,ROOF_STOCK[Math.floor(r()*ROOF_STOCK.length)%ROOF_STOCK.length]);
   for(const [key,amount] of [['wall',.16],['trim',.11],['roof',.22],['wood',.15],['dark',.09],['metal',.10]]){
    if(!out[key])continue;
    const c=rgb(out[key]),v=1+(r()-.5)*amount*2,warm=1+(r()-.5)*amount;
@@ -352,12 +374,18 @@ const ArtisanCityKit=(()=>{
   const body=new Geometry(),roof=new Geometry();for(const p of model.parts)append(p.role==='roof'?roof:body,LandmarkTemplates.transformGeometry(p.geometry,scale,offset,angle));
   return{body,roof,height:(hi[1]-lo[1])*scale,model};
  }
+ // The climate at THIS block's own cell, and the paint that follows from it. Both the
+ // detailed mesh and the regional silhouette come through these, so a town cannot
+ // change colour as you close in on it — the two would otherwise have to reproduce
+ // the same climate-then-weather composition separately and stay in step by luck.
+ const blockClimate=(c,b)=>{const seat=c.index(b.x,b.z);return{...CityEnvironment.localClimate(c.environment,seat),wet:c.wet?.[seat]||0}};
+ const blockPaint=(c,b)=>weather(climatePalette(PALETTES[c.townProfile.id]||PALETTES.river,blockClimate(c,b)),c.townRecipe.seed+'/'+b.id);
  function compound(b,c,p,realm){
   const style=c.townProfile.id,faith=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular',recipe=LandmarkCatalog.recipe(c.townProfile.palace,c.townRecipe.seed+'/'+b.id,{urbanStyle:style,faith,geography:{freshwater:p.fresh||0,cold:c.siteEnvironment.temperature<4}});
   // Read the climate at THIS block's own cell, not the town centre's. A town with
   // relief spans several degrees between its lower and upper districts, and 67 of
   // the 96 towns in a default world span more than four.
-  const seat=c.index(b.x,b.z),cl={...CityEnvironment.localClimate(c.environment,seat),wet:c.wet?.[seat]||0};
+  const cl=blockClimate(c,b);
   const K=kit(recipe,b.lod??2,cl),rng=K.random;
   if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true},{climate:cl}),b);
   // The surveyed parcel is what gets built on. meshAt scales this model uniformly to fit
@@ -445,5 +473,5 @@ const ArtisanCityKit=(()=>{
   });
   const m=K.finish(),body=new Geometry(),roof=new Geometry();for(const p of m.parts)append(p.role==='roof'?roof:body,p.geometry);return{body,roof};
  }
- return{palettes:PALETTES,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,climatePalette,neutralClimate:NEUTRAL,version:1};
+ return{palettes:PALETTES,paint:weather,blockPaint,blockClimate,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,climatePalette,neutralClimate:NEUTRAL,version:1};
 })();
