@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-lagoon",
+  "style": "lagoon",
+  "seed": "Artisan11-lagoon",
+  "name": "The Tidewater Chancery",
+  "material": "lagoon",
+  "faith": "tide",
+  "culture": "Mixed traditions",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 0,
+  "wings": 3,
+  "roofPitch": 1.0026055954582989,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "lagoon"
+}

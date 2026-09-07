@@ -11,4 +11,4 @@ for(const style of Object.keys(E.ArtisanCityKit.palettes)){
  const r=E.LandmarkCatalog.recipe(style,'Artisan11-'+style,{artisan:true,urbanStyle:style,complexity:1,geography:{freshwater:.7}}),m=E.ArtisanCityKit.precinct(r),bytes=E.exportGeometryGLB(E.LandmarkTemplates.meshes(m),{recipe:r,notes:'Reusable civic-precinct asset, not an entire generated city. Vertex-colored real geometry; no image impostor.'});
  writeFileSync(resolve(out,style+'.glb'),Buffer.from(bytes));writeFileSync(resolve(out,style+'.recipe.json'),JSON.stringify(r,null,2));manifest.push({style,file:style+'.glb',triangles:m.stats.triangles,parts:m.parts.length,bytes:bytes.byteLength});
 }
-writeFileSync(resolve(out,'manifest.json'),JSON.stringify(manifest,null,2));console.log('Exported nine artisan civic precincts.');
+writeFileSync(resolve(out,'manifest.json'),JSON.stringify(manifest,null,2));console.log(`Exported ${manifest.length} artisan civic precincts.`);

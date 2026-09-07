@@ -49,108 +49,108 @@
   "models": [
     {
       "style": "river",
-      "triangles": 50070,
+      "triangles": 31878,
       "parts": 4,
-      "sha256": "85f8d8fd910f22b1072bb373e966b2e895090f81108bc9df304a2be7252eb5f2",
-      "glbBytes": 5410816
+      "sha256": "f7fa50faacd3b480bff46ab35c261a8482e351202362c2bd2b6b1a7111c73f31",
+      "glbBytes": 3446076
     },
     {
       "style": "basilica",
-      "triangles": 38210,
+      "triangles": 21938,
       "parts": 4,
-      "sha256": "fed727f0f2d913cdccb3377b8b45afaa66abacc661a52eb6b1891113dba633d8",
-      "glbBytes": 4129940
+      "sha256": "ededdf2d0c3beb0178c440dbba05323eb9da05e03ca02dda775996f092a954b0",
+      "glbBytes": 2372564
     },
     {
       "style": "arcane",
-      "triangles": 24050,
+      "triangles": 14726,
       "parts": 4,
-      "sha256": "f5f1bbe567120d0547273b8cd1c097166b43537824ccaa2bb1f480b41f6a9f85",
-      "glbBytes": 2600632
+      "sha256": "068d14a2d3287dcca5b18a9660fd1b51c0a90dbab12b6a2b54923c5be1931d02",
+      "glbBytes": 1593640
     },
     {
       "style": "mountain",
-      "triangles": 33034,
+      "triangles": 17878,
       "parts": 4,
-      "sha256": "b65c0dde3e5f69c63cff54c71fb77b1da257fb7281e2d5fc7726713bf50ea9e7",
-      "glbBytes": 3570936
+      "sha256": "24b47f91bfa3a535bcc9a1e42c6e11a7bd00c807b772f4284f0db01ebf507c96",
+      "glbBytes": 1934088
     },
     {
       "style": "forest",
-      "triangles": 2225,
+      "triangles": 2241,
       "parts": 4,
-      "sha256": "e44db8f943abcbe63b7806b13edfef7f932b813386e1f6ef1a13a36255c36287",
-      "glbBytes": 243544
+      "sha256": "e43da25b1de55680ba8ad6d5ad621047d1ac8329429bf164fc6accda54e40ca5",
+      "glbBytes": 245272
     },
     {
       "style": "desert",
-      "triangles": 26948,
+      "triangles": 15784,
       "parts": 4,
-      "sha256": "1d779e5e01fea31acde55c557794ce5dd2f4a4abb0e35860952325e3154d5b42",
-      "glbBytes": 2913640
+      "sha256": "ffc399045efc7f99599b6cd9fb1a9fda91436b4cf7c62782abc8db0b02db1bbc",
+      "glbBytes": 1707928
     },
     {
       "style": "delta",
-      "triangles": 22082,
+      "triangles": 11586,
       "parts": 4,
-      "sha256": "ff28afa953fee39602aede8d7a6b466e87d7f507d7ce5f4db637d626ef65773b",
-      "glbBytes": 2388092
+      "sha256": "dee5ea78f7eb2b22e76fb153707c82e425be871480b7d10ed6ff666c8cd266f6",
+      "glbBytes": 1254524
     },
     {
       "style": "basalt",
-      "triangles": 42302,
+      "triangles": 25262,
       "parts": 4,
-      "sha256": "9d41d56ad2ebe3ca98641f78bbca3751a459dc562b879bfce10d4c1d39b1262e",
-      "glbBytes": 4571884
+      "sha256": "6e9e5ebd60728f58e1cf15dcf32644a147d5aa71e2dc42becb1388809948f464",
+      "glbBytes": 2731560
     },
     {
       "style": "fjord",
-      "triangles": 32178,
+      "triangles": 22010,
       "parts": 4,
-      "sha256": "5545d923c5b108985eec1c631f9f95c4893060415ff69f7b2a5c7a80a6591468",
-      "glbBytes": 3478480
+      "sha256": "d4cfff7fb065e295e4a781874f91c1421f18b1799308d5e8c9f62fcb8622196f",
+      "glbBytes": 2380336
     },
     {
       "style": "steppe",
-      "triangles": 17816,
+      "triangles": 9800,
       "parts": 4,
-      "sha256": "94ef7e203ee8bb649682a528d009cdfbb13d13d9b8a1afbb70bb34fe31af2539",
-      "glbBytes": 1927416
+      "sha256": "11185e8b093cbf999f52f4c5e7f58ed79baa1cf344ac5f574a7a76174c0b3c6b",
+      "glbBytes": 1061684
     },
     {
       "style": "paddy",
-      "triangles": 18588,
+      "triangles": 10836,
       "parts": 4,
-      "sha256": "7557b2a62a596d55652e892f0121cde9948712082378b34566c41a85313a4b38",
-      "glbBytes": 2010760
+      "sha256": "8df547327c365dd8aca75b8776d41ad359037209fcaa08c14e0d22bf246b3d8a",
+      "glbBytes": 1173544
     },
     {
       "style": "delve",
-      "triangles": 9944,
+      "triangles": 5336,
       "parts": 4,
-      "sha256": "aa912fdc419c9dbbdf7d5164e036f1db01c9a6aee3b07e99a6a0a05877a1869f",
-      "glbBytes": 1077204
+      "sha256": "2273b601563e5d9361d808d4d5370eb69999a2156d0b40cf1e2ac74232309a0e",
+      "glbBytes": 579536
     },
     {
       "style": "lagoon",
-      "triangles": 32620,
+      "triangles": 18516,
       "parts": 4,
-      "sha256": "09ae1b48f1f818d960fea991daebb53a1b1a898052770e088be6d59c9d320561",
-      "glbBytes": 3526268
+      "sha256": "7a6239199484590fe719557dd32f6cfba038a19aa96bedff0b14de156fe7fa7e",
+      "glbBytes": 2003036
     },
     {
       "style": "taiga",
-      "triangles": 16642,
+      "triangles": 10966,
       "parts": 4,
-      "sha256": "037e540e7a48ddeb64031e17fa739f23f5ed704021372abee201fc32e628ace7",
-      "glbBytes": 1800604
+      "sha256": "75fd9e6eb425f22a0c3932d81c5dba90cb431206650ed96eb4406b753a41b670",
+      "glbBytes": 1187596
     },
     {
       "style": "monsoon",
-      "triangles": 19974,
+      "triangles": 11940,
       "parts": 4,
-      "sha256": "9f921d77980ed8fc478e5f7d059c62fbbe99f5e050e71f2e9d5e6bb04c231e57",
-      "glbBytes": 2160440
+      "sha256": "c9374f469b5d2ad0f3779132cf5417d13cb18e3ca7d1d69149a4a34b1e9da737",
+      "glbBytes": 1292768
     }
   ]
 }

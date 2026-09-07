@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-taiga",
+  "style": "taiga",
+  "seed": "Artisan11-taiga",
+  "name": "The Winterhold Moot",
+  "material": "taiga",
+  "faith": "ancestors",
+  "culture": "Clan craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 3,
+  "roofPitch": 1.0837896112259477,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "taiga"
+}

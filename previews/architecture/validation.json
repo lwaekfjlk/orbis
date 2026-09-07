@@ -1,0 +1,77 @@
+{
+  "baseline": "b5f00bc",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "models": [
+    {
+      "model": "cathedral",
+      "after": "185,796 triangles · 10 mesh groups",
+      "before": "221,213 triangles · 10 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "astral",
+      "after": "186,072 triangles · 10 mesh groups",
+      "before": "221,605 triangles · 10 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "gilded-palace",
+      "after": "53,672 triangles · 5 mesh groups",
+      "before": "56,744 triangles · 5 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "grove-sanctuary",
+      "after": "7,657 triangles · 4 mesh groups",
+      "before": "8,557 triangles · 4 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "tide-palace",
+      "after": "38,420 triangles · 6 mesh groups",
+      "before": "39,724 triangles · 6 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "mountain",
+      "after": "18,430 triangles · 4 mesh groups",
+      "before": "33,586 triangles · 4 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "river",
+      "after": "31,878 triangles · 4 mesh groups",
+      "before": "50,070 triangles · 4 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "house-river",
+      "after": "2,986 triangles · 2 mesh groups",
+      "before": "2,376 triangles · 2 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "house-fjord",
+      "after": "4,002 triangles · 2 mesh groups",
+      "before": "3,332 triangles · 2 mesh groups",
+      "ready": "true"
+    },
+    {
+      "model": "house-desert",
+      "after": "5,086 triangles · 2 mesh groups",
+      "before": "3,748 triangles · 2 mesh groups",
+      "ready": "true"
+    }
+  ],
+  "visualChecks": [
+    "Cathedral front and entrance",
+    "Cathedral rear and apse",
+    "Palace windows and cornices",
+    "River, fjord and desert houses",
+    "Roof removal on cathedral and river house",
+    "Whitebeck Grand Sanctuary in the continuous town map"
+  ]
+}
