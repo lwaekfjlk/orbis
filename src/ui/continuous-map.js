@@ -2,6 +2,28 @@
 window.ContinuousMap = (() => {
  const E=id=>document.getElementById(id);let layer=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',shadowCenter='',moving=false;
  const ready=()=>enabled&&world&&sim&&!busy&&!simAdvancing;
+ /* WALKING FIGURES.
+  * A frame with a moving crowd costs a mesh rebuild plus a full redraw. That is cheap on
+  * WebGL2 and expensive on the Canvas software rasterizer, which re-rasterizes the whole
+  * town every frame, so there the crowd is built once and holds position instead. The
+  * same applies when the reader has asked the system for reduced motion: the streets are
+  * still populated, nobody walks. Nothing about the simulation depends on this clock.
+  */
+ const reducedMotion=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+ let clock=0,lastTick=0,walking=false,staticTimer=0;
+ const animating=()=>ready()&&renderer.options.folk!==false&&renderer.zoom>=4.8&&!renderer.software&&!reducedMotion()&&document.visibilityState!=='hidden';
+ function startFolk(){if(walking||!animating())return;walking=true;lastTick=performance.now();requestAnimationFrame(tickFolk);}
+ function tickFolk(now){
+  if(!animating()){walking=false;return;}
+  // ~24fps. A walking crowd does not read any better at 60, and the spare frames belong
+  // to panning and to town meshes still streaming in.
+  if(now-lastTick>=40){clock+=Math.min(.25,(now-lastTick)/1000);lastTick=now;renderer.buildFolk(clock);renderer.request();}
+  requestAnimationFrame(tickFolk);
+ }
+ // A still crowd still has to be re-culled when the camera moves, but rebuilding it
+ // inline would force a second full redraw per pan step — which is exactly the cost the
+ // software path was spared the ticker to avoid. Settle first, like the town streamer.
+ function restFolk(){if(walking||!renderer.buildFolk)return;clearTimeout(staticTimer);staticTimer=setTimeout(()=>{if(!walking&&ready()){renderer.buildFolk(clock);renderer.request();}},150);}
  function init(){if(enabled||!renderer)return;enabled=true;document.body.classList.add('continuous-map');
   layer=new ContinuousCityLayer(renderer);renderer.continuousLayer=layer;renderer.continuousModels=layer.models;renderer.continuousRoofs=true;
   renderer.ground=function(x,y){return this.world?AtlasSpace.surface(this.world,x,y,this.relief):0;};
@@ -12,15 +34,17 @@ window.ContinuousMap = (() => {
   const el=document.createElement('div');el.id='cmLabels';E('stage').appendChild(el);
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
   const btn=document.createElement('button');btn.id='cmContext';btn.className='cm-context glass';btn.textContent='Wider setting';btn.title='Pull back in the same map';btn.onclick=wider;E('omChrome').appendChild(btn);
-  layer.onChange=()=>{window.__continuous=layer.report();updateTitle();makePins();positionPins();};
+  layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();};
   bindCamera();
   E('omFit').onclick=()=>ready()&&home();E('omHome').onclick=()=>ready()&&home();
   E('camera').onchange=()=>{if(!ready())return;cancel();renderer.elevation={relief:1.19,overhead:1.555,diorama:.65}[E('camera').value];renderer.request();};
   E('resetView').onclick=home;E('zoomIn').onclick=()=>zoomBy(1.25);E('zoomOut').onclick=()=>zoomBy(.8);
   E('cmLabels').addEventListener('pointerdown',e=>e.stopPropagation());
   const more=E('omWorldLayers');const roofs=document.createElement('label');roofs.className='om-check';roofs.innerHTML='<input type="checkbox" id="cmRoofs" checked>Building roofs';more.appendChild(roofs);E('cmRoofs').onchange=()=>{renderer.continuousRoofs=E('cmRoofs').checked;renderer.dirtyShadow=true;renderer.request();};
+  // A backgrounded tab must not keep rebuilding a crowd nobody is looking at.
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')startFolk();});
  }
- function beforeWorldBuild(){cancel();if(layer)layer.reset(null,null);lastWorld=null;selection=null;lastPins='';E('cmLabels')?.replaceChildren();}
+ function beforeWorldBuild(){cancel();if(layer)layer.reset(null,null);lastWorld=null;selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
  function onWorldUpdate(){if(!enabled||!world||!sim)return;layer.bind(world,sim);if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
   makePins();updateTitle();renderer.request();layer.cameraChanged();if(selection&&OneMap.panel==='detail')details(selection.model,selection.building,false);
  }
@@ -33,8 +57,10 @@ window.ContinuousMap = (() => {
   E('omHint').textContent='SCROLL TO APPROACH · SHIFT-DRAG TO ORBIT · CLICK A BUILDING';
   document.body.dataset.detail=r.zoom>=4.8?'local':'atlas';
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
+  window.__folk={...(r.folkStats||{}),walking,software:!!r.software,reducedMotion:reducedMotion(),roads:r.roadStats||null};
  }
- function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4)].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();}
+ function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4)].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
+  startFolk();
   if(renderer.zoom>=8){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
   positionPins();updateTitle();
@@ -83,5 +109,5 @@ window.ContinuousMap = (() => {
   c.addEventListener('pointerup',end);c.addEventListener('pointercancel',()=>{pointers.clear();drag=null;pinch=null;renderer.interacting=false;renderer.request();});E('stage').addEventListener('wheel',e=>{e.preventDefault();const a=rect();zoomBy(Math.exp(-e.deltaY*.0012),e.clientX-a.left,e.clientY-a.top);},{passive:false});
   c.addEventListener('dblclick',e=>{if(!ready())return;e.stopImmediatePropagation();const a=rect(),x=e.clientX-a.left,y=e.clientY-a.top,h=layer.pick(x,y);if(h){focusBuilding(h.model.p.id,h.building.id);return;}const at=AtlasSpace.pickGround(renderer,x,y);if(!at)return;const nearby=sim.provinces.filter(p=>p.settled).map(p=>({p,d:Math.hypot(p.x-at.x,p.y-at.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby?.d<5)focusTown(nearby.p.id);else animate(at.point,Math.min(180,renderer.zoom*2),renderer.elevation);},true);
  }
- return{init,onWorldUpdate,beforeWorldBuild,focusTown,focusBuilding,focusSite,zoomBy,wider,home,cancel,details,select,get layer(){return layer;},get active(){return enabled;},get moving(){return moving;},report:()=>layer?.report()};
+ return{init,onWorldUpdate,beforeWorldBuild,focusTown,focusBuilding,focusSite,zoomBy,wider,home,cancel,details,select,get layer(){return layer;},get active(){return enabled;},get moving(){return moving;},get walking(){return walking;},get clock(){return clock;},report:()=>layer?.report()};
 })();

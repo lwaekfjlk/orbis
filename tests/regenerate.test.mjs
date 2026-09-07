@@ -25,11 +25,13 @@ test('Civilization is visible on both everyday map layers and toggles still work
 test('Presentation reset resets view only; report distinguishes state from mesh visibility',()=>{
  const text=readFileSync(resolve(root,'src/ui/world-ui.js'),'utf8');
  const functions=text.slice(text.indexOf('/** Default presentation'),text.indexOf('async function buildWorld('));
- const dom=Object.fromEntries(['settlements','frontiers','names','realmSearch','moreLayer'].map(id=>[id,{checked:false,value:'stale'}]));
- const r={layer:'plates',options:{settlements:false,frontiers:false},meshes:{settlements:{count:27},frontiers:{count:18}},visible:()=>true};
+ const dom=Object.fromEntries(['settlements','frontiers','roads','folk','names','realmSearch','moreLayer'].map(id=>[id,{checked:false,value:'stale'}]));
+ const r={layer:'plates',options:{settlements:false,frontiers:false,roads:false,folk:false},meshes:{settlements:{count:27},frontiers:{count:18}},visible:()=>true};
  const harness=new Function('$','renderer',`const DEFAULT_WORLD_LAYER='realms';let currentLayer='plates';${functions};return {resetWorldPresentation,generationReport,getLayer:()=>currentLayer};`)(id=>dom[id],r);
  harness.resetWorldPresentation();assert.equal(harness.getLayer(),'realms');assert.equal(r.layer,'realms');
- for(const id of ['settlements','frontiers','names'])assert.equal(dom[id].checked,true);
+ for(const id of ['settlements','frontiers','roads','folk','names'])assert.equal(dom[id].checked,true);
+ // Roads, ports and townsfolk are part of the everyday map, so a new world shows them.
+ for(const id of ['roads','folk'])assert.equal(r.options[id],true,id+' must be re-enabled on a fresh world');
  assert.equal(dom.realmSearch.value,'');assert.equal(dom.moreLayer.value,'');
  const w={params:{seed:'regression'}},s={year:400,realms:[{alive:true}],provinces:[{city:true,settled:true,pop:1234}]};
  r.world=w;r.sim=s;

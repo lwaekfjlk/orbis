@@ -26,6 +26,8 @@
     "assets:sanctuary": "node scripts/export-sanctuaries.mjs",
     "test:browser:sanctuary": "python tests/sanctuary_browser.py",
     "test:continuous": "node --test tests/continuous.test.mjs",
+    "test:roads": "node --test tests/roads.test.mjs",
+    "test:folk": "node --test tests/folk.test.mjs",
     "test:legacy-modals": "python tests/onemap_browser.py"
   }
 }

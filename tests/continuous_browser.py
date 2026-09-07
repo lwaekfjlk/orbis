@@ -82,7 +82,39 @@ with sync_playwright() as pw:
  page.evaluate('rerollSocieties()');stable(page)
  assert page.evaluate('physicalFingerprint(world)')==before
  assert no_jump(page)['same'];mark('Recasting societies on the same terrain invalidates city and worker caches')
+ # Roads, quays and the walking crowd. Fingerprints must survive all of it.
+ page.set_viewport_size({'width':1480,'height':980});page.evaluate('ContinuousMap.home()');stable(page)
+ roads=page.evaluate('renderer.roadStats')
+ assert roads and roads['roads']>10 and roads['ports']>0
+ assert page.evaluate("renderer.visible('roads')") and page.evaluate("renderer.visible('ports')")
+ mark('The world atlas carries a road and port network',roads)
+ shots(page,'roads-world')
+ wet=page.evaluate('''(()=>{const p=sim.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)[0];window.__portId=p.id;return ContinuousMap.focusTown(p.id,30);})()''')
+ page.wait_for_function('ContinuousMap.layer.models.has(window.__portId)',timeout=240000);stable(page)
+ port=page.evaluate('ContinuousMap.layer.models.get(window.__portId).city.stats.port')
+ assert port and port['jetties']>0;mark('A harbour town has a built waterfront',port)
+ assert page.evaluate("!!renderer.meshes['cm:'+window.__portId+':port']?.count")
+ assert page.evaluate("renderer.visible('roadsNear')") and not page.evaluate("renderer.visible('roads')")
+ mark('The cartographic road hands over to the ground-seated one inside a town')
+ shots(page,'port-town')
+ # The crowd has to be present AND moving, and must not drive a shadow rebuild.
+ page.wait_for_function('window.__folk&&window.__folk.residents>0',timeout=60000)
+ folk=page.evaluate('window.__folk');assert folk['residents']>0;mark('Townsfolk populate the streets',folk)
+ moved=page.evaluate('''async()=>{const at=()=>window.__folk.clock;const a=at();
+  await new Promise(r=>setTimeout(r,900));return {a,b:at(),walking:window.__folk.walking,software:window.__folk.software};}''')
+ if moved['software'] or not moved['walking']:
+  mark('Figures hold position where a frame is expensive',moved)
+ else:
+  assert moved['b']>moved['a'];mark('Figures walk on their own clock',moved)
+ assert page.evaluate('renderer.dirtyShadow')==False;mark('A crowd rebuild leaves the shadow map alone')
+ assert snapshot(page)==page.evaluate('({physical:physicalFingerprint(world),settlements:settlementFingerprint(sim),politics:politicalFingerprint(sim),year:sim.year})')
+ assert page.evaluate('sim.roads===undefined');mark('Roads, quays and figures add nothing to the simulation state')
+ page.evaluate("document.getElementById('folk').click();document.getElementById('roads').click()");stable(page)
+ assert not page.evaluate("renderer.visible('folk')") and not page.evaluate("renderer.visible('roadsNear')")
+ mark('Both toggles switch the new layers off')
+ page.evaluate("document.getElementById('folk').click();document.getElementById('roads').click()");stable(page)
  report['final']=page.evaluate('ContinuousMap.report()');report['worker']=worker_used;report['error']=page.evaluate('window.__continuousError||null')
+ report['roads']=page.evaluate('renderer.roadStats');report['folk']=page.evaluate('window.__folk')
  assert not report['errors'];assert report['error'] is None
  assert not [u for u in report['requests'] if u.startswith(('http:','https:'))]
  mark('No page errors or external asset requests; mesh worker active',report['worker'])

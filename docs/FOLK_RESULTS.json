@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "checks": {
+    "mixture": {
+      "town": "Whitebeck",
+      "roster": 60,
+      "peoplesSeen": 7,
+      "maxDeviation": 0
+    },
+    "parity": {
+      "distinctSpeedsAcrossPeoples": 1,
+      "distinctGaits": 59,
+      "accents": 7
+    },
+    "townsfolk": {
+      "roster": 60,
+      "samples": 360,
+      "walkers": 49,
+      "idlers": 11
+    },
+    "purity": {
+      "deterministic": true,
+      "cycleCloses": true
+    },
+    "travellers": {
+      "total": 180,
+      "road": 140,
+      "sea": 40,
+      "kinds": {
+        "walker": 94,
+        "cart": 34,
+        "rider": 12,
+        "boat": 40
+      }
+    },
+    "figure": {
+      "trianglesPerAccent": {
+        "none": 28,
+        "cloak": 30,
+        "broad": 36,
+        "tail": 30,
+        "horns": 30,
+        "crest": 29,
+        "ridge": 30
+      }
+    },
+    "rendering": {
+      "residents": 0,
+      "travelling": 0,
+      "triangles": 0,
+      "shadowPreserved": true
+    }
+  }
+}

@@ -79,4 +79,24 @@ test('Exploration routes delegate to a camera operation, with no city dialog ope
 });
 test('Geometry worker includes trusted modules and transfers reusable model buffers',()=>{
  const worker=readFileSync(resolve(root,'src/continuous/generated-worker.js'),'utf8');assert(worker.includes('self.onmessage'));assert(worker.includes('ContinuousCityLayer'));assert(worker.includes('self.postMessage'));
+ // The road network and the walking crowd are built on the main thread, but the town
+ // waterfront is town geometry, so the worker has to know how to make it.
+ assert(worker.includes('RoadNetwork'));assert(worker.includes('city.port'));
+});
+test('The town waterfront streams into the atlas with the rest of the town',()=>{
+ const src=readFileSync(resolve(root,'src/continuous/city-layer.js'),'utf8');
+ const whitelist=src.match(/if\(!\[([^\]]+)\]\.includes\(name\)\)continue/)[1];
+ assert(whitelist.includes("'port'"),'the port mesh must be copied into atlas coordinates');
+ // It is a ground-hugging assembly, so it must NOT be in the rigid-anchor list that
+ // seats compounds on a level deck; a quay follows the shore it was fitted to.
+ assert(!/const rigid=\[[^\]]*'port'/.test(src));
+ assert(/type!=='port'\|\|this\.r\.options\.roads!==false/.test(src),'the port follows the roads and ports toggle');
+});
+test('Figures and ground-seated roads change over at the existing detail threshold',()=>{
+ const road=readFileSync(resolve(root,'src/render/road-renderer.js'),'utf8');
+ assert(/AtlasRenderer\.FOLK_ZOOM\s*=\s*18/.test(road),'the crowd threshold is the town-detail threshold');
+ assert(/zoom>=4\.8&&this\.r\.zoom<18/.test(readFileSync(resolve(root,'src/continuous/city-layer.js'),'utf8')),'silhouettes still hand over at the same zoom');
+ // The locked world renderer is extended, never edited.
+ assert(/const priorBuild\s*=\s*AtlasRenderer\.prototype\.buildCivilization/.test(road));
+ assert(/const priorVisible\s*=\s*AtlasRenderer\.prototype\.visible/.test(road));
 });

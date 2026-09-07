@@ -14,12 +14,16 @@ Terrain refinement follows the camera — a grid cell is subdivided up to eight 
 
 Terrain is sampled from the unchanged physical world. Refined triangles do not invent new mountains or water, and buildings use re-seated foundations. Render scale remains exaggerated and non-metric. Architecture is synthetic and not a surveyed, engineering-valid city.
 
+Roads join settlements over real ground — bridges only where the world has a channel, never a metre of road over open water — and coastal towns get a working waterfront. Small figures of the world's seven peoples walk the streets and the roads; each is one sample of its province's population mixture, and appearance is the only thing that differs between peoples. None of this feeds back into the simulation: roads carry no trade and figures carry no cargo. See [roads, ports and folk](docs/ROADS_PORTS_FOLK.md).
+
 See [中文完整说明](README.zh-CN.md), [verification](docs/CONTINUOUS_VERIFICATION.md), and `src/continuous/`.
 
 ## Tests
 
 - `npm test` — current model and geometry tests.
 - `npm run test:continuous` — shared-surface and rigid-anchor checks.
+- `npm run test:roads` — road, bridge, quay and waterfront checks.
+- `npm run test:folk` — population mixture, figure and animation-budget checks.
 - `npm run test:browser` — the current one-canvas exploration workflow (Python Playwright + Chromium).
 
 Older modal scene browser tests are retained for historical reference and are not the current interaction acceptance tests. The recorded browser run uses the offline bundle loaded in-memory and software graphics, not a hardware GPU benchmark.

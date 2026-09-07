@@ -44,6 +44,12 @@ Picking intersects the orthographic camera ray with building boxes. Mouse, point
 
 Classic scripts are loaded in the order in `scripts/manifest.mjs`. The legacy shared lexical scope is retained for compatibility. `scripts/build.mjs` embeds those exact source files and styles in a standalone HTML artifact. The build needs only the Node standard library. The optional browser tests use Python Playwright; it is not a runtime dependency.
 
+## Derived layers
+
+`src/world/roads.js` and `src/civilization/folk.js` read the finished world and civilization and produce roads, quays and walking figures. They are strictly downstream: the causal chain above is unchanged, and no travel cost, income, border or historical outcome depends on them. The road network is cached in a `WeakMap` keyed on the world, so neither the world object nor the save gains a field, and it is rebuilt only when the set of settlements changes. Town waterfront fittings live in `city.port`, beside `piers` and `farms`, and are deliberately not `city.buildings`: the block plan, the LOD budget and `city.fingerprint` are unaffected.
+
+A figure is one sample of a province's live `people` mixture, not a per-house ethnic classification — the same constraint the dossier already carries. Appearance differs between peoples; speed, routes and capability do not. `src/render/road-renderer.js` and `src/render/folk-renderer.js` extend `AtlasRenderer.prototype` after definition rather than editing the baseline-locked renderer. See `docs/ROADS_PORTS_FOLK.md`.
+
 ## Versioning
 
 The outer world-save envelope uses `version: 7, engine: 7.0.0`. The inherited civilization data stays at `simulation.version: 6`; the loader accepts known VI/VII envelopes and validates city project records. Unknown schema versions are rejected. City-plan JSON has its own `telluric-city-plan` format and is export-only.

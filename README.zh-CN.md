@@ -36,6 +36,14 @@ npm run dev
 
 默认种子 `Aereth-47` 的 `Stonefall 5` 是干燥湖盆旁的冰川山麓。不能因为旁边有雪山就把谷底全部刷成白色。`Silverford` 展示同一地图中的大型圣殿和水岸。更换种子后，地名和环境会变化，不强制每个种子包含它们。
 
+## 道路、港口与小人
+
+城镇之间的陆路由未修改的栅格一次多源搜索得出：只走陆地，遇到真实河道才架桥，绝不在开阔水面上画路。干线不是按城镇大小指定的，而是由整个路网上的模拟通行量自然浮现。真正有岸线的城镇会得到码头：世界尺度上是栈桥与仓库符号，走近后是码头平台、伸入水中的栈桥、系泊的船、货栈、吊杆和灯标——都建在既有岸线上，不会挖出新的水面。
+
+街上和路上的小人取自该行省**已有的**人口构成（七个族群），每个小人是一次抽样，并不代表旁边那栋房子里住着谁，也不会给任何建筑、街道或街区标注族属。**族群之间只有外观不同**：身高、体型、颜色和一处剪影特征。速度、路线和能力完全一致，`Folk.speedOf` 根本不读取族群字段，并有测试锁定这一点。
+
+这一层不参与模拟：道路不改变贸易成本，小人不运货、不传教、不接触。地图上新增 **Roads & ports** 与 **Townsfolk** 两个开关。WebGL2 下小人会走动；使用 Canvas 软件渲染或系统开启「减少动态效果」时，街上依然站满了人，只是不动。详见 [docs/ROADS_PORTS_FOLK.md](docs/ROADS_PORTS_FOLK.md)。
+
 ## 地理一致性
 
 `src/continuous/atlas-space.js` 定义世界网格与城镇坐标间的映射。原世界的海拔、水面和储冰量决定显示表面。世界网格三角形被细分时沿用同一表面，不能增加新的山、湖或海岸。建筑群放在可建地块上，刚性结构采用取样后的台基；道路等贴地细节沿地面投影。没有独立的地形底座，也不把概念图贴在背景上。
@@ -51,12 +59,16 @@ npm run dev
 ## 开发入口
 
 ```text
+src/world/roads.js       城镇间陆路、桥位与码头选址（只读派生，带 WeakMap 缓存）
+src/civilization/folk.js 族群抽样与小人运动（位置是时间的纯函数）
+src/render/road-renderer.js  道路、桥、码头与航线几何（扩展已锁定的 world-renderer）
+src/render/folk-renderer.js  小人网格，每帧重建，不触发阴影重算
 src/continuous/
   atlas-space.js       唯一地理映射、地面取样、射线
   city-layer.js        原地图内的城市网格、缓存与分级显示
   worker-body.js       后台网格生成协议
   generated-worker.js  build 生成，不手工编辑
-src/ui/continuous-map.js 镜头、鼠标、触屏、点选、详情
+src/ui/continuous-map.js 镜头、鼠标、触屏、点选、详情、小人动画节拍
 styles/continuous.css  单地图增量界面
 ```
 
@@ -67,6 +79,8 @@ styles/continuous.css  单地图增量界面
 ```bash
 npm test
 npm run test:continuous
+npm run test:roads
+npm run test:folk
 npm run test:browser
 ```
 
