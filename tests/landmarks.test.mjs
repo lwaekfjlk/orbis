@@ -38,7 +38,7 @@ test('invalid recipes are rejected or normalized without accepting unknown templ
 });
 test('exported GLB files have named real meshes, not image planes',()=>{
  const manifest=JSON.parse(readFileSync(resolve(root,'assets/landmarks/manifest.json'),'utf8'));
- assert.equal(manifest.models.length,15);
+ assert.deepEqual(manifest.models.map(item=>item.id).sort(),C.styles.map(style=>style.id).sort(),'every catalog style has one exported model');
  for(const item of manifest.models){const b=readFileSync(resolve(root,'assets/landmarks',item.file));assert.equal(b.readUInt32LE(0),0x46546c67);assert.equal(b.readUInt32LE(4),2);assert.equal(b.readUInt32LE(8),b.length);
   const j=JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));assert.ok(j.meshes.length>=7);assert.equal(j.images,undefined);assert.equal(j.textures,undefined);
   assert.equal(j.asset.extras.signature,item.signature);assert.ok(j.accessors.filter(a=>a.min).some(a=>a.max[1]-a.min[1]>5));

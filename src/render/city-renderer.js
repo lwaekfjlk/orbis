@@ -15,6 +15,64 @@ function cityRoof(g, b, c) {
     g.tri(a, q, A, c);
     g.tri(s, B, r, c);
 }
+/** Build the union of the street ribbons once. Routes share many grid edges;
+ * drawing each route independently left coplanar stripes and open outside corners.
+ * Convex subtraction makes junctions one surface, including short diagonal steps. */
+function cityStreetMesh(c, ground, roads, details) {
+    const nodes = new Map(), edges = new Map(), shapes = [], bins = new Map(), bucket = 4;
+    const key = p => `${Math.round(p.x * 1e6)},${Math.round(p.z * 1e6)}`;
+    function add(a, b, width) {
+        if (![a.x, a.z, b.x, b.z, width].every(Number.isFinite) || Math.hypot(b.x-a.x,b.z-a.z)<1e-7) return;
+        const ka=key(a),kb=key(b),id=ka<kb?ka+'/'+kb:kb+'/'+ka,old=edges.get(id);
+        if(old && old.width>=width)return;
+        for(const p of[a,b]){const id=key(p),n=nodes.get(id);if(!n)nodes.set(id,{...p,width});else {n.width=Math.max(n.width,width);n.bridge ||= p.bridge;}}
+        edges.set(id,{id,a:nodes.get(ka<kb?ka:kb),b:nodes.get(ka<kb?kb:ka),width});
+    }
+    for(const r of c.roads){const width=(c.townProfile?.width||1)*(r.kind==='arterial'?.67:r.kind==='street'?.5:.37);for(let k=1;k<r.points.length;k++)add(r.points[k-1],r.points[k],width+((r.points[k-1].bridge||r.points[k].bridge) ? .18 : 0));}
+    for(const q of c.connectors||[])add(q.a,q.b,.08);
+    const side=(a,b,p)=>(b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x);
+    function clip(poly,a,b,inside){
+        const out=[];let p=poly.at(-1),dp=side(a,b,p)*(inside?1:-1);
+        for(const q of poly){const dq=side(a,b,q)*(inside?1:-1);
+            if((dp>=0)!==(dq>=0)){const t=dp/(dp-dq);out.push({x:p.x+(q.x-p.x)*t,z:p.z+(q.z-p.z)*t});}
+            if(dq>=0)out.push(q);p=q;dp=dq;
+        }return out;
+    }
+    function subtract(poly,cut){
+        let rest=poly;const out=[];
+        for(let j=0;j<cut.length&&rest.length>=3;j++){
+            const a=cut[j],b=cut[(j+1)%cut.length],outer=clip(rest,a,b,false);
+            if(outer.length>=3)out.push(outer);rest=clip(rest,a,b,true);
+        }return out;
+    }
+    const bounds=poly=>({x0:Math.min(...poly.map(p=>p.x)),x1:Math.max(...poly.map(p=>p.x)),z0:Math.min(...poly.map(p=>p.z)),z1:Math.max(...poly.map(p=>p.z))});
+    function fill(poly,lift,color){
+        const box=bounds(poly),keys=[],near=new Set();
+        for(let x=Math.floor(box.x0/bucket);x<=Math.floor(box.x1/bucket);x++)for(let z=Math.floor(box.z0/bucket);z<=Math.floor(box.z1/bucket);z++){const k=x+','+z;keys.push(k);for(const i of bins.get(k)||[])near.add(i);}
+        let pieces=[poly];
+        for(const i of near){const s=shapes[i];if(box.x0>=s.box.x1-1e-9||box.x1<=s.box.x0+1e-9||box.z0>=s.box.z1-1e-9||box.z1<=s.box.z0+1e-9)continue;pieces=pieces.flatMap(p=>subtract(p,s.poly));if(!pieces.length)break;}
+        for(const p of pieces){
+            const center={x:p.reduce((n,q)=>n+q.x,0)/p.length,z:p.reduce((n,q)=>n+q.z,0)/p.length};
+            const at=q=>[q.x,ground(q.x,q.z)+.14+lift(q),q.z],mid=at(center);
+            for(let k=0;k<p.length;k++)roads.tri(mid,at(p[(k+1)%p.length]),at(p[k]),color);
+        }
+        const id=shapes.length;shapes.push({poly,box});for(const k of keys){if(!bins.has(k))bins.set(k,[]);bins.get(k).push(id);}
+    }
+    const dry=rgb('#d8c6a2'),bridge=rgb('#8f8879');
+    // Wider streets own shared asphalt; subordinate streets join its boundary.
+    for(const e of [...edges.values()].sort((a,b)=>b.width-a.width||a.id.localeCompare(b.id))){
+        const {a,b,width}=e,dx=b.x-a.x,dz=b.z-a.z,L=Math.hypot(dx,dz),ox=-dz/L*width,oz=dx/L*width;
+        const poly=[{x:a.x-ox,z:a.z-oz},{x:b.x-ox,z:b.z-oz},{x:b.x+ox,z:b.z+oz},{x:a.x+ox,z:a.z+oz}];
+        const lift=p=>{const t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/(L*L)));return ((a.bridge?1:0)*(1-t)+(b.bridge?1:0)*t)*.48;};
+        fill(poly,lift,a.bridge||b.bridge?bridge:dry);
+    }
+    for(const [,n] of [...nodes.entries()].sort((a,b)=>a[0].localeCompare(b[0]))){
+        const ring=Array.from({length:12},(_,k)=>({x:n.x+Math.cos(k*Math.PI/6)*n.width,z:n.z+Math.sin(k*Math.PI/6)*n.width}));
+        fill(ring,()=>n.bridge?.48:0,n.bridge?bridge:dry);
+        if(n.bridge&&details)cityBox(details,n.x,ground(n.x,n.z)-1.12,n.z,.3,1.74,.3,rgb('#bab9a6'));
+    }
+    return {edges:edges.size,junctions:nodes.size};
+}
 function createCityRenderer(canvas, onChange, config = {}) {
     // Mesh-only collection does not allocate a canvas or a rendering context.
     const r = config.collectOnly ? {
@@ -96,6 +154,13 @@ function createCityRenderer(canvas, onChange, config = {}) {
         this.cityState = state;
         this.world = null;
         const terrain = new Geometry(), sea = new Geometry(), roads = new Geometry(), buildings = new Geometry(), roofs = new Geometry(), details = new Geometry(), trees = new Geometry(), farms = new Geometry(), walls = new Geometry(), port = new Geometry();
+        // Keep ownership through mesh batching. A roof can overhang its parcel or
+        // another house, but every triangle must retain its building's rigid frame.
+        this.buildingRanges = {buildings: [], roofs: [], details: []};
+        const ownedMeshes = {buildings, roofs, details};
+        const starts = () => Object.fromEntries(Object.entries(ownedMeshes).map(([name,g]) => [name,g.data.length]));
+        const own = (b, start) => { for (const [name,g] of Object.entries(ownedMeshes))
+            if (g.data.length > start[name]) this.buildingRanges[name].push({id:b.id,start:start[name],end:g.data.length}); };
         const dry = c.siteEnvironment.aridity<.6&&c.siteEnvironment.temperature>=16;
         // Seasonal snow lies on the town's ground as well as on its roofs, from the
         // same cold-season field. Town scene only: the atlas keeps its annual-mean
@@ -136,23 +201,17 @@ function createCityRenderer(canvas, onChange, config = {}) {
         };
         sides(outer,contextSides);sides(c,townSlab);
         this.upload('contextTerrain',contextTerrain,true);this.upload('contextWater',contextWater,false,.4);this.upload('contextSides',contextSides,true);this.upload('townSlab',townSlab,true);
-        for (const road of c.roads) {
-            const width = (c.townProfile?.width || 1) * (road.kind === 'arterial' ? .67 : road.kind === 'street' ? .5 : .37);
-            for (let k = 1; k < road.points.length; k++) {
-                const a = road.points[k - 1], b = road.points[k], bridge = a.bridge || b.bridge, Y = (a.y + b.y) * .5 + (bridge ? .48 : 0);
-                roads.line([a.x, a.y + (bridge ? .48 : 0), a.z], [b.x, b.y + (bridge ? .48 : 0), b.z], bridge ? width + .18 : width, rgb(bridge ? '#8f8879' : '#d8c6a2'));
-                if (bridge && k % 2 === 0)
-                    cityBox(details, a.x, Y - 1.6, a.z, .3, 1.6, .3, rgb('#bab9a6'));
-            }
-        }
+        this.streetStats = cityStreetMesh(c, elevation, roads, details);
         for (const f of c.farms) {
             const colors = ['#b8b87d', '#bfb789', '#9ca678'];
-            farms.quad([f.x - f.w / 2, f.y + .04, f.z - f.d / 2], [f.x + f.w / 2, f.y + .04, f.z - f.d / 2], [f.x + f.w / 2, f.y + .04, f.z + f.d / 2], [f.x - f.w / 2, f.y + .04, f.z + f.d / 2], rgb(colors[Math.floor(hash2(f.x, f.z, c.seed) * 3)]));
+            const at=(x,z,lift)=>[x,elevation(x,z)+lift,z];
+            farms.quad(at(f.x-f.w/2,f.z-f.d/2,.04),at(f.x+f.w/2,f.z-f.d/2,.04),at(f.x+f.w/2,f.z+f.d/2,.04),at(f.x-f.w/2,f.z+f.d/2,.04),rgb(colors[Math.floor(hash2(f.x, f.z, c.seed) * 3)]));
             for (let z = -f.d / 2; z < f.d / 2; z += .85)
-                farms.line([f.x - f.w / 2, f.y + .07, f.z + z], [f.x + f.w / 2, f.y + .07, f.z + z], .035, rgb('#7f926b'));
+                farms.quad(at(f.x-f.w/2,f.z+z-.035,.07),at(f.x+f.w/2,f.z+z-.035,.07),at(f.x+f.w/2,f.z+z+.035,.07),at(f.x-f.w/2,f.z+z+.035,.07),rgb('#7f926b'));
         }
         const body = rgb(dry ? '#d9c6a3' : '#e4dacc'), roofColors = dry ? ['#ab8167', '#bd9974', '#baa383'] : ['#995f49', '#ab7558', '#ad8867', '#777f77'];
         for (const b0 of c.buildings) {
+            const start = starts();
             const b = { ...b0 };
             if (b.type === 'granary' && state.levels?.granary)
                 b.h += state.levels.granary * .7;
@@ -169,6 +228,7 @@ function createCityRenderer(canvas, onChange, config = {}) {
                 for (const value of monument.body.data) details.data.push(value);
                 for (const value of monument.roof.data) roofs.data.push(value);
                 this.landmarkHeights[b.id]=monument.height;
+                own(b,start);
                 continue;
             }
             const compound = ArtisanCityKit.compound(b,c,p,realm);
@@ -183,10 +243,8 @@ function createCityRenderer(canvas, onChange, config = {}) {
             for (const value of compound.body.data) buildings.data.push(value);
             for (const value of compound.roof.data) roofs.data.push(value);
             this.landmarkHeights[b.id]=compound.height;
+            own(b,start);
         }
-        // Every valid compound connector runs to an existing road, rather than
-        // stopping at an unexplained gap. Its water/collision tests run in generation.
-        for(const q of c.connectors||[]) roads.line([q.a.x,elevation(q.a.x,q.a.z)+.11,q.a.z],[q.b.x,elevation(q.b.x,q.b.z)+.11,q.b.z],.22,rgb('#d6c6a6'));
         // Public squares, tents and market stalls belong to the market neighborhood.
         const m = c.market;
         for (let k = 0; k < 10; k++) {
@@ -275,10 +333,12 @@ function createCityRenderer(canvas, onChange, config = {}) {
             const b = c.buildings.find(b => b.type === (proj.key === 'waterworks' ? 'well' : proj.key === 'harbor' ? 'harbor' : proj.key === 'festival' ? 'market' : proj.key)) || c.buildings[0];
             if (!b)
                 continue;
+            const start = starts();
             for (const dx of [-1, 1])
                 for (const dz of [-1, 1])
                     cityBox(details, b.x + dx * (b.w / 2 + .35), b.y, b.z + dz * (b.d / 2 + .35), .12, b.h + 1, .12, rgb('#aa916e'));
             details.line([b.x - b.w / 2 - .35, b.y + b.h, b.z + b.d / 2 + .35], [b.x + b.w / 2 + .35, b.y + b.h, b.z + b.d / 2 + .35], .09, rgb('#ae946a'));
+            own(b,start);
         }
         this.upload('terrain', terrain, true);
         this.upload('water', sea, false, .4);

@@ -36,7 +36,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
     // A cartographic ribbon has to clear the coarse jittered terrain of the world view.
     // Inside a town that same clearance is a road floating a storey above the street, so
     // the near band is rebuilt against the ground it actually sits on.
-    const LIFT = .085, NEAR_LIFT = .004, DECK = .30;
+    const LIFT = .085, DECK = .30;
     /** Sub-cell sampling. One quad per parent cell sags visibly across a refined slope. */
     const SUBDIVISIONS = 3;
     const GRID_X = MAP_X / (GW - 1), GRID_Z = MAP_Z / (GH - 1);
@@ -44,12 +44,31 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
      * line's height, so on a steep cross-slope the uphill edge buries itself in the hill.
      * Every vertex here is lifted above the ground under that vertex, and the centre line
      * is a real vertex row, so the road follows the slope instead of cutting into it. */
-    function ribbon(r, g, path, width, color, lift) {
+    function ribbon(r, g, path, width, color, lift, curved = false) {
         const half = width / GRID_X;
-        const at = (x, y) => r.coord(x, y, r.ground(x, y) + lift);
-        let px = path[0] % GW, py = path[0] / GW | 0;
+        let extra=()=>0;
+        const at = (x, y) => r.coord(x, y, r.ground(x, y) + lift + extra(x,y));
+        const xy=p=>typeof p==='number'?{x:p%GW,y:Math.floor(p/GW)}:p;
+        // A curved patch can rise through the middle of a perfectly seated road
+        // triangle. Split only spans whose edge/interior interpolation error is
+        // significant relative to their clearance, with at most 64 spans per leg.
+        const samples=[[1/3,1/3,1/3],[.5,.5,0],[0,.5,.5],[.5,0,.5]],tolerance=lift*.2;
+        function span(ax,ay,bx,by,depth=0){
+            const dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy);if(len<1e-10)return;
+            const ox=-dy/len*half,oy=dx/len*half,point=(x,y)=>({x,y,v:at(x,y)});
+            const a=point(ax+ox,ay+oy),b=point(bx+ox,by+oy),c=point(bx,by),d=point(ax,ay),e=point(bx-ox,by-oy),f=point(ax-ox,ay-oy);
+            const triangles=[[a,b,c],[a,c,d],[d,c,e],[d,e,f]];
+            if(depth<6&&triangles.some(t=>samples.some(q=>{
+                const x=t.reduce((s,p,k)=>s+p.x*q[k],0),y=t.reduce((s,p,k)=>s+p.y*q[k],0),height=t.reduce((s,p,k)=>s+p.v[1]*q[k],0);
+                return Math.abs(height-r.ground(x,y)-lift-extra(x,y))>tolerance;
+            }))){const mx=(ax+bx)/2,my=(ay+by)/2;span(ax,ay,mx,my,depth+1);span(mx,my,bx,by,depth+1);return;}
+            for(const t of triangles)g.tri(t[0].v,t[1].v,t[2].v,color);
+        }
+        let {x:px,y:py}=xy(path[0]);
         for (let k = 1; k < path.length; k++) {
-            const i = path[k], fx = path[k - 1] % GW, fy = path[k - 1] / GW | 0, tx = i % GW, ty = i / GW | 0;
+            const a=xy(path[k-1]),b=xy(path[k]),{x:fx,y:fy}=a,{x:tx,y:ty}=b;
+            const dx=tx-fx,dy=ty-fy,L=dx*dx+dy*dy||1;extra=(x,y)=>lerp(a.lift||0,b.lift||0,clamp(((x-fx)*dx+(y-fy)*dy)/L));
+            if(curved){span(fx,fy,tx,ty);px=tx;py=ty;continue;}
             for (let s = 1; s <= SUBDIVISIONS; s++) {
                 const t = s / SUBDIVISIONS, bx = lerp(fx, tx, t), by = lerp(fy, ty, t);
                 const dx = bx - px, dy = by - py, len = Math.hypot(dx, dy) || 1, ox = -dy / len * half, oy = dx / len * half;
@@ -197,6 +216,86 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.frontierPosts = best.size;
         this.upload('frontierPosts', g, true);
     };
+    const ACCESS_CACHE = new WeakMap();
+    /** Outside approaches reuse the actual gate streets. The parent graph ends at a
+     * settlement cell; continuing that straight line through a detailed town would
+     * erase its blocks and bypass the gate. A small exterior-only access field joins
+     * the inherited road to an existing street without changing either model. */
+    function townAccess(model,bridged=false,expanded=false) {
+        const c=model.city,grid=expanded&&c.context?c.context:c,cache=ACCESS_CACHE.get(c)||{},key=(bridged?'bridge':'land')+(expanded?'-context':''),old=cache[key];if(old)return old;
+        const index=(x,z)=>clamp(Math.round((z/grid.depth+.5)*(grid.n-1)),0,grid.n-1)*grid.n+clamp(Math.round((x/grid.width+.5)*(grid.n-1)),0,grid.n-1);
+        const width=(c.townProfile?.width||1)*.67+.15,poly=c.defenses?.perimeter||[],occupied=new Uint8Array(grid.n*grid.n);
+        for(const b of c.buildings)for(let y=Math.max(0,Math.floor((b.z-b.d/2-width)/grid.depth*(grid.n-1)+(grid.n-1)/2));y<=Math.min(grid.n-1,Math.ceil((b.z+b.d/2+width)/grid.depth*(grid.n-1)+(grid.n-1)/2));y++)for(let x=Math.max(0,Math.floor((b.x-b.w/2-width)/grid.width*(grid.n-1)+(grid.n-1)/2));x<=Math.min(grid.n-1,Math.ceil((b.x+b.w/2+width)/grid.width*(grid.n-1)+(grid.n-1)/2));x++)occupied[y*grid.n+x]=1;
+        const dist=(p,a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,t=clamp(((p.x-a.x)*dx+(p.z-a.z)*dz)/(dx*dx+dz*dz||1));return Math.hypot(p.x-a.x-t*dx,p.z-a.z-t*dz);};
+        const exterior=p=>{
+            if(poly.length<3)return true;
+            let inside=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+                const a=poly[i],b=poly[j];if(dist(p,a,b)<width)return false;
+                if((a.z>p.z)!==(b.z>p.z)&&p.x<(b.x-a.x)*(p.z-a.z)/(b.z-a.z)+a.x)inside=!inside;
+            }return !inside;
+        };
+        const legal=p=>{
+            if(Math.abs(p.x)>grid.width/2+1e-7||Math.abs(p.z)>grid.depth/2+1e-7)return false;
+            const i=index(p.x,p.z);return (!grid.water[i]||(bridged&&grid.waterKind[i]===3))&&((grid.environment?.ice||grid.ice)?.[i]||0)<25&&!occupied[i]&&exterior(p);
+        };
+        const valid=new Uint8Array(grid.n*grid.n);for(let i=0;i<valid.length;i++)valid[i]=legal(grid.xy(i));
+        const parent=new Int32Array(valid.length).fill(-2),distance=new Float64Array(valid.length).fill(Infinity),queue=new MinHeap();
+        const endpoints=c.roads.flatMap(r=>[r.points[0],r.points.at(-1)]).filter(Boolean);
+        for(const p of endpoints){const i=index(p.x,p.z);if(valid[i]&&parent[i]===-2){parent[i]=-1;distance[i]=0;queue.push(i,0);}}
+        const segment=(a,b)=>{for(let k=0;k<=4;k++)if(!legal({x:lerp(a.x,b.x,k/4),z:lerp(a.z,b.z,k/4)}))return false;return true;};
+        while(queue.length){
+            const [i,cost]=queue.pop();if(cost!==distance[i])continue;const x=i%grid.n,y=Math.floor(i/grid.n),a=grid.xy(i);
+            for(const [dx,dy]of[[1,0],[0,1],[-1,0],[0,-1]]){
+                const xx=x+dx,yy=y+dy,j=yy*grid.n+xx;
+                if(xx<0||xx>=grid.n||yy<0||yy>=grid.n||!valid[j])continue;
+                const next=cost+(grid.water[j]?12:1);if(next>=distance[j]||!segment(a,grid.xy(j)))continue;
+                parent[j]=i;distance[j]=next;queue.push(j,next);
+            }
+        }
+        const field={route(p){
+            const i=index(p.x,p.z);if(parent[i]===-2||!segment(p,grid.xy(i)))return null;
+            const route=[p];for(let j=i;j>=0;j=parent[j])route.push(grid.xy(j));return route.map(q=>({...q,bridge:!!grid.water[index(q.x,q.z)]}));
+        }};cache[key]=field;ACCESS_CACHE.set(c,cache);return field;
+    }
+    function townRoadRuns(run,model,accesses,road) {
+        const c=model.city,frame=model.frame,cells=frame.cells,p=model.p;
+        // The town curtain can approach the edge of the survey. Clip outside its
+        // full clearance too, so an incoming road never starts its access search
+        // on the wall's own forbidden shoulder.
+        const ring=c.defenses?.perimeter||[],margin=(c.townProfile?.width||1)*.67+.15+Math.max(c.width,c.depth)/(c.n-1);
+        const bounds={x0:-c.width/2,x1:c.width/2,z0:-c.depth/2,z1:c.depth/2};
+        for(const q of ring){bounds.x0=Math.min(bounds.x0,q.x-margin);bounds.x1=Math.max(bounds.x1,q.x+margin);bounds.z0=Math.min(bounds.z0,q.z-margin);bounds.z1=Math.max(bounds.z1,q.z+margin);}
+        const box={x0:p.x+bounds.x0/c.width*cells,x1:p.x+bounds.x1/c.width*cells,y0:p.y+bounds.z0/c.width*cells,y1:p.y+bounds.z1/c.width*cells};
+        const interval=(a,b)=>{
+            let lo=0,hi=1;for(const [v,d,min,max]of[[a.x,b.x-a.x,box.x0,box.x1],[a.y,b.y-a.y,box.y0,box.y1]]){
+                if(Math.abs(d)<1e-12){if(v<min||v>max)return null;continue;}
+                let s=(min-v)/d,t=(max-v)/d;if(s>t)[s,t]=[t,s];lo=Math.max(lo,s);hi=Math.min(hi,t);if(lo>=hi-1e-10)return null;
+            }return[lo,hi];
+        };
+        const joins=new Map(),runs=[];let current=[];
+        const finish=()=>{if(current.length>1)runs.push(current);current=[];};
+        const join=q=>{joins.set(q.x.toFixed(7)+','+q.y.toFixed(7),q);};
+        for(let k=1;k<run.length;k++){
+            const a=run[k-1],b=run[k],cut=interval(a,b);
+            if(!cut){if(!current.length)current=[a];current.push(b);continue;}
+            const [lo,hi]=cut,at=t=>({x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t)});
+            if(lo>1e-10){const entry=at(lo);if(!current.length)current=[a];current.push(entry);join(entry);}finish();
+            if(hi<1-1e-10){const exit=at(hi);join(exit);current=[exit,b];}
+        }finish();
+        for(const path of runs)for(const q of [path[0],path.at(-1)])if(Math.min(Math.abs(q.x-box.x0),Math.abs(q.x-box.x1),Math.abs(q.y-box.y0),Math.abs(q.y-box.y1))<1e-8)join(q);
+        for(const q of joins.values()){
+            const local={x:(q.x-p.x)/cells*c.width,z:(q.y-p.y)/cells*c.width};
+            let route=townAccess(model).route(local);
+            // The inner sample box is not a physical barrier. A wall or stream
+            // can divide its exterior strip; the inherited context provides the
+            // dry route around that strip without cutting through the town.
+            if(!route&&c.context)route=townAccess(model,false,true).route(local);
+            // A parent crossing may continue over this same river. A lake or sea
+            // cannot become a road simply to make a clipped approach connect.
+            if(!route&&road.bridges?.some(i=>Math.abs(i%GW-p.x)<=cells/2+1&&Math.abs(Math.floor(i/GW)-p.y)<=cells*c.depth/c.width/2+1))route=townAccess(model,true,!!c.context).route(local);
+            if(route)accesses.push({model,from:road.from,to:road.to,points:route.map(q=>{const a=frame.at(q.x,q.z);return{x:a[0],y:a[1],lift:q.bridge?.48*frame.scale:0};})});
+        }return runs;
+    }
     AtlasRenderer.prototype.buildNearRoads = function (force = false) {
         const net = this.roadNetwork;
         if (!net)
@@ -206,30 +305,37 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         // nothing halfway across a valley. It follows the camera now — what is on screen
         // is what gets a road — with the town boxes still included so a road does not
         // vanish while its town is being approached.
-        const areas = [...(this.continuousModels?.values() || [])].map(m => m.p);
+        const models=[...(this.continuousModels?.values()||[])],areas=models.map(m=>m.p);
+        const towns=models.filter(m=>m.city&&m.frame);
         this.updateCamera();
         const centre = AtlasSpace.grid(this.target[0], this.target[2]);
         const reach = (this.halfW + this.halfH / Math.max(.2, Math.sin(this.elevation))) / GRID_X + 3;
         const view = { x: centre[0], y: centre[1], rx: reach, ry: reach * GRID_X / GRID_Z };
         const q = v => Math.round(v / 4);
-        const key = `${net.signature}/${this.relief}/${areas.map(p => p.id).sort().join(',')}/${q(view.x)}/${q(view.y)}/${Math.round(reach)}`;
+        const key = `${net.signature}/${this.relief}/${models.map(m=>m.p.id+':'+(m.key||m.city?.fingerprint||'')).sort().join(',')}/${q(view.x)}/${q(view.y)}/${Math.round(reach)}`;
         if (!force && this.nearRoadKey === key)
             return;
         this.nearRoadKey = key;
-        const g = new Geometry();
-        // CLASS_STYLE widths are cartographic: sized to read as a line across the whole
-        // atlas. Down here the ribbon is a road on the ground beside actual houses, and
-        // since the town model became CITY_FOOTPRINT of its window a highway at map width
-        // came out 4.9x the width of a house. Scaled to the same footprint it is 1.5x,
-        // which is what it measured before the town shrank.
-        const near = AtlasSpace.CITY_FOOTPRINT;
+        const g = new Geometry(),accesses=[];
+        // Near roads use the same art-unit scale as streets. Map-symbol halfwidths
+        // (.082 for a trunk) were about sixteen ordinary streets wide at this zoom.
+        const defaultScale=7.8*AtlasSpace.CITY_FOOTPRINT/152*Math.sqrt(GRID_X*GRID_Z);
         for (const road of net.roads) {
-            const style = CLASS_STYLE[road.cls] || CLASS_STYLE.trail;
+            const model=towns.find(m=>m.p.id===road.from||m.p.id===road.to),scale=model?.frame.scale||defaultScale;
+            const width=(road.cls==='highway'?.67:road.cls==='road'?.5:.37)*scale*(model?.city.townProfile?.width||1);
             for (const run of nearSlice(road.path, areas, view)) {
-                ribbon(this, g, run, style.width * 1.30 * near, rgb('#a2916f'), NEAR_LIFT);
-                ribbon(this, g, run, style.width * near, rgb('#d3c09c'), NEAR_LIFT + .002);
+                let runs=[run.map(i=>({x:i%GW,y:Math.floor(i/GW)}))];
+                for(const town of towns)runs=runs.flatMap(path=>townRoadRuns(path,town,accesses,road));
+                for(const path of runs)ribbon(this,g,path,width,rgb('#d8c6a2'),.003+.14*scale,true);
             }
         }
+        const joined=new Set();
+        for(const a of accesses){
+            const id=a.model.p.id+'/'+a.points[0].x.toFixed(7)+','+a.points[0].y.toFixed(7);if(joined.has(id))continue;joined.add(id);
+            const scale=a.model.frame.scale,width=.67*(a.model.city.townProfile?.width||1)*scale;
+            ribbon(this,g,a.points,width,rgb('#d8c6a2'),.003+.14*scale,true);
+        }
+        this.nearRoadAccess=accesses;
         const wasDirty = this.dirtyShadow;
         this.upload('roadsNear', g, false, .18);
         this.dirtyShadow = wasDirty;

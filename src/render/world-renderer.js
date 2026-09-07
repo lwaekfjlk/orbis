@@ -520,6 +520,11 @@ class AtlasRenderer {
         if (this.dirtyShadow) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
             gl.viewport(0, 0, this.shadowSize, this.shadowSize);
+            // Bias in light-space follows the actual triangle slope. A fixed
+            // shader bias using smoothed terrain normals leaves diagonal acne
+            // across hills when the camera approaches a town.
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.polygonOffset(2, 4);
             gl.clear(gl.DEPTH_BUFFER_BIT);
             gl.useProgram(this.depth);
             gl.uniformMatrix4fv(this.depthLoc, false, this.lightVP);
@@ -528,6 +533,7 @@ class AtlasRenderer {
                     gl.bindVertexArray(m.vao);
                     gl.drawArrays(gl.TRIANGLES, 0, m.count);
                 }
+            gl.disable(gl.POLYGON_OFFSET_FILL);
             gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             this.dirtyShadow = false;
         }

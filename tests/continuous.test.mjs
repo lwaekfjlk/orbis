@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {scripts} from '../scripts/manifest.mjs';
 import {root,defaults} from './engine-loader.mjs';
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');
-const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,createCityRenderer,ContinuousCityLayer,AtlasRenderer,ArtisanCityKit,GW,GH,Geometry};')();
+const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,CityEnvironment,createCityRenderer,ContinuousCityLayer,AtlasRenderer,ArtisanCityKit,GW,GH,Geometry};')();
 let w,s,city,p;
 test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces[507];assert(p?.settled);city=E.generateCity(w,s,p.id);});
 test('A single parent surface is preserved at every original grid vertex',()=>{
@@ -21,8 +21,8 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
   target:[0,0,0],meshes,options:{},upload(name,g){meshes[name]=g;}});
  const layer=new E.ContinuousCityLayer(r);layer.world=w;layer.sim=s;
  const detail={};
- for(const zoom of [1,3,6,12,30,90]){
-  r.zoom=zoom;layer.buildTerrain();
+ for(const zoom of [1,3,6,12,30,90,240,620]){
+  r.zoom=zoom;layer.natural=zoom>=E.AtlasSpace.TOWN_ZOOM;layer.buildTerrain();
   detail[zoom]=layer.terrainDetail;
   // A refinement that grows without bound would remesh the whole grid at 64x.
   assert(layer.terrainTriangles<4e5,`zoom ${zoom} produced ${layer.terrainTriangles} triangles`);
@@ -30,6 +30,7 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
  assert.equal(detail[1],1,'the whole world needs no extra triangles');
  assert(detail[12]>detail[3],'closing in must add detail');
  assert(detail[90]>=detail[12],'refinement must not fall back when closer');
+ assert(detail[620]>=64,'building closeups must outgrow the old eight-way subdivision cap');
  // The point of the refinement: more triangles, the SAME landscape. Every vertex
  // has to sit on the parent surface, and every normal has to be a unit vector.
  const d=meshes.terrain.data;let checked=0;
@@ -114,10 +115,8 @@ test('City coordinates refer to the actual Stonefall source and preserve nearby 
 });
 test('Every building is seated in its own ground, with a rigid finite transformation',()=>{
  const f=E.AtlasSpace.cityFrame(w,p,city);
- // Blocks used to sit on their HIGHEST corner, which left the downhill side on a plinth
- // taller than the house. They now cut into the bank, so an uphill sample legitimately
- // stands above the anchor. What must still never happen is a block floating clear of the
- // parcel it was surveyed on, or perching on a plinth instead of cutting in.
+ // Parcel generation limits the required footing; rigid architecture stays
+ // above the complete footprint instead of burying its uphill roofs in the bank.
  for(const b of city.buildings){const a=f.anchors.get(b.id);
   // .006 is the seating lift that keeps the slab off the terrain it stands on.
   assert(a&&a.y>=a.low-1e-9&&a.y<=a.top+.0061,b.id+' is anchored outside its own ground range');
@@ -126,9 +125,8 @@ test('Every building is seated in its own ground, with a rigid finite transforma
    if(f.ground(x,z)<=a.y+1e-9)seated++;
    const v=f.vertex(x,b.y+b.h,z,a);assert(v.every(Number.isFinite));assert(Math.abs(v[1]-a.y-b.h*f.scale)<1e-9);}
   assert(seated>0,b.id+' floats clear of its own parcel');
-  // The same .006 lift dominates on ground that is essentially level, where there is no
-  // bank to cut into in the first place.
-  if(!b.precinct)assert(a.y-a.low<=(a.top-a.low)*.5+.0061,b.id+' stands on a plinth instead of cutting into the bank');}
+  assert(a.y>=a.top,b.id+' is buried below its highest ground');
+  if(!b.precinct)assert((a.top-a.low)/a.scale<=b.footingLimit+1e-5,b.id+' needs an oversized footing');}
 });
 test('A sea lane holds a bearing, and never holds one across land',()=>{
  // The flood fill that finds a lane may only step N/S/E/W, so its raw path is a staircase
@@ -158,10 +156,12 @@ test('Mesh collection does not request a second canvas or graphics context',()=>
  const h=E.physicalFingerprint(w),pop=E.settlementFingerprint(s),collector=E.createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(city,p,s.realms[p.owner],s.cityState?.[p.id]||{});
  assert(collector.meshes.buildings.count>0);assert(collector.meshes.roofs.vertices.every(Number.isFinite));assert.equal(E.physicalFingerprint(w),h);assert.equal(E.settlementFingerprint(s),pop);delete globalThis.window;delete globalThis.document;
 });
-test('Sub-cell relief refines the ground without moving the model or cracking it',()=>{
+test('Sub-cell curvature refines the ground without moving the model or cracking it',()=>{
  const A=E.AtlasSpace;
- // 1. The model still IS the ground. Relief vanishes at every point the height field
- //    actually defines, so the unrefined atlas mesh is untouched.
+ // Renderer, layout grade and parcel bounds must survey the same curved surface.
+ // A separate renderer-only displacement would move the ground under its buildings.
+ assert.equal(A.surface,E.CityEnvironment.atlasSurface);
+ // The model still defines the original lattice, including ice and lake levels.
  let identity=0;
  for(let y=0;y<E.GH;y++)for(let x=0;x<E.GW;x++)identity=Math.max(identity,Math.abs(A.height(w,y*E.GW+x)-A.surface(w,x,y)));
  assert.equal(identity,0,'relief moved the ground at a point the model defines');
@@ -172,41 +172,44 @@ test('Sub-cell relief refines the ground without moving the model or cracking it
   disc=Math.max(disc,Math.abs(A.surface(w,x+t,y-1e-8)-A.surface(w,x+t,y+1e-8)));
  }
  assert(disc<1e-6,`ground is discontinuous across cell edges by ${disc.toExponential(1)}`);
- // 3. It is relief, not cliffs. Grade is amplitude over half a wavelength, and the
- //    town layout refuses to build above 60% — a first attempt put a wall on 217%.
- let amp=0,grade=0;
- for(let k=0;k<40000;k++){
-  const x=1+(k*7919%100000)/100000*(E.GW-3),y=1+(k*104729%100000)/100000*(E.GH-3);
-  amp=Math.max(amp,Math.abs(A.microRelief(w,x,y)));
-  const g=A.reliefGradient(w,x,y);grade=Math.max(grade,Math.hypot(g[0],g[1]));
+ // A saddle exposes the original diagonal ridge. The new interior is curved,
+ // bounded by inherited corners, and has exactly the slope the layout evaluates.
+ const x=150,y=90,ids=[y*E.GW+x,y*E.GW+x+1,(y+1)*E.GW+x,(y+1)*E.GW+x+1];
+ const patch={height:new Float32Array(E.GW*E.GH),lake:new Float32Array(E.GW*E.GH),ice:new Float32Array(E.GW*E.GH)};
+ for(let k=0;k<4;k++)patch.height[ids[k]]=k===0||k===3?1000:100;
+ assert(Math.abs(A.surface(patch,x+.5,y+.5)-A.coarseSurface(patch,x+.5,y+.5))>.3,'interior still follows the original two flat faces');
+ const bounds=E.CityEnvironment.atlasBounds(patch,x+.1,y+.1,x+.9,y+.9);
+ for(const u of [.1,.25,.5,.75,.9])for(const v of [.1,.25,.5,.75,.9]){
+  const h=A.surface(patch,x+u,y+v),e=1e-5;
+  assert(h>=bounds.low-1e-10&&h<=bounds.top+1e-10,'terrain exceeded the surveyed parcel bounds');
+  const dx=(A.surface(patch,x+u+e,y+v)-A.surface(patch,x+u-e,y+v))/(2*e*A.X);
+  const dz=(A.surface(patch,x+u,y+v+e)-A.surface(patch,x+u,y+v-e))/(2*e*A.Z);
+  assert(Math.abs(Math.hypot(dx,dz)-E.CityEnvironment.atlasGrade(patch,x+u,y+v))<1e-8,'renderer and layout disagree on slope');
  }
- assert(amp>.005,'relief too small to see');
- assert(grade<.6,`relief reaches a ${(grade*100).toFixed(0)}% grade, which is a cliff`);
- // 4. Never on water, and never on an ice sheet.
- for(let i=0;i<E.GN;i+=97){
-  if(w.height[i]>0&&w.lake[i]===0&&(w.ice?.[i]||0)<=120)continue;
-  const x=i%E.GW,y=(i/E.GW|0);
-  if(x<1||y<1||x>E.GW-2||y>E.GH-2)continue;
-  assert.equal(A.microRelief(w,x+.5,y+.5),0,'relief disturbed water or an ice sheet');
+ // Uniform sea, lake and ice-sheet samples gain no invented sub-cell bumps.
+ for(const [height,lake,ice]of [[-100,0,0],[100,200,0],[100,0,300]]){
+  for(const i of ids){patch.height[i]=height;patch.lake[i]=lake;patch.ice[i]=ice;}
+  for(const u of [.15,.5,.83])for(const v of [.15,.5,.83])assert(Math.abs(A.surface(patch,x+u,y+v)-A.height(patch,ids[0]))<1e-12);
  }
 });
 test('Terrain refinement keeps climbing with the camera, inside a triangle budget',()=>{
  // The old cap of 8 was set when the camera stopped at 180. It now reaches 620, where
  // a cell covers 2,187 pixels and eight steps leave one triangle every 273 of them.
  const seen=[];
- for(const zoom of [4,16,60,200,620]){
+ for(const zoom of [1,4,16,60,200,620]){
   const r=Object.create(E.AtlasRenderer.prototype);
-  Object.assign(r,{world:w,zoom,width:1180,height:820,relief:1,azimuth:.018,elevation:1.19,target:[0,0,0],layer:'relief',options:{}});
+  Object.assign(r,{world:w,zoom,width:1180,height:820,relief:1,azimuth:.018,elevation:1.19,target:[0,0,0],layer:'relief',options:{},upload(){}});
   const L=Object.create(E.ContinuousCityLayer.prototype);
-  Object.assign(L,{r,models:new Map(),natural:zoom>=A_TOWN_ZOOM()});
-  const n=L.tessellation(),b=L.viewBox(),cells=Math.max(1,(b.x1-b.x0)*(b.y1-b.y0));
-  seen.push({zoom,n,tris:Math.round(cells*n*n*2)});
+  Object.assign(L,{r,models:new Map(),natural:zoom>=E.AtlasSpace.TOWN_ZOOM});
+  // The actual mesh includes the coarse world, a collar and stitched boundaries;
+  // the padded view box no longer receives uniform full-detail tessellation.
+  L.buildTerrain();
+  seen.push({zoom,n:L.terrainDetail,tris:L.terrainTriangles});
  }
- function A_TOWN_ZOOM(){return E.AtlasSpace.TOWN_ZOOM;}
  assert(seen.at(-1).n>8,'refinement still caps out below the camera range');
  for(let i=1;i<seen.length;i++)assert(seen[i].n>=seen[i-1].n,'refinement must not fall as you zoom in');
- for(const s of seen)assert(s.tris<700000,`zoom ${s.zoom} would draw ${s.tris} terrain triangles`);
- assert.equal(seen[0].n,1,'the world view must stay at one triangle per cell');
+ for(const s of seen)assert(s.tris<400000,`zoom ${s.zoom} drew ${s.tris} terrain triangles`);
+ assert.equal(seen[0].n,1,'the world view must stay at one subdivision per cell');
 });
 test('The folk and ship scales stay pinned to the town footprint',()=>{
  // folk-renderer sizes people and hulls in ATLAS units reconciled against the town
@@ -258,12 +261,27 @@ test('The town waterfront streams into the atlas with the rest of the town',()=>
  // It is a ground-hugging assembly, so it must NOT be in the rigid-anchor list that
  // seats compounds on a level deck; a quay follows the shore it was fitted to.
  assert(!/const rigid=\[[^\]]*'port'/.test(src));
- assert(/type!=='port'\|\|this\.r\.options\.roads!==false/.test(src),'the port follows the roads and ports toggle');
+ const r={zoom:E.AtlasSpace.DETAIL_ZOOM,options:{roads:false}},view=new E.ContinuousCityLayer(r);
+ assert.equal(view.visible('cm:507:port'),false,'the port follows the roads and ports toggle');
+ r.options.roads=true;assert.equal(view.visible('cm:507:port'),true);
 });
-test('Figures and ground-seated roads change over at the existing detail threshold',()=>{
+test('Roads hand over at town zoom while figures retain the detail threshold',()=>{
  const road=readFileSync(resolve(root,'src/render/road-renderer.js'),'utf8');
  assert(new RegExp('AtlasRenderer\\.FOLK_ZOOM\\s*=\\s*'+E.AtlasSpace.DETAIL_ZOOM).test(road),'the crowd threshold is the town-detail threshold');
  assert(/zoom>=AtlasSpace\.TOWN_ZOOM&&this\.r\.zoom<AtlasSpace\.DETAIL_ZOOM/.test(readFileSync(resolve(root,'src/continuous/city-layer.js'),'utf8')),'silhouettes still hand over at the same zoom');
+ const r=Object.create(E.AtlasRenderer.prototype);
+ Object.assign(r,{layer:'relief',options:{}});
+ for(const zoom of [E.AtlasSpace.TOWN_ZOOM-.01,E.AtlasSpace.TOWN_ZOOM,30,E.AtlasSpace.DETAIL_ZOOM]){
+  r.zoom=zoom;
+  assert.equal(r.visible('roads'),zoom<E.AtlasSpace.TOWN_ZOOM);
+  assert.equal(r.visible('bridges'),zoom<E.AtlasSpace.TOWN_ZOOM);
+  assert.equal(r.visible('roadsNear'),zoom>=E.AtlasSpace.TOWN_ZOOM);
+  assert.equal(r.visible('folk'),zoom>=E.AtlasSpace.DETAIL_ZOOM);
+ }
+ // The near mesh must already build in the 16–60 band, including an unloaded town.
+ Object.assign(r,{world:w,zoom:E.AtlasSpace.TOWN_ZOOM,width:1180,height:820,relief:1,azimuth:.018,elevation:1.19,target:A_point(),continuousModels:new Map(),roadNetwork:{signature:'handover',roads:[{cls:'road',path:[90*E.GW+150,90*E.GW+151]}]},upload(name,g){if(name==='roadsNear')this.nearVertices=g.data.length;}});
+ function A_point(){return E.AtlasSpace.point(w,150,90);}
+ r.buildNearRoads();assert(r.nearVertices>0,'near roads were not built at the town threshold');
  // The locked world renderer is extended, never edited.
  assert(/const priorBuild\s*=\s*AtlasRenderer\.prototype\.buildCivilization/.test(road));
  assert(/const priorVisible\s*=\s*AtlasRenderer\.prototype\.visible/.test(road));

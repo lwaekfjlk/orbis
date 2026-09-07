@@ -703,13 +703,27 @@ const ArtisanCityKit=(()=>{
   // and towers carry the form; the mortar lines do not.
   const profile=c.townProfile,recipe=LandmarkCatalog.recipe(profile.palace,c.townRecipe.seed+'/defenses',{urbanStyle:profile.id,geography:{freshwater:p.fresh||0}}),K=kit(recipe,0),D=c.defenses;
   if(!D)return {body:new Geometry(),roof:new Geometry()};
+  // Warp complete wall/gate pieces onto the same interpolated surface used by
+  // the city frame. Per-piece min/max foundations created vertical jumps and
+  // floating gateway legs whenever neighbouring samples had different heights.
+  const ground=(x,z)=>{
+   const gx=clamp((x/c.width+.5)*(c.n-1),0,c.n-1),gz=clamp((z/c.depth+.5)*(c.n-1),0,c.n-1),i=Math.floor(gx),j=Math.floor(gz),u=gx-i,v=gz-j;
+   const at=(a,b)=>c.height[Math.min(c.n-1,b)*c.n+Math.min(c.n-1,a)];
+   return lerp(lerp(at(i,j),at(i+1,j),u),lerp(at(i,j+1),at(i+1,j+1),u),v);
+  };
+  const seated=(a,b,fn)=>{
+   const original=K.pt;
+   K.pt=function(p){const q=original.call(this,p);q[1]+=ground(q[0],q[2]);return q;};
+   try{K.transform((a.x+b.x)/2,0,(a.z+b.z)/2,Math.atan2(b.z-a.z,b.x-a.x),1,fn);}
+   finally{K.pt=original;}
+  };
   K.part('defenses','Connected curtain walls and gatehouses','architecture',()=>{
-   for(const w of D.walls){const a=w.a,b=w.b,L=Math.hypot(b.x-a.x,b.z-a.z),angle=-Math.atan2(b.z-a.z,b.x-a.x),base=Math.min(a.y,b.y)-.3,h=w.height+Math.abs(a.y-b.y);
-    K.transform((a.x+b.x)/2,base,(a.z+b.z)/2,-angle,1,()=>{
+   for(const w of D.walls){const a=w.a,b=w.b,L=Math.hypot(b.x-a.x,b.z-a.z),h=w.height;
+    seated(a,b,()=>{
      if(D.kind==='timber'){
-      for(let j=-L/2;j<L/2;j+=.32)K.cone(j,0,0,.13,h,'wood',.04,6);K.box(0,h*.58,0,L,.13,.35,'wood');
+      for(let j=-L/2;j<=L/2;j+=.24)K.cone(j,-.3,0,.13,h+.3,'wood',.04,6);K.box(0,h*.58,0,L,.13,.35,'wood');
      }else{
-      K.box(0,0,0,L+.07,h,.82,'wall');K.box(0,h-.16,0,L+.18,.19,1.12,'trim');
+      K.box(0,-.3,0,L+.12,h+.3,w.width,'wall');K.box(0,h-.16,0,L+.18,.19,1.12,'trim');
       for(const side of[-1,1])K.box(0,h,side*.45,L,.56,.2,'wall');
       for(let j=-L/2+.2;j<L/2;j+=.8)for(const side of[-1,1])K.box(j,h+.56,side*.44,.41,.38,.30,'trim');
       courses(K,0,.25,.421,L,h-.7);courses(K,0,.25,-.421,L,h-.7,Math.PI);
@@ -718,20 +732,21 @@ const ArtisanCityKit=(()=>{
    }
    // Quay sections: lower and heavier than the curtain, with a coping instead of
    // crenellations. A harbour wall is a retaining wall that also defends.
-   for(const q of D.quays||[]){const a=q.a,b=q.b,L=Math.hypot(b.x-a.x,b.z-a.z),angle=-Math.atan2(b.z-a.z,b.x-a.x),base=Math.min(a.y,b.y)-.55,h=q.height+Math.abs(a.y-b.y)+.25;
-    K.transform((a.x+b.x)/2,base,(a.z+b.z)/2,-angle,1,()=>{
+   for(const q of D.quays||[]){const a=q.a,b=q.b,L=Math.hypot(b.x-a.x,b.z-a.z),h=q.height;
+    seated(a,b,()=>{
      if(D.kind==='timber'){
-      for(let j=-L/2;j<L/2;j+=.42)K.cone(j,0,0,.16,h,'wood',.05,6);K.box(0,h*.62,0,L,.15,.5,'wood');
+      for(let j=-L/2;j<=L/2;j+=.30)K.cone(j,-.55,0,.16,h+.55,'wood',.05,6);K.box(0,h*.62,0,L,.15,.5,'wood');
      }else{
-      K.box(0,0,0,L+.07,h,q.width,'wall');K.box(0,h-.13,0,L+.16,.17,q.width+.26,'trim');
+      K.box(0,-.55,0,L+.12,h+.55,q.width,'wall');K.box(0,h-.13,0,L+.16,.17,q.width+.26,'trim');
       courses(K,0,.25,q.width/2+.01,L,h-.5);courses(K,0,.25,-(q.width/2+.01),L,h-.5,Math.PI);
      }
     });
    }
    for(const t of D.towers){if(D.kind==='timber'){K.box(t.x,t.y,t.z,1.5,t.h,1.5,'wood');K.roof(t.x,t.y+t.h,t.z,2,2,1.6,'roof','northern');}else{bastion(K,t.x,t.y-.3,t.z,t.r,t.h,profile.id);}}
-   for(const g of D.gates){const a=g.a,b=g.b,L=Math.hypot(a.x-b.x,a.z-b.z),x=(a.x+b.x)/2,z=(a.z+b.z)/2,y=Math.max(a.y,b.y),angle=Math.atan2(b.z-a.z,b.x-a.x);K.transform(x,y,z,angle,1,()=>{
+   for(const g of D.gates){const a=g.a,b=g.b,L=Math.hypot(a.x-b.x,a.z-b.z);seated(a,b,()=>{
     // The street remains an actual open span underneath the gateway.
-    K.arch(0,0,0,Math.max(1.8,L-1),4.2,1.4,'wall');K.box(0,4.2,0,L+.3,.5,1.8,'trim');
+    const opening=Math.max(1.8,L-1),height=Math.max(4.2,opening/2+2.4);
+    K.arch(0,0,0,opening,height,1.4,'wall');K.box(0,height,0,L+.3,.5,1.8,'trim');
     for(const s of[-1,1]){bastion(K,s*(L/2+.2),-.1,0,.8,5.8,profile.id);flag(K,s*(L/2+.2),5.7,0,2.0);}
    });}
   });

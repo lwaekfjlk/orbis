@@ -93,7 +93,7 @@ with sync_playwright() as pw:
  assert page.evaluate("renderer.visible('roads')") and page.evaluate("renderer.visible('ports')")
  mark('The world atlas carries a road and port network',roads)
  shots(page,'roads-world')
- wet=page.evaluate('''(()=>{const p=sim.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)[0];window.__portId=p.id;return ContinuousMap.focusTown(p.id,30);})()''')
+ wet=page.evaluate('''(()=>{const p=sim.provinces.filter(p=>p.settled&&p.urbanPop>=650&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop).find(p=>generateCity(world,sim,p.id).port);if(!p)throw Error('No town with a surveyed waterfront');window.__portId=p.id;return ContinuousMap.focusTown(p.id,30);})()''')
  page.wait_for_function('ContinuousMap.layer.models.has(window.__portId)',timeout=240000);stable(page)
  port=page.evaluate('ContinuousMap.layer.models.get(window.__portId).city.stats.port')
  assert port and port['jetties']>0;mark('A harbour town has a built waterfront',port)

@@ -13,6 +13,8 @@
     "pretest": "node scripts/build.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs",
     "test:browser": "python tests/continuous_browser.py",
+    "test:city-browser": "node tests/city-coherence.browser.mjs",
+    "test:terrain-browser": "node tests/terrain-refinement.browser.mjs",
     "assets": "node scripts/export-landmarks.mjs",
     "test:towns": "node --test tests/towns.test.mjs",
     "assets:towns": "node scripts/export-town-recipes.mjs",

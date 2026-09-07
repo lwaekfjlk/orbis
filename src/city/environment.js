@@ -10,7 +10,7 @@
  * range, so a category alone cannot say whether a forest is boreal or tropical.
  */
 const CityEnvironment = (() => {
- const version=2, cached=new WeakMap(), profiles=new WeakMap();
+ const version=4, cityFootprint=.30, cached=new WeakMap(), profiles=new WeakMap();
  const rgbHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const colors=BIOME.map(b=>rgbHex(b[1]));
  const frozen=rgbHex('#d9eff0');
@@ -99,6 +99,41 @@ const CityEnvironment = (() => {
   mix('#2f7146',c.warm*c.humid*.80);  // tropical deep green
   mix('#8a9159',c.dry*.65);           // dry olive
   return col;
+ }
+ // Project the inherited corner heights into one shared continuous patch. Near
+ // terrain adds samples of this curved surface; layout and meshes use it too.
+ function atlasHeight(w,i,relief=1){const h=w.lake[i]>0?w.lake[i]:w.height[i]>0?w.height[i]+(w.ice?.[i]||0):0;return h>0?.14+Math.pow(h/1000,.98)*relief:0;}
+ // Legacy triangular weights remain available for coarse atlas consumers.
+ function atlasWeights(x,y){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
+  if((a+b)%2)return u+v<=1?[[i,i+1,i+GW],[1-u-v,u,v]]:[[i+1,i+GW,i+GW+1],[1-v,1-u,u+v-1]];
+  return v>=u?[[i,i+GW,i+GW+1],[1-v,v-u,u]]:[[i,i+GW+1,i+1],[1-u,v,u-v]];
+ }
+ function atlasSurface(w,x,y,relief=1){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
+  const top=lerp(atlasHeight(w,i,relief),atlasHeight(w,i+1,relief),u),bottom=lerp(atlasHeight(w,i+GW,relief),atlasHeight(w,i+GW+1,relief),u);
+  return lerp(top,bottom,v);
+ }
+ function atlasGrade(w,x,y,relief=1){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
+  const h00=atlasHeight(w,i,relief),h10=atlasHeight(w,i+1,relief),h01=atlasHeight(w,i+GW,relief),h11=atlasHeight(w,i+GW+1,relief);
+  // Differentiate the same bilinear patch, including its cross term. Reusing a
+  // triangle's constant grade would route streets against a different hillside.
+  return Math.hypot(lerp(h10-h00,h11-h01,v)/(MAP_X/(GW-1)),lerp(h01-h00,h11-h10,u)/(MAP_Z/(GH-1)));
+ }
+ // Each bilinear patch reaches its extrema at the corners of a rectangular
+ // clipping. Include all parcel/grid intersections to cover patches whose peaks
+ // lie between the usual nine footprint samples; diagonal samples are unnecessary.
+ function atlasBounds(w,x0,y0,x1,y1,relief=1){
+  x0=clamp(x0,0,GW-1);x1=clamp(x1,0,GW-1);y0=clamp(y0,0,GH-1);y1=clamp(y1,0,GH-1);
+  let low=Infinity,top=-Infinity;const sample=(x,y)=>{const h=atlasSurface(w,x,y,relief);low=Math.min(low,h);top=Math.max(top,h);};
+  for(const x of[x0,x1])for(const y of[y0,y1])sample(x,y);
+  for(let x=Math.ceil(x0);x<=Math.floor(x1);x++){sample(x,y0);sample(x,y1);for(let y=Math.ceil(y0);y<=Math.floor(y1);y++)sample(x,y);}
+  for(let y=Math.ceil(y0);y<=Math.floor(y1);y++){sample(x0,y);sample(x1,y);}
+  return{low,top};
  }
  function prepare(w){
   let a=cached.get(w);if(a)return a;
@@ -192,6 +227,7 @@ const CityEnvironment = (() => {
  function write(grid,k,s){for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity','winter','parentIndex','biome'])grid[key][k]=s[key];grid.color.set(s.color,k*3);}
  function hash(grid){let h=2166136261;for(const key of ['bed','surface','biome','temperature','aridity','rain','ice','snow','winter','color']){const a=grid[key],bytes=new Uint8Array(a.buffer,a.byteOffset,a.byteLength);for(const byte of bytes){h^=byte;h=Math.imul(h,16777619);}}return(h>>>0).toString(16).padStart(8,'0');}
  function context(w,p,city,elevate){
+  const span=city.terrainSpan??city.span;
   // A read-only wider ring. Same sample pitch and exact inner boundary as the town.
   const n=city.n*2-1,g=createGrid(n),count=n*n,context={...g,width:city.width*2,depth:city.depth*2,height:new Float32Array(count),water:new Uint8Array(count),waterKind:new Uint8Array(count),innerStart:(city.n-1)/2,innerEnd:(city.n-1)*1.5};
   // The inner block sits on the town's own coordinates at the town's own pitch — that is
@@ -207,18 +243,18 @@ const CityEnvironment = (() => {
     context.water[k]=city.water[j];context.waterKind[k]=city.waterKind[j];context.height[k]=city.height[j];
     continue;
    }
-   const gx=p.x+(x/(n-1)-.5)*city.span*2,gy=p.y+(y/(n-1)-.5)*city.span*2*city.depth/city.width,s=sample(w,gx,gy);
+   const gx=p.x+(x/(n-1)-.5)*span*2,gy=p.y+(y/(n-1)-.5)*span*2*city.depth/city.width,s=sample(w,gx,gy);
    write(context,k,s);context.water[k]=s.water;context.waterKind[k]=s.waterKind;context.height[k]=elevate(s.surface);
   }
   context.xy=k=>({x:(k%n/(n-1)-.5)*context.width,z:(Math.floor(k/n)/(n-1)-.5)*context.depth});
   context.signature=hash(context);return context;
  }
  function refineContextRivers(w,p,city){
-  const g=city.context,n=g.n,range=Math.ceil(city.span)+2;
+  const span=city.terrainSpan??city.span,g=city.context,n=g.n,range=Math.ceil(span)+2;
   const distance=(q,a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,t=clamp(((q.x-a.x)*dx+(q.z-a.z)*dz)/(dx*dx+dz*dz||1));return Math.hypot(q.x-a.x-dx*t,q.z-a.z-dz*t);};
   for(let yy=Math.max(0,p.y-range);yy<=Math.min(GH-1,p.y+range);yy++)for(let xx=Math.max(0,p.x-range);xx<=Math.min(GW-1,p.x+range);xx++){
    const i=yy*GW+xx,j=w.down[i];if(j<0||w.height[i]<=0||w.lake[i]>0||w.flow[i]<w.riverThreshold*.6)continue;
-   const a={x:(xx-p.x)/city.span*city.width,z:(yy-p.y)/city.span*city.width},b={x:(j%GW-p.x)/city.span*city.width,z:(Math.floor(j/GW)-p.y)/city.span*city.width},width=clamp(Math.log1p(w.flow[i]/w.riverThreshold)*.8,.45,2);
+   const a={x:(xx-p.x)/span*city.width,z:(yy-p.y)/span*city.width},b={x:(j%GW-p.x)/span*city.width,z:(Math.floor(j/GW)-p.y)/span*city.width},width=clamp(Math.log1p(w.flow[i]/w.riverThreshold)*.8,.45,2);
    const ix=x=>clamp(Math.round((x/g.width+.5)*(n-1)),0,n-1),iz=z=>clamp(Math.round((z/g.depth+.5)*(n-1)),0,n-1);
    for(let y=iz(Math.min(a.z,b.z)-width);y<=iz(Math.max(a.z,b.z)+width);y++)for(let x=ix(Math.min(a.x,b.x)-width);x<=ix(Math.max(a.x,b.x)+width);x++){
     const k=y*n+x;if(g.water[k]||distance(g.xy(k),a,b)>=width)continue;g.water[k]=1;g.waterKind[k]=3;g.height[k]-=.32;
@@ -239,5 +275,5 @@ const CityEnvironment = (() => {
   return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
  }
  function roofSnow(g,k){return snowCover(g,k)>.3;}
- return {version,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
+ return {version,cityFootprint,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();

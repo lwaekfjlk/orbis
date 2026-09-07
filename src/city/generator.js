@@ -40,6 +40,45 @@ function cityGrid(cell) {
         near(x0, z0, x1, z1) { const out = []; span(x0, z0, x1, z1, k => { const a = map.get(k); if (a) for (const v of a) out.push(v); }); return out; }
     };
 }
+/** A continuous access lane must miss the whole footprint, including the narrow
+ * interval between two sample points. Endpoint-only checks miss diagonal corners. */
+function citySegmentBox(a, b, x0, z0, x1, z1) {
+    let lo = 0, hi = 1;
+    for (const [start, end, min, max] of [[a.x, b.x, x0, x1], [a.z, b.z, z0, z1]]) {
+        const delta = end - start;
+        if (Math.abs(delta) < 1e-12) {
+            if (start <= min || start >= max) return false;
+            continue;
+        }
+        const u = (min - start) / delta, v = (max - start) / delta;
+        lo = Math.max(lo, Math.min(u, v));
+        hi = Math.min(hi, Math.max(u, v));
+        if (lo >= hi) return false;
+    }
+    return hi > 0 && lo < 1;
+}
+/** Walk every raster cell an access lane crosses, with the same no-corner-cutting
+ * rule as the street router. A fixed sample count can jump a narrow water cell. */
+function cityDrySegment(city, a, b) {
+    const n = city.n, ax = (a.x / city.width + .5) * (n - 1) + .5, az = (a.z / city.depth + .5) * (n - 1) + .5;
+    const bx = (b.x / city.width + .5) * (n - 1) + .5, bz = (b.z / city.depth + .5) * (n - 1) + .5;
+    const dx = bx - ax, dz = bz - az, sx = Math.sign(dx), sz = Math.sign(dz);
+    let x = Math.floor(ax), z = Math.floor(az);
+    const endX = Math.floor(bx), endZ = Math.floor(bz), tx = dx ? 1 / Math.abs(dx) : Infinity, tz = dz ? 1 / Math.abs(dz) : Infinity;
+    let nextX = dx ? (x + (sx > 0 ? 1 : 0) - ax) / dx : Infinity;
+    let nextZ = dz ? (z + (sz > 0 ? 1 : 0) - az) / dz : Infinity;
+    const dry = (xx, zz) => xx >= 0 && xx < n && zz >= 0 && zz < n && !city.water[zz * n + xx];
+    for (let steps = 0; steps <= n * 2; steps++) {
+        if (!dry(x, z)) return false;
+        if (x === endX && z === endZ) return true;
+        if (Math.abs(nextX - nextZ) < 1e-10) {
+            if (!dry(x + sx, z) || !dry(x, z + sz)) return false;
+            x += sx; z += sz; nextX += tx; nextZ += tz;
+        } else if (nextX < nextZ) { x += sx; nextX += tx; }
+        else { z += sz; nextZ += tz; }
+    }
+    return false;
+}
 /** Distance, in parent cells, to the nearest other settlement that can also be detailed. */
 function cityReach(sim, p) {
     let best = Infinity;
@@ -54,28 +93,11 @@ function generateCity(w, sim, provinceId, design = {}) {
         throw Error('City detail requires an existing village or town.');
     const recipe = TownCatalog.resolve(w, sim, p, design), profile = TownCatalog.styles.find(t => t.id === recipe.style);
     const seed = seedHash(`${w.params.seed}/city/${p.i}/v13/${TownCatalog.signature(recipe)}`), rng = random32(seed);
-    // Footprint is limited by the room the site actually has. The built disc reaches
-    // 0.375*span parent cells, so a close neighbour keeps this town from growing into it.
-    // width/depth track span, leaving on-atlas building size unchanged; only extent grows.
-    // The divisor is what makes two neighbours read as separate places rather than one
-    // sprawl: at 1.16 a town's edge keeps a gap of roughly half its own diameter, which is
-    // the separation the fixed-7.8 atlas had. Sizing merely to avoid overlap is far too
-    // tight — the discs miss each other and the map still looks like a conurbation.
-    // Extent follows POPULATION, capped by the neighbour so two towns never merge.
-    // Sizing on spacing alone gave a 115,000-resident capital and a 3,400-resident
-    // village almost the same footprint: population spans 34x and the footprint 1.6x.
-    // Neighbour spacing is TIGHT — median reach is 9.2 cells, so the 1.16 separation
-    // divisor caps most towns near 7.9 and clipped every one of them to the same size.
-    // The range therefore has to come from the bottom: a hamlet is genuinely small,
-    // which leaves the large end room to grow under its own cap.
-    // How much WORLD a town samples and how far it BUILDS are two different things.
-    // Tying both to population shrank a hamlet's window on its own landscape until the
-    // terrain around it disappeared: a glacier 4.5 cells out fell outside the grid and
-    // the site stopped reading as glacial at all. A hamlet does not shrink its valley.
-    //
-    // `span` stays the sampling window, sized by the room the site has. A separate
-    // `settled` factor decides how much of that window is actually built on, and that
-    // is where the range between 3,400 residents and 115,000 comes from.
+    // Extent follows founding population, capped by the nearest settlement. Local
+    // art dimensions track span, so growing a town adds blocks without enlarging
+    // individual houses. terrainSpan below applies the shared atlas footprint;
+    // the built disc reaches .375 * terrainSpan * settled parent cells. Broader
+    // landscape and climate context is retained independently in siteEnvironment.
     const capital = sim.realms.some(r => r.alive && r.capital === p.id);
     // detailSupport is the settlement's founding scale, fixed when it was founded and
     // NOT re-derived as the years run. Keying off live urbanPop made the plan drift
@@ -85,21 +107,17 @@ function generateCity(w, sim, provinceId, design = {}) {
     const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
     const wanted = (6.4 + 7.0 * crowd) * (capital ? 1.10 : 1);
     const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / 7.8;
-    // Capped at 1. The 1.16 separation divisor above sizes `span` on the assumption
-    // that the built disc reaches 0.375*width; letting `settled` climb past 1 pushed a
-    // large town's edge 26% beyond that and ate the gap the divisor exists to protect —
-    // the tightest neighbours were left 1.4 cells apart across 6.7, which reads as one
-    // conurbation when you zoom in. The range comes from small towns building less of
-    // their window, never from large ones building past it.
-    // Capped at 1: the 1.16 separation divisor sizes `span` assuming the built disc
-    // reaches 0.375*width, and letting this climb past 1 ate the gap that protects.
-    // The floor is not free either — shrink a town too far and FortressPlan runs out of
-    // room to hang a gate on, so a small town came out walled with no way in.
-    const settled = .74 + .26 * crowd;
+    // Population controls the built radius as well as the block target. A high
+    // floor made neighboring hamlets fill almost as much ground as capitals.
+    // Retain a modest core for gates and civic buildings, with room to grow.
+    const settled = .55 + .45 * crowd;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
     const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;
-    const city = { version: 3, seed, townRecipe: recipe, townProfile: profile, provinceId, name: p.name, n, width, depth, span, center: [p.x, p.y],
+    // Survey the exact parent-world footprint that the atlas displays. Sampling the
+    // wider contextual span moved local shores, cliffs and rivers under the city.
+    const terrainSpan = span * CityEnvironment.cityFootprint;
+    const city = { version: 3, seed, townRecipe: recipe, townProfile: profile, provinceId, name: p.name, n, width, depth, span, terrainSpan, center: [p.x, p.y],
         height: new Float32Array(nn), water: new Uint8Array(nn), waterKind: new Uint8Array(nn),
         slope: new Float32Array(nn), wet: new Float32Array(nn), road: new Uint8Array(nn),
         roads: [], buildings: [], districts: [], trees: [], farms: [], piers: [], walls: [], landmarks: [],
@@ -109,6 +127,8 @@ function generateCity(w, sim, provinceId, design = {}) {
             note: 'Parent terrain sampled without modification. Streets and buildings are deterministic invented detail; symbols and distances are not to scale.' } };
     city.xy = k => ({ x: (k % n / (n - 1) - .5) * width, z: (Math.floor(k / n) / (n - 1) - .5) * depth });
     city.index = (x, z) => cityClamp(Math.round((z / depth + .5) * (n - 1)), 0, n - 1) * n + cityClamp(Math.round((x / width + .5) * (n - 1)), 0, n - 1);
+    const atlasScale=terrainSpan/width*Math.sqrt((MAP_X/(GW-1))*(MAP_Z/(GH-1)));
+    const parcelBounds=(x,z,pw,pd)=>CityEnvironment.atlasBounds(w,p.x+(x-pw/2)/width*terrainSpan,p.y+(z-pd/2)/width*terrainSpan,p.x+(x+pw/2)/width*terrainSpan,p.y+(z+pd/2)/width*terrainSpan);
     const bedCenter=w.height[p.i],elevate=h=>3+11*Math.asinh((h-bedCenter)/2300);
     city.environment=CityEnvironment.createGrid(n);
     city.siteEnvironment=CityEnvironment.profile(w,p);
@@ -117,27 +137,18 @@ function generateCity(w, sim, provinceId, design = {}) {
     city.source.parentWorldCell=p.i;
     // The full local environment crosses the scale boundary, not only height/water.
     for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-        const k=y*n+x,gx=p.x+(x/(n-1)-.5)*span,gy=p.y+(y/(n-1)-.5)*span*depth/width;
+        const k=y*n+x,gx=p.x+(x/(n-1)-.5)*terrainSpan,gy=p.y+(y/(n-1)-.5)*terrainSpan*depth/width;
         const e=CityEnvironment.sample(w,gx,gy);
         CityEnvironment.write(city.environment,k,e);
         city.water[k]=e.water;city.waterKind[k]=e.waterKind;
         city.height[k]=elevate(e.surface);city.wet[k]=e.wetness;
     }
-    // The layout has been reading a different surface from the one the atlas draws.
-    // city.height goes through elevate(), an asinh that folds 6000 m of relief into
-    // 18 plan units, while the frame seats everything back on the parent surface at
-    // very nearly its full range. So a wall or a street the plan measured at a 5%
-    // slope comes out on a 220% cliff face. This is the grade AS DRAWN — the same
-    // number AtlasSpace.height would give — and it is what a constraint about steep
-    // ground has to be written against.
-    const atlasH=h=>h>0?.14+Math.pow(h/1000,.98):0;
-    const stepX=span/(n-1)*(MAP_X/(GW-1)),stepZ=span*depth/width/(n-1)*(MAP_Z/(GH-1));
+    // Differentiate the same curved patch the detailed atlas draws, so routing
+    // and buildings agree with the terrain throughout a refined parent cell.
     city.atlasSlope=new Float32Array(nn);
     for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-        const k=y*n+x,surf=city.environment.surface;
-        const dx=(atlasH(surf[y*n+Math.min(n-1,x+1)])-atlasH(surf[y*n+Math.max(0,x-1)]))/(2*stepX);
-        const dz=(atlasH(surf[Math.min(n-1,y+1)*n+x])-atlasH(surf[Math.max(0,y-1)*n+x]))/(2*stepZ);
-        city.atlasSlope[k]=Math.hypot(dx,dz);
+        const gx=p.x+(x/(n-1)-.5)*terrainSpan,gy=p.y+(y/(n-1)-.5)*terrainSpan*depth/width;
+        city.atlasSlope[y*n+x]=CityEnvironment.atlasGrade(w,gx,gy);
     }
     city.environment.signature=CityEnvironment.hash(city.environment);
     city.source.environmentSignature=city.environment.signature;
@@ -152,8 +163,8 @@ function generateCity(w, sim, provinceId, design = {}) {
             const i = yy * GW + xx, j = w.down[i];
             if (j < 0 || w.height[i] <= 0 || w.lake[i] > 0 || w.flow[i] < w.riverThreshold * .6)
                 continue;
-            const from = { x: (xx - p.x) / span * width, z: (yy - p.y) / span * width }, to = { x: (j % GW - p.x) / span * width, z: (Math.floor(j / GW) - p.y) / span * width };
-            if (Math.abs(from.x) > width * .65 || Math.abs(from.z) > depth * .65)
+            const from = { x: (xx - p.x) / terrainSpan * width, z: (yy - p.y) / terrainSpan * width }, to = { x: (j % GW - p.x) / terrainSpan * width, z: (Math.floor(j / GW) - p.y) / terrainSpan * width };
+            if (Math.min(from.x, to.x) > width * .65 || Math.max(from.x, to.x) < -width * .65 || Math.min(from.z, to.z) > depth * .65 || Math.max(from.z, to.z) < -depth * .65)
                 continue;
             const r = { a: from, b: to, width: cityClamp(Math.log1p(w.flow[i] / w.riverThreshold) * .8, .45, 2) };
             city.rivers.push(r);
@@ -196,7 +207,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     for (let y = 4; y < n - 4; y++)
         for (let x = 4; x < n - 4; x++) {
             const k = y * n + x;
-            if (city.water[k] || city.environment.ice[k]>25 || city.environment.snow[k]>.5 || city.slope[k] > .95)
+            if (city.water[k] || city.environment.ice[k]>25 || city.environment.snow[k]>.5 || city.slope[k] > .95 || !climbable(k))
                 continue;
             const q = city.xy(k);
             candidates.push({ k, score: Math.hypot(q.x, q.z) * .16 + city.slope[k] * 15 + city.wet[k] * 4 });
@@ -217,7 +228,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     // what counts as buildable ground for a citadel.
     const CITADEL_SLOPE = 1.9;
     if(typeof FortressPlan!=='undefined'){
-        FortressPlan.reserve(city,candidates,p,CITADEL_SLOPE);
+        FortressPlan.reserve(city,candidates,p,CITADEL_SLOPE,{scale:atlasScale,bounds:parcelBounds});
         if(city.citadelSite)for(let j=candidates.length-1;j>=0;j--)if(city.citadelReserve[candidates[j].k])candidates.splice(j,1);
     }
     function route(start, goal) {
@@ -288,7 +299,7 @@ function generateCity(w, sim, provinceId, design = {}) {
             const q = city.xy(i);
             // Only the stretch near the wall line has to stay open for the approach; holding
             // a corridor through the market quarter as well cost most of a tenth of the core.
-            if (Math.hypot(q.x - city.market.x, q.z - city.market.z) < width * .30)
+            if (Math.hypot(q.x - city.market.x, q.z - city.market.z) < width * .30 * settled)
                 continue;
             for (let dz = -3.6; dz <= 3.6; dz += 1.2) for (let dx = -3.6; dx <= 3.6; dx += 1.2) {
                 const j = city.index(q.x + dx, q.z + dz);
@@ -340,7 +351,7 @@ function generateCity(w, sim, provinceId, design = {}) {
         }
     lots.sort((a, b) => a.rank - b.rank);
     const target = cityClamp(Math.round(260 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 2.3), 260, 1500);
-    const used = [], usedGrid = cityGrid(8);
+    const used = [], usedGrid = cityGrid(8), MIN_PARCEL_SIDE = 1.1, MAX_PARCEL_ASPECT = 4.4;
     let infill=false;
     // A citadel is cut into its hill rather than set on a pad, so it may take ground far
     // steeper than a house will; `steep` is what the caller is willing to build across.
@@ -354,6 +365,10 @@ function generateCity(w, sim, provinceId, design = {}) {
         // in open ground, which is exactly the ground the frontage has already taken.
         const ww = plot ? plot.w : landmark ? precinctSize : (infill ? 1.3+rng()*.7 : (1.4 + rng() * (2.0 + recipe.variety * 1.2)) * profile.scale) * shrink,
             dd = plot ? plot.d : landmark ? precinctSize : (infill ? 1.4+rng()*.6 : (1.6 + rng() * (2.6 + recipe.variety * 1.4)) * profile.scale) * shrink;
+        // Surveyed parcels keep a usable frontage after fitting around neighbors.
+        // Shrinking only depth used to create half-unit slivers, then squeeze an
+        // entire multi-building compound into them.
+        if (!landmark && (Math.min(ww, dd) < MIN_PARCEL_SIDE || Math.max(ww / dd, dd / ww) > MAX_PARCEL_ASPECT + 1e-9)) return null;
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
         if (ww > 3 || dd > 3) {
             for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1)
@@ -375,7 +390,13 @@ function generateCity(w, sim, provinceId, design = {}) {
         const district = city.districts.reduce((best, d) => { const dis = Math.hypot(d.x - q.x, d.z - q.z); return dis < best.dist ? { d, dist: dis } : best; }, { d: city.districts[0], dist: Infinity }).d;
         const actual = type || (['garden', 'market', 'civic', 'temple', 'academy', 'harbor'].includes(district.type) ? 'home' : district.type);
         const h = landmark ? (actual === 'academy' ? 10 : actual === 'temple' ? 7 : actual === 'civic' ? 7 : 3.2) : 1.5 + rng() * 2.3;
-        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill };
+        const ground=parcelBounds(q.x,q.z,ww,dd),fall=(ground.top-ground.low)/atlasScale;
+        const citadel=landmark&&steep===CITADEL_SLOPE&&city.citadelSite&&Math.hypot(q.x-city.citadelSite.x,q.z-city.citadelSite.z)<.01;
+        const supportedHeight=citadel?(city.citadelSite.sacred?44:13):h;
+        // A house needs a modest footing, not a downhill tower as tall as itself.
+        // Smaller alternatives remain available to the frontage and infill passes.
+        if(fall>supportedHeight*.65)return null;
+        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill, terrainFall:fall, footingLimit:supportedHeight*.65 };
         used.push(b);
         usedGrid.add(b, b.x - b.w / 2, b.z - b.d / 2, b.x + b.w / 2, b.z + b.d / 2);
         TownGrammar.moduleFor(city, b, rng);
@@ -453,7 +474,7 @@ function generateCity(w, sim, provinceId, design = {}) {
                 const deep = cityClamp((long[0] + rng() * (long[1] + recipe.variety * 3.2)) * profile.scale, front * .55, front * 4.4);
                 let seated = 0;
                 for (const t of [1, .84, .7, .57, .45, .35]) {
-                    const dd = deep * t, cx = q.x + nx * (off + dd / 2), cz = q.z + nz * (off + dd / 2);
+                    const dd = Math.max(MIN_PARCEL_SIDE, front / MAX_PARCEL_ASPECT, deep * t), cx = q.x + nx * (off + dd / 2), cz = q.z + nz * (off + dd / 2);
                     if (Math.hypot(cx - city.market.x, cz - city.market.z) > width * .375 * settled) break;
                     if (buildingAt(f.k, null, false, 3, 1, { x: cx, z: cz, w: f.alongX ? front : dd, d: f.alongX ? dd : front })) { seated = dd; break; }
                 }
@@ -477,13 +498,16 @@ function generateCity(w, sim, provinceId, design = {}) {
     infill=false;
     // A granary and public well are selected from dry, road-served existing lots.
     const ordinary = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
-    if (ordinary[0]) {
-        Object.assign(ordinary[0], { type: 'granary', name: 'Public Grain House', landmark: true, h: 3.6 });
-        city.landmarks.push(ordinary[0].id);
+    // Reusing a house lot for a lower structure also lowers its footing budget.
+    const granary=ordinary.find(b=>b.terrainFall<=3.6*.65);
+    if (granary) {
+        Object.assign(granary, { type: 'granary', name: 'Public Grain House', landmark: true, h: 3.6, footingLimit:3.6*.65 });
+        city.landmarks.push(granary.id);
     }
-    if (ordinary[6] && p.fresh > .3) {
-        Object.assign(ordinary[6], { type: 'well', name: 'The Common Cistern', landmark: true, h: .9 });
-        city.landmarks.push(ordinary[6].id);
+    const wellLots=ordinary.filter(b=>!b.landmark&&b.terrainFall<=.9*.65),well=wellLots[5]||wellLots[0];
+    if (well && p.fresh > .3) {
+        Object.assign(well, { type: 'well', name: 'The Common Cistern', landmark: true, h: .9, footingLimit:.9*.65 });
+        city.landmarks.push(well.id);
     }
     // A working waterfront, where the harbour district already sits on real parent water.
     // Quays, jetties, sheds, cranes and hulls are port FITTINGS, not city.buildings: the
@@ -494,6 +518,14 @@ function generateCity(w, sim, provinceId, design = {}) {
     city.port = null;
     const harborDistrict = city.districts.find(d => d.type === 'harbor');
     const openWater = j => city.water[j] && city.waterKind[j] !== 3;
+    const mooringFits = m => {
+        const ca=Math.abs(Math.cos(m.angle)),sa=Math.abs(Math.sin(m.angle));
+        const rx=(m.length*ca+m.beam*sa)/2,rz=(m.length*sa+m.beam*ca)/2;
+        if(m.x-rx<-width/2||m.x+rx>width/2||m.z-rz<-depth/2||m.z+rz>depth/2)return false;
+        const lo=city.index(m.x-rx,m.z-rz),hi=city.index(m.x+rx,m.z+rz);
+        for(let y=Math.floor(lo/n);y<=Math.floor(hi/n);y++)for(let x=lo%n;x<=hi%n;x++)if(!openWater(y*n+x))return false;
+        return true;
+    };
     const portBand = [];
     if (harborDistrict && shore.length) {
         const seaward = k => {
@@ -536,12 +568,16 @@ function generateCity(w, sim, provinceId, design = {}) {
                 const tip = { x: s.q.x + s.nx * length, z: s.q.z + s.nz * length };
                 jetties.push({ a: s.q, b: tip, y: s.y + .32, width: .55 });
                 const roll = hash2(s.k, city.buildings.length, seed);
-                moorings.push({ x: tip.x + s.nz * (roll < .5 ? 1.1 : -1.1), z: tip.z - s.nx * (roll < .5 ? 1.1 : -1.1),
+                // A wet jetty tip does not guarantee a wet berth beside it on a
+                // curved shore. Try the other side before leaving the berth empty;
+                // the whole hull must fit, without changing the shore or jetty.
+                const mooring=(roll<.5?[1.1,-1.1]:[-1.1,1.1]).map(side=>({x:tip.x+s.nz*side,z:tip.z-s.nx*side,
                     // A moored fishing boat ran twice the length of a whole house block. It is
                     // read against the quay it is tied to, so it shrinks with the sea-going
                     // hull rather than the ratio between them being bent to fit.
                     y: s.y + .06, angle: Math.atan2(-s.nx, s.nz), length: .85 + roll * .78, beam: .34 + roll * .13,
-                    kind: roll < .38 ? 'barge' : 'boat' });
+                    kind: roll < .38 ? 'barge' : 'boat' })).find(mooringFits);
+                if(mooring)moorings.push(mooring);
                 bollards.push({ x: s.q.x - s.nx * .5, z: s.q.z - s.nz * .5, y: s.y + .30 });
                 // Landward sheds, on dry road-free ground that no compound already holds.
                 for (const back of [2.9, 4.6]) {
@@ -625,21 +661,20 @@ function generateCity(w, sim, provinceId, design = {}) {
             const px=b.x+cityClamp(dx,-b.w/2-.08,b.w/2+.08), pz=b.z+cityClamp(dz,-b.d/2-.08,b.d/2+.08);
             const dist=Math.hypot(q.x-px,q.z-pz);
             if(best&&dist>=best.dist)continue;
-            let valid=true;
-            for(let t=0;t<=1;t+=.1){const x=lerp(px,q.x,t),z=lerp(pz,q.z,t);if(city.water[city.index(x,z)]||blockGrid.near(x,z,x,z).some(v=>v!==b&&Math.abs(v.x-x)<v.w/2+.08&&Math.abs(v.z-z)<v.d/2+.08)){valid=false;break}}
-            if(valid)best={dist,a:{x:px,z:pz},b:q};
+            const a = { x: px, z: pz };
+            if (!cityDrySegment(city, a, q)) continue;
+            const obstacles = blockGrid.near(Math.min(px, q.x), Math.min(pz, q.z), Math.max(px, q.x), Math.max(pz, q.z));
+            if (obstacles.some(v => v !== b && citySegmentBox(a, q, v.x - v.w / 2 - .08, v.z - v.d / 2 - .08, v.x + v.w / 2 + .08, v.z + v.d / 2 + .08))) continue;
+            best={dist,a,b:q};
         }
         if(best&&best.dist<12){b.streetSocket=best.b.i;b.angle=Math.round(Math.atan2(-(best.b.x-b.x),best.b.z-b.z)/(Math.PI/2))*(Math.PI/2);city.connectors.push({blockId:b.id,...best});}
     }
     city.buildings = city.buildings.filter(b=>b.streetSocket!=null);
     city.landmarks = city.buildings.filter(b=>b.landmark).map(b=>b.id);
     for(const d of city.districts)d.buildings=city.buildings.filter(b=>b.district===d.id).length;
-    // Masonry foundations support each footprint; they do not flatten its terrain.
-    // Seat each block INTO the slope, not on top of it. Standing a footprint on its highest
-    // corner puts the downhill side on a plinth that can be taller than the house; burying
-    // three quarters of the fall is shorter, and is what a hillside building actually does.
-    // A citadel still stands proud of its own hill, which is the whole point of a citadel.
-    for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=lo+(hi-lo)*(b.precinct?.6:.25)+.07;}
+    // The surveyed parcel bounds the footing height. Keep the local collector's
+    // compounds above their ground too; the atlas uses the exact projected bound.
+    for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=hi+.07;}
     // Fidelity is bought against a triangle budget rather than granted to every block.
     // The core keeps full joinery, the outskirts fall back to massed volumes, and a
     // larger town simply gets a smaller detailed core instead of a larger download.

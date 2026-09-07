@@ -26,7 +26,7 @@ window.ContinuousMap = (() => {
  function restFolk(){if(walking||!renderer.buildFolk)return;clearTimeout(staticTimer);staticTimer=setTimeout(()=>{if(!walking&&ready()){renderer.buildFolk(clock);renderer.request();}},150);}
  function init(){if(enabled||!renderer)return;enabled=true;document.body.classList.add('continuous-map');
   layer=new ContinuousCityLayer(renderer);renderer.continuousLayer=layer;renderer.continuousModels=layer.models;renderer.continuousRoofs=true;
-  renderer.ground=function(x,y){return this.world?AtlasSpace.surface(this.world,x,y,this.relief):0;};
+  renderer.ground=function(x,y){return this.world?(layer.natural?AtlasSpace.surface:AtlasSpace.coarseSurface)(this.world,x,y,this.relief):0;};
   renderer.buildTerrain=function(){return layer.buildTerrain();};
   installDepthRasterizer(renderer);renderer.renderQuality=1;renderer.backgroundColor=rgb('#79999d');renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));
   const visible=renderer.visible;renderer.visible=function(name){const v=layer.visible(name);return v===null?visible.call(this,name):v;};
@@ -59,7 +59,7 @@ window.ContinuousMap = (() => {
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
   window.__folk={...(r.folkStats||{}),walking,software:!!r.software,reducedMotion:reducedMotion(),roads:r.roadStats||null};
  }
- function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4)].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
+ function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4),renderer.width,renderer.height].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
   startFolk();
   if(renderer.zoom>=AtlasSpace.TOWN_ZOOM*1.67){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
@@ -69,12 +69,15 @@ window.ContinuousMap = (() => {
  function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));moving=true;
   return new Promise(resolve=>{function frame(now){if(token!==animation||busy){moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
  }
- async function focusTown(id,zoom=AtlasSpace.DETAIL_ZOOM*1.44){if(!ready())return null;const p=sim.provinces[+id];if(!p?.settled)return null;OneMap.closeDrawer();E('omSearchPanel').classList.add('hidden');E('omMorePanel').classList.add('hidden');OneMap.clearSelection();layer.focusId=p.id;
+ async function focusTown(id,zoom=AtlasSpace.DETAIL_ZOOM*1.44){if(!ready())return null;const p=sim.provinces[+id];if(!p?.settled)return null;OneMap.closeDrawer();OneMap.closeMenus();OneMap.clearSelection();layer.focusId=p.id;
   const target=AtlasSpace.point(world,p.x,p.y,renderer.relief);target[1]+=.15;const e=CityEnvironment.profile(world,p),az=e.mountainous?Math.atan2(-(e.peak.x-p.x),-(e.peak.y-p.y)):renderer.azimuth;const flight=animate(target,zoom,.94,1000,az);
   const model=await layer.ensure(p.id);await flight;if(model){window.__cityReady=true;window.__cityError=null;window.__continuousFocus=p.id;updateTitle();}else toast('This location has no buildable detailed layout. The original terrain is unchanged.');return model;
  }
  async function focusBuilding(pid,bid){if(!ready())return;const p=sim.provinces[pid];if(!p)return;layer.focusId=pid;const m=await layer.ensure(pid);if(!m)return;const b=typeof bid==='string'?m.city.buildings.find(a=>a.id===bid):bid;const chosen=b||m.city.buildings.find(b=>b.sacred)||m.city.buildings.find(b=>b.landmark);if(!chosen)return;const a=m.frame.anchors.get(chosen.id);const h=(m.heights[chosen.id]||chosen.h)*a.scale;
-  select({model:m,building:chosen,anchor:a});return animate([a.x,a.y+h*.35,a.z],chosen.sacred?65:115,.87);
+  const size=Math.max(chosen.w*m.frame.sx,chosen.d*m.frame.sz,h),aspect=renderer.width/renderer.height;
+  const fit=Math.max(49,94/aspect)*1.25/Math.max(.05,size);
+  const zoom=clamp(fit,AtlasSpace.DETAIL_ZOOM,AtlasSpace.MAX_ZOOM);
+  select({model:m,building:chosen,anchor:a});return animate([a.x,a.y+h*.35,a.z],zoom,.87);
  }
  async function focusSite(id){const site=LandmarkUI.registry.find(s=>s.id===id);if(!site)return;if(site.provinceId!=null){const m=await focusTown(site.provinceId);if(m){const b=m.city.buildings.find(b=>b.sacred&&site.recipe.sacred)||m.city.buildings.find(b=>b.type===(site.recipe.kind||'temple'))||m.city.buildings.find(b=>b.landmark);if(b)return focusBuilding(site.provinceId,b.id);}}else return animate(AtlasSpace.point(world,site.x,site.y,renderer.relief),30,.94);}
  function wider(){if(!ready())return;const id=layer.focusId,m=layer.models.get(id);if(m){const a=AtlasSpace.point(world,m.p.x,m.p.y,renderer.relief);a[1]+=.2;return animate(a,10,1.02);}return animate(renderer.target.slice(),Math.max(1,renderer.zoom*.45),1.02);}

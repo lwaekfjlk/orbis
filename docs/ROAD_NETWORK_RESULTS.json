@@ -28,11 +28,11 @@
       "landlockedSkipped": 20
     },
     "townPort": {
-      "town": "Bluewell",
-      "quays": 45,
-      "jetties": 4,
-      "moorings": 4,
-      "sheds": 1,
+      "town": "Birchgrove",
+      "quays": 12,
+      "jetties": 3,
+      "moorings": 3,
+      "sheds": 0,
       "kind": "sea",
       "beacon": true,
       "inlandTown": "Crowstead"
@@ -50,16 +50,16 @@
         "triangles": 34920
       },
       "near": {
-        "under": 0.004,
-        "over": 0.006,
-        "triangles": 63144
+        "under": 0.0042,
+        "over": 0.0042,
+        "triangles": 29760
       },
       "bridgeDeck": [
         0.3,
-        0.8635
+        0.8705
       ],
       "bridgeFooting": [
-        -0.1409,
+        -0.142,
         -0.02
       ]
     },

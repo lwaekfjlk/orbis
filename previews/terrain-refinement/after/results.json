@@ -1,0 +1,72 @@
+{
+  "checks": [
+    {
+      "zoom": 86.40000000000002,
+      "detail": 32,
+      "target": 32,
+      "triangles": 152908,
+      "seen": 18125,
+      "maxEdge": 20.513913271866127,
+      "maxError": 0.00005564661719614783,
+      "key": "32/103/126/107/130/true/realms/1/1440/900/507"
+    },
+    {
+      "zoom": 240,
+      "detail": 128,
+      "target": 128,
+      "triangles": 250412,
+      "seen": 35801,
+      "maxEdge": 10.73932451232972,
+      "maxError": 4.1747746326592505e-7,
+      "key": "128/104/127/106/129/true/realms/1/1440/900/507"
+    },
+    {
+      "zoom": 620,
+      "detail": 128,
+      "target": 128,
+      "triangles": 250412,
+      "seen": 5266,
+      "maxEdge": 27.536332030545765,
+      "maxError": 2.6278715783978335e-7,
+      "key": "128/104/127/106/129/true/realms/1/1440/900/507"
+    },
+    {
+      "zoom": 620,
+      "detail": 128,
+      "target": 128,
+      "triangles": 250412,
+      "seen": 5335,
+      "maxEdge": 27.476556544706757,
+      "maxError": 2.6278715783978335e-7,
+      "key": "128/104/127/106/129/true/realms/1/1440/900/507",
+      "action": "pan"
+    },
+    {
+      "zoom": 620,
+      "detail": 128,
+      "target": 128,
+      "triangles": 250412,
+      "seen": 15573,
+      "maxEdge": 8.203685150477737,
+      "maxError": 4.1084703503169173e-7,
+      "key": "128/104/127/106/129/true/realms/1/430/900/507",
+      "action": "resize"
+    },
+    {
+      "natural": false,
+      "zoom": 1,
+      "overlays": [
+        {
+          "name": "roads",
+          "equal": true
+        },
+        {
+          "name": "rivers",
+          "equal": true
+        }
+      ],
+      "action": "home"
+    }
+  ],
+  "errors": []
+}

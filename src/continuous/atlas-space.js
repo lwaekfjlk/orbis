@@ -3,106 +3,32 @@
  */
 const AtlasSpace = (() => {
  const X=MAP_X/(GW-1), Z=MAP_Z/(GH-1);
- /* A city is a very small thing on a world map. The town model's art-unit width used to
-  * be mapped onto its FULL sampling window, which put a median town 5.0 cells across
-  * against 8.6 cells to its nearest neighbour — 58% of the gap — so a small drag at
-  * building zoom already showed the next town. The window is what the town READS for
-  * its terrain and stays as it was; its buildings now occupy a fraction of it, which
-  * brings the same pair to about 17%.
-  *
-  * ZOOM is expressed in this scale, so the whole LOD ladder below is derived from it
-  * rather than restated: shrinking the footprint without moving the thresholds would
-  * just show the same tiny models from the same distance. */
- const CITY_FOOTPRINT=.30, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
- function height(w,i,relief=1){const h=w.lake[i]>0?w.lake[i]:w.height[i]>0?w.height[i]+(w.ice?.[i]||0):0;return h>0?.14+Math.pow(h/1000,.98)*relief:0;}
- function weights(x,y){
-  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
-  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
-  if((a+b)%2)return u+v<=1?[[i,i+1,i+GW],[1-u-v,u,v]]:[[i+1,i+GW,i+GW+1],[1-v,1-u,u+v-1]];
-  return v>=u?[[i,i+GW,i+GW+1],[1-v,v-u,u]]:[[i,i+GW+1,i+1],[1-u,v,u-v]];
- }
- /* Sub-cell relief: the ground between two grid points is not a flat ramp. The model
-  * defines a height every 0.56 atlas units and nothing in between, so refining the mesh
-  * alone only produces more vertices on the same flat facets.
-  *
-  * This is INVENTED detail — the world model never computed it — so it is constrained
-  * three ways. It vanishes exactly at the lattice points, so `height(w,i)` and
-  * `surface(w,x,y)` still agree at every point the model actually defines and the
-  * unrefined atlas mesh is untouched. It is a continuous function of position, so it
-  * cannot quilt at cell edges. And it lives in `surface()` rather than in the mesh
-  * builder, so buildings, roads, figures and mouse picking all sit on the same ground
-  * the terrain draws — putting it in the renderer alone would leave everything floating.
-  *
-  * g() is zero at a cell corner and one at its centre, so the envelope pins the corners
-  * without flattening the edges between them.
-  */
- const g1=t=>4*t*(1-t);
- /* Amplitude has to be interpolated, not read from the containing cell. Taking it from
-  * `cell(floor(x),floor(y))` makes it jump the instant you cross a grid line, which
-  * showed up as a 1.5e-2 step along every cell edge — a crack right through the ground.
-  * Precomputed once per world and then read through the same barycentric weights the
-  * height uses, so it is continuous by construction. */
- const reliefAmp=new WeakMap();
- function amplitudes(w){
-  let a=reliefAmp.get(w);if(a)return a;
-  a=new Float32Array(GN);
-  for(let y=1;y<GH-1;y++)for(let x=0;x<GW;x++){
-   const i=y*GW+x;
-   if(w.height[i]<=0||w.lake[i]>0){a[i]=0;continue;}
-   const ice=w.ice?.[i]||0;
-   if(ice>120){a[i]=0;continue;}
-   const dx=w.height[cell(x+1,y)]-w.height[cell(x-1,y)],dy=w.height[cell(x,y+1)]-w.height[cell(x,y-1)];
-   const slope=Math.min(1,Math.hypot(dx,dy)/900);
-   // Steep high rock breaks into scree and ledges; open country only ever hummocks.
-   // Two competing limits. Too small and it cannot be seen: at .002-.02 the relief was
-   // under 1% of the screen even at zoom 200, against an atlas where a 6,000 m peak
-   // stands about 5.9 units. Too large and it IS a cliff — what matters is amplitude
-   // over half a wavelength, and at .115 across 7.3 cycles a cell that came to a 150%
-   // grade, which put a town wall on a 217% slope and tripped the cliff check.
-   const rock=slope*slope*Math.min(1,w.height[i]/1400);
-   a[i]=(.004+rock*.030)*(1-Math.min(1,ice/120));
-  }
-  reliefAmp.set(w,a);return a;
- }
- function microRelief(w,x,y){
-  const[ids,q]=weights(x,y),a=amplitudes(w);
-  let amp=0;for(let k=0;k<3;k++)amp+=a[ids[k]]*q[k];
-  if(amp<1e-6)return 0;
-  const ax=Math.floor(x),ay=Math.floor(y),u=g1(x-ax),v=g1(y-ay),env=u+v-u*v;
-  if(env<1e-4)return 0;
-  // Two octaves, the second at a third the weight: ledges with grain on them.
-  return env*amp*(noise(x*2.4,y*2.4,0x51ce)+noise(x*6.1,y*6.1,0x2b7f)*.30);
- }
- /* The mesh alone is not enough: buildTerrain shades from a normal field derived once
-  * from the coarse height grid, so refined vertices sit on the relief but are still lit
-  * as though the ground were the flat facet underneath. Without this the subdivision is
-  * invisible — which is exactly how it looked the first time. */
- function reliefGradient(w,x,y,e=.02){
-  return [(microRelief(w,x+e,y)-microRelief(w,x-e,y))/(2*e*X),
-          (microRelief(w,x,y+e)-microRelief(w,x,y-e))/(2*e*Z)];
- }
- function surface(w,x,y,relief=1){const[ids,q]=weights(x,y);let h=0;for(let k=0;k<3;k++)h+=height(w,ids[k],relief)*q[k];return h+microRelief(w,x,y)*relief;}
+ // Layout surveying and mesh placement share one footprint. The broader site
+ // profile still reads the surrounding valley independently of the built area.
+ const CITY_FOOTPRINT=CityEnvironment.cityFootprint, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
+ const height=CityEnvironment.atlasHeight,weights=CityEnvironment.atlasWeights,surface=CityEnvironment.atlasSurface;
+ // World-scale map symbols are built against the original two coarse faces.
+ // Detail uses the curved patch; rebuild overlays when that view changes over.
+ function coarseSurface(w,x,y,relief=1){const[ids,q]=weights(x,y);return ids.reduce((h,i,k)=>h+height(w,i,relief)*q[k],0);}
  function point(w,x,y,relief=1){return[(x/(GW-1)-.5)*MAP_X,surface(w,x,y,relief),(y/(GH-1)-.5)*MAP_Z];}
  function grid(x,z){return[(x/MAP_X+.5)*(GW-1),(z/MAP_Z+.5)*(GH-1)];}
  function cityFrame(w,p,c,relief=1){
-  // Cells of parent world the BUILT town covers, as against c.span which it samples.
-  const cells=c.span*CITY_FOOTPRINT;
+  // Parent cells covered by both the surveyed parcels and their mounted meshes.
+  const cells=c.terrainSpan??c.span*CITY_FOOTPRINT;
   const sx=cells/c.width*X,sz=cells/c.width*Z,scale=Math.sqrt(sx*sz),origin=point(w,p.x,p.y,relief);
   const at=(x,z)=>[p.x+x/c.width*cells,p.y+z/c.width*cells];
   const ground=(x,z)=>{const a=at(x,z);return surface(w,a[0],a[1],relief);};
   const localGround=(x,z)=>{const xx=clamp((x/c.width+.5)*(c.n-1),0,c.n-1),zz=clamp((z/c.depth+.5)*(c.n-1),0,c.n-1),a=Math.floor(xx),b=Math.floor(zz),u=xx-a,v=zz-b,read=(i,j)=>c.height[Math.min(c.n-1,j)*c.n+Math.min(c.n-1,i)];return lerp(lerp(read(a,b),read(a+1,b),u),lerp(read(a,b+1),read(a+1,b+1),u),v);};
   const anchors=new Map();
-  // The atlas reads elevation almost linearly while the town grid compresses it through
-  // asinh, so a slope the generator judged mild can render as a tall skirt here. Seat the
-  // block a quarter of the way up its own fall: the uphill side buries into the bank and
-  // only the downhill quarter shows as masonry. A citadel keeps its full podium.
-  for(const b of c.buildings){let top=-Infinity,low=Infinity;for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const y=ground(b.x+dx*b.w,b.z+dz*b.d);top=Math.max(top,y);low=Math.min(low,y);}const seat=low+(top-low)*(b.precinct?.6:.25);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:seat+.006,low,top,b,scale});}
+  // The parcel survey limits its fall; seat the whole rigid compound above its
+  // highest point. Lowering the anchor into a bank buried uphill walls and roofs.
+  for(const b of c.buildings){const a=at(b.x-b.w/2,b.z-b.d/2),z=at(b.x+b.w/2,b.z+b.d/2),{top,low}=CityEnvironment.atlasBounds(w,a[0],a[1],z[0],z[1],relief);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:top+.006,low,top,b,scale});}
   function vertex(x,y,z,anchor=null){return[origin[0]+x*sx,anchor?anchor.y+(y-anchor.b.y)*scale:ground(x,z)+(y-localGround(x,z))*scale+.003,origin[2]+z*sz];}
   return{origin,sx,sz,scale,cells,at,ground,localGround,anchors,vertex};
  }
  function ray(r,sx,sy){r.updateCamera();const nx=(sx/r.width*2-1)*r.halfW,ny=(1-sy/r.height*2)*r.halfH,origin=r.target.map((v,i)=>v+r.right[i]*nx+r.up[i]*ny-r.dir[i]*180);return{origin,dir:r.dir};}
- function pickGround(r,sx,sy){if(!r.world)return null;const{origin,dir}=ray(r,sx,sy);let last=null;const start=(24-origin[1])/dir[1],end=(-.1-origin[1])/dir[1];for(let k=0;k<=96;k++){const t=lerp(start,end,k/96),p=origin.map((v,j)=>v+dir[j]*t),g=grid(p[0],p[2]),d=p[1]-surface(r.world,g[0],g[1],r.relief);if(d<=0&&last){let lo=last.t,hi=t;for(let it=0;it<22;it++){const m=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*m),a=grid(q[0],q[2]);if(q[1]>surface(r.world,a[0],a[1],r.relief))lo=m;else hi=m;}const t2=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*t2),a=grid(q[0],q[2]);if(a[0]<0||a[0]>GW-1||a[1]<0||a[1]>GH-1)return null;return{point:q,x:a[0],y:a[1],i:cell(Math.round(a[0]),Math.round(a[1]))};}last={t,d};}return null;}
+ function pickGround(r,sx,sy){if(!r.world)return null;const sample=r.ground?.bind(r)||((x,y)=>surface(r.world,x,y,r.relief)),{origin,dir}=ray(r,sx,sy);let last=null;const start=(24-origin[1])/dir[1],end=(-.1-origin[1])/dir[1];for(let k=0;k<=96;k++){const t=lerp(start,end,k/96),p=origin.map((v,j)=>v+dir[j]*t),g=grid(p[0],p[2]),d=p[1]-sample(g[0],g[1]);if(d<=0&&last){let lo=last.t,hi=t;for(let it=0;it<22;it++){const m=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*m),a=grid(q[0],q[2]);if(q[1]>sample(a[0],a[1]))lo=m;else hi=m;}const t2=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*t2),a=grid(q[0],q[2]);if(a[0]<0||a[0]>GW-1||a[1]<0||a[1]>GH-1)return null;return{point:q,x:a[0],y:a[1],i:cell(Math.round(a[0]),Math.round(a[1]))};}last={t,d};}return null;}
  function hitBox(origin,dir,lo,hi){let t0=0,t1=Infinity;for(let k=0;k<3;k++){if(Math.abs(dir[k])<1e-10){if(origin[k]<lo[k]||origin[k]>hi[k])return Infinity;continue;}const a=(lo[k]-origin[k])/dir[k],b=(hi[k]-origin[k])/dir[k];t0=Math.max(t0,Math.min(a,b));t1=Math.min(t1,Math.max(a,b));}return t0<=t1?t0:Infinity;}
  function matrixFor(frame){return{origin:frame.origin.slice(),horizontalScale:[frame.sx,frame.sz],verticalScale:frame.scale,crs:'TELLURIC_RECTANGULAR_ATLAS'};}
- return{X,Z,CITY_FOOTPRINT,microRelief,reliefGradient,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,height,weights,surface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
+ return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
 })();

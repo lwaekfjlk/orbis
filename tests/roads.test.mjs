@@ -96,9 +96,15 @@ test('a quay stands on real shore beside real water, and inland towns get none',
 });
 
 test('the town waterfront is fitted to existing water, ground and blocks',()=>{
- const harbour=s.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)[0];
- assert(harbour,'this world has a sheltered harbour town');
- const snapshot=JSON.stringify(s),city=E.generateCity(w,s,harbour.id);
+ const snapshot=JSON.stringify(s);
+ // A province's harbour can be outside its town's compact built footprint.
+ // Exercise the largest town whose surveyed parcels actually reach the shore.
+ let waterfront;
+ for(const p of s.provinces.filter(p=>p.settled&&p.urbanPop>=650&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)){
+  const city=E.generateCity(w,s,p.id);if(city.port){waterfront={p,city};break;}
+ }
+ assert(waterfront,'this world has a town with a surveyed waterfront');
+ const {p:harbour,city}=waterfront;
  assert(city.port,harbour.name+' has a working waterfront');
  const open=k=>city.water[k]&&city.waterKind[k]!==3;
  for(const q of city.port.quays)for(const e of [q.a,q.b])assert(!city.water[city.index(e.x,e.z)],'a quay stands on the bank');
@@ -106,7 +112,17 @@ test('the town waterfront is fitted to existing water, ground and blocks',()=>{
   assert(open(city.index(j.b.x,j.b.z)),'a jetty ends over open water');
   assert(!city.water[city.index(j.a.x,j.a.z)],'a jetty starts on the bank');
  }
- for(const m of city.port.moorings)assert(open(city.index(m.x,m.z)),'a hull is moored in water');
+ assert(city.port.moorings.length>0,'a surveyed waterfront retains usable moorings');
+ for(const m of city.port.moorings){
+  assert(open(city.index(m.x,m.z)),'a hull is moored in water');
+  // A wet jetty tip can have a dry bank on one side. Independently sample the
+  // hull footprint after its lateral berth offset, not just its centre.
+  const ca=Math.cos(m.angle),sa=Math.sin(m.angle);
+  for(let i=0;i<=12;i++)for(let j=0;j<=6;j++){
+   const u=(i/12-.5)*m.length,v=(j/6-.5)*m.beam,x=m.x+u*ca-v*sa,z=m.z+u*sa+v*ca;
+   assert(Math.abs(x)<=city.width/2&&Math.abs(z)<=city.depth/2&&open(city.index(x,z)),'a moored hull crosses the bank');
+  }
+ }
  for(const shed of city.port.sheds){
   const k=city.index(shed.x,shed.z);
   assert(!city.water[k]&&!city.road[k],'a shed stands on dry road-free ground');
