@@ -21,6 +21,12 @@ class Geometry {
     tri(a, b, c, color, normal = null) { const face = cross(sub(b, a), sub(c, a)); if (Math.hypot(...face) < 1e-10)
         return; const n = normal || norm(face); for (const p of [a, b, c])
         this.data.push(...p, ...n, ...color); }
+    // Per-vertex normals and colours; each vertex is [x,y,z, nx,ny,nz, r,g,b], the
+    // buffer layout this renderer already uses. A surface built from these reads as
+    // one sheet instead of a fan of individually shaded facets, and a flat-shading
+    // fallback still finds usable first-vertex data.
+    smoothTri(a, b, c) { for (const v of [a, b, c])
+        this.data.push(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]); }
     quad(a, b, c, d, col) { this.tri(a, b, c, col); this.tri(a, c, d, col); }
     cone(x, y, z, r1, r2, height, color, segments = 6, rot = 0) { for (let i = 0; i < segments; i++) {
         const a = rot + i / segments * Math.PI * 2, b = rot + (i + 1) / segments * Math.PI * 2;
@@ -44,7 +50,7 @@ class AtlasRenderer {
             return new SoftwareAtlasRenderer(canvas, onChange);
         this.meshes = {};
         this.layer = 'relief';
-        this.options = { trees: true, volcanoes: true, rivers: true, borders: false, wind: false, ice: true };
+        this.options = { trees: true, volcanoes: true, rivers: true, borders: false, wind: false, ice: true, legends: true };
         this.zoom = 1;
         this.azimuth = .018;
         this.elevation = 1.19;
@@ -331,7 +337,25 @@ class AtlasRenderer {
         this.upload('iceflow', g, false, .2);
         this.upload('icefloes', floes, true, .1);
     }
-    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.request(); }
+    // Legendary places carry a marker of their own so a wonder is findable on the
+    // map itself, not only in the name layer. The glyph is decoration standing on
+    // the surface; it is never written back into the terrain or the height field.
+    buildLegends() {
+        const g = new Geometry(), gold = rgb('#e7c069'), dark = rgb('#8b6b36');
+        for (const f of this.world.legends || []) {
+            const p = this.coord(f.x, f.y), top = p[1] + 1.24;
+            g.cone(p[0], p[1], p[2], .30, .11, .29, dark, 8);
+            g.cone(p[0], p[1] + .26, p[2], .075, .055, .96, gold, 6);
+            for (let k = 0; k < 4; k++) {
+                const a = k / 4 * Math.PI * 2, b = (k + 1) / 4 * Math.PI * 2;
+                const u = [p[0] + Math.cos(a) * .19, top, p[2] + Math.sin(a) * .19], v = [p[0] + Math.cos(b) * .19, top, p[2] + Math.sin(b) * .19];
+                g.tri([p[0], top + .31, p[2]], u, v, gold);
+                g.tri([p[0], top - .31, p[2]], v, u, gold);
+            }
+        }
+        this.upload('legends', g, false, .72);
+    }
+    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
     setLayer(layer) { this.layer = layer; if (this.world)
         this.buildTerrain(); this.dirtyShadow = true; this.request(); }
     select(i) { this.selected = i; const g = new Geometry(); if (i >= 0) {
@@ -342,7 +366,14 @@ class AtlasRenderer {
             g.line(p, q, .08, rgb('#f8edd0'));
         }
     } this.upload('selection', g, false, 1); this.request(); }
-    resize() { const r = this.canvas.parentElement.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2); this.width = r.width; this.height = r.height; this.canvas.width = Math.round(r.width * dpr); this.canvas.height = Math.round(r.height * dpr); this.request(); }
+    // Render above CSS resolution and let the compositor downsample. Multisampling
+    // only cleans geometry edges, while the relief shading, coastlines and thin
+    // river ribbons alias inside the triangle. A pixel budget keeps a large window
+    // on a dense display from quietly quadrupling the fill cost, and the software
+    // fallback keeps its old ceiling because it pays per pixel on the CPU.
+    resize() { const r = this.canvas.parentElement.getBoundingClientRect(), device = window.devicePixelRatio || 1; this.width = r.width; this.height = r.height;
+        const scale = this.gl ? Math.max(1, Math.min(Math.max(device, 1.6), Math.sqrt(11e6 / Math.max(1, r.width * r.height)))) : Math.min(device, 2);
+        this.renderScale = scale; this.canvas.width = Math.max(1, Math.round(r.width * scale)); this.canvas.height = Math.max(1, Math.round(r.height * scale)); this.request(); }
     updateCamera() {
         const aspect = this.width / Math.max(this.height, 1), el = this.elevation, az = this.azimuth;
         this.halfH = Math.max(49, 94 / aspect) / this.zoom;
@@ -354,7 +385,8 @@ class AtlasRenderer {
         this.mvp = mul4(ortho(-this.halfW, this.halfW, -this.halfH, this.halfH, .1, 420), lookAt(eye, this.target, [0, 1, 0]));
     }
     visible(name) { if (['terrain', 'selection'].includes(name))
-        return true; if (name === 'borders' || name === 'arrows')
+        return true; if (name === 'legends')
+        return this.options.legends !== false && this.layer !== 'plates' && this.zoom < 24; if (name === 'borders' || name === 'arrows')
         return this.layer === 'plates' || this.options.borders; if (name === 'currents')
         return this.layer === 'ocean'; if (name === 'wind')
         return this.options.wind; if (name === 'iceflow' || name === 'icefloes')
