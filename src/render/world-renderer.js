@@ -355,7 +355,7 @@ class AtlasRenderer {
         }
         this.upload('legends', g, false, .72);
     }
-    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.band = null; this.bandKey = -1; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
+    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
     setLayer(layer) { this.layer = layer; if (this.world)
         this.buildTerrain(); this.dirtyShadow = true; this.request(); }
     select(i) { this.selected = i; const g = new Geometry(); if (i >= 0) {
@@ -588,8 +588,12 @@ AtlasRenderer.prototype.palette = function (i) {
     if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0 || w.lake[i] > 0 || w.ice[i] > 120)
         return c;
     const pid = w.provinceId[i], p = s.provinces[pid];
+    const political = this.layer === 'realms' || this.layer === 'diplomacy';
+    // Land outside every province has no measurement to show, so the data layers
+    // grey it out. On the political layers there is nothing to grey: no province
+    // means no country, and the ground simply stays the ground.
     if (!p)
-        return colorMix(c, rgb('#b5b7a6'), .30);
+        return political ? c : colorMix(c, rgb('#b5b7a6'), .30);
     const realm = s.realms[p.owner];
     let paint, strength = .63;
     if (this.layer === 'faiths') {
@@ -609,72 +613,20 @@ AtlasRenderer.prototype.palette = function (i) {
         strength = .80;
     }
     else {
-        // Countries are not flood-filled. A printed atlas leaves the land its own
-        // colour and lays a soft band of the national tint just inside the border,
-        // so relief, rivers and coasts stay readable and the name carries the
-        // identity. Faiths, peoples, wealth and magic keep their full wash — there
-        // the colour IS the measurement, not a label for whose flag flies.
-        paint = realm ? rgb(realm.color) : rgb('#b7b5a3');
-        const band = this.realmBand()[i];
-        strength = band ? (this.layer === 'diplomacy' ? .26 : .38) : 0;
-        if (this.focusRealm != null && realm && realm.id === this.focusRealm)
-            strength = band ? .58 : .15;
+        // A country is a line on this map, not paint. Every border already carries a
+        // cased frontier line — dark casing, pale centre — and that is the whole of
+        // it: any wash over the territory, even a soft band inside the border, buries
+        // the relief the layer is drawn on. Faiths, peoples, wealth and magic keep
+        // their full colour, because there the colour IS the measurement.
+        // The one exception is the realm you have actually selected, which needs to
+        // answer "where is it" with something more than a highlighted list row.
+        if (this.focusRealm == null || !realm || realm.id !== this.focusRealm)
+            return c;
+        return colorMix(c, rgb(realm.color), .14);
     }
     if (strength <= 0)
         return c;
     return colorMix(c, paint, strength);
-};
-/* Land cells within a couple of cells of a different owner. Recomputed only when
- * the borders themselves can have moved — a step of history, a new selection is
- * not enough to redraw, and the whole terrain palette runs through here. */
-AtlasRenderer.prototype.realmBand = function () {
-    const s = this.sim, w = this.world, key = s ? s.year * 64 + s.realms.filter(c => c.alive).length : -1;
-    if (this.bandKey === key && this.band)
-        return this.band;
-    const band = new Uint8Array(GN), owner = new Int16Array(GN).fill(-2);
-    for (let i = 0; i < GN; i++) {
-        if (w.height[i] <= 0)
-            continue;
-        const p = s?.provinces[w.provinceId[i]];
-        owner[i] = p ? (p.owner ?? -1) : -1;
-    }
-    const REACH = 2;
-    for (let y = 0; y < GH; y++)
-        for (let x = 0; x < GW; x++) {
-            const i = cell(x, y);
-            if (owner[i] === -2)
-                continue;
-            let edge = false;
-            for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-                const j = cell(x + dx, y + dy);
-                if (owner[j] !== owner[i]) {
-                    edge = true;
-                    break;
-                }
-            }
-            if (edge)
-                band[i] = REACH + 1;
-        }
-    // Grow the band inwards only, so it hugs the border instead of bleeding to sea.
-    for (let pass = 0; pass < REACH; pass++) {
-        const previous = band.slice();
-        for (let y = 0; y < GH; y++)
-            for (let x = 0; x < GW; x++) {
-                const i = cell(x, y);
-                if (previous[i] || owner[i] === -2)
-                    continue;
-                for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
-                    const j = cell(x + dx, y + dy);
-                    if (previous[j] > 1 && owner[j] === owner[i]) {
-                        band[i] = previous[j] - 1;
-                        break;
-                    }
-                }
-            }
-    }
-    this.band = band;
-    this.bandKey = key;
-    return band;
 };
 const priorVisible = AtlasRenderer.prototype.visible;
 AtlasRenderer.prototype.visible = function (name) {

@@ -62,9 +62,14 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
         else if (kind === 'rider')
             g.obb(x, y + size * .34, z, size * .40, size * .26, size * .17, angle, colorScale(timber, 1.05));
         else if (kind === 'boat') {
-            g.obb(x, y, z, size * 1.05, size * .34, size * .34, angle, rgb('#6d6350'));
-            g.cone(x, y + size * .34, z, size * .05, size * .035, size * 1.5, timber, 4);
-            g.tri([x, y + size * 1.84, z], [x + Math.cos(angle) * size * .78, y + size * 1.02, z + Math.sin(angle) * size * .78], [x, y + size * .50, z], rgb('#e4dcc4'));
+            // A hull and a cart come through here at the same `size`, so their factors
+            // have to be comparable. They were not: the hull ran 2x the cart's length
+            // and its sail tip 5.4x the cart's height, which put a single ship on a sea
+            // lane at 0.72 atlas units — a fifth of the width of an entire town, and
+            // half the height of the tallest building in it.
+            g.obb(x, y, z, size * .55, size * .20, size * .20, angle, rgb('#6d6350'));
+            g.cone(x, y + size * .20, z, size * .04, size * .028, size * .62, timber, 4);
+            g.tri([x, y + size * .78, z], [x + Math.cos(angle) * size * .34, y + size * .46, z + Math.sin(angle) * size * .34], [x, y + size * .26, z], rgb('#e4dcc4'));
         }
     }
     /** Whichever agents are worth drawing: nearest to where the camera is looking, up to

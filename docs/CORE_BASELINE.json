@@ -3,7 +3,7 @@
  "notes": {
   "src/civilization/simulation.js": "Re-baselined in v13 for geography-driven district names only. The random stream is unchanged (naming draws two rolls at the same point cName(rng) drew two), so settlementFingerprint stays 77c3b21f and every population, polity and district id is byte-identical. Locked by the settlementFingerprint assertion in tests/onemap.test.mjs.",
   "src/world/geography.js": "Re-baselined for legendary places. nameLegends() runs after every physical pass has finished and writes only w.legends / w.legendStats; it reads the finished fields and moves nothing. physicalFingerprint is dfd91476 before and after the change, asserted in tests/onemap.test.mjs, so the geography itself is byte-identical.",
-  "src/render/world-renderer.js": "Re-baselined twice. (a) Map clarity: supersampled backing store in resize(), Geometry.smoothTri() for per-vertex terrain normals and colours, buildLegends() markers. (b) Political layers: realms and diplomacy no longer flood-fill a country's territory \u2014 realmBand() marks the cells within two of a different owner and palette() tints only those, so the terrain palette carries the map. Faiths, peoples, wealth and magic keep their full wash, where the colour is the measurement. Terrain vertex positions are untouched; the surface is locked by AtlasSpace.surface parity and the shared-edge check in tests/continuous.test.mjs, and the political palette by the coverage assertion in tests/onemap.test.mjs. The v12 shader and layer-visibility normalisations are folded into this baseline."
+  "src/render/world-renderer.js": "Re-baselined for two deliberate rendering changes. (a) Map clarity: supersampled backing store in resize(), Geometry.smoothTri() for per-vertex terrain normals and colours, buildLegends() markers. (b) Political layers: realms and diplomacy no longer paint a country's territory at all. Every border already carries a cased frontier line, and that is the whole of the country on this map; only the realm you have selected takes a faint wash, so the selection is answerable. Faiths, peoples, wealth and magic keep their full colour, where the colour is the measurement. Terrain vertex positions are untouched: the surface is locked by AtlasSpace.surface parity and the shared-edge check in tests/continuous.test.mjs, and the political palette by the coverage assertion in tests/onemap.test.mjs. The v12 shader and layer-visibility normalisations are folded into this baseline."
  },
  "sha256": {
   "src/world/geography.js": "9adce3e4f82cc4998c529f74bef900343c4dc899f7e10e5e94c2fcda24be1525",
@@ -19,6 +19,6 @@
   "src/landmarks/templates.js": "8e98f8b459ef6d49dbcc5328451765de2db30bf91a1e26cbb17188d21fdf2c9f",
   "src/landmarks/world-binding.js": "c83b701fe8ce637a825dd25946cdb3215e66d34f547c6e065aed7983b7a4d629",
   "src/render/city-renderer.js": "8dc547843284821a4495a90b401cf7670da8e2dc572d63671d01f3962cf5dcee",
-  "src/render/world-renderer.js": "a40e8ad2da38a005e5cdf60e975bb7ba6cfe1dd8b928cfdede8972ae948008ec"
+  "src/render/world-renderer.js": "edc7fc9a1459d6c4b24a68c3a72734b8bf73a955ae83eee9676f82d20456d926"
  }
 }

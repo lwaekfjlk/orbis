@@ -62,6 +62,14 @@
         -0.1335,
         -0.02
       ]
+    },
+    "symbolScale": {
+      "townWidth": 3.69,
+      "tallestBuilding": 1.25,
+      "portWidth": 0.76,
+      "portHeight": 0.4,
+      "shipWidth": 0.38,
+      "shipHeight": 0.28
     }
   },
   "stats": {

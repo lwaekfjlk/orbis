@@ -167,7 +167,12 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
     /** Quay, jetty, warehouse, derrick and a moored hull, on the real shoreline the
      * road network found. Nothing here creates water or moves the town. */
     function quay(r, g, w, port) {
-        const sc = .26 + port.weight * .52, dx = port.wx - port.x, dy = port.wy - port.y, angle = Math.atan2(dy, dx);
+        // Atlas units, against a whole town measuring under four of them and its
+        // tallest building 1.25: at the old .26+.52w this one quay's deck ran 0.97
+        // units, a quarter of a city, with a moored sail half the height of the
+        // largest thing anybody had built. It is a symbol for a harbour, not a
+        // harbour, and it now reads at about an eighth of a town.
+        const sc = .13 + port.weight * .26, dx = port.wx - port.x, dy = port.wy - port.y, angle = Math.atan2(dy, dx);
         const along = angle + Math.PI / 2;
         const stone = rgb('#bcb49c'), timber = rgb('#8b775c'), hull = rgb('#6f6552'), sail = rgb('#e2dcc6'), roof = rgb('#7d7161');
         const shoreX = port.x + dx * .34, shoreY = port.y + dy * .34, deck = Math.max(r.ground(port.x, port.y), r.ground(port.wx, port.wy)) + .07 * sc + .05;
@@ -228,6 +233,12 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
                 return this.zoom < AtlasRenderer.FOLK_ZOOM;
             if (name === 'roadsNear')
                 return this.zoom >= AtlasRenderer.FOLK_ZOOM;
+            // The atlas symbol for a harbour gives way to the harbour. ContinuousCityLayer
+            // draws the same line at 4.8, where the town's own cm:*:port waterfront
+            // appears, and its answer wins; this is the same rule for a renderer with no
+            // city layer installed, so the two never disagree about which one is showing.
+            if (name === 'ports')
+                return this.layer !== 'diplomacy' && this.zoom < 4.8;
             // tradeRoutes already draws the lanes on the diplomacy layer.
             return this.layer !== 'diplomacy';
         }
