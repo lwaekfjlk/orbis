@@ -1,0 +1,10 @@
+# Build output, committed because `npm test` and the offline bundle both read it, but
+# never worth merging line by line. `scripts/build.mjs` writes both from source and the
+# output is reproducible, so any conflict is resolved by taking either side and running
+# `npm run build` — which `pretest` now does for you.
+#
+# `merge=ours` needs a one-line local driver, installed by `npm run setup:git` and by
+# `postinstall`. Without it git falls back to a normal merge and the conflict comes
+# back; nothing breaks, it is only noisier.
+dist/telluric-onemap.html            merge=ours linguist-generated=true
+src/continuous/generated-worker.js   merge=ours linguist-generated=true
