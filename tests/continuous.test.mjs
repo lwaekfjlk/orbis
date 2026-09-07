@@ -158,6 +158,56 @@ test('Mesh collection does not request a second canvas or graphics context',()=>
  const h=E.physicalFingerprint(w),pop=E.settlementFingerprint(s),collector=E.createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(city,p,s.realms[p.owner],s.cityState?.[p.id]||{});
  assert(collector.meshes.buildings.count>0);assert(collector.meshes.roofs.vertices.every(Number.isFinite));assert.equal(E.physicalFingerprint(w),h);assert.equal(E.settlementFingerprint(s),pop);delete globalThis.window;delete globalThis.document;
 });
+test('Sub-cell relief refines the ground without moving the model or cracking it',()=>{
+ const A=E.AtlasSpace;
+ // 1. The model still IS the ground. Relief vanishes at every point the height field
+ //    actually defines, so the unrefined atlas mesh is untouched.
+ let identity=0;
+ for(let y=0;y<E.GH;y++)for(let x=0;x<E.GW;x++)identity=Math.max(identity,Math.abs(A.height(w,y*E.GW+x)-A.surface(w,x,y)));
+ assert.equal(identity,0,'relief moved the ground at a point the model defines');
+ // 2. Continuous across cell boundaries in both axes, or the ground cracks along the grid.
+ let disc=0;
+ for(let y=1;y<E.GH-1;y+=3)for(let x=1;x<E.GW-1;x+=2)for(const t of[.15,.5,.83]){
+  disc=Math.max(disc,Math.abs(A.surface(w,x-1e-8,y+t)-A.surface(w,x+1e-8,y+t)));
+  disc=Math.max(disc,Math.abs(A.surface(w,x+t,y-1e-8)-A.surface(w,x+t,y+1e-8)));
+ }
+ assert(disc<1e-6,`ground is discontinuous across cell edges by ${disc.toExponential(1)}`);
+ // 3. It is relief, not cliffs. Grade is amplitude over half a wavelength, and the
+ //    town layout refuses to build above 60% — a first attempt put a wall on 217%.
+ let amp=0,grade=0;
+ for(let k=0;k<40000;k++){
+  const x=1+(k*7919%100000)/100000*(E.GW-3),y=1+(k*104729%100000)/100000*(E.GH-3);
+  amp=Math.max(amp,Math.abs(A.microRelief(w,x,y)));
+  const g=A.reliefGradient(w,x,y);grade=Math.max(grade,Math.hypot(g[0],g[1]));
+ }
+ assert(amp>.005,'relief too small to see');
+ assert(grade<.6,`relief reaches a ${(grade*100).toFixed(0)}% grade, which is a cliff`);
+ // 4. Never on water, and never on an ice sheet.
+ for(let i=0;i<E.GN;i+=97){
+  if(w.height[i]>0&&w.lake[i]===0&&(w.ice?.[i]||0)<=120)continue;
+  const x=i%E.GW,y=(i/E.GW|0);
+  if(x<1||y<1||x>E.GW-2||y>E.GH-2)continue;
+  assert.equal(A.microRelief(w,x+.5,y+.5),0,'relief disturbed water or an ice sheet');
+ }
+});
+test('Terrain refinement keeps climbing with the camera, inside a triangle budget',()=>{
+ // The old cap of 8 was set when the camera stopped at 180. It now reaches 620, where
+ // a cell covers 2,187 pixels and eight steps leave one triangle every 273 of them.
+ const seen=[];
+ for(const zoom of [4,16,60,200,620]){
+  const r=Object.create(E.AtlasRenderer.prototype);
+  Object.assign(r,{world:w,zoom,width:1180,height:820,relief:1,azimuth:.018,elevation:1.19,target:[0,0,0],layer:'relief',options:{}});
+  const L=Object.create(E.ContinuousCityLayer.prototype);
+  Object.assign(L,{r,models:new Map(),natural:zoom>=A_TOWN_ZOOM()});
+  const n=L.tessellation(),b=L.viewBox(),cells=Math.max(1,(b.x1-b.x0)*(b.y1-b.y0));
+  seen.push({zoom,n,tris:Math.round(cells*n*n*2)});
+ }
+ function A_TOWN_ZOOM(){return E.AtlasSpace.TOWN_ZOOM;}
+ assert(seen.at(-1).n>8,'refinement still caps out below the camera range');
+ for(let i=1;i<seen.length;i++)assert(seen[i].n>=seen[i-1].n,'refinement must not fall as you zoom in');
+ for(const s of seen)assert(s.tris<700000,`zoom ${s.zoom} would draw ${s.tris} terrain triangles`);
+ assert.equal(seen[0].n,1,'the world view must stay at one triangle per cell');
+});
 test('The folk and ship scales stay pinned to the town footprint',()=>{
  // folk-renderer sizes people and hulls in ATLAS units reconciled against the town
  // model, so it has to shrink with it. It cannot read AtlasSpace at module-eval time
