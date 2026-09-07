@@ -475,14 +475,30 @@ class AtlasRenderer {
     setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
     setLayer(layer) { this.layer = layer; if (this.world)
         this.buildTerrain(); this.dirtyShadow = true; this.request(); }
-    select(i) { this.selected = i; const g = new Geometry(); if (i >= 0) {
-        const x = i % GW, y = i / GW | 0;
+    select(i) { this.selected = i; this.selectionKey = null;
+        if (i >= 0) this.updateCamera();
+        else this.upload('selection', new Geometry(), false, 1);
+        this.request();
+    }
+    buildSelection() {
+        if (!this.world || !this.width || !this.height) return;
+        // Keep the ground marker small in CSS pixels, including a selection made
+        // before zooming. Stroke and lift shrink with it instead of filling the town.
+        const pixel = 2 * this.halfH / this.height, key = [this.selected, pixel, this.relief].join('/');
+        if (key === this.selectionKey) return;
+        this.selectionKey = key;
+        const g = new Geometry(), x = this.selected % GW, y = this.selected / GW | 0;
+        const rx = Math.min(1.35, 6 * pixel * (GW - 1) / MAP_X), ry = Math.min(1.35, 6 * pixel * (GH - 1) / MAP_Z);
+        const width = Math.min(.08, .65 * pixel), lift = Math.min(.23, .9 * pixel);
+        const point = a => { const px = x + Math.cos(a) * rx, py = y + Math.sin(a) * ry; return this.coord(px, py, this.ground(px, py) + lift); };
         for (let k = 0; k < 32; k++) {
             const a = k / 32 * Math.PI * 2, b = (k + 1) / 32 * Math.PI * 2;
-            const p = this.coord(x + Math.cos(a) * 1.35, y + Math.sin(a) * 1.35, this.ground(x + Math.cos(a) * 1.35, y + Math.sin(a) * 1.35) + .23), q = this.coord(x + Math.cos(b) * 1.35, y + Math.sin(b) * 1.35, this.ground(x + Math.cos(b) * 1.35, y + Math.sin(b) * 1.35) + .23);
-            g.line(p, q, .08, rgb('#f8edd0'));
+            g.line(point(a), point(b), width, rgb('#f8edd0'));
         }
-    } this.upload('selection', g, false, 1); this.request(); }
+        const dirtyShadow = this.dirtyShadow;
+        this.upload('selection', g, false, 1);
+        this.dirtyShadow = dirtyShadow; // This unlit marker never casts a shadow.
+    }
     // Render above CSS resolution and let the compositor downsample. Multisampling
     // only cleans geometry edges, while the relief shading, coastlines and thin
     // river ribbons alias inside the triangle. A pixel budget keeps a large window
@@ -500,6 +516,7 @@ class AtlasRenderer {
         this.dir = [-Math.sin(az) * Math.cos(el), -Math.sin(el), -Math.cos(az) * Math.cos(el)];
         const eye = this.target.map((v, i) => v - this.dir[i] * 180);
         this.mvp = mul4(ortho(-this.halfW, this.halfW, -this.halfH, this.halfH, .1, 420), lookAt(eye, this.target, [0, 1, 0]));
+        if (this.selected >= 0) this.buildSelection();
     }
     visible(name) { if (['terrain', 'selection'].includes(name))
         return true; if (name === 'legends')
