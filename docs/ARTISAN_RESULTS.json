@@ -12,112 +12,146 @@
       "citadelWidth": 26,
       "terrainUnchanged": true
     },
-    "boundedParcels": 17
+    "boundedParcels": 17,
+    "buildingColour": [
+      {
+        "town": "Whitebeck",
+        "style": "basilica",
+        "buildings": 294,
+        "wallSaturation": 0.081,
+        "wallBrightness": 0.098,
+        "roofSaturation": 0.151
+      },
+      {
+        "town": "Great Saltlanding",
+        "style": "lagoon",
+        "buildings": 500,
+        "wallSaturation": 0.081,
+        "wallBrightness": 0.099,
+        "roofSaturation": 0.155
+      },
+      {
+        "town": "Cloudbury",
+        "style": "desert",
+        "buildings": 705,
+        "wallSaturation": 0.155,
+        "wallBrightness": 0.099,
+        "roofSaturation": 0.165
+      },
+      {
+        "town": "Oakdell",
+        "style": "paddy",
+        "buildings": 531,
+        "wallSaturation": 0.084,
+        "wallBrightness": 0.104,
+        "roofSaturation": 0.075
+      }
+    ]
   },
   "models": [
     {
       "style": "river",
       "triangles": 50070,
       "parts": 4,
-      "sha256": "51bd9ff8f6c645545765c34b4ba9340d1cd0e96d95505550853058397973d870",
+      "sha256": "85f8d8fd910f22b1072bb373e966b2e895090f81108bc9df304a2be7252eb5f2",
       "glbBytes": 5410816
     },
     {
       "style": "basilica",
       "triangles": 38210,
       "parts": 4,
-      "sha256": "20bcf14d0668d2cca463a3c3306eb07336c740f658cdadb6c645126b6e45efd5",
+      "sha256": "fed727f0f2d913cdccb3377b8b45afaa66abacc661a52eb6b1891113dba633d8",
       "glbBytes": 4129940
     },
     {
       "style": "arcane",
       "triangles": 24050,
       "parts": 4,
-      "sha256": "12ceae102b82886bcd10d07b5628771ef44ea4c5b02b4b7369235c630c7e7ecc",
+      "sha256": "f5f1bbe567120d0547273b8cd1c097166b43537824ccaa2bb1f480b41f6a9f85",
       "glbBytes": 2600632
     },
     {
       "style": "mountain",
       "triangles": 33034,
       "parts": 4,
-      "sha256": "2f1db807ef485fbe50ff2f4d4daa59078c2f8e9e5f86c20d118209eb4361e374",
+      "sha256": "b65c0dde3e5f69c63cff54c71fb77b1da257fb7281e2d5fc7726713bf50ea9e7",
       "glbBytes": 3570936
     },
     {
       "style": "forest",
       "triangles": 2225,
       "parts": 4,
-      "sha256": "1148f59b4161d6492ce5724cf89ec048818765a307ee25c4f3adace69d8cede1",
+      "sha256": "e44db8f943abcbe63b7806b13edfef7f932b813386e1f6ef1a13a36255c36287",
       "glbBytes": 243544
     },
     {
       "style": "desert",
       "triangles": 26948,
       "parts": 4,
-      "sha256": "fac148adbdc4857448109c0bd6833be08ecc00aa8f78236fb766cd63be8652d7",
+      "sha256": "1d779e5e01fea31acde55c557794ce5dd2f4a4abb0e35860952325e3154d5b42",
       "glbBytes": 2913640
     },
     {
       "style": "delta",
       "triangles": 22082,
       "parts": 4,
-      "sha256": "33d4b7e47dcaa4b179595a792d14334315ec9e473238c643e0b6dc9eb79301da",
+      "sha256": "ff28afa953fee39602aede8d7a6b466e87d7f507d7ce5f4db637d626ef65773b",
       "glbBytes": 2388092
     },
     {
       "style": "basalt",
       "triangles": 42302,
       "parts": 4,
-      "sha256": "b4ff73fed57775a4cda51ebde3a46f2235ccb334d58ac2aa831997e204bf6457",
+      "sha256": "9d41d56ad2ebe3ca98641f78bbca3751a459dc562b879bfce10d4c1d39b1262e",
       "glbBytes": 4571884
     },
     {
       "style": "fjord",
       "triangles": 32178,
       "parts": 4,
-      "sha256": "fd7acf2d1c798d80e5d172c9130fd76c14fc5f95cd589eeada12faa2709b5bb7",
+      "sha256": "5545d923c5b108985eec1c631f9f95c4893060415ff69f7b2a5c7a80a6591468",
       "glbBytes": 3478480
     },
     {
       "style": "steppe",
       "triangles": 17816,
       "parts": 4,
-      "sha256": "d7d053848da81e52fa3157b7d75dd38888e79da06cde063c9983178bd331258f",
+      "sha256": "94ef7e203ee8bb649682a528d009cdfbb13d13d9b8a1afbb70bb34fe31af2539",
       "glbBytes": 1927416
     },
     {
       "style": "paddy",
       "triangles": 18588,
       "parts": 4,
-      "sha256": "9ff9bb4ca82fdf93eae5b00c335ccbed9d3a2df1a128d37df23fa8a8deefa615",
+      "sha256": "7557b2a62a596d55652e892f0121cde9948712082378b34566c41a85313a4b38",
       "glbBytes": 2010760
     },
     {
       "style": "delve",
       "triangles": 9944,
       "parts": 4,
-      "sha256": "0fa2e40fed084583311a15bd9fdb3998da794de2516611cac82f5b1e15378199",
+      "sha256": "aa912fdc419c9dbbdf7d5164e036f1db01c9a6aee3b07e99a6a0a05877a1869f",
       "glbBytes": 1077204
     },
     {
       "style": "lagoon",
       "triangles": 32620,
       "parts": 4,
-      "sha256": "3c821fdebe87c780566ea963b120f71b2ba91adf37bd72e0780524e2d59477d7",
+      "sha256": "09ae1b48f1f818d960fea991daebb53a1b1a898052770e088be6d59c9d320561",
       "glbBytes": 3526268
     },
     {
       "style": "taiga",
       "triangles": 16642,
       "parts": 4,
-      "sha256": "7201e47f8350df2b0b2c5ffd4895904f699158dd56b9c1ce221f3ea0b29a9d9b",
+      "sha256": "037e540e7a48ddeb64031e17fa739f23f5ed704021372abee201fc32e628ace7",
       "glbBytes": 1800604
     },
     {
       "style": "monsoon",
       "triangles": 19974,
       "parts": 4,
-      "sha256": "ebb649c73e22b6e178baa844d220711b355a73f9259283f78ffb9183e659cda8",
+      "sha256": "9f921d77980ed8fc478e5f7d059c62fbbe99f5e050e71f2e9d5e6bb04c231e57",
       "glbBytes": 2160440
     }
   ]

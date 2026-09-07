@@ -37,4 +37,39 @@ test('Domestic, infill and citadel meshes stay inside their real parcels, includ
   count++;
  }report.checks.boundedParcels=count;
 });
+test('A quarter is many houses, not one house repeated',()=>{
+ // Measured before this: across five towns a wall's hue varied by 2-6 degrees and its
+ // brightness by 8%, so every building in a town was the same colour at slightly
+ // different exposures. Each house now draws one of the town's building materials
+ // first — its own stock, limewashed, fired earth, weathered stone — and weathers
+ // that. One construction language, several materials in it.
+ const hsv=c=>{const mx=Math.max(...c),mn=Math.min(...c),d=mx-mn;
+  const h=d<1e-9?0:mx===c[0]?((c[1]-c[2])/d+6)%6:mx===c[1]?(c[2]-c[0])/d+2:(c[0]-c[1])/d+4;
+  return[h*60,mx?d/mx:0,mx];};
+ const spread=v=>{const m=v.reduce((a,b)=>a+b,0)/v.length;return Math.sqrt(v.reduce((a,b)=>a+(b-m)**2,0)/v.length);};
+ const rows=[];
+ for(const p of sim.provinces.filter(q=>q.settled&&q.urbanPop>=650).sort((a,b)=>b.urbanPop-a.urbanPop).slice(0,4)){
+  const c=E.generateCity(world,sim,p.id);
+  assert(E.ArtisanCityKit.palettes[c.townProfile.id],c.townProfile.id+' has no palette');
+  const walls=[],roofs=[];
+  for(const b of c.buildings){
+   const paint=E.ArtisanCityKit.blockPaint(c,b);
+   walls.push(hsv(rgbOf(paint.wall)));roofs.push(hsv(rgbOf(paint.roof)));
+  }
+  // Saturation is the honest axis here: hue is unstable on a near-grey stone and
+  // wraps at zero, which is what made the old numbers look better than they were.
+  const ws=spread(walls.map(v=>v[1])),wv=spread(walls.map(v=>v[2])),rs=spread(roofs.map(v=>v[1]));
+  assert(ws>.065,`${p.name} walls vary by only ${ws.toFixed(3)} in saturation`);
+  assert(wv>.085,`${p.name} walls vary by only ${wv.toFixed(3)} in brightness`);
+  assert(rs>.055,`${p.name} roofs vary by only ${rs.toFixed(3)} in saturation`);
+  // ...and it must stay one town, not a paint chart.
+  assert(ws<.30&&wv<.30,`${p.name} has lost its construction language`);
+  // Same block, same paint: this is a lookup, not a roll at draw time.
+  assert.equal(E.ArtisanCityKit.blockPaint(c,c.buildings[0]).wall,E.ArtisanCityKit.blockPaint(c,c.buildings[0]).wall);
+  rows.push({town:p.name,style:c.townProfile.id,buildings:c.buildings.length,
+   wallSaturation:+ws.toFixed(3),wallBrightness:+wv.toFixed(3),roofSaturation:+rs.toFixed(3)});
+ }
+ report.checks.buildingColour=rows;
+});
+function rgbOf(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255);}
 test.after(()=>writeFileSync(resolve(root,'docs/ARTISAN_RESULTS.json'),JSON.stringify(report,null,2)));
