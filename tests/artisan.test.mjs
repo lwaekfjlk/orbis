@@ -65,24 +65,28 @@ test('A quarter is many houses, not one house repeated',()=>{
   const walls=[],roofs=[];
   for(const b of c.buildings){
    const paint=E.ArtisanCityKit.blockPaint(c,b);
-   walls.push(hsv(rgbOf(paint.wall)));roofs.push(hsv(rgbOf(paint.roof)));
+   const wall=hsv(rgbOf(paint.wall)),roof=hsv(rgbOf(paint.roof));
+   wall.rgb=rgbOf(paint.wall);roof.rgb=rgbOf(paint.roof);
+   walls.push(wall);roofs.push(roof);
   }
-  // Saturation is the honest axis here: hue is unstable on a near-grey stone and
-  // wraps at zero, which is what made the old numbers look better than they were.
-  const ws=spread(walls.map(v=>v[1])),wv=spread(walls.map(v=>v[2])),rs=spread(roofs.map(v=>v[1]));
-  // The floor has to be one a grey-stone tradition can clear. A delve town's whole
-  // palette sits near .11 saturation, so it has less colour to spread than a desert
-  // town and answers mostly in brightness; the compensation in shift() lifts it from
-  // .053 to .074, not to .10. Asking every tradition for a desert town's numbers
-  // would mean tinting stone that should stay stone.
-  assert(ws>.060,`${p.name} walls vary by only ${ws.toFixed(3)} in saturation`);
-  assert(wv>.065,`${p.name} walls vary by only ${wv.toFixed(3)} in brightness`);
-  assert(rs>.055,`${p.name} roofs vary by only ${rs.toFixed(3)} in saturation`);
+  // Distance in colour, not saturation alone. A mountain tradition is built of grey
+  // granite at .026 saturation and a delve town of grey stone at .11: there is almost
+  // nothing there to multiply, and demanding a saturation figure of them means tinting
+  // stone that should stay stone. What actually matters is whether two houses can be
+  // told apart, which they can do through value as readily as through hue.
+  const cloud=cols=>{const m=[0,1,2].map(k=>cols.reduce((a,c)=>a+c[k],0)/cols.length);
+   return Math.sqrt(cols.reduce((a,c)=>a+m.reduce((t,mk,k)=>t+(c[k]-mk)**2,0),0)/cols.length);};
+  const wc=cloud(walls.map(v=>v.rgb)),rc=cloud(roofs.map(v=>v.rgb));
+  // Without the material stock these run .102 (granite) to .139; with it, .130 to .201.
+  assert(wc>.115,`${p.name} walls are only ${wc.toFixed(3)} apart in colour`);
+  assert(rc>.100,`${p.name} roofs are only ${rc.toFixed(3)} apart in colour`);
   // ...and it must stay one town, not a paint chart.
-  assert(ws<.30&&wv<.30,`${p.name} has lost its construction language`);
+  assert(wc<.34&&rc<.34,`${p.name} has lost its construction language`);
+  const ws=spread(walls.map(v=>v[1])),wv=spread(walls.map(v=>v[2])),rs=spread(roofs.map(v=>v[1]));
   // Same block, same paint: this is a lookup, not a roll at draw time.
   assert.equal(E.ArtisanCityKit.blockPaint(c,c.buildings[0]).wall,E.ArtisanCityKit.blockPaint(c,c.buildings[0]).wall);
   rows.push({town:p.name,style:c.townProfile.id,buildings:c.buildings.length,
+   wallColourSpread:+wc.toFixed(3),roofColourSpread:+rc.toFixed(3),
    wallSaturation:+ws.toFixed(3),wallBrightness:+wv.toFixed(3),roofSaturation:+rs.toFixed(3)});
  }
  report.checks.buildingColour=rows;

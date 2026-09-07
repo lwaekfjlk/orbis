@@ -17,7 +17,7 @@
       "edgeSamples": 440
     },
     "allTowns": {
-      "count": 84,
+      "count": 88,
       "parentWorldUnchanged": true,
       "civilizationUnchanged": true
     },
@@ -36,7 +36,7 @@
     "maximumSurroundingElevation": 7373.7294921875,
     "oldStyle": "desert",
     "newStyle": "mountain",
-    "buildingCount": 674,
+    "buildingCount": 685,
     "localBiomes": [
       14,
       15,

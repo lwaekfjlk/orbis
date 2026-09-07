@@ -18,7 +18,7 @@
     },
     {
       "name": "real-geometry",
-      "triangles": 221213,
+      "triangles": 221605,
       "parts": 10,
       "bounds": {
         "min": [
@@ -28,7 +28,7 @@
         ],
         "max": [
           18.62,
-          54.3303,
+          55.300756268609014,
           20.6845
         ]
       },
@@ -42,7 +42,8 @@
         "crocketed-pinnacle": 85,
         "gable-roof": 8,
         "radial-stained-glass": 1,
-        "ritual-sun": 7,
+        "ritual-stars": 2,
+        "crystal-crown": 7,
         "open-belfry-tower": 5,
         "audience-hall": 4,
         "open-arch": 130,
@@ -51,16 +52,16 @@
         "banner": 6,
         "cistern": 2
       },
-      "sha256": "7aca6a119bef5b63e483b83e313806944473b3ef4898b043c0ff9eb151c6b6de"
+      "sha256": "72f38f4a2eb68b5282400cb9b0409457eb8e923baddb8cc9100f3c34f339c6f9"
     },
     {
       "name": "same-recipe-at-three-scales",
-      "signature": "117c575a/great-sanctuary-1",
-      "placedHeight": 49.23393647181299
+      "signature": "2070a442/great-sanctuary-1",
+      "placedHeight": 50.11336070244246
     },
     {
       "name": "native-sacred-towns",
-      "count": 5,
+      "count": 6,
       "rows": [
         {
           "id": 259,
@@ -81,16 +82,22 @@
           "sanctuary": 38
         },
         {
-          "id": 443,
-          "name": "Clearwell",
-          "blocks": 324,
+          "id": 442,
+          "name": "Foxmeadow",
+          "blocks": 295,
           "sanctuary": 38
         },
         {
-          "id": 485,
-          "name": "Netherford",
-          "blocks": 295,
-          "sanctuary": 34
+          "id": 452,
+          "name": "Kelplanding",
+          "blocks": 421,
+          "sanctuary": 38
+        },
+        {
+          "id": 464,
+          "name": "Shellford",
+          "blocks": 522,
+          "sanctuary": 38
         }
       ]
     },
@@ -105,7 +112,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23898652,
+      "bytes": 23940988,
       "meshes": 10
     }
   ]

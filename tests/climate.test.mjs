@@ -16,7 +16,7 @@ import {createHash} from 'node:crypto';
 import {scripts} from '../scripts/manifest.mjs';
 import {root, defaults} from './engine-loader.mjs';
 const code = scripts.slice(0, scripts.indexOf('src/ui/world-ui.js')).map(s => readFileSync(resolve(root, s), 'utf8')).join('\n');
-const E = Function(code + '\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,CityEnvironment,TownCatalog,ArtisanCityKit,LandmarkCatalog,LandmarkKit,AtlasRenderer,GW,GN};')();
+const E = Function(code + '\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,CityEnvironment,TownCatalog,ArtisanCityKit,LandmarkCatalog,LandmarkKit,AtlasRenderer,BIOME,GW,GN};')();
 const rgbDistance = (a, b) => Math.hypot(...a.map((v, i) => (v - b[i]) * 255));
 const digest = g => createHash('sha256').update(Buffer.from(Float32Array.from(g.data).buffer)).digest('hex');
 let world, sim;
@@ -203,6 +203,41 @@ test('the tradition palette is retoned by climate without losing the tradition',
  report.checks.palette = {coldWall: cold.wall, hotWall: hot.wall, coldRoof: cold.roof, hotRoof: hot.roof};
 });
 
+test('the subtropics have a name, a colour and a tree of their own', () => {
+ // Every humid cell from 7 to 21 C was called "Temperate forest" and grew the same
+ // generic broadleaf, so a laurel forest at 19 C and a beech wood at 11 C were the
+ // same two words and the same silhouette. Measured before: 1133 temperate-forest
+ // cells covering both, and one vegetation form across the whole warm half.
+ const names = E.BIOME.map(b => b[0]);
+ const laurel = names.indexOf('Subtropical laurel forest'), hard = names.indexOf('Subtropical dry woodland');
+ assert(laurel > 0 && hard > 0, 'the subtropical classes exist');
+ let counts = {laurel: 0, hard: 0, temperate: 0};
+ for (let i = 0; i < E.GN; i++) {
+  if (world.height[i] <= 0) continue;
+  if (world.biome[i] === laurel) counts.laurel++;
+  else if (world.biome[i] === hard) counts.hard++;
+  else if (world.biome[i] === 7) counts.temperate++;
+ }
+ assert(counts.laurel > 120 && counts.hard > 80, `subtropics barely appear: ${JSON.stringify(counts)}`);
+ // They must be warm, or the class is decorative.
+ let coldest = Infinity;
+ for (let i = 0; i < E.GN; i++)
+  if (world.biome[i] === laurel || world.biome[i] === hard) coldest = Math.min(coldest, world.temp[i]);
+ assert(coldest >= 16, `a subtropical cell at ${coldest.toFixed(1)} C`);
+ // Their own silhouettes, distinct from the temperate broadleaf next door.
+ const formOf = b => E.CityEnvironment.canopy(b, 19, 1.5).form;
+ assert.equal(formOf(laurel), 'laurel');
+ assert.equal(formOf(hard), 'hardleaf');
+ assert.notEqual(formOf(7), 'laurel');
+ // The written description has to use the same vocabulary the biome name does, or the
+ // two halves of a place contradict each other. 16.5 and 21 are the classifier's own
+ // boundaries.
+ assert(E.CityEnvironment.band(19, 1.5).startsWith('Subtropical'));
+ assert(E.CityEnvironment.band(23, 1.5).startsWith('Tropical'));
+ assert(E.CityEnvironment.band(14, 1.5).startsWith('Warm temperate'));
+ assert(E.CityEnvironment.band(19, 1.5, 3200).includes('highland'), 'a high plateau says so');
+ report.checks.subtropics = counts;
+});
 test('all fifteen traditions are reachable and none is stranded outside its climate', () => {
  // "Not stranded" is the claim that matters, and it is per world: every tradition
  // has somewhere it could be built. Which ones actually come up is luck of the
@@ -233,9 +268,9 @@ test('all fifteen traditions are reachable and none is stranded outside its clim
 });
 
 test('none of this moved the physical world or the society', () => {
- assert.equal(E.physicalFingerprint(world), '4b02963c');
- assert.equal(E.settlementFingerprint(sim), '73c1127f');
- report.checks.unchanged = {physicalFingerprint: '4b02963c', settlementFingerprint: '73c1127f'};
+ assert.equal(E.physicalFingerprint(world), '440ae5d0');
+ assert.equal(E.settlementFingerprint(sim), '6b6c5ea8');
+ report.checks.unchanged = {physicalFingerprint: '440ae5d0', settlementFingerprint: '6b6c5ea8'};
 });
 
 test.after(() => writeFileSync(resolve(root, 'docs/CLIMATE_RESULTS.json'), JSON.stringify(report, null, 2)));

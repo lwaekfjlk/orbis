@@ -221,7 +221,7 @@ function deriveHumanGeography(w) {
             g.river[i] = Math.max(g.river[i], river);
             const wet = w.wetness[i] || 0, soil = clamp(.76 + noise(x * .065, y * .065, w.seed + 553) * .18 + river * .12 - lakes * .02, .3, 1);
             const cropWater = Math.max(clamp(w.arid[i] / 1.05), g.fresh[i] * .88);
-            const clearing = [7, 8, 9, 10, 11].includes(w.biome[i]) ? .76 : 1;
+            const clearing = [7, 8, 9, 10, 11, 21].includes(w.biome[i]) ? .76 : 1;
             g.farm[i] = clamp(thermal * cropWater * soil * Math.exp(-slope / 620) * clearing * (1 - .57 * wet) * snow);
             g.hazard[i] = clamp(wet * .32 + Math.max(0, slope - 250) / 1800 + (w.volcanoes.some(v => v.active && Math.hypot(x - v.x, y - v.y) < 3) ? .55 : 0));
             const gather = (.012 + .06 * cropWater) * thermal * snow;
@@ -349,7 +349,7 @@ function initializeSettlements(w, options = {}) {
             p.altitude += w.height[i];
             p.temp += w.temp[i];
             p.aridity += w.arid[i];
-            p.forest += [7, 8, 9, 10, 11].includes(w.biome[i]) ? 1 : 0;
+            p.forest += [7, 8, 9, 10, 11, 21].includes(w.biome[i]) ? 1 : 0;
             p.wet += [18, 19, 20].includes(w.biome[i]) ? 1 : 0;
             const x = i % GW, y = i / GW | 0;
             for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
