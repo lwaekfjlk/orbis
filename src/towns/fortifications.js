@@ -65,6 +65,40 @@ const FortressPlan=(()=>{
   }return null;
  }
  function hull(points){const pts=points.slice().sort((a,b)=>a.x-b.x||a.z-b.z),cross=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);const lo=[],hi=[];for(const p of pts){while(lo.length>1&&cross(lo.at(-2),lo.at(-1),p)<=0)lo.pop();lo.push(p)}for(const p of pts.reverse()){while(hi.length>1&&cross(hi.at(-2),hi.at(-1),p)<=0)hi.pop();hi.push(p)}lo.pop();hi.pop();return lo.concat(hi)}
+ // A coarse occupancy cell can cover both a house and a genuinely open lane.
+ // Recover those passages on a finer lattice before considering any layout change.
+ function refinedApproach(c,poly,occupied,ground){
+  const factor=2,n=(c.n-1)*factor+1,count=n*n,dx=c.width/(n-1),dz=c.depth/(n-1),clear=(c.townProfile.width||1)*.67+.06;
+  const xy=k=>({x:(k%n/(n-1)-.5)*c.width,z:(Math.floor(k/n)/(n-1)-.5)*c.depth});
+  const index=q=>Math.round((q.z/c.depth+.5)*(n-1))*n+Math.round((q.x/c.width+.5)*(n-1));
+  const outside=(q,margin=0)=>poly.some((a,j)=>{const b=poly[(j+1)%poly.length],vx=b.x-a.x,vz=b.z-a.z;return(vx*(q.z-a.z)-vz*(q.x-a.x))/Math.hypot(vx,vz)<-margin;});
+  if(c.roads.some(r=>r.points.some(q=>outside(q))))return null;
+  const blocked=new Uint8Array(count),tested=new Uint8Array(count);
+  for(const b of c.buildings){const x0=Math.max(0,Math.ceil((b.x-b.w/2-clear+c.width/2)/dx)),x1=Math.min(n-1,Math.floor((b.x+b.w/2+clear+c.width/2)/dx)),z0=Math.max(0,Math.ceil((b.z-b.d/2-clear+c.depth/2)/dz)),z1=Math.min(n-1,Math.floor((b.z+b.d/2+clear+c.depth/2)/dz));for(let z=z0;z<=z1;z++)for(let x=x0;x<=x1;x++)blocked[z*n+x]=1;}
+  const passable=k=>{
+   if(blocked[k])return false;if(tested[k])return tested[k]===2;
+   const q=xy(k);let valid=Math.abs(q.x)+clear<c.width/2-1&&Math.abs(q.z)+clear<c.depth/2-1;
+   for(const x of[-clear,0,clear])for(const z of[-clear,0,clear]){const i=c.index(q.x+x,q.z+z);if(c.water[i]||c.environment.ice[i]>=25||(c.atlasSlope&&c.atlasSlope[i]>(c.streetGradeCap??1.2)))valid=false;}
+   tested[k]=valid?2:1;return valid;
+  };
+  const distance=new Float64Array(count).fill(Infinity),parents=new Int32Array(count).fill(-1),queue=new MinHeap();
+  for(const road of c.roads)for(const p of road.points){const i=c.index(p.x,p.z),k=index(p);if(c.road[i]&&passable(k)&&distance[k]!==0){distance[k]=0;queue.push(k,0);}}
+  let goal=-1;
+  while(queue.length){const[k,cost]=queue.pop();if(cost!==distance[k])continue;const x=k%n,z=Math.floor(k/n),q=xy(k);
+   // Keep the outside socket on the original grid for the intercity access field.
+   if(x%factor===0&&z%factor===0&&outside(q,7)){goal=k;break;}
+   for(const[ox,oz]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+ox,zz=z+oz;if(xx<1||xx>=n-1||zz<1||zz>=n-1)continue;const j=zz*n+xx;if(!passable(j))continue;const next=cost+(ox?dx:dz);if(next<distance[j]){distance[j]=next;parents[j]=k;queue.push(j,next);}}
+  }
+  if(goal<0)return null;
+  const path=[];for(let k=goal;k>=0;k=parents[k])path.push(xy(k));path.reverse();
+  const points=path.map(q=>({...q,y:ground(q)+.14,bridge:false})),nodes=[];
+  for(const q of points){const i=c.index(q.x,q.z);if(nodes.at(-1)!==i)nodes.push(i);
+   // The bitmap is only the coarse survey. Do not paint a whole house cell for a
+   // lane that safely uses its open fraction; the exact polyline remains canonical.
+   if(!occupied[i])c.road[i]=1;
+  }
+  const road={kind:'arterial',role:'gate-approach',refined:true,nodes,points};c.roads.push(road);return points.at(-1);
+ }
  function build(c){
   c.defenses={version:2,walls:[],gates:[],towers:[],quays:[],perimeter:[],enclosed:false,kind:['forest','delta'].includes(c.townProfile.id)?'timber':'stone'};
   if(c.buildings.length<12)return c.defenses;
@@ -103,6 +137,7 @@ const FortressPlan=(()=>{
    const i=Math.floor(x),j=Math.floor(z),u=x-i,v=z-j,at=(a,b)=>c.height[Math.min(c.n-1,b)*c.n+Math.min(c.n-1,a)];
    return (at(i,j)*(1-u)+at(i+1,j)*u)*(1-v)+(at(i,j+1)*(1-u)+at(i+1,j+1)*u)*v;
   };
+  if(!approaches.length){const exit=refinedApproach(c,poly,occupied,ground);if(exit){approaches.push(exit);c.defenses.refinedApproachCount=1;}}
   const n=samples.length,d=c.defenses;d.perimeter=poly;
   const tags=samples.map((a,j)=>{const b=samples[(j+1)%n],mid={x:(a.x+b.x)/2,z:(a.z+b.z)/2};
    if([a,b,mid].some(blocked))return 'blocked';

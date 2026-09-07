@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {scripts} from '../scripts/manifest.mjs';
-import {root} from './engine-loader.mjs';
+import {root,defaults} from './engine-loader.mjs';
 const code=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');
-const {FortressPlan,ArtisanCityKit}=Function(code+'\nreturn {FortressPlan,ArtisanCityKit};')();
+const {FortressPlan,ArtisanCityKit,generateWorld,createCivilization,generateCity,auditCity,citySegmentBox}=Function(code+'\nreturn {FortressPlan,ArtisanCityKit,generateWorld,createCivilization,generateCity,auditCity,citySegmentBox};')();
 const key=q=>`${q.x.toFixed(7)},${q.z.toFixed(7)},${q.y.toFixed(7)}`;
 function fixture({slope=0,water=false,roads=[]}={}){
  const n=101,c={n,width:100,depth:100,townProfile:{id:'river',palace:'gilded-palace',width:1},townRecipe:{seed:'wall-regression'},market:{x:0,z:0},buildings:[],roads,road:new Uint8Array(n*n),height:new Float64Array(n*n),water:new Uint8Array(n*n),atlasSlope:new Float32Array(n*n).fill(slope),environment:{ice:new Uint8Array(n*n)}};
@@ -63,4 +63,24 @@ test('gateway feet reach the terrain on both sides of a steep road',()=>{
  const m=ArtisanCityKit.fortificationMeshes(c,{fresh:.4}),feet=[Infinity,Infinity];
  for(let i=0;i<m.body.data.length;i+=9){const[x,y,z]=m.body.data.slice(i,i+3);if(Math.abs(x)>4&&Math.abs(x)<5&&Math.abs(z)<.8)feet[x<0?0:1]=Math.min(feet[x<0?0:1],y-(3+1.2*x*.7+1.2*z*.3));}
  for(const offset of feet)assert(offset<.05&&offset>-.5,'a gateway leg floats above the roadway');
+});
+
+test('Scorchspire recovers a genuine gate lane without removing or crossing any buildings',async()=>{
+ const w=await generateWorld(defaults),s=createCivilization(w,{realms:18,historySeed:'First-dawn'}),build=FortressPlan.build;let snapshot;
+ FortressPlan.build=c=>{snapshot=structuredClone(c.buildings);return build(c);};
+ let c;try{c=generateCity(w,s,349);}finally{FortressPlan.build=build;}
+ assert.equal(c.name,'Scorchspire');assert.deepEqual(c.buildings,snapshot,'recovering a lane must preserve the generated buildings');
+ const d=c.defenses,approach=c.roads.find(r=>r.role==='gate-approach'&&r.refined);assert(approach,'coarse occupancy must not seal the town');closed(d);assert(d.gates.length>0);
+ const outside=q=>d.perimeter.some((a,j)=>{const b=d.perimeter[(j+1)%d.perimeter.length];return(b.x-a.x)*(q.z-a.z)-(b.z-a.z)*(q.x-a.x)<-1e-7;});
+ assert(!outside(approach.points[0]));assert(outside(approach.points.at(-1)));
+ const last=approach.points.at(-1),socket=c.xy(c.index(last.x,last.z));assert(Math.hypot(last.x-socket.x,last.z-socket.z)<1e-9,'outside endpoint must join the intercity grid exactly');
+ const half=(c.townProfile.width||1)*.67;
+ for(let k=1;k<approach.points.length;k++){
+  const a=approach.points[k-1],b=approach.points[k];for(const house of c.buildings)assert(!citySegmentBox(a,b,house.x-house.w/2-half,house.z-house.d/2-half,house.x+house.w/2+half,house.z+house.d/2+half),house.id+' intersects the gate lane');
+  for(const x of[-half,0,half])for(const z of[-half,0,half]){const i=c.index(b.x+x,b.z+z);assert.equal(c.water[i],0);assert(c.environment.ice[i]<25);assert(c.atlasSlope[i]<=c.streetGradeCap);}
+ }
+ const edges=new Map();for(const road of c.roads)for(let k=1;k<road.nodes.length;k++){const a=road.nodes[k-1],b=road.nodes[k];if(!edges.has(a))edges.set(a,new Set());if(!edges.has(b))edges.set(b,new Set());edges.get(a).add(b);edges.get(b).add(a);}
+ const queue=[c.marketIndex],seen=new Set(queue);for(const a of queue)for(const b of edges.get(a)||[])if(!seen.has(b)){seen.add(b);queue.push(b);}
+ for(const b of c.buildings)assert(seen.has(b.streetSocket),b.id+' lost street access');assert(seen.has(approach.nodes.at(-1)));assert.equal(c.connectors.length,c.buildings.length);
+ const audit=auditCity(c);for(const k of['wetBuildings','roadBuildings','overlaps','nonfinite','seaRoads'])assert.equal(audit[k],0,k);
 });

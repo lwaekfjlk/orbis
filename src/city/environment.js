@@ -10,7 +10,7 @@
  * range, so a category alone cannot say whether a forest is boreal or tropical.
  */
 const CityEnvironment = (() => {
- const version=3, cityFootprint=.30, cached=new WeakMap(), profiles=new WeakMap();
+ const version=4, cityFootprint=.30, cached=new WeakMap(), profiles=new WeakMap();
  const rgbHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const colors=BIOME.map(b=>rgbHex(b[1]));
  const frozen=rgbHex('#d9eff0');
@@ -100,35 +100,39 @@ const CityEnvironment = (() => {
   mix('#8a9159',c.dry*.65);           // dry olive
   return col;
  }
- // The terrain is a triangulated atlas surface, not a bilinear patch. Keep its
- // projection here so layout constraints and every renderer read identical hills.
+ // Project the inherited corner heights into one shared continuous patch. Near
+ // terrain adds samples of this curved surface; layout and meshes use it too.
  function atlasHeight(w,i,relief=1){const h=w.lake[i]>0?w.lake[i]:w.height[i]>0?w.height[i]+(w.ice?.[i]||0):0;return h>0?.14+Math.pow(h/1000,.98)*relief:0;}
+ // Legacy triangular weights remain available for coarse atlas consumers.
  function atlasWeights(x,y){
   x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
   const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
   if((a+b)%2)return u+v<=1?[[i,i+1,i+GW],[1-u-v,u,v]]:[[i+1,i+GW,i+GW+1],[1-v,1-u,u+v-1]];
   return v>=u?[[i,i+GW,i+GW+1],[1-v,v-u,u]]:[[i,i+GW+1,i+1],[1-u,v,u-v]];
  }
- function atlasSurface(w,x,y,relief=1){const[ids,q]=atlasWeights(x,y);let h=0;for(let k=0;k<3;k++)h+=atlasHeight(w,ids[k],relief)*q[k];return h;}
- function atlasGrade(w,x,y,relief=1){
-  const[ids]=atlasWeights(x,y),[a,b,c]=ids.map(i=>[i%GW,Math.floor(i/GW),atlasHeight(w,i,relief)]);
-  const dx=b[0]-a[0],dy=b[1]-a[1],ex=c[0]-a[0],ey=c[1]-a[1],det=dx*ey-dy*ex,bh=b[2]-a[2],ch=c[2]-a[2];
-  return Math.hypot((bh*ey-ch*dy)/det/(MAP_X/(GW-1)),(ch*dx-bh*ex)/det/(MAP_Z/(GH-1)));
+ function atlasSurface(w,x,y,relief=1){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
+  const top=lerp(atlasHeight(w,i,relief),atlasHeight(w,i+1,relief),u),bottom=lerp(atlasHeight(w,i+GW,relief),atlasHeight(w,i+GW+1,relief),u);
+  return lerp(top,bottom,v);
  }
- // Exact extrema over a rectangular parcel occur at its corners, mesh vertices,
- // or intersections of its boundary with a mesh edge. A nine-point survey can
- // miss a ridge crossing an edge and leave the uphill roof inside the terrain.
+ function atlasGrade(w,x,y,relief=1){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
+  const h00=atlasHeight(w,i,relief),h10=atlasHeight(w,i+1,relief),h01=atlasHeight(w,i+GW,relief),h11=atlasHeight(w,i+GW+1,relief);
+  // Differentiate the same bilinear patch, including its cross term. Reusing a
+  // triangle's constant grade would route streets against a different hillside.
+  return Math.hypot(lerp(h10-h00,h11-h01,v)/(MAP_X/(GW-1)),lerp(h01-h00,h11-h10,u)/(MAP_Z/(GH-1)));
+ }
+ // Each bilinear patch reaches its extrema at the corners of a rectangular
+ // clipping. Include all parcel/grid intersections to cover patches whose peaks
+ // lie between the usual nine footprint samples; diagonal samples are unnecessary.
  function atlasBounds(w,x0,y0,x1,y1,relief=1){
   x0=clamp(x0,0,GW-1);x1=clamp(x1,0,GW-1);y0=clamp(y0,0,GH-1);y1=clamp(y1,0,GH-1);
   let low=Infinity,top=-Infinity;const sample=(x,y)=>{const h=atlasSurface(w,x,y,relief);low=Math.min(low,h);top=Math.max(top,h);};
   for(const x of[x0,x1])for(const y of[y0,y1])sample(x,y);
   for(let x=Math.ceil(x0);x<=Math.floor(x1);x++){sample(x,y0);sample(x,y1);for(let y=Math.ceil(y0);y<=Math.floor(y1);y++)sample(x,y);}
   for(let y=Math.ceil(y0);y<=Math.floor(y1);y++){sample(x0,y);sample(x1,y);}
-  for(let y=Math.floor(y0);y<=Math.min(GH-2,Math.floor(y1));y++)for(let x=Math.floor(x0);x<=Math.min(GW-2,Math.floor(x1));x++){
-   const odd=(x+y)%2,ax=x,ay=y+(odd?1:0),dx=1,dy=odd?-1:1;
-   for(const bx of[x0,x1]){const t=(bx-ax)/dx,by=ay+t*dy;if(t>=0&&t<=1&&by>=y0&&by<=y1)sample(bx,by);}
-   for(const by of[y0,y1]){const t=(by-ay)/dy,bx=ax+t*dx;if(t>=0&&t<=1&&bx>=x0&&bx<=x1)sample(bx,by);}
-  }
   return{low,top};
  }
  function prepare(w){

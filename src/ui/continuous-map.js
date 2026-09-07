@@ -26,7 +26,7 @@ window.ContinuousMap = (() => {
  function restFolk(){if(walking||!renderer.buildFolk)return;clearTimeout(staticTimer);staticTimer=setTimeout(()=>{if(!walking&&ready()){renderer.buildFolk(clock);renderer.request();}},150);}
  function init(){if(enabled||!renderer)return;enabled=true;document.body.classList.add('continuous-map');
   layer=new ContinuousCityLayer(renderer);renderer.continuousLayer=layer;renderer.continuousModels=layer.models;renderer.continuousRoofs=true;
-  renderer.ground=function(x,y){return this.world?AtlasSpace.surface(this.world,x,y,this.relief):0;};
+  renderer.ground=function(x,y){return this.world?(layer.natural?AtlasSpace.surface:AtlasSpace.coarseSurface)(this.world,x,y,this.relief):0;};
   renderer.buildTerrain=function(){return layer.buildTerrain();};
   installDepthRasterizer(renderer);renderer.renderQuality=1;renderer.backgroundColor=rgb('#79999d');renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));
   const visible=renderer.visible;renderer.visible=function(name){const v=layer.visible(name);return v===null?visible.call(this,name):v;};
@@ -59,7 +59,7 @@ window.ContinuousMap = (() => {
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
   window.__folk={...(r.folkStats||{}),walking,software:!!r.software,reducedMotion:reducedMotion(),roads:r.roadStats||null};
  }
- function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4)].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
+ function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4),renderer.width,renderer.height].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
   startFolk();
   if(renderer.zoom>=AtlasSpace.TOWN_ZOOM*1.67){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}

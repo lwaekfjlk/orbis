@@ -44,15 +44,31 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
      * line's height, so on a steep cross-slope the uphill edge buries itself in the hill.
      * Every vertex here is lifted above the ground under that vertex, and the centre line
      * is a real vertex row, so the road follows the slope instead of cutting into it. */
-    function ribbon(r, g, path, width, color, lift) {
+    function ribbon(r, g, path, width, color, lift, curved = false) {
         const half = width / GRID_X;
         let extra=()=>0;
         const at = (x, y) => r.coord(x, y, r.ground(x, y) + lift + extra(x,y));
         const xy=p=>typeof p==='number'?{x:p%GW,y:Math.floor(p/GW)}:p;
+        // A curved patch can rise through the middle of a perfectly seated road
+        // triangle. Split only spans whose edge/interior interpolation error is
+        // significant relative to their clearance, with at most 64 spans per leg.
+        const samples=[[1/3,1/3,1/3],[.5,.5,0],[0,.5,.5],[.5,0,.5]],tolerance=lift*.2;
+        function span(ax,ay,bx,by,depth=0){
+            const dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy);if(len<1e-10)return;
+            const ox=-dy/len*half,oy=dx/len*half,point=(x,y)=>({x,y,v:at(x,y)});
+            const a=point(ax+ox,ay+oy),b=point(bx+ox,by+oy),c=point(bx,by),d=point(ax,ay),e=point(bx-ox,by-oy),f=point(ax-ox,ay-oy);
+            const triangles=[[a,b,c],[a,c,d],[d,c,e],[d,e,f]];
+            if(depth<6&&triangles.some(t=>samples.some(q=>{
+                const x=t.reduce((s,p,k)=>s+p.x*q[k],0),y=t.reduce((s,p,k)=>s+p.y*q[k],0),height=t.reduce((s,p,k)=>s+p.v[1]*q[k],0);
+                return Math.abs(height-r.ground(x,y)-lift-extra(x,y))>tolerance;
+            }))){const mx=(ax+bx)/2,my=(ay+by)/2;span(ax,ay,mx,my,depth+1);span(mx,my,bx,by,depth+1);return;}
+            for(const t of triangles)g.tri(t[0].v,t[1].v,t[2].v,color);
+        }
         let {x:px,y:py}=xy(path[0]);
         for (let k = 1; k < path.length; k++) {
             const a=xy(path[k-1]),b=xy(path[k]),{x:fx,y:fy}=a,{x:tx,y:ty}=b;
             const dx=tx-fx,dy=ty-fy,L=dx*dx+dy*dy||1;extra=(x,y)=>lerp(a.lift||0,b.lift||0,clamp(((x-fx)*dx+(y-fy)*dy)/L));
+            if(curved){span(fx,fy,tx,ty);px=tx;py=ty;continue;}
             for (let s = 1; s <= SUBDIVISIONS; s++) {
                 const t = s / SUBDIVISIONS, bx = lerp(fx, tx, t), by = lerp(fy, ty, t);
                 const dx = bx - px, dy = by - py, len = Math.hypot(dx, dy) || 1, ox = -dy / len * half, oy = dx / len * half;
@@ -310,14 +326,14 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
             for (const run of nearSlice(road.path, areas, view)) {
                 let runs=[run.map(i=>({x:i%GW,y:Math.floor(i/GW)}))];
                 for(const town of towns)runs=runs.flatMap(path=>townRoadRuns(path,town,accesses,road));
-                for(const path of runs)ribbon(this,g,path,width,rgb('#d8c6a2'),.003+.14*scale);
+                for(const path of runs)ribbon(this,g,path,width,rgb('#d8c6a2'),.003+.14*scale,true);
             }
         }
         const joined=new Set();
         for(const a of accesses){
             const id=a.model.p.id+'/'+a.points[0].x.toFixed(7)+','+a.points[0].y.toFixed(7);if(joined.has(id))continue;joined.add(id);
             const scale=a.model.frame.scale,width=.67*(a.model.city.townProfile?.width||1)*scale;
-            ribbon(this,g,a.points,width,rgb('#d8c6a2'),.003+.14*scale);
+            ribbon(this,g,a.points,width,rgb('#d8c6a2'),.003+.14*scale,true);
         }
         this.nearRoadAccess=accesses;
         const wasDirty = this.dirtyShadow;

@@ -21,8 +21,8 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
   target:[0,0,0],meshes,options:{},upload(name,g){meshes[name]=g;}});
  const layer=new E.ContinuousCityLayer(r);layer.world=w;layer.sim=s;
  const detail={};
- for(const zoom of [1,3,6,12,30,90]){
-  r.zoom=zoom;layer.buildTerrain();
+ for(const zoom of [1,3,6,12,30,90,240,620]){
+  r.zoom=zoom;layer.natural=zoom>=E.AtlasSpace.TOWN_ZOOM;layer.buildTerrain();
   detail[zoom]=layer.terrainDetail;
   // A refinement that grows without bound would remesh the whole grid at 64x.
   assert(layer.terrainTriangles<4e5,`zoom ${zoom} produced ${layer.terrainTriangles} triangles`);
@@ -30,6 +30,7 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
  assert.equal(detail[1],1,'the whole world needs no extra triangles');
  assert(detail[12]>detail[3],'closing in must add detail');
  assert(detail[90]>=detail[12],'refinement must not fall back when closer');
+ assert(detail[620]>=64,'building closeups must outgrow the old eight-way subdivision cap');
  // The point of the refinement: more triangles, the SAME landscape. Every vertex
  // has to sit on the parent surface, and every normal has to be a unit vector.
  const d=meshes.terrain.data;let checked=0;

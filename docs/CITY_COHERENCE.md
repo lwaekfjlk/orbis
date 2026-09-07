@@ -2,7 +2,7 @@
 
 Clicking into a town used to expose separate problems in the layout and its atlas placement: parts of a building could be assigned to a neighbour's elevation, steep wall sections were omitted, overlapping street ribbons flickered, and world roads crossed buildings at the width of map symbols.
 
-The town now surveys the same compact footprint on which it is displayed. Routing uses the atlas's actual triangular surface, and parcel relief limits keep foundations bounded while houses remain above the terrain. Mesh batches retain each building's identity, including foundations, overhangs, miniature landmarks and scaffolding.
+The town now surveys the same compact footprint on which it is displayed. Routing uses the atlas's refined four-corner surface, and parcel relief limits keep foundations bounded while houses remain above the terrain. Mesh batches retain each building's identity, including foundations, overhangs, miniature landmarks and scaffolding. [Terrain refinement](TERRAIN_REFINEMENT.md) shows the actual mesh density beneath enlarged cities.
 
 Walls, waterfront sections and gates form a single connected circuit. Gates correspond to real road crossings; wall and gate geometry follows shared ground heights. Streets are built as a nonoverlapping surface with joined corners. Near atlas roads use street dimensions and connect to exterior city approaches, with river crossings allowed only for existing bridge routes.
 
@@ -28,4 +28,4 @@ After:
 - `npm run test:city-browser` opens the self-contained HTML, enters three towns through search, picks a rendered building, checks camera fitting, orbits, checks a mobile viewport, regenerates another world, and verifies the worker and offline operation. It requires Playwright; `PLAYWRIGHT_MODULE` and `CHROMIUM_PATH` can reuse an existing installation.
 - `npm run build` regenerates the trusted worker and `dist/telluric-onemap.html` together.
 
-The default seed's 102 eligible towns pass the existing population-scale checks: the smallest has 33 buildings, and population versus building count has a correlation of 0.4295. The 12 largest towns retain all 59 incoming parent-road connections, including curtains that extend beyond the survey edge. Browser results are recorded in `previews/city-coherence/results.json`.
+The default seed's 102 eligible towns pass the existing population-scale checks: the smallest has 60 buildings, and population versus building count has a correlation of 0.412. The 12 largest towns retain all 59 incoming parent-road connections, including curtains that extend beyond the survey edge. Browser results are recorded in `previews/city-coherence/results.json`.

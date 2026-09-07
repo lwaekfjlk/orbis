@@ -143,8 +143,8 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.water[k]=e.water;city.waterKind[k]=e.waterKind;
         city.height[k]=elevate(e.surface);city.wet[k]=e.wetness;
     }
-    // Use the exact triangle gradient the atlas draws. Differentiating bilinear
-    // samples invents gentle ground across ridges that are steep on both faces.
+    // Differentiate the same curved patch the detailed atlas draws, so routing
+    // and buildings agree with the terrain throughout a refined parent cell.
     city.atlasSlope=new Float32Array(nn);
     for(let y=0;y<n;y++)for(let x=0;x<n;x++){
         const gx=p.x+(x/(n-1)-.5)*terrainSpan,gy=p.y+(y/(n-1)-.5)*terrainSpan*depth/width;

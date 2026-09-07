@@ -7,6 +7,9 @@ const AtlasSpace = (() => {
  // profile still reads the surrounding valley independently of the built area.
  const CITY_FOOTPRINT=CityEnvironment.cityFootprint, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
  const height=CityEnvironment.atlasHeight,weights=CityEnvironment.atlasWeights,surface=CityEnvironment.atlasSurface;
+ // World-scale map symbols are built against the original two coarse faces.
+ // Detail uses the curved patch; rebuild overlays when that view changes over.
+ function coarseSurface(w,x,y,relief=1){const[ids,q]=weights(x,y);return ids.reduce((h,i,k)=>h+height(w,i,relief)*q[k],0);}
  function point(w,x,y,relief=1){return[(x/(GW-1)-.5)*MAP_X,surface(w,x,y,relief),(y/(GH-1)-.5)*MAP_Z];}
  function grid(x,z){return[(x/MAP_X+.5)*(GW-1),(z/MAP_Z+.5)*(GH-1)];}
  function cityFrame(w,p,c,relief=1){
@@ -24,8 +27,8 @@ const AtlasSpace = (() => {
   return{origin,sx,sz,scale,cells,at,ground,localGround,anchors,vertex};
  }
  function ray(r,sx,sy){r.updateCamera();const nx=(sx/r.width*2-1)*r.halfW,ny=(1-sy/r.height*2)*r.halfH,origin=r.target.map((v,i)=>v+r.right[i]*nx+r.up[i]*ny-r.dir[i]*180);return{origin,dir:r.dir};}
- function pickGround(r,sx,sy){if(!r.world)return null;const{origin,dir}=ray(r,sx,sy);let last=null;const start=(24-origin[1])/dir[1],end=(-.1-origin[1])/dir[1];for(let k=0;k<=96;k++){const t=lerp(start,end,k/96),p=origin.map((v,j)=>v+dir[j]*t),g=grid(p[0],p[2]),d=p[1]-surface(r.world,g[0],g[1],r.relief);if(d<=0&&last){let lo=last.t,hi=t;for(let it=0;it<22;it++){const m=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*m),a=grid(q[0],q[2]);if(q[1]>surface(r.world,a[0],a[1],r.relief))lo=m;else hi=m;}const t2=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*t2),a=grid(q[0],q[2]);if(a[0]<0||a[0]>GW-1||a[1]<0||a[1]>GH-1)return null;return{point:q,x:a[0],y:a[1],i:cell(Math.round(a[0]),Math.round(a[1]))};}last={t,d};}return null;}
+ function pickGround(r,sx,sy){if(!r.world)return null;const sample=r.ground?.bind(r)||((x,y)=>surface(r.world,x,y,r.relief)),{origin,dir}=ray(r,sx,sy);let last=null;const start=(24-origin[1])/dir[1],end=(-.1-origin[1])/dir[1];for(let k=0;k<=96;k++){const t=lerp(start,end,k/96),p=origin.map((v,j)=>v+dir[j]*t),g=grid(p[0],p[2]),d=p[1]-sample(g[0],g[1]);if(d<=0&&last){let lo=last.t,hi=t;for(let it=0;it<22;it++){const m=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*m),a=grid(q[0],q[2]);if(q[1]>sample(a[0],a[1]))lo=m;else hi=m;}const t2=(lo+hi)/2,q=origin.map((v,j)=>v+dir[j]*t2),a=grid(q[0],q[2]);if(a[0]<0||a[0]>GW-1||a[1]<0||a[1]>GH-1)return null;return{point:q,x:a[0],y:a[1],i:cell(Math.round(a[0]),Math.round(a[1]))};}last={t,d};}return null;}
  function hitBox(origin,dir,lo,hi){let t0=0,t1=Infinity;for(let k=0;k<3;k++){if(Math.abs(dir[k])<1e-10){if(origin[k]<lo[k]||origin[k]>hi[k])return Infinity;continue;}const a=(lo[k]-origin[k])/dir[k],b=(hi[k]-origin[k])/dir[k];t0=Math.max(t0,Math.min(a,b));t1=Math.min(t1,Math.max(a,b));}return t0<=t1?t0:Infinity;}
  function matrixFor(frame){return{origin:frame.origin.slice(),horizontalScale:[frame.sx,frame.sz],verticalScale:frame.scale,crs:'TELLURIC_RECTANGULAR_ATLAS'};}
- return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,height,weights,surface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
+ return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
 })();

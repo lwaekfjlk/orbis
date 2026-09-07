@@ -1,5 +1,5 @@
 /** A bounded streaming city layer inside the atlas renderer. Never opens a scene.
- * Terrain remains the same piecewise-linear height field at every zoom level.
+ * Fine terrain resolves the same four-corner height patches used to seat towns.
  * Local building assemblies are rigidly seated on that field; no baked backdrops.
  */
 const SEASON_SNOW=rgb('#e9f1f4');
@@ -8,13 +8,14 @@ class ContinuousCityLayer {
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
  remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);}
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
- reset(w,s){this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
+ reset(w,s){this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
  bind(w,s){if(w!==this.world||(this.sim&&s!==this.sim))this.reset(w,s);else this.sim=s;}
  // Screen-space tessellation: one parent grid cell can cover a large part of the
  // screen once the camera closes in, and its two flat faces then read as two
- // wedges rather than as ground. Refined vertices sample the same parent surface,
- // so nothing new is invented — only the sampling rate follows the camera.
- tessellation(){const r=this.r;if(!r.width||!r.zoom)return 1;r.updateCamera();const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;return Math.round(clamp(perCell/9,1,8));}
+ // wedges rather than as ground. Resolve the curved four-corner patches at about
+ // twelve pixels per subdivision. Dyadic levels share exact sample coordinates;
+ // the mesh budget below limits the cost on wide or very low-angle views.
+ tessellation(){const r=this.r;if(!r.width||!r.zoom)return 1;r.updateCamera();const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;return 2**Math.ceil(Math.log2(clamp(perCell/12,1,128)));}
  // Grid-space bounds of the ground the camera can currently see. A tilted
  // orthographic view stretches along its forward axis, so screen height covers
  // halfH/sin(elevation) of ground rather than halfH; a square reach around the
@@ -25,11 +26,11 @@ class ContinuousCityLayer {
   const lo=AtlasSpace.grid(x0,z0),hi=AtlasSpace.grid(x1,z1);return{x0:lo[0]-2,x1:hi[0]+2,y0:lo[1]-2,y1:hi[1]+2};}
  // Terrain is only rebuilt when this changes, so a continuous zoom crosses a
  // handful of discrete refinement steps instead of remeshing every frame.
- terrainKey(){const n=this.tessellation();if(n<=1&&!this.natural)return 'base/'+this.r.layer;const b=this.viewBox(),q=v=>Math.round(v/6);return [n,q(b.x0),q(b.y0),q(b.x1),q(b.y1),this.natural,this.r.layer,[...this.models.keys()].join(',')].join('/');}
+ terrainKey(){const n=this.tessellation();if(n<=1&&!this.natural)return 'base/'+this.r.layer+'/'+this.r.relief;const b=this.viewBox();return [n,Math.floor(b.x0+2),Math.floor(b.y0+2),Math.ceil(b.x1-2),Math.ceil(b.y1-2),this.natural,this.r.layer,this.r.relief,this.r.width,this.r.height,[...this.models.keys()].join(',')].join('/');}
  // One continuous normal field for shading, derived once per world from the same
  // height field by central differences. Refined vertices interpolate it, so coarse
  // and refined patches meet without a shading seam. Shading only: every vertex
- // still sits exactly on the parent surface.
+ // still sits exactly on the shared height patch.
  normalField(){const r=this.r,w=r.world;if(this.normalWorld===w&&this.normalRelief===r.relief)return this.normals;
   const n=new Float32Array(GN*3),ix=1/(2*AtlasSpace.X),iz=1/(2*AtlasSpace.Z),h=(x,y)=>AtlasSpace.height(w,cell(x,y),r.relief);
   for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const o=cell(x,y)*3,dx=(h(x+1,y)-h(x-1,y))*ix,dz=(h(x,y+1)-h(x,y-1))*iz,l=Math.sqrt(dx*dx+1+dz*dz);n[o]=-dx/l;n[o+1]=1/l;n[o+2]=-dz/l;}
@@ -38,39 +39,52 @@ class ContinuousCityLayer {
  // This renders the whole world, not a circular/square platform beneath the town.
  buildTerrain(){const r=this.r,w=r.world;if(!w)return;const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p);
   const field=this.normalField(),tess=this.tessellation(),box=this.viewBox();
-  // Corner samples are shared by up to four cells, so they are memoised on an
-  // integer key rather than recomputed. 840 is divisible by every refinement step
-  // up to eight, so two neighbouring cells refined differently still agree on the
-  // vertices they share instead of colliding onto one rounded key.
+  // Only visible cells receive the finest level. A coarse collar and cached town
+  // surroundings keep panning continuous without subdividing the entire world.
+  const core={x0:Math.floor(box.x0+2),x1:Math.ceil(box.x1-2),y0:Math.floor(box.y0+2),y1:Math.ceil(box.y1-2)},levels=new Uint8Array(GN);
+  let detail=tess,estimated;
+  do{estimated=0;for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){
+   const visible=x>=core.x0&&x<core.x1&&y>=core.y0&&y<core.y1,collar=x>=core.x0-2&&x<core.x1+2&&y>=core.y0-2&&y<core.y1+2;
+   let n=visible?detail:collar?Math.max(1,Math.min(8,detail/2)):1;
+   if(near&&areas.some(p=>Math.abs(p.x-x)<9&&Math.abs(p.y-y)<8))n=Math.max(n,4);
+   levels[y*GW+x]=n;estimated+=n*n*2;
+  }if(estimated>300000&&detail>1)detail/=2;else break;}while(true);
+  const colors=new Float32Array(GN*3);
+  for(let i=0;i<GN;i++){let c=r.palette(i);if(near&&w.height[i]>0){c=CityEnvironment.cellColor(w,i);const cover=CityEnvironment.cellCover(w,i);if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));}colors.set(c,i*3);}
+  // 256 also represents the centre of a 1/128 cell, used by boundary stitching.
+  // Fine and coarse neighbours share these vertices, colours and shading normals.
   const vertices=new Map();
-  const vertex=(x,y)=>{const k=Math.round(x*840)*262144+Math.round(y*840);let a=vertices.get(k);if(a)return a;
+  const vertex=(x,y)=>{const k=Math.round(x*256)*(GH*256+1)+Math.round(y*256);let a=vertices.get(k);if(a)return a;
    const p=AtlasSpace.point(w,x,y,r.relief);
+   if(!near)p[1]=AtlasSpace.coarseSurface(w,x,y,r.relief);
    const ax=Math.min(GW-1,Math.floor(x)),ay=Math.min(GH-1,Math.floor(y)),u=x-ax,v=y-ay;
    const i0=cell(ax,ay)*3,i1=cell(ax+1,ay)*3,i2=cell(ax,ay+1)*3,i3=cell(ax+1,ay+1)*3;
    const nx=lerp(lerp(field[i0],field[i1],u),lerp(field[i2],field[i3],u),v),ny=lerp(lerp(field[i0+1],field[i1+1],u),lerp(field[i2+1],field[i3+1],u),v),nz=lerp(lerp(field[i0+2],field[i1+2],u),lerp(field[i2+2],field[i3+2],u),v);
    const l=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
-   const[ids,q]=AtlasSpace.weights(x,y);let cr=0,cg=0,cb=0;
-   for(let n=0;n<3;n++){let c=r.palette(ids[n]);
-    if(near&&w.height[ids[n]]>0){
-     c=CityEnvironment.cellColor(w,ids[n]);
-     // Close in, the ground carries the season the buildings are carrying. The atlas
-     // keeps its annual-mean palette: a world map is not a picture of one winter.
-     const cover=CityEnvironment.cellCover(w,ids[n]);
-     if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));
-    }
-    cr+=q[n]*c[0];cg+=q[n]*c[1];cb+=q[n]*c[2];}
+   // A triangle-based colour interpolation kept the original giant diagonal
+   // visible even after its geometry was refined. Colour follows the same patch.
+   const channel=k=>lerp(lerp(colors[i0+k],colors[i1+k],u),lerp(colors[i2+k],colors[i3+k],u),v);
+   const cr=channel(0),cg=channel(1),cb=channel(2);
    a=[p[0],p[1],p[2],nx/l,ny/l,nz/l,cr,cg,cb];vertices.set(k,a);return a;
   };
   for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){
-   let n=tess>1&&x+1>=box.x0&&x<=box.x1&&y+1>=box.y0&&y<=box.y1?tess:1;
-   if(near&&areas.some(p=>Math.abs(p.x-x)<9&&Math.abs(p.y-y)<8))n=Math.max(n,4);
+   const n=levels[y*GW+x],left=x?levels[y*GW+x-1]:n,right=x<GW-2?levels[y*GW+x+1]:n,top=y?levels[(y-1)*GW+x]:n,bottom=y<GH-2?levels[(y+1)*GW+x]:n;
    const s=n+1,V=[];
    for(let j=0;j<s;j++)for(let i=0;i<s;i++)V.push(vertex(x+i/n,y+j/n));
-   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const a=j*s+i,b=a+1,c=a+s,d=c+1;if((x+y)%2){g.smoothTri(V[a],V[c],V[b]);g.smoothTri(V[b],V[c],V[d]);}else{g.smoothTri(V[a],V[c],V[d]);g.smoothTri(V[a],V[d],V[b]);}}
+   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const a=j*s+i,b=a+1,c=a+s,d=c+1;
+    if(i===0&&left>n||i===n-1&&right>n||j===0&&top>n||j===n-1&&bottom>n){
+     const edge=[V[a]];
+     if(i===0)for(let k=1;k<left/n;k++)edge.push(vertex(x,y+j/n+k/left));edge.push(V[c]);
+     if(j===n-1)for(let k=1;k<bottom/n;k++)edge.push(vertex(x+i/n+k/bottom,y+1));edge.push(V[d]);
+     if(i===n-1)for(let k=1;k<right/n;k++)edge.push(vertex(x+1,y+(j+1)/n-k/right));edge.push(V[b]);
+     if(j===0)for(let k=1;k<top/n;k++)edge.push(vertex(x+(i+1)/n-k/top,y));
+     const center=vertex(x+(i+.5)/n,y+(j+.5)/n);for(let k=0;k<edge.length;k++)g.smoothTri(center,edge[k],edge[(k+1)%edge.length]);
+    }else if((x+y)%2){g.smoothTri(V[a],V[c],V[b]);g.smoothTri(V[b],V[c],V[d]);}else{g.smoothTri(V[a],V[c],V[d]);g.smoothTri(V[a],V[d],V[b]);}
+   }
   }
   const c=rgb('#4d859e'),a=-MAP_X/2,b=MAP_X/2,n=-MAP_Z/2,s=MAP_Z/2,R=500;
   g.quad([-R,-.015,-R],[-R,-.015,n],[R,-.015,n],[R,-.015,-R],c);g.quad([-R,-.015,s],[-R,-.015,R],[R,-.015,R],[R,-.015,s],c);g.quad([-R,-.015,n],[-R,-.015,s],[a,-.015,s],[a,-.015,n],c);g.quad([b,-.015,n],[b,-.015,s],[R,-.015,s],[R,-.015,n],c);
-  r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=tess;this.lastTerrainKey=this.terrainKey();
+  r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=detail;this.terrainTarget=tess;this.lastTerrainKey=this.terrainKey();
  }
  // Zooming in used to STRIP the world. Everything the atlas draws to say what a place
  // is — trees, dunes, glacier tongues, sea ice, reeds — is hidden past 4.8 because those
@@ -266,7 +280,7 @@ class ContinuousCityLayer {
   if(this.r.zoom>=AtlasSpace.TOWN_ZOOM){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false;}
   return null;
  }
- cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.buildEnvironment();this.r.request();}
+ cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.roadKey=null;this.r.nearRoadKey=null;this.r.buildRoads?.();this.r.buildLines?.();this.buildEnvironment();this.r.request();}
   // The scatter follows the camera, on the same settle-first rule as the terrain: it is
   // a remesh, and it must not run inside a wheel or a drag.
   else if(this.environmentKey()!==this.lastEnvironmentKey){clearTimeout(this.reflora);this.reflora=setTimeout(()=>{if(this.environmentKey()!==this.lastEnvironmentKey&&!busy){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}},190);}
@@ -274,7 +288,7 @@ class ContinuousCityLayer {
   // free when nothing has moved far enough to matter.
   if(close)this.r.buildNearRoads?.();  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
   // settle rather than running inside a wheel or drag gesture.
-  else if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
+  if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
   if(!close){this.onChange();return;}clearTimeout(this.timer);this.timer=setTimeout(()=>this.stream(),180);this.onChange();
  }
  async stream(){if(this.loading||!this.world||busy||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;const r=this.r,a=AtlasSpace.grid(r.target[0],r.target[2]);

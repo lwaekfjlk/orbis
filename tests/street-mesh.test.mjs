@@ -80,9 +80,9 @@ test('an inherited river bridge connects the approach, but never turns sea or la
 });
 
 
-test('incoming roads clear curtains that reach the survey boundary in Scorchwell and Whitebeck',async()=>{
+test('incoming roads connect through real gates in Scorchspire, Scorchwell, Whitebeck and Oakdell',async()=>{
  const w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'}),net=E.RoadNetwork.ensure(w,s);
- for(const name of ['Scorchwell','Whitebeck','Oakdell']){
+ for(const name of ['Scorchspire','Scorchwell','Whitebeck','Oakdell']){
   const p=s.provinces.find(p=>p.name===name),city=E.generateCity(w,s,p.id),frame=E.AtlasSpace.cityFrame(w,p,city),model={p,city,frame},r=Object.create(E.AtlasRenderer.prototype);
   Object.assign(r,{world:w,relief:1,roadNetwork:net,continuousModels:new Map([[p.id,model]]),target:frame.origin,halfW:2,halfH:2,elevation:1,updateCamera(){},ground(x,y){return E.AtlasSpace.surface(w,x,y)},coord(x,y,h){const q=E.AtlasSpace.point(w,x,y);q[1]=h;return q},upload(){}});
   r.buildNearRoads();
@@ -105,4 +105,20 @@ test('a curtain beyond the survey edge moves the approach into the inherited con
  const access=r.nearRoadAccess[0].points;
  assert((access[0].x-p.x)/frame.cells*c.width< -77-.67,'clip at the actual wall clearance');
  for(const q of access){const x=(q.x-p.x)/frame.cells*c.width,z=(q.y-p.y)/frame.cells*c.width;assert(!(x> -77&&x<35&&z> -30&&z<30),'access goes around the curtain');}
+});
+
+test('near road triangle interiors stay above a curved hillside with bounded refinement',()=>{
+ const {r,p,meshes}=nearFixture();
+ r.roadNetwork.roads[0].path=Array.from({length:5},(_,k)=>(p.y-4+k)*E.GW+p.x-4+k);
+ r.world.height[(p.y-2)*E.GW+p.x-3]=3000;
+ r.buildNearRoads();const d=meshes.roadsNear.data;
+ assert(d.length/27<5000,'road curvature refinement remains bounded');
+ let checked=0;
+ for(let i=0;i<d.length;i+=27)for(const weights of[[1/3,1/3,1/3],[.5,.5,0],[0,.5,.5],[.5,0,.5]]){
+  const at=axis=>weights.reduce((n,w,k)=>n+w*d[i+k*9+axis],0),[x,y]=E.AtlasSpace.grid(at(0),at(2));
+  const clearance=at(1)-E.AtlasSpace.surface(r.world,x,y);
+  assert(clearance>.001,`the curved ground covers a road triangle interior by ${-clearance}`);
+  checked++;
+ }
+ assert(checked>100,'exercise refined triangle interiors as well as their vertices');
 });

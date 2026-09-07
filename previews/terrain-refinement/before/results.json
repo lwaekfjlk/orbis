@@ -1,0 +1,57 @@
+{
+  "checks": [
+    {
+      "zoom": 86.40000000000002,
+      "detail": 8,
+      "target": 8,
+      "triangles": 120844,
+      "seen": 1130,
+      "maxEdge": 78.77021270885866,
+      "maxError": 9.030037001478419e-7,
+      "key": "8/17/21/18/22/true/realms/507"
+    },
+    {
+      "zoom": 240,
+      "detail": 8,
+      "target": 8,
+      "triangles": 120844,
+      "seen": 137,
+      "maxEdge": 169.8846805850442,
+      "maxError": 6.631283969160684e-8,
+      "key": "8/17/21/18/22/true/realms/507"
+    },
+    {
+      "zoom": 620,
+      "detail": 8,
+      "target": 8,
+      "triangles": 120844,
+      "seen": 24,
+      "maxEdge": 438.86872081028287,
+      "maxError": 6.631283969160684e-8,
+      "key": "8/17/21/18/22/true/realms/507"
+    },
+    {
+      "zoom": 620,
+      "detail": 8,
+      "target": 8,
+      "triangles": 120844,
+      "seen": 23,
+      "maxEdge": 438.86872081028287,
+      "maxError": 6.631283969160684e-8,
+      "key": "8/17/21/18/22/true/realms/507",
+      "action": "pan"
+    },
+    {
+      "zoom": 620,
+      "detail": 8,
+      "target": 8,
+      "triangles": 120844,
+      "seen": 71,
+      "maxEdge": 131.05108472469226,
+      "maxError": 6.667347754452102e-8,
+      "key": "8/17/21/18/22/true/realms/507",
+      "action": "resize"
+    }
+  ],
+  "errors": []
+}
