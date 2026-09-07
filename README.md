@@ -18,6 +18,8 @@ Terrain is sampled from the unchanged physical world. Refined triangles do not i
 
 Sanctuaries, palaces and houses use modeled window reveals, layered entrances, supported bell chambers and finished roof edges. See the [architecture refinement and synchronized comparison](docs/ARCHITECTURE_REFINEMENT.md), or run `npm run preview:architecture -- --baseline b5f00bc` to inspect the original and refined meshes together.
 
+All fifteen native wonders now have an individual review and export: fourteen further assemblies receive their own refined architecture, alongside the previously refined sanctuary. See the [complete wonder list, comparisons and GLB exports](docs/WONDER_REFINEMENT.md), or run `npm run preview:wonders -- --baseline 7264fd6`.
+
 Roads join settlements over real ground — bridges only where the world has a channel, never a metre of road over open water — and coastal towns get a working waterfront. Small figures of the world's seven peoples walk the streets and the roads; each is one sample of its province's population mixture, and appearance is the only thing that differs between peoples. None of this feeds back into the simulation: roads carry no trade and figures carry no cargo. See [roads, ports and folk](docs/ROADS_PORTS_FOLK.md).
 Ground colour, vegetation and building form all read one climate resolver over the existing temperature, aridity and ice fields, so a boreal town and a tropical town are visibly different places at both scales. Roof pitch, eaves, openings, chimneys and palette are decided per block from that block's own cell. This is a legibility pass over data the model already produced — no snow, water or terrain is invented, and the physical world is byte-identical to before it.
 
