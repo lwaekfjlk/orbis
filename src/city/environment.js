@@ -11,6 +11,9 @@
  */
 const CityEnvironment = (() => {
  const version=4, cityFootprint=.30, cached=new WeakMap(), profiles=new WeakMap();
+ // Local art dimensions share one atlas scale with river rendering.
+ const cityDimensions=Object.freeze({span:7.8,width:152,depth:124});
+ const riverWidth=(w,i)=>clamp(Math.log1p(w.flow[i]/w.riverThreshold)*.8,.45,2);
  const rgbHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const colors=BIOME.map(b=>rgbHex(b[1]));
  const frozen=rgbHex('#d9eff0');
@@ -254,7 +257,7 @@ const CityEnvironment = (() => {
   const distance=(q,a,b)=>{const dx=b.x-a.x,dz=b.z-a.z,t=clamp(((q.x-a.x)*dx+(q.z-a.z)*dz)/(dx*dx+dz*dz||1));return Math.hypot(q.x-a.x-dx*t,q.z-a.z-dz*t);};
   for(let yy=Math.max(0,p.y-range);yy<=Math.min(GH-1,p.y+range);yy++)for(let xx=Math.max(0,p.x-range);xx<=Math.min(GW-1,p.x+range);xx++){
    const i=yy*GW+xx,j=w.down[i];if(j<0||w.height[i]<=0||w.lake[i]>0||w.flow[i]<w.riverThreshold*.6)continue;
-   const a={x:(xx-p.x)/span*city.width,z:(yy-p.y)/span*city.width},b={x:(j%GW-p.x)/span*city.width,z:(Math.floor(j/GW)-p.y)/span*city.width},width=clamp(Math.log1p(w.flow[i]/w.riverThreshold)*.8,.45,2);
+   const a={x:(xx-p.x)/span*city.width,z:(yy-p.y)/span*city.width},b={x:(j%GW-p.x)/span*city.width,z:(Math.floor(j/GW)-p.y)/span*city.width},width=riverWidth(w,i);
    const ix=x=>clamp(Math.round((x/g.width+.5)*(n-1)),0,n-1),iz=z=>clamp(Math.round((z/g.depth+.5)*(n-1)),0,n-1);
    for(let y=iz(Math.min(a.z,b.z)-width);y<=iz(Math.max(a.z,b.z)+width);y++)for(let x=ix(Math.min(a.x,b.x)-width);x<=ix(Math.max(a.x,b.x)+width);x++){
     const k=y*n+x;if(g.water[k]||distance(g.xy(k),a,b)>=width)continue;g.water[k]=1;g.waterKind[k]=3;g.height[k]-=.32;
@@ -275,5 +278,5 @@ const CityEnvironment = (() => {
   return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
  }
  function roofSnow(g,k){return snowCover(g,k)>.3;}
- return {version,cityFootprint,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
+ return {version,cityFootprint,cityDimensions,riverWidth,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();

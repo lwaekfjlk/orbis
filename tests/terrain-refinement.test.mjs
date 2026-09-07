@@ -6,7 +6,7 @@ import { scripts } from '../scripts/manifest.mjs';
 import { root } from './engine-loader.mjs';
 
 const source = scripts.slice(0, scripts.indexOf('src/ui/world-ui.js')).map(file => readFileSync(resolve(root, file), 'utf8')).join('\n');
-const E = Function('let busy = false;\n' + source + '\nreturn {ContinuousCityLayer,AtlasRenderer,AtlasSpace,setBusy(value){busy=value;}};')();
+const E = Function('let busy = false;\n' + source + '\nreturn {ContinuousCityLayer,AtlasRenderer,AtlasSpace,RiverDetail,setBusy(value){busy=value;}};')();
 
 function cameraFixture(t, zoom = 20) {
     // Keep production debounce callbacks while advancing their clock explicitly.
@@ -14,12 +14,13 @@ function cameraFixture(t, zoom = 20) {
     t.mock.timers.enable({ apis: ['setTimeout'] });
     E.setBusy(false);
     const world = { name: 'first world' }, sim = { provinces: [], realms: [] };
-    const calls = { roads: [], terrain: [], environment: [], stream: [], atlasRoads: 0, lines: 0, requests: 0 };
+    const calls = { roads: [], terrain: [], environment: [], stream: [], atlasRoads: 0, lines: 0, rivers: [], requests: 0 };
     const r = Object.create(E.AtlasRenderer.prototype);
     Object.assign(r, { world, sim, width: 1000, height: 700, zoom, target: [0, 0, 0],
         azimuth: .018, elevation: 1.19, relief: 1, layer: 'relief', meshes: {}, options: {},
         request() { calls.requests++; }, buildNearRoads() { calls.roads.push(this.zoom); },
-        buildRoads() { calls.atlasRoads++; }, buildLines() { calls.lines++; } });
+        buildRoads() { calls.atlasRoads++; }, buildLines() { calls.lines++; this.buildRivers(); },
+        buildRivers() { calls.rivers.push(this.zoom); layer.lastRiverKey=E.RiverDetail.key(layer); } });
     const layer = new E.ContinuousCityLayer(r);
     Object.assign(layer, { world, sim, natural: zoom >= E.AtlasSpace.TOWN_ZOOM });
     const snapshot = () => ({ world: layer.world, zoom: r.zoom, target: r.target.slice(), width: r.width, height: r.height });
@@ -28,6 +29,7 @@ function cameraFixture(t, zoom = 20) {
     layer.stream = () => { calls.stream.push(snapshot()); };
     layer.lastTerrainKey = layer.terrainKey();
     layer.lastEnvironmentKey = layer.environmentKey();
+    layer.lastRiverKey=E.RiverDetail.key(layer);
     t.after(() => { layer.reset(null, null); clearTimeout(layer.timer); E.setBusy(false); });
     return { r, layer, calls, clock: t.mock.timers };
 }
@@ -121,4 +123,23 @@ test('a world becoming busy during debounce suppresses mesh work until the camer
     assert.equal(calls.environment.length, 0);
     E.setBusy(false); layer.cameraChanged(); clock.tick(300);
     assert.equal(calls.terrain.length, 1, 'a suppressed camera update can be retried after world generation');
+});
+
+
+test('river detail follows settled zoom, pan and resize without redrawing unrelated overlays', t => {
+    const {r,layer,calls,clock}=cameraFixture(t,20);
+    r.zoom=200;layer.cameraChanged();clock.tick(100);
+    r.zoom=320;layer.cameraChanged();clock.tick(300);
+    assert.deepEqual(calls.rivers,[320],'one gesture gets one river rebuild at its final scale');
+    assert.equal(calls.lines,0,'a river refinement does not rebuild winds and plate arrows');
+    layer.cameraChanged();clock.tick(300);assert.equal(calls.rivers.length,1,'unchanged camera reuses water geometry');
+    r.target[0]+=E.AtlasSpace.X*5;layer.cameraChanged();clock.tick(300);assert.equal(calls.rivers.length,2);
+    r.width*=2;r.height*=2;layer.cameraChanged();clock.tick(300);assert.equal(calls.rivers.length,3);
+});
+test('a world reset cancels pending river refinement and the river toggle stays available near cities', t => {
+    const {r,layer,calls,clock}=cameraFixture(t,60);
+    r.zoom=300;layer.cameraChanged();clock.tick(100);
+    const replacement={name:'new world'};r.world=replacement;layer.bind(replacement,{provinces:[],realms:[]});clock.tick(300);
+    assert.equal(calls.rivers.length,0,'a stale river callback cannot run after reset');
+    r.options.rivers=false;assert.equal(layer.visible('rivers'),false);r.options.rivers=true;assert.equal(layer.visible('rivers'),true);
 });

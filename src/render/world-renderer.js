@@ -373,8 +373,9 @@ class AtlasRenderer {
         this.upload('dunes', dunes, true);
         this.upload('smoke', smoke, false, .4, .55);
     }
-    buildLines() {
-        const w = this.world, rivers = new Geometry(), borders = new Geometry(), arrows = new Geometry(), currents = new Geometry(), wind = new Geometry();
+    buildRivers() {
+        if(this.continuousLayer?.natural&&typeof RiverDetail!=='undefined')return RiverDetail.build(this.continuousLayer);
+        const w=this.world,rivers=new Geometry();
         for (let i = 0; i < GN; i++)
             if (w.height[i] > 0 && w.flow[i] > (w.channelThreshold?.[i] || w.riverThreshold) && (w.riverDown || w.down)[i] >= 0 && w.lake[i] < 0 && w.biome[i] !== 14 && w.ice[i] < 25) {
                 const d = (w.riverDown || w.down)[i], x = i % GW, y = i / GW | 0, xx = d % GW, yy = d / GW | 0;
@@ -389,6 +390,12 @@ class AtlasRenderer {
                     prev = p;
                 }
             }
+        this.upload('rivers',rivers,false,.2);
+        if(this.continuousLayer&&typeof RiverDetail!=='undefined')this.continuousLayer.lastRiverKey=RiverDetail.key(this.continuousLayer);
+    }
+    buildLines() {
+        const w = this.world, borders = new Geometry(), arrows = new Geometry(), currents = new Geometry(), wind = new Geometry();
+        this.buildRivers();
         for (const b of w.boundaries) {
             const vert = b.x % 1 !== 0, dx = vert ? 0 : .51, dy = vert ? .51 : 0, a = this.coord(b.x - dx, b.y - dy, this.ground(b.x - dx, b.y - dy) + .12), c = this.coord(b.x + dx, b.y + dy, this.ground(b.x + dx, b.y + dy) + .12);
             borders.line(a, c, .087, BCOL[b.type]);
@@ -407,7 +414,6 @@ class AtlasRenderer {
                 const v = windAt(w.lat[i], 0);
                 arrow(wind, x, y, v[0], v[1], 4.3, rgb('#f1e5c5'), .085);
             }
-        this.upload('rivers', rivers, false, .2);
         this.upload('borders', borders, false, .7);
         this.upload('arrows', arrows, false, .8);
         this.upload('currents', currents, false, .7);
