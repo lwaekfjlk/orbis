@@ -50,9 +50,23 @@ test('City coordinates refer to the actual Stonefall source and preserve nearby 
  for(const[x,z]of[[0,0],[city.width/2,city.depth/2],[-city.width/2,-city.depth/2]]){const a=f.at(x,z),v=f.vertex(x,f.localGround(x,z),z);assert(Math.abs(v[1]-E.AtlasSpace.surface(w,...a)-.003)<1e-9);assert.deepEqual(E.AtlasSpace.grid(v[0],v[2]).map(x=>+x.toFixed(6)),a.map(x=>+x.toFixed(6)));}
  assert.equal(E.physicalFingerprint(w),h);
 });
-test('Every building has a rigid elevated anchor and finite transformation',()=>{
+test('Every building is seated in its own ground, with a rigid finite transformation',()=>{
  const f=E.AtlasSpace.cityFrame(w,p,city);
- for(const b of city.buildings){const a=f.anchors.get(b.id);assert(a&&a.y>=a.low);for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const x=b.x+dx*b.w,z=b.z+dz*b.d;assert(a.y>=f.ground(x,z)-1e-9);const v=f.vertex(x,b.y+b.h,z,a);assert(v.every(Number.isFinite));assert(Math.abs(v[1]-a.y-b.h*f.scale)<1e-9);}}
+ // Blocks used to sit on their HIGHEST corner, which left the downhill side on a plinth
+ // taller than the house. They now cut into the bank, so an uphill sample legitimately
+ // stands above the anchor. What must still never happen is a block floating clear of the
+ // parcel it was surveyed on, or perching on a plinth instead of cutting in.
+ for(const b of city.buildings){const a=f.anchors.get(b.id);
+  // .006 is the seating lift that keeps the slab off the terrain it stands on.
+  assert(a&&a.y>=a.low-1e-9&&a.y<=a.top+.0061,b.id+' is anchored outside its own ground range');
+  let seated=0;
+  for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const x=b.x+dx*b.w,z=b.z+dz*b.d;
+   if(f.ground(x,z)<=a.y+1e-9)seated++;
+   const v=f.vertex(x,b.y+b.h,z,a);assert(v.every(Number.isFinite));assert(Math.abs(v[1]-a.y-b.h*f.scale)<1e-9);}
+  assert(seated>0,b.id+' floats clear of its own parcel');
+  // The same .006 lift dominates on ground that is essentially level, where there is no
+  // bank to cut into in the first place.
+  if(!b.precinct)assert(a.y-a.low<=(a.top-a.low)*.5+.0061,b.id+' stands on a plinth instead of cutting into the bank');}
 });
 test('Mesh collection does not request a second canvas or graphics context',()=>{
  globalThis.window={world:w,sim:s};globalThis.document={createElement(){throw Error('A second canvas was requested');}};

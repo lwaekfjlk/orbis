@@ -264,7 +264,7 @@ function generateCity(w, sim, provinceId, design = {}) {
             lots.push({ k, rank: d / 100 + city.wet[k] * .2 + ((Math.imul(k, 2654435761) >>> 0) % 997) / 1e6 });
         }
     lots.sort((a, b) => a.rank - b.rank);
-    const target = cityClamp(Math.round(120 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 1.05), 120, 620);
+    const target = cityClamp(Math.round(260 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 2.3), 260, 1500);
     const used = [], usedGrid = cityGrid(8);
     let infill=false;
     const blocked = j => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.road[j] || city.gateReserve[j] || city.slope[j] > .9;
@@ -275,8 +275,8 @@ function generateCity(w, sim, provinceId, design = {}) {
         // The interior passes take whatever the frontage ranks left behind, so their
         // footprints are drawn small and unevenly: a near-square 4-6 block only ever fitted
         // in open ground, which is exactly the ground the frontage has already taken.
-        const ww = plot ? plot.w : landmark ? precinctSize : (infill ? 2.2+rng()*1.1 : (2.4 + rng() * (3.6 + recipe.variety * 2.2)) * profile.scale) * shrink,
-            dd = plot ? plot.d : landmark ? precinctSize : (infill ? 2.4+rng()*1.0 : (2.8 + rng() * (4.8 + recipe.variety * 2.6)) * profile.scale) * shrink;
+        const ww = plot ? plot.w : landmark ? precinctSize : (infill ? 1.3+rng()*.7 : (1.4 + rng() * (2.0 + recipe.variety * 1.2)) * profile.scale) * shrink,
+            dd = plot ? plot.d : landmark ? precinctSize : (infill ? 1.4+rng()*.6 : (1.6 + rng() * (2.6 + recipe.variety * 1.4)) * profile.scale) * shrink;
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
         if (ww > 3 || dd > 3) {
             for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1)
@@ -353,13 +353,18 @@ function generateCity(w, sim, provinceId, design = {}) {
     }
     const streetRows = [...rows.values()].sort((a, b) => a.near - b.near || (a.key < b.key ? -1 : 1));
     for (const row of streetRows) row.items.sort((a, b) => a.alongX ? a.x - b.x : a.y - b.y);
-    const SETBACK = 1.0;
+    // Halving the parcels only halves the buildings unless the ranks reach as deep as the
+    // old large ones did: each rank probes further back, so small plots tile the whole block
+    // instead of leaving a hollow core two rows in.
+    const STEPS = (gap, count) => Array.from({ length: count }, (_, i) => i * gap);
+    const SETBACK = .95;
     // Two ranks. The first is the street frontage itself. The second is the rear tenements
     // behind it: same street, but the plot probes outward until it clears the row in front,
     // which is what turns a lined street into a solid quarter instead of a hollow block.
     for (const rank of [
-        { front: [1.9, 4.0], deep: [4.2, 8.0], probe: [0], taper: [1, .8, .62, .46, .34] },
-        { front: [1.8, 3.4], deep: [2.6, 4.6], probe: [0, 1.7, 3.4, 5.1, 6.8, 8.5, 10.2], taper: [1, .74, .52] }
+        { front: [1.1, 2.3], deep: [2.2, 4.3], probe: [0], taper: [1, .8, .62, .46, .34] },
+        { front: [1.0, 1.9], deep: [1.8, 3.2], probe: STEPS(.9, 12), taper: [1, .74, .52] },
+        { front: [.9, 1.7], deep: [1.4, 2.4], probe: STEPS(1.1, 18), taper: [1, .7, .48] }
     ]) {
         for (const row of streetRows) {
             if (city.buildings.length >= target) break;
@@ -399,7 +404,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     // Fine-grained frontage fills gaps left between civic compounds. Every new
     // footprint passes the same land, road and collision tests; no new population.
     infill=true;
-    for(const lot of lots){if(city.buildings.length>=Math.min(760,target*2.1))break;buildingAt(lot.k,'home',false);}
+    for(const lot of lots){if(city.buildings.length>=Math.min(1900,target*2.1))break;buildingAt(lot.k,'home',false);}
     infill=false;
     // A granary and public well are selected from dry, road-served existing lots.
     const ordinary = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
@@ -426,7 +431,11 @@ function generateCity(w, sim, provinceId, design = {}) {
         const d = Math.hypot(x - city.market.x, z - city.market.z);
         if (d < (profile.id === 'forest' ? 6 : 16) * grow || city.environment.ice[i]>5 || city.environment.snow[i]>.2 || rng()>city.environment.treeDensity[i])
             continue;
-        city.trees.push({ x, z, y: city.height[i], h: 2 + rng() * 2.1, kind: CityEnvironment.treeKind(city.environment,i) });
+        // Stature follows the form, so a scrub belt or a cushion field above the
+        // treeline is not planted at full forest height on the same hillside.
+        const kind = CityEnvironment.treeKind(city.environment, i);
+        const stature = kind === 'cushion' ? .30 : kind === 'scrub' ? .55 : kind === 'rainforest' ? 1.35 : kind === 'acacia' || kind === 'palm' ? 1.12 : 1;
+        city.trees.push({ x, z, y: city.height[i], h: (2 + rng() * 2.1) * stature, kind });
     }
     for (let k = 0, plots = Math.round(100 * grow * grow); k < plots; k++) {
         const x = (rng() - .5) * width * .85, z = (rng() - .5) * depth * .85, i = city.index(x, z), d = Math.hypot(x - city.market.x, z - city.market.z);
@@ -469,13 +478,19 @@ function generateCity(w, sim, provinceId, design = {}) {
     city.landmarks = city.buildings.filter(b=>b.landmark).map(b=>b.id);
     for(const d of city.districts)d.buildings=city.buildings.filter(b=>b.district===d.id).length;
     // Masonry foundations support each footprint; they do not flatten its terrain.
-    for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=Math.max(b.y,hi+.07);}
+    // Seat each block INTO the slope, not on top of it. Standing a footprint on its highest
+    // corner puts the downhill side on a plinth that can be taller than the house; burying
+    // three quarters of the fall is shorter, and is what a hillside building actually does.
+    // A citadel still stands proud of its own hill, which is the whole point of a citadel.
+    for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=b.precinct?Math.max(b.y,hi+.07):lo+(hi-lo)*.25+.07;}
     // Fidelity is bought against a triangle budget rather than granted to every block.
     // The core keeps full joinery, the outskirts fall back to massed volumes, and a
     // larger town simply gets a smaller detailed core instead of a larger download.
     // A citadel or grand sanctuary is a large fixed cost, so the blocks make room for it.
     const monument = city.buildings.find(b => b.precinct);
-    const LOD_COST = [1600, 3200, 7600], LOD_BUDGET = 950000 - (monument?.sacred ? 340000 : monument ? 140000 : 0);
+    // Costs measured against the current block kit, not the older large-courtyard one:
+    // stale constants make the budget under-spend and leave detail on the table.
+    const LOD_COST = [900, 2000, 4000], LOD_BUDGET = 620000 - (monument?.sacred ? 230000 : monument ? 95000 : 0);
     const graded = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
     const spare = Math.max(0, LOD_BUDGET - LOD_COST[0] * graded.length);
     const full = Math.min(graded.length, Math.floor(spare * .62 / (LOD_COST[2] - LOD_COST[0])));

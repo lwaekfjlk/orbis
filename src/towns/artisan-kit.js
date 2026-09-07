@@ -18,7 +18,21 @@ const ArtisanCityKit=(()=>{
   delve:{wall:'#8b857f',trim:'#b8b0a2',roof:'#68594f',metal:'#c9a05c',wood:'#695948',dark:'#363438',ground:'#8d887e',water:'#7ba0a5',leaf:'#5c735f'},
   lagoon:{wall:'#ded5c0',trim:'#f3ebd7',roof:'#3d888e',metal:'#c7ab63',wood:'#7a6450',dark:'#3e555c',ground:'#aeb391',water:'#6cc0c4',leaf:'#5d8868'}
  };
- function kit(recipe,lod=1){const k=new LandmarkKit(recipe,{base:false,lod});k.palette={...(PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material])};return k}
+ const hex2=v=>Math.round(clamp(v,0,1)*255).toString(16).padStart(2,'0');
+ /** One town keeps one construction language, but not one paint pot. Each block shifts its
+  * masonry, roof and timber a little — a value change plus a warm/cool lean — so a quarter
+  * reads as many separate houses instead of one asset stamped over and over. Drawn from its
+  * own stream, so the shift never disturbs the mesh the seed already decided. */
+ function weather(palette,seed){
+  const r=LandmarkCatalog.rng(seed+'/paint'),out={...palette};
+  for(const [key,amount] of [['wall',.16],['trim',.11],['roof',.22],['wood',.15],['dark',.09],['metal',.10]]){
+   if(!out[key])continue;
+   const c=rgb(out[key]),v=1+(r()-.5)*amount*2,warm=1+(r()-.5)*amount;
+   out[key]='#'+hex2(c[0]*v*warm)+hex2(c[1]*v)+hex2(c[2]*v/warm);
+  }
+  return out;
+ }
+ function kit(recipe,lod=1){const k=new LandmarkKit(recipe,{base:false,lod});k.palette=weather(PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material],recipe.seed);return k}
  function append(dst,src){for(const n of src.data)dst.data.push(n)}
  // Openings are the single largest triangle cost in a town, so they carry the LOD split:
  // nothing on the outskirts, a recessed panel mid-town, full joinery in the core.
@@ -249,7 +263,10 @@ const ArtisanCityKit=(()=>{
    if(b.type==='granary'){house(K,0,.18,0,CW*.56,CD*.79,5,style,1);for(const x of[-1,1])K.cylinder(x*CW*.36,.18,CD*.26,.5,1.1,'wood',9);count=1;return;}
    // Row count follows the parcel: a narrow burgage strip becomes a row down its length,
    // a broad plot a row across its face, instead of one stamped 2x2 court everywhere.
-   const cols=Math.max(1,Math.round(CW/5.0)),ranks=Math.max(1,Math.round(CD/5.0)),arrangement=b.moduleVariant??0;
+   // Row counts follow the PARCEL, not the normalised court. Sizing them off the court gave
+   // every plot the same four-house yard merely scaled down, which is why halving the plots
+   // did not halve the buildings on screen.
+   const cols=Math.max(1,Math.round(pw/2.7)),ranks=Math.max(1,Math.round(pd/2.7)),arrangement=b.moduleVariant??0;
    for(let r0=0;r0<ranks;r0++)for(let c0=0;c0<cols;c0++){
     const cw=CW/cols,cd=CD/ranks,x=(c0-(cols-1)/2)*cw,z=(r0-(ranks-1)/2)*cd;
     if(style==='forest'){
