@@ -29,6 +29,7 @@
     "test:roads": "node --test tests/roads.test.mjs",
     "test:folk": "node --test tests/folk.test.mjs",
     "test:saga": "node --test tests/saga.test.mjs",
+    "test:portrait": "node --test tests/portrait.test.mjs",
     "test:legacy-modals": "python tests/onemap_browser.py",
     "test:climate": "node --test tests/climate.test.mjs",
     "test:vocabulary": "node --test tests/vocabulary.test.mjs"

@@ -1,5 +1,18 @@
-# 13.7.0 — Every town has something it remembers
+# 13.7.0 — Every town has somebody who will tell you about it
 
+- Click a settlement and a resident turns up to tell you its history: a **cartoon bust**,
+  their name and office, and five chapters **in their own voice**. Seven faces — a human,
+  an elf, a dwarf-built Stonekin, a muzzled Beastfolk, a horned Hornkin, a finned Tideborn
+  and a **dragon** with swept horns, crest spikes, a long fanged snout and slit pupils.
+- The faces are procedural SVG at about 2 KB each: no image files, no fonts, nothing
+  fetched. Only build, ears, brow, crown and snout differ; every face gets the same two
+  eyes and the same brow construction, and every colour is mixed from that people's own
+  entry, so none is drawn nobler or more dangerous than another.
+- The narrator is drawn from the district's live mixture like anyone else, and holds the
+  office that keeps this town's trouble — harbourmaster, pit-warden, warden of the
+  collegium door, gate-warden. Nineteen offices across a default world.
+- Whose story it is and who tells it stay separate: a Hornkin gate-warden narrating a town
+  the Humans founded says so, rather than calling their share "ours".
 - Each settlement composes a five-chapter epic from its own state: the peoples who came,
   the polity that formed, the trial it survived, the deed that answered it, and what is
   still standing. Every chapter shows the model fact it was built from.
@@ -16,7 +29,8 @@
   drawer, a button to the legendary place a chapter is about, buttons to the towns the
   chronicle ties this one to, and search by hero, warlord or adversary.
 - Derived, not simulated: composed on read, cached in a WeakMap, nothing added to the
-  simulation or the save. New `tests/saga.test.mjs`; notes in `docs/CITY_SAGAS.md`.
+  simulation or the save. New `tests/saga.test.mjs` and `tests/portrait.test.mjs`; notes
+  in `docs/CITY_SAGAS.md`.
 
 ---
 

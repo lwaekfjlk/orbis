@@ -194,8 +194,9 @@ window.OneMap = (() => {
         if(scene==='landmark'){E('omMonumentRoofs').checked=E('lmRoofs').checked;E('omMonumentExplode').checked=E('lmExplode').checked;E('omLocalCamera').value=E('lmCamera').value==='plan'?'overhead':E('lmCamera').value==='front'?'low':'relief';}
     }
     function clearSelection(){selection=null;show('omSelection',false);}
-    function selectionCard(kicker,title,text,buttons){
-        E('omSelectionBody').innerHTML=`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="om-actions">${buttons.map((b,i)=>`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`).join('')}</div>`;
+    function selectionCard(kicker,title,text,buttons,media=''){
+        // `media` is markup we generated ourselves (a narrator portrait), never input.
+        E('omSelectionBody').innerHTML=media+`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="om-actions">${buttons.map((b,i)=>`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`).join('')}</div>`;
         E('omSelectionBody').querySelectorAll('[data-selection-action]').forEach(b=>b.onclick=buttons[+b.dataset.selectionAction].run);
         show('omSelection',true);
     }
@@ -208,14 +209,20 @@ window.OneMap = (() => {
         const subtitle=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});
-        // Every settlement has an epic composed from its own state. This is the way in
-        // from the world map: approach the town, then open what it remembers.
-        if(p?.settled&&typeof Saga!=='undefined')buttons.push({label:'Read its saga',run:()=>readSaga(p.id)});
+        // Clicking a settlement is met by somebody who lives there. The saga is theirs to
+        // tell, so the card leads with their face and their opening line.
+        const told=p?.settled&&typeof Saga!=='undefined'?Saga.of(world,sim,p):null;
+        if(told)buttons.push({label:'Hear the whole story',run:()=>readSaga(p.id)});
         buttons.push({label:'Details',run:()=>openDrawer('detail')});
+        const media=told&&typeof Portrait!=='undefined'
+            ?`<div class="om-teller"><div class="om-teller-face">${Portrait.svg(told.narrator.people,told.narrator.seed,{size:72})}</div>`
+             +`<div class="om-teller-said"><b>${esc(told.narrator.name)}</b><small>${esc(PEOPLES[told.narrator.people].name)} · ${esc(told.narrator.office)}</small>`
+             +`<p>${esc(told.narrator.opener)}</p></div></div>`
+            :'';
         const kicker=f?.legend?'LEGENDARY PLACE · '+f.kind
-            :p?.settled&&typeof Saga!=='undefined'?`${(realm?.name||'FREE COMMUNITIES').toUpperCase()} · ${Saga.of(world,sim,p).title.toUpperCase()}`
+            :told?`${(realm?.name||'FREE COMMUNITIES').toUpperCase()} · ${told.title.toUpperCase()}`
             :realm?.name||'NATURAL WORLD';
-        selectionCard(kicker,title,subtitle,buttons);
+        selectionCard(kicker,title,subtitle,buttons,media);
     }
     async function readSaga(id){
         if(!interactive())return;

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "checks": {
+    "markup": {
+      "peoples": 7,
+      "bytes": [
+        1810,
+        2346,
+        2142,
+        2238,
+        2060,
+        2200,
+        3357
+      ]
+    },
+    "distinct": {
+      "renders": 7,
+      "ears": 4,
+      "crowns": 5,
+      "snouts": 2
+    },
+    "parity": {
+      "sameEyes": true,
+      "browRange": [
+        0.78,
+        1.35
+      ]
+    },
+    "narrators": {
+      "count": 102,
+      "names": 94,
+      "offices": 17,
+      "share": [
+        0.196,
+        0.186,
+        0.118,
+        0.108,
+        0.176,
+        0.157,
+        0.059
+      ]
+    },
+    "voice": {
+      "outsiderNarrators": 75,
+      "of": 102
+    }
+  }
+}

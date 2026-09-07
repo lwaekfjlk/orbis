@@ -1,8 +1,41 @@
 # What every town remembers
 
-Each settlement composes an epic about itself, in five chapters, from its own state in
-this world. Not a story attached to a town — a story *derived from* one, the way the seven
-legendary places are derived from the physical extremes that produced them.
+Click a settlement and somebody who lives there turns up to tell you its history: a
+cartoon bust, their name and their office, and five chapters in their own voice. Not a
+story attached to a town — a story *derived from* one, the way the seven legendary places
+are derived from the physical extremes that produced them.
+
+## Who is talking
+
+The narrator is a resident, drawn from the district's own `people` mixture exactly as the
+hero is, so across a world the spread of who narrates tracks who actually lives there
+(within 9 points, asserted). They hold the office that keeps this town's particular
+trouble, because that is who keeps its story: a **harbourmaster** on an exposed coast, a
+**pit-warden** where the ore is, a **warden of the collegium door** on thin ground, a
+**gate-warden** where the walls were tested. Nineteen offices appear across a default world.
+
+They speak in the first person, to you. Whose story it is and who is telling it are two
+different facts, and the prose keeps them apart — a Hornkin gate-warden narrating a town
+the Humans founded says *"This is where the Humans began… I am Hornkin; my family came
+later"*, never *"still ours"*. That is pinned by test, because the first cut got it wrong.
+
+The face is **procedural SVG** — no image files, no fonts, nothing fetched, the same rule
+the rest of the atlas keeps. About 2 KB per portrait, drawn from a parameter table:
+
+| people | reads as | ears | crown | snout |
+|---|---|---|---|---|
+| Humans | the plain case | round | — | — |
+| Sylvans | an elf | long | circlet | — |
+| Stonekin | broad, bearded | round | — | — |
+| Beastfolk | tufted, muzzled | tuft | — | short, round |
+| Hornkin | horned | round | curved horns | — |
+| Tideborn | finned, gilled | fin | crest fin | — |
+| Drakekin | **a dragon** | fin | swept horns + crest spikes | long, squared, fanged |
+
+Only build, ears, brow, crown and snout differ. Every face gets the same two eyes, the
+same brow construction and a brow value inside one narrow band, and every colour is mixed
+from that people's own `PEOPLES[k].color` rather than chosen here — so no face is drawn
+nobler, older or more dangerous than another. Tested.
 
 ## Nothing is invented on top of the model
 
@@ -53,24 +86,28 @@ saga says, because that town chose its own trial and it is often a different one
 
 ## Interaction points
 
-- **On the world map** — click a settlement and its selection card carries the saga title;
-  *Read its saga* flies the camera in and opens it.
-- **In the town drawer** — the full five chapters, each with its basis beneath it.
+- **On the world map** — click a settlement and the card shows the narrator's face, their
+  name and office, and their opening line. *Hear the whole story* flies the camera in and
+  opens the full telling.
+- **In the town drawer** — the bust, who they are, and their five chapters, each with its
+  basis beneath it.
 - **The place a chapter is about** — a legendary-place chapter carries a button that flies
   the camera to it.
-- **Told elsewhere** — the linked towns are buttons; following one flies there and opens
-  that town's own telling of the same year.
+- **They tell it differently over there** — the linked towns are buttons; following one
+  flies there and hands you to *that* town's narrator, who chose a different trial.
 - **Search** — a town is findable by its hero, its warlord or its adversary, not just by
   name. Type a hero and the town that remembers them comes up.
 
 ## Scope
 
-Sagas are **derived, not simulated**. They are composed on read, cached per `(province,
-year, owner, chronicle length)`, and stored in a `WeakMap` — nothing enters `sim`, nothing
-enters the save, and no fingerprint moves. Deleting the module changes no model quantity.
+Sagas and portraits are **derived, not simulated**. They are composed on read, cached per
+`(province, year, owner, chronicle length)`, and stored in a `WeakMap` — nothing enters
+`sim`, nothing enters the save, and no fingerprint moves. Deleting either module changes
+no model quantity.
 
-The heroes did not exist; the wars did. A name, a rank and a deed are invented in the
-register of an epic, and the interface never claims otherwise — the basis line under each
-chapter is what is actually true of the world. The `rift` adversary is the furthest this
-goes: the arcane capacity and rift intensity beneath a district are real fields, and what
-the district says came out of them is explicitly marked as its own account.
+The narrator is invented, and so is the hero. The wars are not. A name, an office, a face
+and a deed are composed in the register of an epic, and the interface never claims
+otherwise — the basis line under each chapter is what is actually true of the world. The
+`rift` adversary is the furthest this goes: the arcane capacity and rift intensity beneath
+a district are real fields, and what the district says came out of them is explicitly
+marked as its own account.

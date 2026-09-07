@@ -156,7 +156,24 @@ const Saga = (() => {
         sea: ['put out in the worst of it and brought back four crews', 'built the first breakwater and drowned before it was finished'],
         hunger: ['divided the last stores by household and kept nothing back', 'walked to three neighbouring markets and returned with grain and a debt']
     };
-    const REMEMBRANCE = ['a stone by the market with the name still cut into it', 'a name read aloud on the founding day and on no other', 'a lamp kept lit in the sanctuary at that family\'s expense', 'a gate that carries the name and no explanation', 'a song the ferrymen use to time their strokes'];
+    const REMEMBRANCE = ['a stone by the market with the name still cut into it', 'a name we read aloud on the founding day and on no other', 'a lamp lit in the sanctuary at that family\'s expense', 'a gate that carries the name and no explanation', 'a song the ferrymen use to time their strokes'];
+    /** Who meets you when you arrive. The office follows what this town had to survive,
+     * because the person who keeps that trouble is the person who keeps its story. */
+    const OFFICES = {
+        conqueror: ['keeper of the roll', 'gate-warden', 'reeve of the lower ward'],
+        siege: ['gate-warden', 'captain of the watch', 'keeper of the roll'],
+        rift: ['warden of the collegium door', 'lamplighter', 'keeper of the quiet register'],
+        legend: ['road-warden', 'guide to the far ground', 'keeper of the way-house'],
+        mountain: ['ash-watcher', 'warden of the upper valley'],
+        winter: ['fire-keeper', 'warden of the winter stores'],
+        flood: ['sluice-keeper', 'warden of the lower streets'],
+        thirst: ['well-keeper', 'warden of the cisterns'],
+        delve: ['pit-warden', 'keeper of the shift-book'],
+        sea: ['harbourmaster', 'netmender', 'keeper of the drowned list'],
+        hunger: ['grain-factor', 'keeper of the market weights']
+    };
+    const KINSHIP = ['my grandmother\'s grandmother', 'my great-uncle', 'my line, four generations back', 'the one whose office I hold', 'no relation of mine; I only keep the book'];
+    const OPENERS = ['Sit down. You want to know about this place.', 'You picked a good gate to come in by.', 'Everyone asks. All right.', 'You are not the first to stand there and look up.', 'Give me a moment. It is not a short answer.'];
     /** The landscape trials, told with the number that produced them. A trial that reads
      * as a label — "the sea itself" — is not a telling; the figure is what makes it one. */
     const TRIALS = {
@@ -182,47 +199,59 @@ const Saga = (() => {
         const faithHome = origins.faiths.find(o => o.province === p.id);
         const foe = adversary(w, sim, p, events);
         const hero = personOf(p, 101, roll(p, 57) < .30 ? fromMinority(p.people, roll(p, 59)) : undefined);
+        // The narrator is a resident, drawn from the district's own mixture like anyone
+        // else. They hold the office that keeps this town's particular trouble, which is
+        // why the story is theirs to tell.
+        const teller = personOf(p, 307, roll(p, 61) < .30 ? fromMinority(p.people, roll(p, 63)) : undefined);
+        const narrator = { ...teller, office: pickFrom(OFFICES[foe.kind] || OFFICES.hunger, roll(p, 67)),
+            kin: pickFrom(KINSHIP, roll(p, 73)), opener: pickFrom(OPENERS, roll(p, 79)),
+            seed: (p.i * 17 + 3) | 0 };
         const chapters = [];
         const add = (heading, text, basis, anchor = null) => chapters.push({ heading, text, basis, anchor });
-        // I. Why anyone stopped here at all.
+        // I. Why anyone stopped here at all. Whether the narrator says "ours" depends on
+        // whether they are actually of the people who began here — a Hornkin gate-warden
+        // telling the Humans' origin story says "theirs", and says why she is telling it.
+        const own = narrator.people === first;
         add('The Coming',
             homeland
-                ? `The ${PEOPLES[first].name} count this the ground they began on. Everything else in the ${p.name} telling is measured from that, and ${share(p.people, first)}% of the district is still theirs.`
-                : `${PEOPLES[first].name} came to this ground and stayed — ${share(p.people, first)}% of the district in the current count${other >= 0 ? `, alongside ${PEOPLES[other].name} at ${share(p.people, other)}%` : ''}. ${p.siteReason.split('.')[0]}.`,
+                ? own
+                    ? `${narrator.opener} This is not somewhere we came to — it is where we started. My people began on this ground, and ${share(p.people, first)}% of the district is still ours. Everything else I am going to tell you is measured from that.`
+                    : `${narrator.opener} This is where the ${PEOPLES[first].name} began — not somewhere they came to. ${share(p.people, first)}% of the district is still theirs. I am ${PEOPLES[narrator.people].name}; my family came later, like most of us, and I keep the book anyway.`
+                : `${narrator.opener} We came here and we stopped here. ${PEOPLES[first].name} are ${share(p.people, first)}% of the district now${other >= 0 ? `, and ${PEOPLES[other].name} another ${share(p.people, other)}%` : ''}${own || other === narrator.people ? '' : ` — I am ${PEOPLES[narrator.people].name}, one of the rest of us`}. ${p.siteReason.split('.')[0]} — that is the whole reason, and it was reason enough.`,
             homeland ? 'this province is a modelled origin point for that people' : `province people mixture; siteReason: ${p.siteReason.split('.')[0]}`);
         // II. What the place became, and under whom.
         add('The Founding',
             founded
-                ? `${cap(founded.title)} formed here rather than being handed down from anywhere. ${GOVERNMENTS[founded.gov]} is what the councils settled on. The ${FAITHS[faith].name} keeps ${share(p.faith, faith)}% of the district, and its tenet is remembered as "${FAITHS[faith].tenet}"`
+                ? `${cap(founded.title)} was made here. Nobody handed it down to us — the councils sat and argued and settled on ${GOVERNMENTS[founded.gov].toLowerCase()}, and that is what we have. The ${FAITHS[faith].name} keeps ${share(p.faith, faith)}% of us. You will hear its tenet quoted at you before the day is out: "${FAITHS[faith].tenet}"`
                 : realm
-                    ? `${p.name} did not become a capital. It answers to ${realm.name}, and has done since the ${GOVERNMENTS[realm.gov].toLowerCase()} reached this far. The ${FAITHS[faith].name} holds ${share(p.faith, faith)}% of the district${faithHome ? ', and began here' : ''}.`
-                    : `No crown has ever held ${p.name}. The ${FAITHS[faith].name} keeps ${share(p.faith, faith)}% of it${faithHome ? ', and began here' : ''}, and the rest is argued about freely.`,
+                    ? `We are not a capital and never were. We answer to ${realm.name} — have done since the ${GOVERNMENTS[realm.gov].toLowerCase()} reached this far up the road. The ${FAITHS[faith].name} holds ${share(p.faith, faith)}% of the district${faithHome ? ', and it started here, whatever they tell you elsewhere' : ''}.`
+                    : `No crown has ever held this place. None. The ${FAITHS[faith].name} keeps ${share(p.faith, faith)}% of us${faithHome ? ' and began here' : ''}, and the rest we argue about freely, which is the arrangement we prefer.`,
             founded ? `realm ${founded.title} has its capital at this province` : realm ? `owned by realm ${realm.name}` : 'province is unclaimed in the political model');
         // III. The trial. Specific if the chronicle has one, landscape if it does not.
         add('The Trial',
             foe.kind === 'conqueror'
-                ? `In ${foe.year} ${foe.styled} came, and ${p.name} changed hands. Their line is reckoned ${PEOPLES[foe.realm.originPeople].name} — the chronicle records that of every realm, and records the same of this one.`
+                ? `Then ${foe.year}. ${cap(foe.styled)} came, and this town changed hands. Their line is reckoned ${PEOPLES[foe.realm.originPeople].name} — before you make anything of that, the roll records the ancestry of every realm, and it records ours the same way.`
                 : foe.kind === 'siege'
-                    ? `In ${foe.year} ${foe.styled} stood in front of the town and did not leave. The walls held; the fields did not.`
+                    ? `Then ${foe.year}. ${cap(foe.styled)} stood out there and would not leave. The walls held. The fields did not, and that is the part we actually remember.`
                     : foe.kind === 'rift'
-                        ? `${p.name} sits on ground the collegia read as thin. What the district says came through is called ${foe.name}; what can be measured is the arcane capacity and the rift beneath, and those are not in dispute.`
+                        ? `We sit on ground the collegia call thin. What came through it we call ${foe.name}. I will not argue the point with you — what I can show you is the arcane reading and the rift beneath us, and nobody disputes those.`
                         : foe.kind === 'legend'
-                            ? `${foe.place.name} lies ${foe.distance} districts out, close enough that the road to it is a road anyone here can name. ${foe.place.lore}`
+                            ? `${foe.place.name} is ${foe.distance} districts out. Close enough that the road to it is a road I can name every turn of. ${foe.place.lore}`
                             : (TRIALS[foe.kind] || TRIALS.hunger)(p, foe),
             foe.basis,
             foe.place ? { kind: 'legend', x: foe.place.x, y: foe.place.y, i: foe.place.i, name: foe.place.name } : null);
         // IV. Someone did something about it. Their people is drawn from who lives here.
         add('The Deed',
-            `${hero.name} ${hero.rank}, ${PEOPLES[hero.people].name}, ${pickFrom(DEEDS[foe.kind] || DEEDS.hunger, roll(p, 71))}. ` +
-            (foe.lord ? `The other side names ${foe.lord.name} in the same place in the story, and tells it the other way round.` : 'No one on the other side is named, because there was no other side to name.'),
+            `${hero.name} ${hero.rank} — ${PEOPLES[hero.people].name}, and ${narrator.kin} — ${pickFrom(DEEDS[foe.kind] || DEEDS.hunger, roll(p, 71))}. ` +
+            (foe.lord ? `They name ${foe.lord.name} in the same place in the story, on their side, and tell the whole thing the other way round. I have heard their version. It is a good version.` : 'There is nobody on the other side to name. That is not always a comfort.'),
             `hero people sampled from this province's live mixture (${PEOPLES[hero.people].name} at ${share(p.people, hero.people)}%)`);
         // V. What of it is still standing.
         add('What Remains',
-            `${p.name} is ${articled(p.settlementType)} now, ${fmt(p.urbanPop)} within the walls and ${fmt(p.ruralPop)} on its land. ` +
-            `They keep ${pickFrom(REMEMBRANCE, roll(p, 83))}. ` +
-            (events.some(e => e.type === 'conquest') ? 'The peoples and the faiths did not change when the flag did.' : 'Nothing has taken it.'),
+            `Now? ${articled(p.settlementType).replace(/^a /, 'A ')} of ${fmt(p.urbanPop)} inside the walls and ${fmt(p.ruralPop)} out on the land. ` +
+            `We keep ${pickFrom(REMEMBRANCE, roll(p, 83))}. ` +
+            (events.some(e => e.type === 'conquest') ? 'The flag over the gate has changed. We did not — the peoples here and the faiths here are what they were.' : 'Nothing has taken it. I am aware how that sounds. Ask me again in a hundred years.'),
             `current model state: urbanPop ${Math.round(p.urbanPop)}, ruralPop ${Math.round(p.ruralPop)}, type ${p.settlementType}`);
-        return { province: p.id, name: p.name, title: titleFor(p, hero, foe), hero, adversary: foe,
+        return { province: p.id, name: p.name, title: titleFor(p, hero, foe), hero, narrator, adversary: foe,
             people: first, faith, chapters, events: events.length,
             anchor: chapters.find(c => c.anchor)?.anchor || null };
     }
