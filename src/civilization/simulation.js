@@ -525,12 +525,20 @@ function chooseInstitution(p, sim, rng) {
 // Sea lanes and lake shipping remain commercial/diplomatic links, not annexation shortcuts.
 function buildAdministrationGraph(sim, w) {
     const grid = w.provinceId, dist = new Float64Array(GN).fill(Infinity), heap = new MinHeap();
+    // A frontier should be a thing you can point at. Mountain walls and major rivers are
+    // what actually stop an administration, and at the old weights they barely registered:
+    // a 3,000 m range added .56 to a base of .82, so a border fell wherever two capitals
+    // happened to meet rather than along anything on the map. They now cost what they are
+    // worth. A river valley is still the cheap way THROUGH a range; crossing one is not.
     const step = (i, j) => {
         const altitude = (w.height[i] + w.height[j]) * .5, delta = Math.abs(w.height[i] - w.height[j]);
         const wet = ((w.wetness?.[i] || 0) + (w.wetness?.[j] || 0)) * .5;
         const dry = Math.max(0, .30 - (w.human.fresh[i] + w.human.fresh[j]) * .5);
         const valley = w.human.river[i] > .30 && w.human.river[j] > .30 ? .85 : 1;
-        return (.82 + Math.max(0, altitude - 600) / 4300 + delta / 650 + wet * .55 + dry * 2.5) * valley;
+        const wall = Math.max(0, altitude - 850) / 1100 + Math.max(0, delta - 150) / 210;
+        const channel = w.channelThreshold?.[j] || w.riverThreshold;
+        const ford = w.lake[j] < 0 && w.flow[j] > channel ? 1.8 + Math.min(10, w.flow[j] / channel) * .85 : 0;
+        return (.82 + wall + wet * .55 + dry * 2.5) * valley + ford;
     };
     for (const p of sim.provinces) {
         dist[p.i] = 0;
@@ -600,6 +608,105 @@ function administrationDistances(sim, start, limit = Infinity) {
     }
     return dist;
 }
+/* WHAT A COUNTRY CALLS ITSELF.
+ * A realm was named for its capital and nothing else — "Kingdom of Dustshaw" beside
+ * "Dustshaw Merchant League" — while the world already carried names nobody used: seven
+ * legendary places, sixteen named landforms, twenty-four volcanoes, its continents. A realm
+ * is named for the most particular of those it holds or overlooks, so the name is an
+ * allusion to somewhere real on the map rather than a template wrapped around a town.
+ *
+ * Deliberately NOT named after a people. Population is a live mixture everywhere, conquest
+ * changes rulers and not identities, and no place in this world is labelled by ancestry —
+ * a realm called after one of them would quietly contradict all three.
+ *
+ * Naming runs after the claim pass: before it a realm holds nothing to allude to.
+ */
+const REALM_FORMS = {
+    0: ['Kingdom of $', 'Crown of $', 'the $ Throne'],
+    1: ['Sanctuary of $', 'the $ Covenant', 'See of $'],
+    2: ['the $ Collegium', 'the $ Athenaeum', 'Scholars of $'],
+    3: ['the $ Confederacy', 'the Clans of $', 'the $ Accord'],
+    4: ['the $ Merchant League', 'the $ Concession', 'Factors of $'],
+    5: ['the $ Holds', 'the $ Marches', 'Wardens of $'],
+    6: ['Republic of $', 'the $ Commonwealth', 'the Free State of $'],
+    7: ['the $ City League', 'the $ Compact', 'the $ Assembly']
+};
+const REALM_QUARTERS = ['Upper', 'Lower', 'Inner', 'Outer', 'Greater', 'Lesser', 'North', 'South', 'East', 'West'];
+/** "The Verdant Reach" -> "Verdant", "Lake Silvermere" -> "Silvermere", "Ashen Peak" ->
+ * "Ashen". The generic half is what the FORM already supplies, so keeping both gives
+ * "Republic of Lake Silvermere". */
+const REALM_GENERIC = /^(the|lake|mount|cape)\s+|\s+(peak|caldera|crown|spire|vent|fjord|isles|glaciers|icefields|fens|canopy|expanse|reach|rift|sea|lake|arc|inland|field|fields|basin|sound|range|valley|coast|shore|bay|gulf|strait|delta|marsh|steppe|tundra|wastes|plain|plains)$/gi;
+function cStem(name) {
+    let out = String(name || '').trim();
+    for (let k = 0; k < 3; k++)
+        out = out.replace(REALM_GENERIC, '').trim();
+    return out || String(name || '').trim();
+}
+function nameRealms(sim, w, rng) {
+    const taken = new Set(), claimed = new Set();
+    const held = sim.provinces.reduce((map, p) => { if (p.owner >= 0) (map[p.owner] ||= []).push(p); return map; }, {});
+    const site = f => f && (Number.isFinite(f.x) && Number.isFinite(f.y) ? { x: f.x, y: f.y } : Number.isFinite(f.i) ? { x: f.i % GW, y: f.i / GW | 0 } : null);
+    // Most particular first. A landmark need only be held or overlooked: a realm along a
+    // mountain wall is named for the wall whether or not the summit fell inside its border.
+    const sources = [
+        { tier: 'legend', items: w.legends || [], reach: 16 },
+        { tier: 'landform', items: w.features || [], reach: 14 },
+        { tier: 'volcano', items: w.volcanoes || [], reach: 9 }
+    ];
+    // Larger realms choose first, so a great power takes the landmark rather than a
+    // city-state that happens to sit on the same ridge.
+    for (const c of sim.realms.filter(c => c.alive).sort((a, b) => b.foundingProvinces - a.foundingProvinces)) {
+        const mine = held[c.id] || [], capital = sim.provinces[c.capital];
+        let stem = null, tier = 'capital';
+        for (const { tier: t, items, reach } of sources) {
+            let best = null;
+            for (const f of items) {
+                const at = site(f), key = f.name;
+                if (!at || !key || claimed.has(key))
+                    continue;
+                let d = Infinity;
+                for (const p of mine)
+                    d = Math.min(d, Math.hypot(p.x - at.x, p.y - at.y));
+                if (d <= reach && (!best || d < best.d))
+                    best = { d, key, stem: cStem(key) };
+            }
+            if (best && best.stem && !taken.has(best.stem)) {
+                claimed.add(best.key);
+                stem = best.stem;
+                tier = t;
+                break;
+            }
+        }
+        // The plate under the capital: a deep name for a country that overlooks nothing.
+        if (!stem) {
+            const plate = w.plates?.[w.plate?.[capital.i] ?? -1];
+            if (plate?.name && !taken.has(plate.name) && !claimed.has(plate.name)) {
+                claimed.add(plate.name);
+                stem = cStem(plate.name);
+                tier = 'plate';
+            }
+        }
+        if (!stem) {
+            const continent = (w.continents || []).find(l => l.id === capital.landmass);
+            if (continent?.name) {
+                const quarter = REALM_QUARTERS[Math.floor(rng() * REALM_QUARTERS.length)], tried = `${quarter} ${cStem(continent.name)}`;
+                if (!taken.has(tried)) {
+                    stem = tried;
+                    tier = 'continent';
+                }
+            }
+        }
+        if (!stem)
+            stem = capital.name;
+        for (let k = 2; taken.has(stem); k++)
+            stem = `${capital.name} ${k}`;
+        taken.add(stem);
+        const forms = REALM_FORMS[c.gov] || REALM_FORMS[0];
+        c.name = stem;
+        c.title = forms[Math.floor(rng() * forms.length)].replace('$', stem);
+        c.namedFor = tier;
+    }
+}
 function localPoliticalDifference(a, b) {
     // Small institutional-coordination term; no species gets an inherent state/war bonus.
     return a.faith.reduce((s, v, k) => s + Math.abs(v - b.faith[k]), 0) * .5;
@@ -632,16 +739,24 @@ function formPolities(sim, w) {
             p.foundingDependency = dominant.p.id;
             continue;
         }
-        centers.push({ p, dist: administrationDistances(sim, p.id, consolidation * 3.5) });
+        // Drawn here rather than at founding: a council's reach caps the search itself, so
+        // rolling it later left even the most ambitious able to see only as far as the least.
+        const ambition = Math.exp(-1.45 + 4.1 * Math.pow(rng(), 2.6));
+        centers.push({ p, ambition, dist: administrationDistances(sim, p.id, consolidation * 3.5 * Math.min(4.5, Math.max(1, ambition))) });
         p.foundingDependency = -1;
     }
     sim.foundingModel = { name: 'Local councils and bounded administration', consolidation, autonomousTowns: centers.length, candidateTowns: candidates.length, usesContinentQuotas: false, usesSeaTradeForSovereignty: false, settlementsBefore: before };
-    for (const { p } of centers) {
+    for (const { p, ambition } of centers) {
         const id = sim.realms.length, { gov, type } = chooseInstitution(p, sim, rng), name = p.name;
         const titles = [`Kingdom of ${name}`, `Sanctuary of ${name}`, `${name} Collegium`, `${name} Confederacy`, `${name} Merchant League`, `${name} Holds`, `Republic of ${name}`, `${name} City League`];
         const policy = gov === 2 ? 'Scholarship' : gov === 4 ? 'Prosperity' : rng() < .20 ? 'Expansion' : rng() < .4 ? 'Concord' : 'Prosperity';
-        const commandRange = 35 * Math.pow(18 / frag, .28) * (.90 + .15 * Math.sqrt(p.urbanPop / 45000));
-        const adminBudget = (9 + 3.6 * Math.sqrt(p.urbanPop / 1000)) * Math.pow(18 / frag, .3);
+        // Realms are not one size. Reach used to span .90-1.2 whatever the council, so thirty
+        // near-identical duchies tiled the map and the largest held 7% of it. The ambition a
+        // founding council can sustain is drawn from a long tail instead: most keep a town and
+        // its valley, a few run to a quarter of a continent. Terrain still decides where that
+        // ambition stops, so a large draw on a broken coast stays small anyway.
+        const commandRange = 35 * Math.pow(18 / frag, .28) * (.90 + .15 * Math.sqrt(p.urbanPop / 45000)) * ambition;
+        const adminBudget = (9 + 3.6 * Math.sqrt(p.urbanPop / 1000)) * Math.pow(18 / frag, .3) * ambition;
         sim.realms.push({ id, name, title: titles[gov], color: REALM_COLORS[id % REALM_COLORS.length], capital: p.id, gov, faith: cDominant(p.faith), originPeople: cDominant(p.people), archetype: type,
             identity: `The existing ${p.settlementType.toLowerCase()} of ${p.name} retained its own political center. It draws on ${type === 'granary' ? 'farms and local markets' : type === 'lake' ? 'freshwater shores and lake commerce' : type === 'maritime' ? 'ports and coastal commerce' : type === 'forge' ? 'highland workshops and mineral resources' : type === 'forest' ? 'forest livelihoods and farms' : type === 'wetland' ? 'wetland livelihoods and navigable valleys' : 'its local production and exchange network'}. Neighboring towns can remain independent; trade does not confer sovereignty. Its ${GOVERNMENTS[gov].toLowerCase()} is a sampled institutional history, not a geographical destiny.`,
             reach: .88 + rng() * .30, tolerance: .45 + rng() * .50, ambition: .25 + rng() * .55, policy, tech: .8 + p.dev * .22 + p.ore * .15, arcana: .55 + p.mana * .90 + (gov === 2 ? .40 : 0), wealthSeed: 1, treasury: 10, army: 1, navy: 0, stability: 70 + rng() * 17, warWeariness: 0, alive: true, founded: 400, provinces: [], population: 0, power: 0, imports: 0, commandRange, adminBudget, adminUsed: 0, localAutonomy: p.localAutonomy });
@@ -696,6 +811,7 @@ function formPolities(sim, w) {
     }
     for (const c of sim.realms)
         c.foundingProvinces = sim.provinces.filter(p => p.owner === c.id).length;
+    nameRealms(sim, w, rng);
     assignPoliticalColors(sim);
     if (settlementFingerprint(sim) !== before)
         throw Error('State formation moved or created a settlement.');

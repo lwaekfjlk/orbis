@@ -1,24 +1,24 @@
 {
- "baseline": "Townsmith 9.1 supplied in this conversation",
- "notes": {
-  "src/civilization/simulation.js": "Re-baselined in v13 for geography-driven district names only. The random stream is unchanged (naming draws two rolls at the same point cName(rng) drew two), so settlementFingerprint stays 77c3b21f and every population, polity and district id is byte-identical. Locked by the settlementFingerprint assertion in tests/onemap.test.mjs. Re-baselined again for straightened sea lanes: cStraightenSea replaces route.path's N/S/E/W staircase with the corners a vessel would turn at. Only that derived array changes \u2014 the BFS distance ranking trade partners is untouched, and physicalFingerprint, settlementFingerprint and politicalFingerprint (province ownership alone) all hold.",
-  "src/world/geography.js": "Re-baselined twice. (a) Legendary places: nameLegends() runs after every physical pass and writes only w.legends. (b) Two landform priors, which DO move the world \u2014 the only change in this file's history that does. Interior depressions are no longer exact ellipses (their lakes measured .59 circularity against .15-.5 for real ones), and the interiors of the widest collision belts are planed into plateaus (1 of 2426 cells above 2000 m had low enough relief to read as one). physicalFingerprint moves dfd91476 -> 4b02963c and settlementFingerprint 77c3b21f -> 73c1127f by design; both are asserted at the new values in tests/onemap.test.mjs and tests/climate.test.mjs, and lake circularity and plateau flatness are asserted directly in tests/onemap.test.mjs.",
-  "src/render/world-renderer.js": "Re-baselined for two deliberate rendering changes. (a) Map clarity: supersampled backing store in resize(), Geometry.smoothTri() for per-vertex terrain normals and colours, buildLegends() markers. (b) Political layers: realms and diplomacy no longer paint a country's territory at all. Every border already carries a cased frontier line, and that is the whole of the country on this map; only the realm you have selected takes a faint wash, so the selection is answerable. Faiths, peoples, wealth and magic keep their full colour, where the colour is the measurement. Terrain vertex positions are untouched: the surface is locked by AtlasSpace.surface parity and the shared-edge check in tests/continuous.test.mjs, and the political palette by the coverage assertion in tests/onemap.test.mjs. The v12 shader and layer-visibility normalisations are folded into this baseline. Re-baselined again for the climate pass: buildSymbols() draws climate-driven vegetation (seven forms from CityEnvironment.canopy, with a treeline) via the shared plantForm() helper. Terrain, rivers, ice, dunes, volcanoes, camera, picking, legends and the shadow pipeline are unchanged."
- },
- "sha256": {
-  "src/world/geography.js": "1cc9190e4eb38e40410e0d9e810f929292afc0dbd501ca274128cd88337d076e",
-  "src/civilization/simulation.js": "6f7bf4c3b71eefe0a8465b8711e64894766d1f3c2894b4c9889ee168e0b1a50f",
-  "src/city/environment.js": "9c8562ff086bb7244509a23fb5168549f3055d744983e16bed3fce0378748f19",
-  "src/city/generator.js": "5fc24373aabb214fac5c75d3b994d27b5f1df1911a37a97b86efc35e39103977",
-  "src/city/actions.js": "7c0d28e21c5100f784a68e1e6bd6c4ad182c30a8aa47d46a7818d72c448fba4e",
-  "src/towns/catalog.js": "dad0db0d211cf7c87e7fa430bed1ed37fd19ac2e41c2095cc10c7a4b2804f641",
-  "src/towns/grammar.js": "e484ff71cec4d4aa319063e5fa82a659049df2fd7624f7728db7600858ef23d8",
-  "src/towns/building-kit.js": "9585f076bbbebaa571f3ed7d256e17edd2037c2c3ea7771b70fd524fb66b41a7",
-  "src/landmarks/catalog.js": "bad1a90325ecb365a294bf0ecc2344cfe53f4cd198a4611e3eac9833d0a39451",
-  "src/landmarks/kit.js": "ddf30189acb7801c8f1b78ab7f0888ee50e46a2b00e1ee5113ec261c6f7dbf9f",
-  "src/landmarks/templates.js": "8e98f8b459ef6d49dbcc5328451765de2db30bf91a1e26cbb17188d21fdf2c9f",
-  "src/landmarks/world-binding.js": "c83b701fe8ce637a825dd25946cdb3215e66d34f547c6e065aed7983b7a4d629",
-  "src/render/city-renderer.js": "8dc547843284821a4495a90b401cf7670da8e2dc572d63671d01f3962cf5dcee",
-  "src/render/world-renderer.js": "5003479378aebe1f01dff4878383c0bd8ac36b4b0d1cf913c7b803a6fe2c6a8c"
- }
+  "baseline": "Townsmith 9.1 supplied in this conversation",
+  "notes": {
+    "src/civilization/simulation.js": "Re-baselined in v13 for geography-driven district names only. The random stream is unchanged (naming draws two rolls at the same point cName(rng) drew two), so settlementFingerprint stays 77c3b21f and every population, polity and district id is byte-identical. Locked by the settlementFingerprint assertion in tests/onemap.test.mjs. Re-baselined again for straightened sea lanes: cStraightenSea replaces route.path's N/S/E/W staircase with the corners a vessel would turn at. Only that derived array changes \u2014 the BFS distance ranking trade partners is untouched, and physicalFingerprint, settlementFingerprint and politicalFingerprint (province ownership alone) all hold. Re-baselined again for state formation, which changes DELIBERATELY this time. Three things moved: the administration step cost now treats mountain walls and river fords as real barriers instead of a mild surcharge, so a frontier falls on something you can point at; each founding council draws its reach from a long tail, so realms range from one province to forty-six instead of all being middling; and nameRealms() names a realm for the legend, landform, volcano or plate it holds rather than for its capital. physicalFingerprint 4b02963c and settlementFingerprint 73c1127f are unchanged and still asserted; politicalFingerprint moves because the borders themselves are the change.",
+    "src/world/geography.js": "Re-baselined twice. (a) Legendary places: nameLegends() runs after every physical pass and writes only w.legends. (b) Two landform priors, which DO move the world \u2014 the only change in this file's history that does. Interior depressions are no longer exact ellipses (their lakes measured .59 circularity against .15-.5 for real ones), and the interiors of the widest collision belts are planed into plateaus (1 of 2426 cells above 2000 m had low enough relief to read as one). physicalFingerprint moves dfd91476 -> 4b02963c and settlementFingerprint 77c3b21f -> 73c1127f by design; both are asserted at the new values in tests/onemap.test.mjs and tests/climate.test.mjs, and lake circularity and plateau flatness are asserted directly in tests/onemap.test.mjs.",
+    "src/render/world-renderer.js": "Re-baselined for two deliberate rendering changes. (a) Map clarity: supersampled backing store in resize(), Geometry.smoothTri() for per-vertex terrain normals and colours, buildLegends() markers. (b) Political layers: realms and diplomacy no longer paint a country's territory at all. Every border already carries a cased frontier line, and that is the whole of the country on this map; only the realm you have selected takes a faint wash, so the selection is answerable. Faiths, peoples, wealth and magic keep their full colour, where the colour is the measurement. Terrain vertex positions are untouched: the surface is locked by AtlasSpace.surface parity and the shared-edge check in tests/continuous.test.mjs, and the political palette by the coverage assertion in tests/onemap.test.mjs. The v12 shader and layer-visibility normalisations are folded into this baseline. Re-baselined again for the climate pass: buildSymbols() draws climate-driven vegetation (seven forms from CityEnvironment.canopy, with a treeline) via the shared plantForm() helper. Terrain, rivers, ice, dunes, volcanoes, camera, picking, legends and the shadow pipeline are unchanged."
+  },
+  "sha256": {
+    "src/world/geography.js": "1cc9190e4eb38e40410e0d9e810f929292afc0dbd501ca274128cd88337d076e",
+    "src/civilization/simulation.js": "b3a1aeefec9fc95d8fb8ba80418ec6bf46d571ec4704f7ca3683b28669fea8f9",
+    "src/city/environment.js": "9c8562ff086bb7244509a23fb5168549f3055d744983e16bed3fce0378748f19",
+    "src/city/generator.js": "5fc24373aabb214fac5c75d3b994d27b5f1df1911a37a97b86efc35e39103977",
+    "src/city/actions.js": "7c0d28e21c5100f784a68e1e6bd6c4ad182c30a8aa47d46a7818d72c448fba4e",
+    "src/towns/catalog.js": "dad0db0d211cf7c87e7fa430bed1ed37fd19ac2e41c2095cc10c7a4b2804f641",
+    "src/towns/grammar.js": "e484ff71cec4d4aa319063e5fa82a659049df2fd7624f7728db7600858ef23d8",
+    "src/towns/building-kit.js": "9585f076bbbebaa571f3ed7d256e17edd2037c2c3ea7771b70fd524fb66b41a7",
+    "src/landmarks/catalog.js": "bad1a90325ecb365a294bf0ecc2344cfe53f4cd198a4611e3eac9833d0a39451",
+    "src/landmarks/kit.js": "ddf30189acb7801c8f1b78ab7f0888ee50e46a2b00e1ee5113ec261c6f7dbf9f",
+    "src/landmarks/templates.js": "8e98f8b459ef6d49dbcc5328451765de2db30bf91a1e26cbb17188d21fdf2c9f",
+    "src/landmarks/world-binding.js": "c83b701fe8ce637a825dd25946cdb3215e66d34f547c6e065aed7983b7a4d629",
+    "src/render/city-renderer.js": "8dc547843284821a4495a90b401cf7670da8e2dc572d63671d01f3962cf5dcee",
+    "src/render/world-renderer.js": "5003479378aebe1f01dff4878383c0bd8ac36b4b0d1cf913c7b803a6fe2c6a8c"
+  }
 }

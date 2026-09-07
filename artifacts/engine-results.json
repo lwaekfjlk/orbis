@@ -3,7 +3,7 @@
   "seed": "Aereth-47",
   "checks": {
     "geographyFirst": {
-      "realms": 30,
+      "realms": 31,
       "towns": 84,
       "physicalHash": "4b02963c",
       "continents": [
@@ -15,18 +15,18 @@
           "polities": 7,
           "realmIds": [
             0,
-            8,
-            5,
+            6,
             13,
             14,
-            18,
+            26,
+            19,
             12
           ],
           "capitalCount": 7,
-          "largestShare": 0.19930402541794512,
-          "unclaimedShare": 0.06814315273899055,
-          "internalFrontiers": 11,
-          "borderEdges": 55
+          "largestShare": 0.32306435201332534,
+          "unclaimedShare": 0.03206756505314606,
+          "internalFrontiers": 10,
+          "borderEdges": 45
         },
         {
           "id": 2,
@@ -35,38 +35,39 @@
           "towns": 8,
           "polities": 6,
           "realmIds": [
+            25,
+            20,
+            30,
+            7,
             29,
-            24,
-            6,
-            19,
-            28,
-            27
+            28
           ],
           "capitalCount": 6,
-          "largestShare": 0.1991460955690206,
-          "unclaimedShare": 0.4063917729076555,
+          "largestShare": 0.3764637295136831,
+          "unclaimedShare": 0.05923266690329887,
           "internalFrontiers": 4,
-          "borderEdges": 15
+          "borderEdges": 25
         },
         {
           "id": 40,
           "name": "Soleran",
           "cell": 30243,
           "towns": 24,
-          "polities": 6,
+          "polities": 7,
           "realmIds": [
+            17,
             1,
             4,
             2,
-            17,
-            7,
-            26
+            5,
+            18,
+            8
           ],
-          "capitalCount": 6,
-          "largestShare": 0.20456870780459552,
-          "unclaimedShare": 0.10787382196032741,
-          "internalFrontiers": 6,
-          "borderEdges": 40
+          "capitalCount": 7,
+          "largestShare": 0.4143626112480065,
+          "unclaimedShare": 0.09017190783347404,
+          "internalFrontiers": 11,
+          "borderEdges": 35
         },
         {
           "id": 1,
@@ -76,16 +77,16 @@
           "polities": 5,
           "realmIds": [
             11,
-            23,
+            24,
             16,
-            21,
+            22,
             10
           ],
           "capitalCount": 5,
-          "largestShare": 0.25692847906017613,
-          "unclaimedShare": 0.10519722629975421,
-          "internalFrontiers": 6,
-          "borderEdges": 27
+          "largestShare": 0.1530562578387247,
+          "unclaimedShare": 0.5664165636921054,
+          "internalFrontiers": 2,
+          "borderEdges": 6
         },
         {
           "id": 51,
@@ -94,16 +95,16 @@
           "towns": 14,
           "polities": 4,
           "realmIds": [
+            21,
             3,
-            20,
             15,
-            22
+            23
           ],
           "capitalCount": 4,
-          "largestShare": 0.33254364282347443,
-          "unclaimedShare": 0.13129718745503685,
-          "internalFrontiers": 4,
-          "borderEdges": 13
+          "largestShare": 0.049229900006768676,
+          "unclaimedShare": 0.8496027666116187,
+          "internalFrontiers": 0,
+          "borderEdges": 0
         },
         {
           "id": 78,
@@ -817,7 +818,7 @@
     "noAutomaticRuralCities": true,
     "polityIndependentCityPlan": true,
     "project": {
-      "cost": 2.3471114414412804,
+      "cost": 2,
       "completed": 403,
       "supportBefore": 36013.35247744762,
       "supportAfter": 38894.42067564343,
@@ -877,7 +878,7 @@
     },
     "longRun": {
       "year": 520,
-      "livingRealms": 26,
+      "livingRealms": 24,
       "projects": 1,
       "audit": {
         "invalidOwners": 0,
