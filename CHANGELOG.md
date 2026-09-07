@@ -1,3 +1,26 @@
+# 13.2.2 — No paint on the borders, and symbols that stay symbols
+
+- **The border band is gone.** 13.2.1 replaced the full-territory wash with a soft tint just
+  inside each border; it was still paint over the land and read badly. The political layers
+  now paint nothing. Every border already carries a cased frontier line — dark casing, pale
+  centre — and that plus the country's name is the whole of the country on this map. Only the
+  realm you have selected takes a faint wash, so clicking a row still answers "where is it".
+  Land outside every province is no longer greyed there either: no province means no country.
+  Faiths, peoples, wealth and magic are untouched; there the colour is the measurement.
+- **The harbour symbol no longer dwarfs the harbour.** Measured against the largest town on
+  the default world — 3.69 atlas units across, tallest building 1.25, a person 0.043 — the
+  port symbol ran 1.52 x 0.96 on the ground and 0.80 high: 41% of that town's width, with a
+  moored sail 64% the height of the largest thing anybody had built. Halved, to 21% and 32%.
+- **Ships were the same mistake with a clearer cause.** A hull and a cart reach the same
+  drawing call with the same size, but the hull's factors ran 2x the cart's length and 5.4x
+  its height, so one ship on a sea lane spanned a fifth of a whole town and stood half the
+  height of its tallest building. The factors now agree: a tenth of a town, and it keeps its
+  mast.
+- Symbol scale is measured against a real town, and the port handover asserted, in
+  `tests/roads.test.mjs`.
+
+---
+
 # 13.2.1 — Country names, closed walls, and the continents back
 
 - **Every continent gets its name back.** 13.1.0 listed the seven legends ahead of the

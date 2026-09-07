@@ -208,4 +208,44 @@ test('every ribbon and quay is seated on the surface it was sampled against',()=
  report.checks.seating={roads:far,near,bridgeDeck:[+deckLow.toFixed(4),+deckHigh.toFixed(4)],bridgeFooting:[+footLow.toFixed(4),+footHigh.toFixed(4)]};
 });
 
+test('A harbour symbol and a ship stay symbols, and give way to the real thing',()=>{
+ // Everything on the atlas shares one unit, so the only honest yardstick is a town.
+ // The port symbol used to run 41% of a whole town's width with a moored sail 64%
+ // the height of the largest building anyone had raised, and it was drawn at every
+ // zoom — so at town range you got a second, larger harbour on top of the real one.
+ const p=s.provinces.filter(q=>q.settled&&q.urbanPop>=650).sort((a,b)=>b.urbanPop-a.urbanPop)[0];
+ const c=E.generateCity(w,s,p.id),frame=E.AtlasSpace.cityFrame(w,p,c,1);
+ const town=c.span*168/(E.GW-1),tallest=Math.max(...c.buildings.map(b=>b.h))*frame.scale;
+ const meshes={};
+ const r=Object.create(E.AtlasRenderer.prototype);
+ Object.assign(r,{world:w,sim:s,relief:1,zoom:6,width:1440,height:900,azimuth:.018,elevation:1.19,
+  target:[0,0,0],meshes,options:{},layer:'relief',software:false,upload(n,g){meshes[n]=g;},request(){}});
+ r.buildRoads();
+ const extent=(data,cx,cz,reach)=>{const lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];let n=0;
+  for(let k=0;k<data.length;k+=9){if(Math.hypot(data[k]-cx,data[k+2]-cz)>reach)continue;n++;
+   for(const j of[0,1,2]){lo[j]=Math.min(lo[j],data[k+j]);hi[j]=Math.max(hi[j],data[k+j]);}}
+  return n?{w:Math.max(hi[0]-lo[0],hi[2]-lo[2]),h:hi[1]-lo[1],n}:null;};
+ const big=r.roadNetwork.ports.slice().sort((a,b)=>b.weight-a.weight)[0];
+ const seat=r.coord(big.x,big.y,0),quay=extent(meshes.ports.data,seat[0],seat[2],3);
+ assert(quay,'the largest port should build something');
+ assert(quay.w/town<.30,`the port symbol spans ${(quay.w/town*100).toFixed(0)}% of a town`);
+ assert(quay.h/tallest<.45,`its mast reaches ${(quay.h/tallest*100).toFixed(0)}% of the tallest building`);
+ // It hands over to the town's own quays and jetties, at the same 4.8 the city
+ // layer uses, so a renderer with no city layer tells the same story.
+ r.zoom=2;assert(r.visible('ports'),'the symbol belongs on the regional map');
+ r.zoom=4.8;assert(!r.visible('ports'),'and must be gone once the real harbour is drawn');
+ r.zoom=6;
+ // A hull and a cart reach vehicle() with the same size; their factors have to agree.
+ r.buildFolk(0);
+ const boats=E.Folk.travellers(r.roadNetwork,s,{density:1}).filter(a=>a.kind==='boat');
+ assert(boats.length>4,'this world sails');
+ let seen=null;
+ for(const a of boats){const q=E.Folk.travellerAt(a,0),at=r.coord(q.x,q.y,r.ground(q.x,q.y));
+  const m=extent(meshes.caravans.data,at[0],at[2],.9);if(m&&(!seen||m.n>seen.n))seen=m;}
+ assert(seen,'a boat should be on screen at regional zoom');
+ assert(seen.w/town<.16,`one ship spans ${(seen.w/town*100).toFixed(0)}% of a town`);
+ assert(seen.h/tallest<.35,`one ship stands ${(seen.h/tallest*100).toFixed(0)}% of the tallest building`);
+ report.checks.symbolScale={townWidth:+town.toFixed(2),tallestBuilding:+tallest.toFixed(2),
+  portWidth:+quay.w.toFixed(2),portHeight:+quay.h.toFixed(2),shipWidth:+seen.w.toFixed(2),shipHeight:+seen.h.toFixed(2)};
+});
 test.after(()=>writeFileSync(resolve(root,'docs/ROAD_NETWORK_RESULTS.json'),JSON.stringify(report,null,2)));

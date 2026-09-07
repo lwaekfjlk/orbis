@@ -73,40 +73,43 @@ test('The atlas renders above CSS resolution, within a pixel budget',async()=>{
  const slow=stage(1440,900);sized(slow,3,null);
  assert.equal(slow.width,2880);
 });
-test('A country is a name and a border tint, not a coat of paint over the land',async()=>{
+test('A country is a name and a line, not a coat of paint over the land',async()=>{
  const {loadEngine,defaults}=await import('./engine-loader.mjs');
  const E=loadEngine();
  const w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
  const r=Object.create(E.AtlasRenderer.prototype);
  Object.assign(r,{world:w,sim:s,relief:1,zoom:1,meshes:{},options:{},layer:'relief',focusRealm:null});
- let land=0,untouched=0;
  const same=(a,b)=>a.every((v,k)=>Math.abs(v-b[k])<1e-9);
- for(let i=0;i<E.GN;i++){
-  if(w.height[i]<=0)continue;
-  land++;
-  r.layer='relief';const terrain=r.palette(i);
-  r.layer='realms';const political=r.palette(i);
-  if(same(terrain,political))untouched++;
+ // With nothing selected the political layers must be the landscape, exactly.
+ // A full-territory wash, and a soft band inside each border after it, both
+ // buried the relief this layer is drawn on top of. The frontier mesh carries it.
+ for(const layer of ['realms','diplomacy']){
+  let land=0;
+  for(let i=0;i<E.GN;i++){
+   if(w.height[i]<=0)continue;
+   land++;
+   r.layer='relief';const terrain=r.palette(i);
+   r.layer=layer;
+   assert(same(terrain,r.palette(i)),`${layer} tinted cell ${i} with no realm selected`);
+  }
+  assert(land>1e4,'expected a populated world');
  }
- // Most of the land must still be its own colour: the relief has to read through
- // the political layer, which a full-territory wash destroyed.
- assert(untouched/land>.4,`only ${(untouched/land*100).toFixed(0)}% of land kept its terrain colour`);
- assert(untouched/land<.95,'the border band has to be visible somewhere');
- // Where a country IS tinted, the terrain still has to dominate the mix.
- r.layer='realms';
- let tinted=0,dominated=0;
+ // Selecting a realm is the one exception, and it stays faint.
+ const realm=s.realms.find(c=>c.alive&&s.provinces.some(p=>p.owner===c.id));
+ r.focusRealm=realm.id;
+ let tinted=0;
  for(let i=0;i<E.GN;i++){
   if(w.height[i]<=0)continue;
   r.layer='relief';const terrain=r.palette(i);
   r.layer='realms';const political=r.palette(i);
   if(same(terrain,political))continue;
   tinted++;
-  const drift=Math.hypot(...political.map((v,k)=>v-terrain[k]));
-  if(drift<.42)dominated++;
+  assert(Math.hypot(...political.map((v,k)=>v-terrain[k]))<.2,'the selection wash must stay faint');
  }
- assert.equal(dominated,tinted,'the national tint must never overwhelm the ground colour');
+ assert(tinted>0,'the selected realm has to show somewhere');
  // Faiths and peoples are measurements, not flags: they keep their full wash
  // over every cell that layer is defined on.
+ r.focusRealm=null;
  let washed=0,eligible=0;
  for(let i=0;i<E.GN;i++){
   if(w.height[i]<=0||w.lake[i]>0||w.ice[i]>120)continue;
