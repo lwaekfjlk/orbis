@@ -69,12 +69,12 @@ const BCOL = { 1: rgb('#9e4f4a'), 2: rgb('#d47847'), 3: rgb('#d47847'), 4: rgb('
  * second of remesh; the same field at coarse detail is a third of that and still reads
  * as a palm, an acacia or a fir at the range it is drawn. Towns keep the full form. */
 function plantForm(g, p, form, unit, col, jitter = () => .5, coarse = false) {
+    if(form==='none'||!(unit>0))return;
     const trunk = rgb('#79644a'), r = unit * .34;
     if (coarse) {
-        if (form === 'none')
-            return;
         if (form === 'cushion' || form === 'scrub') {
-            g.cone(p[0], p[1], p[2], r * .70, r * .30, unit * .34, col, 4, jitter() * 6);
+            const cushion=form==='cushion';
+            g.cone(p[0], p[1], p[2], r * (cushion ? .52 : .70), r * (cushion ? .24 : .30), unit * (cushion ? .14 : .34), col, 4, jitter() * 6);
             return;
         }
         const bare = form === 'acacia' || form === 'palm' || form === 'rainforest';

@@ -240,7 +240,8 @@ class ContinuousCityLayer {
     continue;
    }
    if([18,19,20].includes(e.biome)&&roll<.5){
-    for(let k=0;k<3;k++)reeds.cone(v[0]+(k-1)*.035,v[1],v[2]+(k%2)*.03,.012,.003,.10+(k%2)*.035,rgb('#426f59'),4);
+    const unit=AtlasSpace.TOWN_UNIT;
+    for(let k=0;k<3;k++)reeds.cone(v[0]+(k-1)*.4*unit,v[1],v[2]+(k%2)*.35*unit,.14*unit,.035*unit,(1.2+(k%2)*.4)*unit,rgb('#426f59'),4);
     continue;
    }
    const steep=grade(jx,jy);
@@ -252,12 +253,12 @@ class ContinuousCityLayer {
    const can=CityEnvironment.canopy(e.biome,e.temperature,e.aridity);
    const leaf=CityEnvironment.leafColor(e.temperature,e.aridity);
    if(can.density>0&&roll<can.density*.85){
-    const h=.075+rnd(gx,gy,71)*.05;
+    const h=CityEnvironment.treeHeight(can.form,rnd(gx,gy,71))*AtlasSpace.TOWN_UNIT;
     plantForm(flora,v,can.form,h,leaf,()=>rnd(gx,gy,73),true);
     plants++;
    }else if(e.temperature>2&&e.aridity>.35&&roll<.42){
     // Open ground is not bare ground. A meadow reads as ground cover, not as trees.
-    const t=.020+rnd(gx,gy,79)*.016,col=colorScale(leaf,1.06+rnd(gx,gy,83)*.16);
+    const t=(.35+rnd(gx,gy,79)*.25)*AtlasSpace.TOWN_UNIT,col=colorScale(leaf,1.06+rnd(gx,gy,83)*.16);
     for(let k=0;k<2;k++)flora.cone(v[0]+(k-.5)*t*1.5,v[1],v[2]+(k-.5)*t*1.2,t*.55,0,t*2.6,col,4);
     plants++;
    }
@@ -320,10 +321,11 @@ class ContinuousCityLayer {
    const e=CityEnvironment.sample(w,gx,gy);if(e.water||e.ice>12||hash2(Math.round(dx*100),Math.round(dy*100),w.seed+11)>e.treeDensity*.65)continue;
    const [lx,lz]=[(gx-p.x)*c.width/frame.cells,(gy-p.y)*c.width/frame.cells];
    if(Math.abs(lx)<=c.width/2&&Math.abs(lz)<=c.depth/2&&(c.road[c.index(lx,lz)]||c.buildings.some(b=>Math.abs(b.x-lx)<b.w/2+2&&Math.abs(b.z-lz)<b.d/2+2)))continue;
-   const v=AtlasSpace.point(w,gx,gy,this.r.relief),h=.09+hash2(dx*100,dy*100,w.seed)*.055;
+   const v=AtlasSpace.point(w,gx,gy,this.r.relief);
    // Same form vocabulary and climate colour as the town scene and the atlas symbols,
    // replacing a bare temperature<10 cone/blob switch in two fixed greens.
    const form=CityEnvironment.canopy(e.biome,e.temperature,e.aridity).form;
+   const h=CityEnvironment.treeHeight(form,hash2(dx*100,dy*100,w.seed))*frame.scale;
    plantForm(vegetation,v,form,h,CityEnvironment.leafColor(e.temperature,e.aridity),()=>hash2(Math.round(dx*61),Math.round(dy*61),w.seed+17));
   }
   this.r.upload(`cm:${p.id}:vegetation`,vegetation,true);model.meshNames.push(`cm:${p.id}:vegetation`);

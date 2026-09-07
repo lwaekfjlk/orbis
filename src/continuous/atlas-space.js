@@ -6,6 +6,9 @@ const AtlasSpace = (() => {
  // Layout surveying and mesh placement share one footprint. The broader site
  // profile still reads the surrounding valley independently of the built area.
  const CITY_FOOTPRINT=CityEnvironment.cityFootprint, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
+ // Town art grows with its surveyed footprint, so this unit is independent of
+ // population, camera zoom and whether a city has finished streaming.
+ const TOWN_UNIT=CityEnvironment.cityDimensions.span*CITY_FOOTPRINT/CityEnvironment.cityDimensions.width*Math.sqrt(X*Z);
  const height=CityEnvironment.atlasHeight,weights=CityEnvironment.atlasWeights,surface=CityEnvironment.atlasSurface;
  // World-scale map symbols are built against the original two coarse faces.
  // Detail uses the curved patch; rebuild overlays when that view changes over.
@@ -47,5 +50,5 @@ const AtlasSpace = (() => {
  }
  function hitBox(origin,dir,lo,hi){let t0=0,t1=Infinity;for(let k=0;k<3;k++){if(Math.abs(dir[k])<1e-10){if(origin[k]<lo[k]||origin[k]>hi[k])return Infinity;continue;}const a=(lo[k]-origin[k])/dir[k],b=(hi[k]-origin[k])/dir[k];t0=Math.max(t0,Math.min(a,b));t1=Math.min(t1,Math.max(a,b));}return t0<=t1?t0:Infinity;}
  function matrixFor(frame){return{origin:frame.origin.slice(),horizontalScale:[frame.sx,frame.sz],verticalScale:frame.scale,crs:'TELLURIC_RECTANGULAR_ATLAS'};}
- return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
+ return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,TOWN_UNIT,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
 })();

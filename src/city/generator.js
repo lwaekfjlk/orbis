@@ -627,8 +627,7 @@ function generateCity(w, sim, provinceId, design = {}) {
         const kind = CityEnvironment.treeKind(city.environment, i);
         if (kind === 'none')
             continue;
-        const stature = kind === 'cushion' ? .30 : kind === 'scrub' ? .55 : kind === 'rainforest' ? 1.35 : kind === 'acacia' || kind === 'palm' ? 1.12 : 1;
-        city.trees.push({ x, z, y: city.height[i], h: (2 + rng() * 2.1) * stature, kind });
+        city.trees.push({ x, z, y: city.height[i], h: CityEnvironment.treeHeight(kind,rng()), kind });
     }
     for (let k = 0, plots = Math.round(100 * grow * grow); k < plots; k++) {
         const x = (rng() - .5) * width * .85, z = (rng() - .5) * depth * .85, i = city.index(x, z), d = Math.hypot(x - city.market.x, z - city.market.z);
