@@ -208,8 +208,22 @@ window.OneMap = (() => {
         const subtitle=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});
+        // Every settlement has an epic composed from its own state. This is the way in
+        // from the world map: approach the town, then open what it remembers.
+        if(p?.settled&&typeof Saga!=='undefined')buttons.push({label:'Read its saga',run:()=>readSaga(p.id)});
         buttons.push({label:'Details',run:()=>openDrawer('detail')});
-        selectionCard(f?.legend?'LEGENDARY PLACE · '+f.kind:realm?.name||'NATURAL WORLD',title,subtitle,buttons);
+        const kicker=f?.legend?'LEGENDARY PLACE · '+f.kind
+            :p?.settled&&typeof Saga!=='undefined'?`${(realm?.name||'FREE COMMUNITIES').toUpperCase()} · ${Saga.of(world,sim,p).title.toUpperCase()}`
+            :realm?.name||'NATURAL WORLD';
+        selectionCard(kicker,title,subtitle,buttons);
+    }
+    async function readSaga(id){
+        if(!interactive())return;
+        if(window.ContinuousMap?.active){
+            const model=await ContinuousMap.focusTown(id);
+            if(model){ContinuousMap.details(model);return;}
+        }
+        enterTown(id);
     }
     function inspectBuilding(b){
         if(scene!=='city'||!b)return;selection={kind:'building',id:b.id};
@@ -232,7 +246,7 @@ window.OneMap = (() => {
     function renderSearch(){
         if(!sim)return;
         const q=E('omSearch').value.trim().toLowerCase();
-        const results=(q?searchIndex.filter(s=>(s.name+' '+s.subtitle).toLowerCase().includes(q)):searchIndex.filter(s=>s.type==='town')).slice(0,9);
+        const results=(q?searchIndex.filter(s=>(s.name+' '+s.subtitle+' '+(s.saga||'')).toLowerCase().includes(q)):searchIndex.filter(s=>s.type==='town')).slice(0,9);
         E('omSearchResults').innerHTML=results.length?results.map((s,k)=>`<div class="om-result"><button data-search-hit="${k}" aria-label="Locate ${esc(s.name)}"><b>${esc(s.name)}</b><small>${esc(s.subtitle)}</small></button>${s.type==='town'||s.type==='site'?`<button class="om-enter" data-search-enter="${k}" aria-label="Approach ${esc(s.name)}">Zoom ↗</button>`:''}</div>`).join(''):'<p class="om-note">No matching place in this world.</p>';
         E('omSearchResults').querySelectorAll('[data-search-hit]').forEach(b=>b.onclick=()=>locate(results[+b.dataset.searchHit]));
         E('omSearchResults').querySelectorAll('[data-search-enter]').forEach(b=>b.onclick=()=>{const s=results[+b.dataset.searchEnter];if(s.type==='town')enterTown(s.id);else if(window.ContinuousMap?.active)ContinuousMap.focusSite(s.id);else transition(()=>LandmarkUI.openSite(s.id));});
@@ -249,7 +263,15 @@ window.OneMap = (() => {
         if(!sim||!world)return;
         if(lastWorld!==world){lastWorld=world;clearSelection();closeMenus();closeDrawer();lastEvent=null;}
         const towns=sim.provinces.filter(p=>p.settled).sort((a,b)=>b.urbanPop-a.urbanPop);
-        searchIndex=[...towns.map(p=>({type:'town',id:p.id,i:p.i,x:p.x,y:p.y,name:p.name,subtitle:`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`})),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:c.title,subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
+        searchIndex=[...towns.map(p=>{
+            // A town is findable by what it remembers as well as by its name: type a
+            // hero, a conqueror or a burning mountain and the town that tells it comes up.
+            const g=typeof Saga!=='undefined'?Saga.of(world,sim,p):null;
+            return {type:'town',id:p.id,i:p.i,x:p.x,y:p.y,name:p.name,
+                saga:g?`${g.title} ${g.hero.name} ${g.hero.rank} ${PEOPLES[g.hero.people].name} ${g.adversary.name}`:'',
+                subtitle:g?`${g.hero.name} against ${g.adversary.name} · ${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`
+                    :`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`};
+        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:c.title,subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
         const latest=sim.events.slice().reverse().find(e=>e.type!=='founding'&&e.year>400);
         show('omEvent',!!latest&&sim.year>400);
         if(latest){E('omEventText').textContent=`${latest.year} · ${latest.text}`;if(latest!==lastEvent)lastEvent=latest;}

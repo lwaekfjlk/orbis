@@ -4,29 +4,29 @@
   "checks": {
     "coverage": {
       "roofs": {
-        "deepeave": 331,
-        "gable": 878,
-        "hip": 243,
-        "northern": 78,
-        "conic": 592,
-        "vault": 87,
-        "rockcut": 16,
-        "parapet": 438,
-        "upturned": 545,
-        "leaf": 312
+        "deepeave": 305,
+        "hip": 260,
+        "gable": 919,
+        "northern": 76,
+        "conic": 568,
+        "vault": 75,
+        "rockcut": 21,
+        "parapet": 421,
+        "upturned": 538,
+        "leaf": 337
       },
       "materials": {
-        "timber": 1272,
-        "log": 122,
-        "felt": 468,
+        "timber": 1231,
+        "log": 127,
+        "felt": 486,
+        "masonry": 486,
         "firedbrick": 71,
-        "masonry": 460,
-        "cutstone": 43,
-        "adobe": 552,
-        "rockface": 48,
-        "thatch": 484
+        "cutstone": 47,
+        "adobe": 511,
+        "rockface": 52,
+        "thatch": 509
       },
-      "formsPerTown": 2.52
+      "formsPerTown": 2.51
     },
     "weather": {
       "snowy": {
@@ -83,19 +83,19 @@
       ]
     },
     "size": {
-      "ratio": 44.92,
-      "correlation": 0.4,
+      "ratio": 50.76,
+      "correlation": 0.44,
       "smallest": {
         "name": "Gulldrift",
         "pop": 5843,
         "span": 8.5,
-        "blocks": 24
+        "blocks": 21
       },
       "largest": {
         "name": "Wrencombe",
         "pop": 23280,
         "span": 10.8,
-        "blocks": 1078
+        "blocks": 1066
       }
     },
     "geometry": {

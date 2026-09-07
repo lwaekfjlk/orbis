@@ -13,3 +13,19 @@ body.continuous-map #omDrawer{z-index:30}
 body.continuous-map .om-popover{z-index:35}
 body.continuous-map #omSelection{z-index:18}
 body.continuous-map .cm-context{z-index:2}
+
+/* THE SAGA PANEL. Reads as a page from a chronicle, not as another metrics block:
+   a running column of chapters, each with the model fact it was built from beneath it. */
+.cm-saga{border-left:2px solid rgba(190,170,120,.34);padding-left:13px;margin:6px 0 4px}
+.cm-saga-title{font:italic 17px/1.35 Georgia,serif;color:#e6dcc2;margin:2px 0 4px}
+.cm-saga-cast{font:12.5px/1.5 Georgia,serif;color:#bcb49a;margin:0 0 12px}
+.cm-saga-cast b{color:#e2d5b2;font-weight:600}
+.cm-saga-cast i{opacity:.66;font-style:italic;padding:0 3px}
+.cm-chapter{margin:0 0 13px}
+.cm-chapter h4{font:600 10.5px/1 system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:#a8b0a2;margin:0 0 5px;display:flex;align-items:baseline;gap:7px}
+.cm-chapter h4 i{font:italic 12px Georgia,serif;letter-spacing:0;color:#c2a86a;min-width:20px;text-transform:none}
+.cm-chapter p{font:14px/1.62 Georgia,serif;color:#ded6c4;margin:0 0 5px}
+.cm-basis{display:block;font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#8b9186;opacity:.82;margin:3px 0 7px}
+.cm-elsewhere{font:600 10.5px/1 system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:#a8b0a2;margin:16px 0 7px}
+.cm-saga-link{display:block;width:100%;text-align:left;margin:4px 0 2px;padding:7px 10px;border:1px solid rgba(190,170,120,.28);border-radius:7px;background:rgba(255,250,235,.05);color:#e0d6bd;font:13px/1.35 Georgia,serif;cursor:pointer}
+.cm-saga-link:hover{background:rgba(255,250,235,.12);border-color:rgba(210,190,140,.55)}

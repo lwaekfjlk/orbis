@@ -1,4 +1,63 @@
-# 13.4.0 — A vocabulary, not fifteen bundles
+# 13.7.0 — Every town has something it remembers
+
+- Each settlement composes a five-chapter epic from its own state: the peoples who came,
+  the polity that formed, the trial it survived, the deed that answered it, and what is
+  still standing. Every chapter shows the model fact it was built from.
+- The trial is the chronicle's when the chronicle has one — a real conquest or siege, with
+  its real year — and the landscape's when it does not: the arcane rift beneath a district,
+  a legendary place within reach, a live volcano, ice, flood, thirst, the workings, the
+  open coast, or a hinterland that fed fewer people than it needed to.
+- **No people is an enemy.** An adversary is a state, a disaster or a place, never a race,
+  and heroes are drawn from each province's live mixture so their spread tracks the
+  population within nine points. Both pinned by test, not left to the prose.
+- A conqueror belongs to the realm, so one warlord recurs across every town that realm
+  took, and reading along a frontier assembles one war.
+- Interaction points: the saga title on a town's selection card, the full telling in its
+  drawer, a button to the legendary place a chapter is about, buttons to the towns the
+  chronicle ties this one to, and search by hero, warlord or adversary.
+- Derived, not simulated: composed on read, cached in a WeakMap, nothing added to the
+  simulation or the save. New `tests/saga.test.mjs`; notes in `docs/CITY_SAGAS.md`.
+
+---
+
+# 13.6.0 — Nothing is built up a cliff, and a scarp may stand in for a wall
+
+One root cause behind all of it: the layout and the atlas were reading different surfaces.
+`city.height` runs through `elevate()`, an asinh that folds 6000 m of relief into 18 plan
+units, while the frame seats everything back on the parent surface at very nearly its full
+range. Every slope constraint in the town layout was therefore measuring a gentle rise where
+the map draws a cliff. Towns now carry `city.atlasSlope`, the grade as drawn, and the
+constraints are written against that.
+
+- **A wall no longer climbs a rock face, and no longer has to.** 13.2.1 closed every ring,
+  which was the opposite error to leaving the waterfront open: Osiercrest was carrying 83 of
+  its 229 wall segments on ground steeper than 60%, 26 of them past 100%, up to **222%**. A
+  scarp above 60% is now left unwalled — it *is* the defence, the enceinte stops at its foot
+  and picks up on the crest, which is what a hill fort looks like. Across 20 towns, segments
+  drawn past 100%: **31 → 0**; worst grade **2.22 → 0.86**.
+- **Streets are shaped by cost, not stopped by a gate.** 990 of 24913 street segments were
+  drawn steeper than 50% and 48 past 100%, up to 180%. A hard limit at 55% did fix that and
+  starved two towns doing it — Foammeadow went from 118 buildings to **none**, because on a
+  steep site the gentle ground is fragmented and a router that may not cross anything steeper
+  cannot reach it. A cubic cost against a 30% ruling grade, with the gate only refusing what
+  nothing could be laid on at all: past 100%, **48 → 1**; worst **1.80 → 1.05**; and the
+  smallest town in the world is the same 21 buildings it was before any of this.
+- **Roads between towns have a ruling gradient.** The grade term was linear and gentle —
+  metres of rise over 620 — so a road would climb anything if the detour was long enough:
+  99th percentile **106%**, worst segment **211%**, a cart track up a face steeper than 60
+  degrees. A cubic penalty on what exceeds the ruling gradient: p99 **0.50**, and 0.6% of the
+  network above 55%.
+- **Two ceilings were deliberately not added.** A hard impassable grade stranded a town on
+  landmass 2 behind its own cliffs, and the penalty is tuned to just short of where the
+  catchments reshape and a landmass splits into two road networks. One segment at 104%
+  survives: the last mile into a cliff-bound town, better modelled as an expensive track than
+  as a town with no way in.
+- New checks: wall and street grades as drawn, and that some town lets a scarp stand in for a
+  wall, in `tests/towns.test.mjs`; the road gradient distribution in `tests/roads.test.mjs`.
+
+---
+
+# 13.5.1 — A vocabulary, not fifteen bundles
 
 - Town architecture is **composed** from four orthogonal axes instead of picked as a
   bundle: eave form, wall material, colourway and ornament are each chosen separately.

@@ -119,11 +119,17 @@ test('nobody skates across the map: motion is slow against the scenery it passes
  // piece of a continent. Anything near a real walking pace reads as figures skating
  // across the map — the first cut had a resident crossing a courtyard in 0.9s and a
  // carter crossing a province in 2s. These bounds are what the eye actually judges.
- const frame=E.AtlasSpace.cityFrame(w,town,city,1),block=city.buildings.find(b=>!b.landmark);
+ const frame=E.AtlasSpace.cityFrame(w,town,city,1);
+ // A REPRESENTATIVE compound, not whichever one the frontage walk happened to seat first.
+ // That pick was arbitrary: the narrowest parcels in any town are single infill sheds about
+ // half a metre across, and a walker crosses one of those in under two seconds on every
+ // revision including this file's own baseline. It passed because buildings[0] drew wide.
+ const widths=city.buildings.filter(b=>!b.landmark).map(b=>b.w).sort((x,y)=>x-y);
+ const block={w:widths[widths.length>>1]};
  const walker=roster.find(a=>a.kind==='walker'&&a.route.len>8);
  assert(walker,'this town has a street walker');
  const crossing=block.w/walker.speed;
- assert(crossing>=4,`a resident crosses a whole compound in ${crossing.toFixed(1)}s`);
+ assert(crossing>=4,`a resident crosses a typical compound in ${crossing.toFixed(1)}s`);
  const trip=2*walker.route.len/walker.speed;
  assert(trip>=40,`a resident completes a round trip in ${trip.toFixed(0)}s; the street should not read as pacing`);
  assert(walker.speed/1.5<=.35,'a figure covers at most a third of its own height each second');

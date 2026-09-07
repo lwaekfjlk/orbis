@@ -85,8 +85,18 @@ const FortressPlan=(()=>{
   //    seats geometry out there on the parent surface exactly as it does inside.
   const wet=q=>{const i=c.index(q.x,q.z);return !!c.water[i]||c.environment.ice[i]>=25};
   const blocked=q=>c.buildings.some(b=>inside(q,b,.45));
+  // Nobody builds a curtain up a rock face. Closing the ring over everything was the
+  // opposite error to leaving the waterfront open: on a town like Osiercrest 83 of its
+  // 229 segments were drawn on ground steeper than 60%, 26 of them past vertical-ish
+  // 100%, up to 222%. A scarp that steep IS the defence — the enceinte stops at its
+  // foot and picks up again on the crest, which is what a hill fort actually looks
+  // like. Measured on atlasSlope, the grade the atlas draws, because the plan's own
+  // height field is asinh-compressed and reports a cliff as a gentle rise.
+  const SCARP=.60;
+  const scarp=q=>c.atlasSlope?c.atlasSlope[c.index(q.x,q.z)]>SCARP:false;
   const tags=samples.map((a,j)=>{const b=samples[(j+1)%samples.length],mid={x:(a.x+b.x)/2,z:(a.z+b.z)/2},three=[a,b,mid];
    if(three.some(blocked))return 'blocked';
+   if(three.every(scarp))return 'scarp';
    if(three.some(wet))return 'quay';
    return Math.min(nearRoad(a),nearRoad(b))<1.55?'gate':'wall'});
   // Widen a road opening instead of quietly blocking its shoulders.
@@ -101,7 +111,7 @@ const FortressPlan=(()=>{
   for(let j=0;j<n;j++)if(expanded[j]==='gate'&&expanded[(j-1+n)%n]!=='gate'){
    let end=j+1;while(end<j+n&&expanded[end%n]==='gate')end++;
    if(spannable(j,end))continue;
-   for(let k=j;k<end;k++)expanded[k%n]=wet(samples[k%n])?'quay':'wall';
+   for(let k=j;k<end;k++)expanded[k%n]=scarp(samples[k%n])?'scarp':wet(samples[k%n])?'quay':'wall';
   }
   for(let j=0;j<n;j++)if(expanded[j]==='wall'){
    const a=samples[j],b=samples[(j+1)%n],ya=c.height[c.index(a.x,a.z)],yb=c.height[c.index(b.x,b.z)];
@@ -121,9 +131,13 @@ const FortressPlan=(()=>{
    const a=samples[j],b=samples[(j+1)%n],ya=c.height[c.index(a.x,a.z)],yb=c.height[c.index(b.x,b.z)];
    d.quays.push({a:{...a,y:ya},b:{...b,y:yb},height:d.kind==='timber'?1.5:2.3,width:d.kind==='timber'?.5:1.15});
   }
+  // "Enclosed" means no opening the ground does not already close. A scarp counts as
+  // closed; a building standing in the line does not.
   d.enclosed=expanded.every(t=>t!=='blocked');
   d.terrainGapSegments=expanded.filter(t=>t==='blocked').length;
-  d.waterfrontSegments=expanded.filter(t=>t==='quay').length;d.approachCount=approaches.length;
+  d.waterfrontSegments=expanded.filter(t=>t==='quay').length;
+  d.scarpSegments=expanded.filter(t=>t==='scarp').length;
+  d.approachCount=approaches.length;
   c.walls=[];return d;
  }
  return{reserve,build,hull,inside};

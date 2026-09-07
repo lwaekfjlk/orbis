@@ -113,6 +113,22 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.water[k]=e.water;city.waterKind[k]=e.waterKind;
         city.height[k]=elevate(e.surface);city.wet[k]=e.wetness;
     }
+    // The layout has been reading a different surface from the one the atlas draws.
+    // city.height goes through elevate(), an asinh that folds 6000 m of relief into
+    // 18 plan units, while the frame seats everything back on the parent surface at
+    // very nearly its full range. So a wall or a street the plan measured at a 5%
+    // slope comes out on a 220% cliff face. This is the grade AS DRAWN — the same
+    // number AtlasSpace.height would give — and it is what a constraint about steep
+    // ground has to be written against.
+    const atlasH=h=>h>0?.14+Math.pow(h/1000,.98):0;
+    const stepX=span/(n-1)*(MAP_X/(GW-1)),stepZ=span*depth/width/(n-1)*(MAP_Z/(GH-1));
+    city.atlasSlope=new Float32Array(nn);
+    for(let y=0;y<n;y++)for(let x=0;x<n;x++){
+        const k=y*n+x,surf=city.environment.surface;
+        const dx=(atlasH(surf[y*n+Math.min(n-1,x+1)])-atlasH(surf[y*n+Math.max(0,x-1)]))/(2*stepX);
+        const dz=(atlasH(surf[Math.min(n-1,y+1)*n+x])-atlasH(surf[Math.max(0,y-1)*n+x]))/(2*stepZ);
+        city.atlasSlope[k]=Math.hypot(dx,dz);
+    }
     city.environment.signature=CityEnvironment.hash(city.environment);
     city.source.environmentSignature=city.environment.signature;
     city.context=CityEnvironment.context(w,p,city,elevate);
@@ -148,7 +164,24 @@ function generateCity(w, sim, provinceId, design = {}) {
             city.slope[k] = Math.max(Math.abs(city.height[y * n + Math.min(n - 1, x + 1)] - city.height[y * n + Math.max(0, x - 1)]), Math.abs(city.height[Math.min(n - 1, y + 1) * n + x] - city.height[Math.max(0, y - 1) * n + x]));
         }
     // Short bridges may cross modeled rivers, never entire seas or lakes.
-    const passable = k => (!city.water[k] || city.waterKind[k] === 3) && !city.citadelReserve?.[k];
+    // A street is a graded surface, not a climb. The cost term below reads
+    // city.height, which is asinh-compressed, so it never noticed the difference
+    // between a slope and a cliff: 990 of a default world's 24913 street segments
+    // came out drawn steeper than 50%, 48 of them past 100%. Above this the ground
+    // is stairs at best, and the router has to go round.
+    // Shaping is the cost term's job, not this gate's. A hard limit at .55 starved two
+    // towns outright — Foammeadow went from 118 buildings to none, Cairnshore to none —
+    // because on a steep site the gentle ground is fragmented and a router that may not
+    // cross anything steeper cannot reach it, and a town with no streets has nowhere to
+    // build. Raising the limit to the site's own gentlest 60% was not enough either:
+    // Foammeadow still came out with 8. So the gate only refuses ground nothing could be
+    // laid on at all, and the cubic-ish cost below is what keeps a street off a slope
+    // when there is any alternative. A settlement on a mountainside terraces and takes
+    // stairs; it does not cease to exist.
+    const STREET_CAP = 1.2;
+    city.streetGradeCap = STREET_CAP;
+    const climbable = k => !city.atlasSlope || city.atlasSlope[k] <= STREET_CAP;
+    const passable = k => (!city.water[k] || city.waterKind[k] === 3) && !city.citadelReserve?.[k] && climbable(k);
     const candidates = [];
     for (let y = 4; y < n - 4; y++)
         for (let x = 4; x < n - 4; x++) {
@@ -197,7 +230,7 @@ function generateCity(w, sim, provinceId, design = {}) {
                     continue;
                 if (dx && dy && (!passable(y * n + xx) || !passable(yy * n + x)))
                     continue;
-                const cost = Math.hypot(dx, dy) * (1 + Math.abs(city.height[j] - city.height[k]) * 6 + city.wet[j] * 1.2 + (city.water[j] ? 14 : 0)) * (city.road[j] ? .66 : 1);
+                const cost = Math.hypot(dx, dy) * (1 + Math.abs(city.height[j] - city.height[k]) * 6 + (city.atlasSlope ? Math.pow(city.atlasSlope[j] / .30, 3) * 2.2 : 0) + city.wet[j] * 1.2 + (city.water[j] ? 14 : 0)) * (city.road[j] ? .66 : 1);
                 if (d + cost < dist[j]) {
                     dist[j] = d + cost;
                     parent[j] = k;
