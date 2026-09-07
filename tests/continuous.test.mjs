@@ -44,6 +44,47 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
  }
  assert(checked>1e5,'expected the whole terrain to be checked, saw '+checked);
 });
+test('Closing in fills the landscape in rather than emptying it',()=>{
+ // Past 4.8 the atlas hides its own symbols — trees, dunes, glacier tongues, sea ice,
+ // reeds — because they are sized for the whole map. Nothing replaced them outside a
+ // loaded town's 22x18 cell box, so approaching a lake or a mountain showed LESS of it
+ // than the world view did, and rivers were cut entirely past 14.
+ const meshes={};
+ globalThis.window={world:w,sim:s};
+ const stub=Object.create(E.AtlasRenderer.prototype);
+ Object.assign(stub,{world:w,sim:s,relief:1,zoom:1,width:1440,height:900,azimuth:.018,elevation:1.19,
+  target:[0,0,0],meshes,options:{},layer:'relief',upload(n,g){meshes[n]={data:g.data,tris:g.data.length/27};},request(){}});
+ const layer=new E.ContinuousCityLayer(stub);layer.world=w;layer.sim=s;
+ const aim=q=>{stub.target=[(q.x/(E.GW-1)-.5)*168,0,(q.y/(E.GH-1)-.5)*98];};
+ aim(p);
+ // At world range there is no local scatter: the atlas symbols are still on.
+ stub.zoom=1;layer.natural=false;layer.buildEnvironment();
+ assert(!layer.environmentStats,'the world view is carried by the atlas symbols');
+ assert(!meshes['cm:env:flora'],'and builds no local scatter');
+ // Close in, and the ground has to be populated wherever the camera is looking.
+ const seen=[];
+ for(const zoom of [4.8,8,16,30,70]){
+  stub.zoom=zoom;layer.natural=true;layer.buildEnvironment();
+  const st=layer.environmentStats;
+  assert(st,`no environment built at zoom ${zoom}`);
+  // Ground cover, not trees specifically. What fills a landscape is what belongs in it:
+  // this site is a dry basin under glacier-bearing cliffs and comes out at 1807 stones
+  // to 130 plants at zoom 16, where a forested site comes out the other way round.
+  assert(st.plants+st.stones>400,`only ${st.plants+st.stones} things on the ground at zoom ${zoom}`);
+  // ...and the cost has to stay flat, or a remesh on every settle is unaffordable.
+  assert(st.triangles<160000,`${Math.round(st.triangles)} triangles of scatter at zoom ${zoom}`);
+  seen.push(st);
+ }
+ // The scatter is climate-driven, not one bush repeated: steep ground gets stone.
+ assert(seen.some(st=>st.stones>50),'no rock scatter anywhere on the steep ground');
+ // Rivers are no longer cut at 14, and the local layers answer their own toggles.
+ stub.zoom=20;
+ assert.equal(layer.visible('rivers'),true,'a river must survive the approach to it');
+ assert.equal(layer.visible('cm:env:flora'),true);
+ stub.options={trees:false};
+ assert.equal(layer.visible('cm:env:flora'),false,'the scatter answers the forest toggle');
+ delete globalThis.window;
+});
 test('The regional silhouette of a town is painted, not stamped',()=>{
  // TOWN_ZOOM to DETAIL_ZOOM is where a whole town is on screen, so it is the view most of the map is
  // read in — and every silhouette in every town on the world shared one hardcoded

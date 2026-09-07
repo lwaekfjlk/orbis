@@ -4,11 +4,11 @@
  */
 const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
- constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.retess=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
+ constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.retess=0;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
  remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);}
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
- reset(w,s){this.epoch++;clearTimeout(this.retess);this.lastTerrainKey=null;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
+ reset(w,s){this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;this.r.request();}
  bind(w,s){if(w!==this.world||(this.sim&&s!==this.sim))this.reset(w,s);else this.sim=s;}
  // Screen-space tessellation: one parent grid cell can cover a large part of the
  // screen once the camera closes in, and its two flat faces then read as two
@@ -72,6 +72,113 @@ class ContinuousCityLayer {
   g.quad([-R,-.015,-R],[-R,-.015,n],[R,-.015,n],[R,-.015,-R],c);g.quad([-R,-.015,s],[-R,-.015,R],[R,-.015,R],[R,-.015,s],c);g.quad([-R,-.015,n],[-R,-.015,s],[a,-.015,s],[a,-.015,n],c);g.quad([b,-.015,n],[b,-.015,s],[R,-.015,s],[R,-.015,n],c);
   r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=tess;this.lastTerrainKey=this.terrainKey();
  }
+ // Zooming in used to STRIP the world. Everything the atlas draws to say what a place
+ // is — trees, dunes, glacier tongues, sea ice, reeds — is hidden past 4.8 because those
+ // symbols are sized for the whole map, and the only thing that replaced them was a patch
+ // of vegetation inside each loaded town's own 22x18 cell box. Beyond that box the
+ // landscape went bare, so approaching a lake or a mountain showed you LESS of it than
+ // the world view did. This is the replacement: the same climate vocabulary, at a spacing
+ // that follows the camera, over everything currently on screen.
+ environmentKey(){
+  if(!this.natural)return 'none';
+  const b=this.viewBox(),q=v=>Math.round(v/4);
+  return [this.step().toFixed(2),q(b.x0),q(b.y0),q(b.x1),q(b.y1),this.r.layer].join('/');
+ }
+ // Plant spacing in parent cells. Closer camera, finer scatter — bounded at both ends so
+ // a regional view does not try to plant a continent and a rooftop view does not plant a
+ // lawn one blade at a time.
+ // Spacing is chosen against a sample BUDGET, not against zoom alone. Zoom alone put
+ // 33,000 samples and 419k triangles on screen at zoom 16 and took 731 ms to remesh,
+ // because the window shrinks more slowly than the spacing does in the middle of the
+ // range. Solving for the step keeps the cost flat wherever the camera is.
+ step(){
+  const r=this.r;r.updateCamera();
+  const b=this.viewBox(),cells=Math.max(1,(b.x1-b.x0)*(b.y1-b.y0));
+  const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;
+  return clamp(Math.max(9/perCell,Math.sqrt(cells/13000)),.13,.62);
+ }
+ buildEnvironment(){
+  const r=this.r,w=r.world;
+  if(!w||!this.natural){for(const name of ['cm:env:flora','cm:env:rock','cm:env:reeds','cm:env:ice','cm:env:falls'])this.drop(name);this.lastEnvironmentKey='none';return;}
+  const flora=new Geometry(),rock=new Geometry(),reeds=new Geometry(),ice=new Geometry(),falls=new Geometry();
+  const box=this.viewBox(),step=this.step(),towns=[...this.models.values()].map(m=>m.p);
+  const x0=Math.max(1,Math.floor(box.x0)),x1=Math.min(GW-2,Math.ceil(box.x1));
+  const y0=Math.max(1,Math.floor(box.y0)),y1=Math.min(GH-2,Math.ceil(box.y1));
+  const relief=r.relief,rnd=(a,b,salt)=>hash2(Math.round(a*97),Math.round(b*97),w.seed+salt);
+  const X=AtlasSpace.X,Z=AtlasSpace.Z;
+  const grade=(gx,gy)=>{const e=.5;
+   const dx=(AtlasSpace.surface(w,gx+e,gy,relief)-AtlasSpace.surface(w,gx-e,gy,relief))/(2*e*X);
+   const dz=(AtlasSpace.surface(w,gx,gy+e,relief)-AtlasSpace.surface(w,gx,gy-e,relief))/(2*e*Z);
+   return Math.hypot(dx,dz);};
+  let plants=0,stones=0,cataracts=0;
+  for(let gy=y0;gy<=y1;gy+=step)for(let gx=x0;gx<=x1;gx+=step){
+   const jx=gx+(rnd(gx,gy,31)-.5)*step*1.5,jy=gy+(rnd(gx,gy,37)-.5)*step*1.5;
+   if(jx<1||jx>=GW-1||jy<1||jy>=GH-1)continue;
+   // A loaded town plants its own ground; do not stack a second forest on its streets.
+   if(towns.some(p=>Math.abs(p.x-jx)<11.5&&Math.abs(p.y-jy)<9.5))continue;
+   const e=CityEnvironment.sample(w,jx,jy);
+   if(e.water)continue;
+   const v=AtlasSpace.point(w,jx,jy,relief),roll=rnd(gx,gy,43);
+   if(e.ice>25){
+    if(roll<.30){const sz=.05+rnd(gx,gy,47)*.05;
+     ice.cone(v[0],v[1],v[2],sz*1.6,sz*.7,sz*1.3,rgb('#dcefef'),5,rnd(gx,gy,53)*6);}
+    continue;
+   }
+   if([18,19,20].includes(e.biome)&&roll<.5){
+    for(let k=0;k<3;k++)reeds.cone(v[0]+(k-1)*.035,v[1],v[2]+(k%2)*.03,.012,.003,.10+(k%2)*.035,rgb('#426f59'),4);
+    continue;
+   }
+   const steep=grade(jx,jy);
+   if(steep>.62&&roll<.34){
+    const sz=.045+rnd(gx,gy,59)*.055;
+    rock.cone(v[0],v[1],v[2],sz,sz*.45,sz*.9,colorScale(rgb('#8d8878'),.86+rnd(gx,gy,61)*.3),5,rnd(gx,gy,67)*6);
+    stones++;continue;
+   }
+   const can=CityEnvironment.canopy(e.biome,e.temperature,e.aridity);
+   const leaf=CityEnvironment.leafColor(e.temperature,e.aridity);
+   if(can.density>0&&roll<can.density*.85){
+    const h=.075+rnd(gx,gy,71)*.05;
+    plantForm(flora,v,can.form,h,leaf,()=>rnd(gx,gy,73),true);
+    plants++;
+   }else if(e.temperature>2&&e.aridity>.35&&roll<.42){
+    // Open ground is not bare ground. A meadow reads as ground cover, not as trees.
+    const t=.020+rnd(gx,gy,79)*.016,col=colorScale(leaf,1.06+rnd(gx,gy,83)*.16);
+    for(let k=0;k<2;k++)flora.cone(v[0]+(k-.5)*t*1.5,v[1],v[2]+(k-.5)*t*1.2,t*.55,0,t*2.6,col,4);
+    plants++;
+   }
+  }
+  // Where a channel drops hard, it falls. The same measurement the Weeping Stair legend
+  // is chosen by, applied everywhere the camera can see it.
+  const down=w.riverDown||w.down;
+  for(let gy=y0;gy<=y1;gy++)for(let gx=x0;gx<=x1;gx++){
+   const i=gy*GW+gx,d=down?.[i];
+   if(d==null||d<0||w.height[i]<=0||w.lake[i]>0)continue;
+   if(w.flow[i]<(w.channelThreshold?.[i]||w.riverThreshold)*2)continue;
+   const drop=w.height[i]-w.height[d];
+   if(drop<160)continue;
+   const a=AtlasSpace.point(w,gx,gy,relief),b=AtlasSpace.point(w,d%GW,d/GW|0,relief);
+   const run=Math.hypot(b[0]-a[0],b[2]-a[2])||1e-6;
+   if((a[1]-b[1])/run<.55)continue;
+   const width=clamp(.03+Math.sqrt(w.flow[i]/(w.channelThreshold?.[i]||w.riverThreshold))*.02,.035,.13);
+   const white=rgb('#e8f4f2');
+   for(let k=0;k<5;k++){
+    const t0=k/5,t1=(k+1)/5;
+    const p0=[lerp(a[0],b[0],t0),lerp(a[1],b[1],t0),lerp(a[2],b[2],t0)];
+    const p1=[lerp(a[0],b[0],t1),lerp(a[1],b[1],t1),lerp(a[2],b[2],t1)];
+    falls.line(p0,p1,width*(1+t0*.5),white);
+   }
+   falls.blob(b[0],b[1]+width*1.5,b[2],width*2.1,rgb('#eef7f4'),.75);
+   cataracts++;
+  }
+  r.upload('cm:env:flora',flora,true);
+  r.upload('cm:env:rock',rock,true);
+  r.upload('cm:env:reeds',reeds,true);
+  r.upload('cm:env:ice',ice,true,.15);
+  r.upload('cm:env:falls',falls,false,.30);
+  this.environmentStats={plants,stones,cataracts,step:+step.toFixed(3),
+   cells:(x1-x0+1)*(y1-y0+1),triangles:(flora.data.length+rock.data.length+reeds.data.length+ice.data.length+falls.data.length)/27};
+  this.lastEnvironmentKey=this.environmentKey();
+ }
  build(p){const w=this.world,s=this.sim,c=generateCity(w,s,p.id),collector=createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(c,p,s.realms[p.owner],s.cityState?.[p.id]||{});
   const frame=AtlasSpace.cityFrame(w,p,c,this.r.relief),model={p,city:c,frame,key:this.key(p),meshNames:[],last:++this.sequence,heights:collector.landmarkHeights,triangles:0};
   const buckets=new Map();for(const anchor of frame.anchors.values()){const b=anchor.b;for(let z=Math.floor((b.z-b.d*.5-1)/5);z<=Math.floor((b.z+b.d*.5+1)/5);z++)for(let x=Math.floor((b.x-b.w*.5-1)/5);x<=Math.floor((b.x+b.w*.5+1)/5);x++){const k=x+','+z;if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(anchor);}}
@@ -134,20 +241,38 @@ class ContinuousCityLayer {
   await new Promise(resolve=>setTimeout(resolve,15));
   if(epoch!==this.epoch){this.pending.delete(key);return null;}
   try{this.remove(id);while(this.models.size>=this.maxModels){const entries=[...this.models.values()].sort((a,b)=>a.last-b.last),victim=entries.find(m=>m.p.id!==this.focusId)||entries[0];this.remove(victim.p.id);}
-   const model=await this.workerBuild(p);if(epoch!==this.epoch)return null;this.models.set(id,model);while(this.models.size>this.maxModels){const victims=[...this.models.values()].filter(m=>m.p.id!==id).sort((a,b)=>a.last-b.last);this.remove((victims.find(m=>m.p.id!==this.focusId)||victims[0]).p.id);}this.r.continuousModels=this.models;this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();return model;
+   const model=await this.workerBuild(p);if(epoch!==this.epoch)return null;this.models.set(id,model);while(this.models.size>this.maxModels){const victims=[...this.models.values()].filter(m=>m.p.id!==id).sort((a,b)=>a.last-b.last);this.remove((victims.find(m=>m.p.id!==this.focusId)||victims[0]).p.id);}this.r.continuousModels=this.models;this.r.buildTerrain();this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();return model;
   }catch(error){if(epoch!==this.epoch)return null;this.failed.add(key);console.error('Atlas town detail',p.name,error);window.__continuousError=error.message;return null;}
   finally{this.pending.delete(key);this.loading=this.pending.size>0;this.preparing=null;this.onChange();}
  }
- visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>AtlasSpace.TOWN_ZOOM*.88;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&this.r.zoom<AtlasSpace.DETAIL_ZOOM;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<AtlasSpace.DETAIL_ZOOM)return false;return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
+ visible(name){
+  if(name.startsWith('cm:env:')){
+   if(!this.natural)return false;
+   const kind=name.split(':').at(-1);
+   if(kind==='flora')return this.r.options.trees!==false;
+   if(kind==='ice')return this.r.options.ice!==false;
+   if(kind==='falls')return this.r.options.rivers!==false;
+   return true;
+  }
+ if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>AtlasSpace.TOWN_ZOOM*.88;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&this.r.zoom<AtlasSpace.DETAIL_ZOOM;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<AtlasSpace.DETAIL_ZOOM)return false;return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
   // The cartographic overlay stops where the town itself begins. A quay symbol is drawn
   // to the same scale as the town marker beside it — about forty buildings across — so
   // leaving it on once the architecture resolves puts a giant pier through the streets.
   // Its replacement is the town's own cm:*:port waterfront, which appears at this zoom.
-  if(this.r.zoom>=AtlasSpace.TOWN_ZOOM){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false&&this.r.zoom<AtlasSpace.TOWN_ZOOM*2.9;}
+  // The world's own symbols still stand down here — they are sized for the whole map —
+  // but cm:env:* now takes their place across everything on screen, not just inside a
+  // loaded town's box. Rivers stay: cutting them took the water out of the landscape
+  // exactly where you had come to look at it.
+  if(this.r.zoom>=AtlasSpace.TOWN_ZOOM){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false;}
   return null;
  }
- cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.request();}
-  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
+ cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.buildEnvironment();this.r.request();}
+  // The scatter follows the camera, on the same settle-first rule as the terrain: it is
+  // a remesh, and it must not run inside a wheel or a drag.
+  else if(this.environmentKey()!==this.lastEnvironmentKey){clearTimeout(this.reflora);this.reflora=setTimeout(()=>{if(this.environmentKey()!==this.lastEnvironmentKey&&!busy){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}},190);}
+  // The ground-seated road ribbon follows the camera too, and keys itself, so this is
+  // free when nothing has moved far enough to matter.
+  if(close)this.r.buildNearRoads?.();  // A finer or coarser terrain patch is a remesh, so it waits for the camera to
   // settle rather than running inside a wheel or drag gesture.
   else if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
   if(!close){this.onChange();return;}clearTimeout(this.timer);this.timer=setTimeout(()=>this.stream(),180);this.onChange();

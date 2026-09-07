@@ -52,7 +52,7 @@
       "near": {
         "under": 0.004,
         "over": 0.006,
-        "triangles": 1680
+        "triangles": 63144
       },
       "bridgeDeck": [
         0.3,

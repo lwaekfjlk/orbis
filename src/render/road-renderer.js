@@ -62,8 +62,13 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         }
     }
     /** The stretch of a road that is inside the box a detailed town occupies. */
-    function nearSlice(path, areas) {
-        const inside = i => areas.some(p => Math.abs(i % GW - p.x) < 13 && Math.abs((i / GW | 0) - p.y) < 12);
+    function nearSlice(path, areas, view) {
+        const inside = i => {
+            const x = i % GW, y = i / GW | 0;
+            if (view && Math.abs(x - view.x) < view.rx && Math.abs(y - view.y) < view.ry)
+                return true;
+            return areas.some(p => Math.abs(x - p.x) < 13 && Math.abs(y - p.y) < 12);
+        };
         const runs = [];
         let run = null;
         for (let k = 0; k < path.length; k++) {
@@ -151,8 +156,8 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.buildNearRoads(true);
     };
     /** The same roads again, seated on the ground rather than above it, for the band
-     * where a town's own streets are drawn. Only the stretches beside a loaded town are
-     * built, so this stays a few hundred triangles. */
+     * where a town's own streets are drawn. Only the stretches the camera can see are
+     * built, so this stays a few thousand triangles however long the network is. */
     /** A watch post where two realms actually meet the ground.
      * The administration graph already knows the cell pair each province boundary is crossed
      * at — the pass or ford that carries the traffic — so a post is placed on the CHEAPEST
@@ -196,15 +201,25 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         const net = this.roadNetwork;
         if (!net)
             return;
+        // The ground-seated ribbon used to be cut to a box around each LOADED town, so
+        // past zoom 18 every road outside those boxes simply stopped: a highway ran into
+        // nothing halfway across a valley. It follows the camera now — what is on screen
+        // is what gets a road — with the town boxes still included so a road does not
+        // vanish while its town is being approached.
         const areas = [...(this.continuousModels?.values() || [])].map(m => m.p);
-        const key = `${net.signature}/${this.relief}/${areas.map(p => p.id).sort().join(',')}`;
+        this.updateCamera();
+        const centre = AtlasSpace.grid(this.target[0], this.target[2]);
+        const reach = (this.halfW + this.halfH / Math.max(.2, Math.sin(this.elevation))) / GRID_X + 3;
+        const view = { x: centre[0], y: centre[1], rx: reach, ry: reach * GRID_X / GRID_Z };
+        const q = v => Math.round(v / 4);
+        const key = `${net.signature}/${this.relief}/${areas.map(p => p.id).sort().join(',')}/${q(view.x)}/${q(view.y)}/${Math.round(reach)}`;
         if (!force && this.nearRoadKey === key)
             return;
         this.nearRoadKey = key;
         const g = new Geometry();
-        for (const road of areas.length ? net.roads : []) {
+        for (const road of net.roads) {
             const style = CLASS_STYLE[road.cls] || CLASS_STYLE.trail;
-            for (const run of nearSlice(road.path, areas)) {
+            for (const run of nearSlice(road.path, areas, view)) {
                 ribbon(this, g, run, style.width * 1.30, rgb('#a2916f'), NEAR_LIFT);
                 ribbon(this, g, run, style.width, rgb('#d3c09c'), NEAR_LIFT + .002);
             }
