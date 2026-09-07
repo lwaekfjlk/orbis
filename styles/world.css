@@ -1,3 +1,23 @@
+/* Bundled map lettering; the single-file build embeds both font files. */
+@font-face {
+  font-family:"Cinzel Decorative";
+  src:url("../assets/fonts/CinzelDecorative-Regular.ttf") format("truetype");
+  font-style:normal;
+  font-weight:400;
+  font-display:swap
+}
+@font-face {
+  font-family:"IM Fell English";
+  src:url("../assets/fonts/IMFellEnglish-Italic.ttf") format("truetype");
+  font-style:italic;
+  font-weight:400;
+  font-display:swap
+}
+:root {
+  --realm-lettering:"Cinzel Decorative",Palatino,Georgia,serif;
+  --town-lettering:"IM Fell English",Palatino,Georgia,serif
+}
+
 :root {
   --bg:#eeefe7;
   --paper:#f8f8f0;
@@ -507,17 +527,16 @@ header {
 /* Country names carry the political layer, so they are set above every other
    label; their cities sit under them at ordinary town size. */
 .maplabel.capitalLabel em {
-  font-size:17px;
-  font-style:normal;
-  letter-spacing:1.6px;
+  font:400 27px/1.2 var(--realm-lettering);
+  letter-spacing:1.3px;
   color:#33403a
 }
 .maplabel.capitalLabel small {
   font-size:6px
 }
 .maplabel.townLabel em {
-  font-size:11px;
-  letter-spacing:0
+  font:italic 10.5px/1.3 var(--town-lettering);
+  letter-spacing:.1px
 }
 .maplabel.townLabel small {
   font-size:5px;
@@ -1131,7 +1150,7 @@ dialog a {
     font-size:24px
   }
   .maplabel.capitalLabel em {
-    font-size:14px
+    font-size:24px
   }
   .maphead h3 {
     font-size:21px
@@ -1378,7 +1397,7 @@ dialog a {
     font-size:10px
   }
   .maplabel.capitalLabel em {
-    font-size:10px
+    font-size:22px
   }
   .maplabel small {
     font-size:5px

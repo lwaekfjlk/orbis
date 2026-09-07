@@ -368,6 +368,8 @@ function realmAnchor(held) {
 }
 // Named wonders only appear when the legend layer itself is switched on.
 function legendLabels() { return $('legends')?.checked === false ? [] : (world.legends || []); }
+// Loaded lettering changes the label bounds, so re-run collision placement.
+document.fonts?.addEventListener('loadingdone', () => { positionLabels(); renderer?.request(); });
 function makeLabels() {
     $('labels').innerHTML = '';
     labelItems = [];
@@ -375,7 +377,7 @@ function makeLabels() {
         return;
     let list = [];
     if (currentLayer === 'settlements')
-        list = sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop).map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() + ' / ' + fmtPop(p.urbanPop) }));
+        list = sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop).map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() + ' / ' + fmtPop(p.urbanPop), town: true }));
     else if (currentLayer === 'potential')
         list = world.continents;
     else if (currentLayer === 'plates')
@@ -402,7 +404,7 @@ function makeLabels() {
         list = [...world.continents,
             ...legendLabels(),
             ...sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop)
-                .map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() })),
+                .map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase(), town: true })),
             ...world.features];
     else if (currentLayer === 'water')
         list = world.features.filter(f => f.id.startsWith('lake') || f.id.startsWith('fjord') || f.id === 'wetland');
@@ -625,6 +627,8 @@ async function savePNG() {
     if (!world || busy)
         return;
     pause();
+    await document.fonts?.ready;
+    positionLabels();
     const canvas = renderer.canvas, ow = canvas.width, oh = canvas.height, scale = 2048 / Math.max(1, ow);
     canvas.width = Math.round(ow * scale);
     canvas.height = Math.round(oh * scale);
@@ -641,13 +645,16 @@ async function savePNG() {
                 continue;
             const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : f.legend ? 1.9 : .6);
             ctx.textAlign = 'center';
-            ctx.font = `${f.capital || f.legend ? '' : 'italic '}${(f.legend ? 14 : 12) * sx}px Georgia`;
+            const lettering = getComputedStyle(e.querySelector('em'));
+            ctx.font = `${lettering.fontStyle} ${lettering.fontWeight} ${parseFloat(lettering.fontSize) * sx}px ${lettering.fontFamily}`;
+            if ('letterSpacing' in ctx) ctx.letterSpacing = `${(parseFloat(lettering.letterSpacing) || 0) * sx}px`;
             ctx.strokeStyle = f.legend ? '#fff8e2' : '#efe9ce';
             ctx.lineWidth = 2.4 * sx;
             ctx.fillStyle = f.legend ? '#5a3d10' : '#294734';
             ctx.strokeText(f.name, x * sx, (y - 10) * sy);
             ctx.fillText(f.name, x * sx, (y - 10) * sy);
         }
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#f4f5eb';
     ctx.fillRect(0, canvas.height, out.width, 106);

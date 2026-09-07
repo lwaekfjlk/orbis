@@ -1,0 +1,687 @@
+{
+  "checks": [
+    {
+      "stage": "desktop",
+      "realms": [
+        {
+          "name": "Enki",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 859.046875,
+            "y": 549.734375,
+            "width": 115.21875,
+            "height": 59.890625,
+            "top": 549.734375,
+            "right": 974.265625,
+            "bottom": 609.625,
+            "left": 859.046875
+          }
+        },
+        {
+          "name": "Vainola",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1120.03125,
+            "y": 420.03125,
+            "width": 146.9375,
+            "height": 59.890625,
+            "top": 420.03125,
+            "right": 1266.96875,
+            "bottom": 479.921875,
+            "left": 1120.03125
+          }
+        },
+        {
+          "name": "Inanna",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 340.671875,
+            "y": 461.5,
+            "width": 137.90625,
+            "height": 59.890625,
+            "top": 461.5,
+            "right": 478.578125,
+            "bottom": 521.390625,
+            "left": 340.671875
+          }
+        },
+        {
+          "name": "Ashihara",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 682.3359375,
+            "y": 613.5,
+            "width": 165.421875,
+            "height": 59.890625,
+            "top": 613.5,
+            "right": 847.7578125,
+            "bottom": 673.390625,
+            "left": 682.3359375
+          }
+        },
+        {
+          "name": "Amenti",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 149.1171875,
+            "y": 271.34375,
+            "width": 130.265625,
+            "height": 59.890625,
+            "top": 271.34375,
+            "right": 279.3828125,
+            "bottom": 331.234375,
+            "left": 149.1171875
+          }
+        },
+        {
+          "name": "Meru",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 370.3046875,
+            "y": 367.71875,
+            "width": 108.890625,
+            "height": 59.890625,
+            "top": 367.71875,
+            "right": 479.1953125,
+            "bottom": 427.609375,
+            "left": 370.3046875
+          }
+        },
+        {
+          "name": "Tuonela",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1048.34375,
+            "y": 240.4375,
+            "width": 155.625,
+            "height": 59.890625,
+            "top": 240.4375,
+            "right": 1203.96875,
+            "bottom": 300.328125,
+            "left": 1048.34375
+          }
+        },
+        {
+          "name": "Emain Ablach",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 820.5859375,
+            "y": 466.453125,
+            "width": 239.640625,
+            "height": 59.890625,
+            "top": 466.453125,
+            "right": 1060.2265625,
+            "bottom": 526.34375,
+            "left": 820.5859375
+          }
+        },
+        {
+          "name": "Isis",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 214.421875,
+            "y": 368.90625,
+            "width": 110.9375,
+            "height": 59.890625,
+            "top": 368.90625,
+            "right": 325.359375,
+            "bottom": 428.796875,
+            "left": 214.421875
+          }
+        },
+        {
+          "name": "Ahtola",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1154.484375,
+            "y": 528.84375,
+            "width": 135.75,
+            "height": 59.890625,
+            "top": 528.84375,
+            "right": 1290.234375,
+            "bottom": 588.734375,
+            "left": 1154.484375
+          }
+        },
+        {
+          "name": "Ra",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 217.203125,
+            "y": 564.75,
+            "width": 106.59375,
+            "height": 59.890625,
+            "top": 564.75,
+            "right": 323.796875,
+            "bottom": 624.640625,
+            "left": 217.203125
+          }
+        },
+        {
+          "name": "Atlantis",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 447.515625,
+            "y": 260.609375,
+            "width": 153.25,
+            "height": 59.890625,
+            "top": 260.609375,
+            "right": 600.765625,
+            "bottom": 320.5,
+            "left": 447.515625
+          }
+        },
+        {
+          "name": "Tir na nOg",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 497.15625,
+            "y": 498.53125,
+            "width": 195.1875,
+            "height": 59.890625,
+            "top": 498.53125,
+            "right": 692.34375,
+            "bottom": 558.421875,
+            "left": 497.15625
+          }
+        },
+        {
+          "name": "Chicomoztoc",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 704.3359375,
+            "y": 302.28125,
+            "width": 248.515625,
+            "height": 59.890625,
+            "top": 302.28125,
+            "right": 952.8515625,
+            "bottom": 362.171875,
+            "left": 704.3359375
+          }
+        },
+        {
+          "name": "Guixu",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 495.8671875,
+            "y": 406.21875,
+            "width": 112.734375,
+            "height": 59.890625,
+            "top": 406.21875,
+            "right": 608.6015625,
+            "bottom": 466.109375,
+            "left": 495.8671875
+          }
+        },
+        {
+          "name": "Scheria",
+          "size": 27,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 482.984375,
+            "y": 564.1875,
+            "width": 132.4375,
+            "height": 59.890625,
+            "top": 564.1875,
+            "right": 615.421875,
+            "bottom": 624.078125,
+            "left": 482.984375
+          }
+        }
+      ],
+      "towns": [
+        {
+          "name": "Whitereach",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1023.34375,
+            "y": 416.953125,
+            "width": 58.65625,
+            "height": 29.640625,
+            "top": 416.953125,
+            "right": 1082,
+            "bottom": 446.59375,
+            "left": 1023.34375
+          }
+        },
+        {
+          "name": "Wrencombe",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 238.8203125,
+            "y": 518.328125,
+            "width": 57.640625,
+            "height": 29.640625,
+            "top": 518.328125,
+            "right": 296.4609375,
+            "bottom": 547.96875,
+            "left": 238.8203125
+          }
+        },
+        {
+          "name": "Foxmeadow",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 687.4296875,
+            "y": 570.3125,
+            "width": 60.578125,
+            "height": 38.640625,
+            "top": 570.3125,
+            "right": 748.0078125,
+            "bottom": 608.953125,
+            "left": 687.4296875
+          }
+        },
+        {
+          "name": "Wildcombe",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1114.078125,
+            "y": 332.90625,
+            "width": 57.03125,
+            "height": 38.640625,
+            "top": 332.90625,
+            "right": 1171.109375,
+            "bottom": 371.546875,
+            "left": 1114.078125
+          }
+        },
+        {
+          "name": "Greenwaystead",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1311.1484375,
+            "y": 493.984375,
+            "width": 72.890625,
+            "height": 29.640625,
+            "top": 493.984375,
+            "right": 1384.0390625,
+            "bottom": 523.625,
+            "left": 1311.1484375
+          }
+        },
+        {
+          "name": "Greencliff",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 934.0859375,
+            "y": 373.40625,
+            "width": 52.671875,
+            "height": 38.640625,
+            "top": 373.40625,
+            "right": 986.7578125,
+            "bottom": 412.046875,
+            "left": 934.0859375
+          }
+        },
+        {
+          "name": "Inner Foamhaven",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 722.2890625,
+            "y": 491.25,
+            "width": 82.421875,
+            "height": 38.640625,
+            "top": 491.25,
+            "right": 804.7109375,
+            "bottom": 529.890625,
+            "left": 722.2890625
+          }
+        },
+        {
+          "name": "Amberness",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1221.046875,
+            "y": 347.265625,
+            "width": 54.90625,
+            "height": 38.640625,
+            "top": 347.265625,
+            "right": 1275.953125,
+            "bottom": 385.90625,
+            "left": 1221.046875
+          }
+        },
+        {
+          "name": "Crowcroft",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 143.2890625,
+            "y": 586.59375,
+            "width": 51.453125,
+            "height": 29.640625,
+            "top": 586.59375,
+            "right": 194.7421875,
+            "bottom": 616.234375,
+            "left": 143.2890625
+          }
+        },
+        {
+          "name": "Stormbeck",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 359.9296875,
+            "y": 536.09375,
+            "width": 53.296875,
+            "height": 38.640625,
+            "top": 536.09375,
+            "right": 413.2265625,
+            "bottom": 574.734375,
+            "left": 359.9296875
+          }
+        },
+        {
+          "name": "Eaglerise",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 1070.3984375,
+            "y": 493.125,
+            "width": 49.578125,
+            "height": 38.640625,
+            "top": 493.125,
+            "right": 1119.9765625,
+            "bottom": 531.765625,
+            "left": 1070.3984375
+          }
+        }
+      ],
+      "overlap": 0,
+      "fonts": [
+        {
+          "family": "Cinzel Decorative",
+          "status": "loaded"
+        },
+        {
+          "family": "IM Fell English",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "stage": "export",
+      "lettering": [
+        {
+          "text": "Enki",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Vainola",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Inanna",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Ashihara",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Amenti",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Meru",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Tuonela",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Emain Ablach",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Isis",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Ahtola",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Ra",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Atlantis",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Tir na nOg",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Chicomoztoc",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Guixu",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Scheria",
+          "font": "37.3622px \"Cinzel Decorative\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Whitereach",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Wrencombe",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Foxmeadow",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Wildcombe",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Greenwaystead",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Greencliff",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Inner Foamhaven",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Amberness",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Crowcroft",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Stormbeck",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        },
+        {
+          "text": "Eaglerise",
+          "font": "italic 14.5297px \"IM Fell English\", Palatino, Georgia, serif"
+        }
+      ]
+    },
+    {
+      "stage": "settlements",
+      "towns": 43
+    },
+    {
+      "stage": "relief",
+      "towns": 39
+    },
+    {
+      "stage": "long-name",
+      "realms": 13
+    },
+    {
+      "stage": "mobile",
+      "realms": [
+        {
+          "name": "Enki",
+          "size": 22,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 183.9375,
+            "y": 399.625,
+            "width": 115.21875,
+            "height": 53.890625,
+            "top": 399.625,
+            "right": 299.15625,
+            "bottom": 453.515625,
+            "left": 183.9375
+          }
+        },
+        {
+          "name": "Inanna",
+          "size": 22,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 49.734375,
+            "y": 376.375,
+            "width": 116.40625,
+            "height": 53.890625,
+            "top": 376.375,
+            "right": 166.140625,
+            "bottom": 430.265625,
+            "left": 49.734375
+          }
+        },
+        {
+          "name": "Tuonela",
+          "size": 22,
+          "family": "\"Cinzel Decorative\", Palatino, Georgia, serif",
+          "box": {
+            "x": 231.2109375,
+            "y": 318.125,
+            "width": 131.078125,
+            "height": 53.890625,
+            "top": 318.125,
+            "right": 362.2890625,
+            "bottom": 372.015625,
+            "left": 231.2109375
+          }
+        }
+      ],
+      "towns": [
+        {
+          "name": "Quillwell",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 321.578125,
+            "y": 400.390625,
+            "width": 50.40625,
+            "height": 38.640625,
+            "top": 400.390625,
+            "right": 371.984375,
+            "bottom": 439.03125,
+            "left": 321.578125
+          }
+        },
+        {
+          "name": "Sailwick",
+          "size": 10.5,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 176.9921875,
+            "y": 359.4375,
+            "width": 47.734375,
+            "height": 29.640625,
+            "top": 359.4375,
+            "right": 224.7265625,
+            "bottom": 389.078125,
+            "left": 176.9921875
+          }
+        }
+      ],
+      "overlap": 0,
+      "fonts": [
+        {
+          "family": "Cinzel Decorative",
+          "status": "loaded"
+        },
+        {
+          "family": "IM Fell English",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "stage": "local-16",
+      "pins": [
+        {
+          "name": "Glassbeck",
+          "size": 11,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 712.0703125,
+            "y": 462.890625,
+            "width": 55.859375,
+            "height": 24.296875,
+            "top": 462.890625,
+            "right": 767.9296875,
+            "bottom": 487.1875,
+            "left": 712.0703125
+          }
+        }
+      ]
+    },
+    {
+      "stage": "local-16.1",
+      "pins": [
+        {
+          "name": "Glassbeck",
+          "size": 11,
+          "family": "\"IM Fell English\", Palatino, Georgia, serif",
+          "box": {
+            "x": 712.0546875,
+            "y": 462.875,
+            "width": 55.859375,
+            "height": 24.296875,
+            "top": 462.875,
+            "right": 767.9140625,
+            "bottom": 487.171875,
+            "left": 712.0546875
+          }
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}

@@ -7,7 +7,7 @@ const root = await realpath(resolve(dirname(fileURLToPath(import.meta.url)), '..
 const port = Number(process.env.PORT || 5173);
 if (!Number.isInteger(port) || port < 1 || port > 65535)
     throw Error('PORT must be 1–65535.');
-const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.md': 'text/plain; charset=utf-8', '.glb': 'model/gltf-binary' };
+const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.md': 'text/plain; charset=utf-8', '.glb': 'model/gltf-binary', '.ttf': 'font/ttf' };
 const server = createServer(async (req, res) => {
     try {
         if (!['GET', 'HEAD'].includes(req.method)) {
