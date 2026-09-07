@@ -173,9 +173,9 @@
         {
           "id": 103,
           "name": "Snowpool",
-          "buildings": 771,
+          "buildings": 613,
           "landmarks": 7,
-          "fingerprint": "9893657c",
+          "fingerprint": "77304723",
           "waterPercent": 9.60960960960961
         },
         {
@@ -421,9 +421,9 @@
         {
           "id": 265,
           "name": "Longhurst",
-          "buildings": 587,
+          "buildings": 742,
           "landmarks": 7,
-          "fingerprint": "127992d7",
+          "fingerprint": "332706b5",
           "waterPercent": 51.27018910802694
         },
         {
@@ -445,9 +445,9 @@
         {
           "id": 276,
           "name": "Mossgrove",
-          "buildings": 293,
+          "buildings": 393,
           "landmarks": 7,
-          "fingerprint": "8f846dcb",
+          "fingerprint": "5aac7cd5",
           "waterPercent": 44.24153883613343
         },
         {
@@ -501,25 +501,25 @@
         {
           "id": 299,
           "name": "Harthurst",
-          "buildings": 306,
-          "landmarks": 7,
-          "fingerprint": "1427372c",
+          "buildings": 472,
+          "landmarks": 6,
+          "fingerprint": "fefa6dfb",
           "waterPercent": 21.110299488677867
         },
         {
           "id": 300,
           "name": "Vespershore",
-          "buildings": 281,
+          "buildings": 378,
           "landmarks": 6,
-          "fingerprint": "2af450d2",
+          "fingerprint": "fd05fb9",
           "waterPercent": 37.935232529827125
         },
         {
           "id": 303,
           "name": "Bowerness",
-          "buildings": 519,
-          "landmarks": 6,
-          "fingerprint": "1bd19c15",
+          "buildings": 682,
+          "landmarks": 7,
+          "fingerprint": "9668edc9",
           "waterPercent": 61.60214268322376
         },
         {
@@ -573,9 +573,9 @@
         {
           "id": 341,
           "name": "Silthollow",
-          "buildings": 382,
-          "landmarks": 6,
-          "fingerprint": "3756091b",
+          "buildings": 548,
+          "landmarks": 5,
+          "fingerprint": "f1373161",
           "waterPercent": 5.259313367421475
         },
         {
@@ -597,9 +597,9 @@
         {
           "id": 355,
           "name": "Rowanclose",
-          "buildings": 271,
+          "buildings": 385,
           "landmarks": 7,
-          "fingerprint": "d02a7156",
+          "fingerprint": "866bead3",
           "waterPercent": 47.88572356139923
         },
         {
@@ -645,9 +645,9 @@
         {
           "id": 386,
           "name": "Bonedown",
-          "buildings": 337,
-          "landmarks": 6,
-          "fingerprint": "81de8495",
+          "buildings": 527,
+          "landmarks": 7,
+          "fingerprint": "f32f38c6",
           "waterPercent": 31.872412953494035
         },
         {
@@ -909,9 +909,9 @@
         {
           "id": 577,
           "name": "Rowanchase",
-          "buildings": 862,
+          "buildings": 706,
           "landmarks": 6,
-          "fingerprint": "ee708346",
+          "fingerprint": "5c483f0a",
           "waterPercent": 0.8603197792386983
         }
       ]

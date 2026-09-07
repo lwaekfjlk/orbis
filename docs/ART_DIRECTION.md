@@ -15,6 +15,21 @@ The current prototype adds real geometric foundations for this direction. It is 
 - **Highland hold:** retaining terraces, robust stone halls, mountain gates and covered stairs. Mines and interior halls require separate detailed assets.
 - **Courtyard city:** compact shaded streets, inhabited roof terraces, wind towers, caravan courts and cisterns supplied by actual water access.
 - **Waterfront city:** piers, warehouses, quays and appropriately placed defenses; no invented sea or lake for an architectural template.
+- **Boreal log town:** log dwellings banked against the drift line, very steep shingled roofs, stone flues, granaries and wood stores raised on posts, split-log palisade, conifer surrounds.
+- **Monsoon stilt town:** houses on hardwood posts above ground that floods seasonally, very deep thatched eaves, louvred screens instead of glazing, raised plank lanes, no heating anywhere in the town.
+
+## Climate as a modifier, not a seventeenth template
+
+A tradition carries the cultural and site identity. The weather is applied on top of it, per
+block, from that block's own cell: snow load steepens and re-pitches the roof, rain deepens the
+eave, drought flattens it to a terrace, cold shrinks the openings and adds a flue, wet ground
+raises the floor, and the palette is retoned between the two extremes. Adding a template for
+each climate would multiply the families without fixing the underlying problem, which was that
+one family covered 6.7 °C to 27.8 °C and built the same house at both ends.
+
+The forms this produces are schematic. They are a legible reading of a climate index, not
+authored regional vernacular architecture, and they do not replace the production-art work
+described below.
 
 ## Structural standards
 

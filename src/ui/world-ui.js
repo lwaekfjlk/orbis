@@ -265,7 +265,7 @@ function showLocation(i) {
     if (!world || i < 0)
         return;
     const pid = world.provinceId[i], p = sim?.provinces[pid], b = world.basins[world.basinTarget[i]], extra = world.lake[i] > 0 ? `${world.basins[world.lakeId[i]]?.kind || 'Inland lake'} · water surface ${fmt(world.lake[i])} m` : b?.closed ? 'Inland drainage → ' + b.name : 'Drainage toward an ocean or an overflowing basin';
-    $('locationNote').textContent = `${p ? `${p.name} · ${sim.realms[p.owner]?.name || 'Unaligned communities'} · ` : ''}${BIOME[world.biome[i]][0]} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
+    $('locationNote').textContent = `${p ? `${p.name} · ${sim.realms[p.owner]?.name || 'Unaligned communities'} · ` : ''}${BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
 }
 function inspectCell(i) { selectedCell = i; const p = sim?.provinces[world.provinceId[i]]; renderer.select(i); showLocation(i); if (POLITICAL.includes(currentLayer) && p?.owner >= 0) {
     selectedRealm = p.owner;
@@ -346,8 +346,8 @@ function legend() {
     else if (currentLayer === 'magic')
         items = [['#e7d9c6', 'Limited infrastructure'], ['#8665ab', 'Strong local arcane capacity']];
     else
-        items = [['#698b67', 'Forest'], ['#d9ac68', 'Sand desert'], ['#b79e81', 'Rock desert'], ['#a9b175', 'Steppe'], ['#74b4c1', 'Inland lake'], ['#679a8d', 'Wetland'], ['#d9eff0', 'Glacier']];
-    $('legend').innerHTML = items.map(([c, t]) => `<span><i style="background:${c}"></i>${escapeHTML(t)}</span>`).join('') + (['faiths', 'peoples'].includes(currentLayer) ? '<span>Color: local majority, not uniform belief or ancestry.</span>' : '');
+        items = [['#4e7f7a', 'Boreal forest'], ['#6f9a6a', 'Temperate forest'], ['#3d7f4c', 'Tropical rainforest'], ['#ddab5f', 'Sand desert'], ['#c0b273', 'Dry steppe'], ['#9fa89b', 'Tundra'], ['#939589', 'Alpine rock'], ['#74b4c1', 'Inland lake'], ['#679a8d', 'Wetland'], ['#d9eff0', 'Glacier'], ['Ground tone grades with temperature and aridity inside each biome.']].map(a => a.length === 1 ? [null, a[0]] : a);
+    $('legend').innerHTML = items.map(([c, t]) => `<span>${c ? `<i style="background:${c}"></i>` : ''}${escapeHTML(t)}</span>`).join('') + (['faiths', 'peoples'].includes(currentLayer) ? '<span>Color: local majority, not uniform belief or ancestry.</span>' : '');
     $('mapStamp').textContent = layerTitles[currentLayer] + ' / ' + sim.year;
 }
 // The held province closest to the territory's own centre of mass. A country whose

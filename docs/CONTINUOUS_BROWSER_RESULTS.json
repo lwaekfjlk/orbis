@@ -18,7 +18,7 @@
       }
     },
     {
-      "name": "Search zooms to Stonefall without replacing the map",
+      "name": "Search zooms to Glassbeck without replacing the map",
       "data": {
         "canvas": "map",
         "same": true,
@@ -32,7 +32,7 @@
       "data": true
     },
     {
-      "name": "Stonefall inherits a dry lake basin and real glacial foothills",
+      "name": "Glassbeck inherits a dry lake basin and real glacial foothills",
       "data": "Salt basin · glacial foothills"
     },
     {
@@ -46,8 +46,8 @@
     {
       "name": "A building is selectable on the world canvas",
       "data": {
-        "x": 689.1571534075837,
-        "y": 412.26102724111865,
+        "x": 605.119857555299,
+        "y": 405.86274275913644,
         "id": "b0"
       }
     },
@@ -125,8 +125,8 @@
   ],
   "errors": [],
   "requests": [
-    "blob:null/25321167-b063-476a-8c32-46e826948bc2",
-    "blob:null/9ae58e66-59b5-4c62-b296-98b13f9759aa"
+    "blob:null/bdbf82a5-5eed-4ec6-83dc-b9666445da83",
+    "blob:null/23212800-543e-49b8-badb-a5fe0d2177e2"
   ],
   "renderer": "software",
   "load_method": "bundled HTML in an about:blank document",
@@ -135,7 +135,7 @@
     "worldSeed": "Continuous-ridge-17",
     "models": [],
     "loading": true,
-    "terrainTriangles": 107050,
+    "terrainTriangles": 128650,
     "singleCanvas": "map"
   },
   "worker": true,

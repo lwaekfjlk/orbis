@@ -88,9 +88,10 @@ class ContinuousCityLayer {
    const e=CityEnvironment.sample(w,gx,gy);if(e.water||e.ice>12||hash2(Math.round(dx*100),Math.round(dy*100),w.seed+11)>e.treeDensity*.65)continue;
    const lx=dx*c.width/c.span,lz=dy*c.width/c.span;if(c.buildings.some(b=>Math.abs(b.x-lx)<b.w/2+2&&Math.abs(b.z-lz)<b.d/2+2))continue;
    const v=AtlasSpace.point(w,gx,gy,this.r.relief),h=.09+hash2(dx*100,dy*100,w.seed)*.055;
-   vegetation.cone(v[0],v[1],v[2],.007,.005,h*.48,rgb('#776f51'),4);
-   if(e.temperature<10)vegetation.cone(v[0],v[1]+h*.2,v[2],h*.32,0,h,rgb('#4a7568'),6);
-   else vegetation.blob(v[0],v[1]+h*.66,v[2],h*.37,rgb('#5b8866'),1.2);
+   // Same form vocabulary and climate colour as the town scene and the atlas symbols,
+   // replacing a bare temperature<10 cone/blob switch in two fixed greens.
+   const form=CityEnvironment.canopy(e.biome,e.temperature,e.aridity).form;
+   plantForm(vegetation,v,form,h,CityEnvironment.leafColor(e.temperature,e.aridity),()=>hash2(Math.round(dx*61),Math.round(dy*61),w.seed+17));
   }
   this.r.upload(`cm:${p.id}:vegetation`,vegetation,true);model.meshNames.push(`cm:${p.id}:vegetation`);
   // Screen-scale LOD: readable roofs at regional zoom; fine carved assemblies close up.

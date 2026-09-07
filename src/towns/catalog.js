@@ -16,7 +16,9 @@ const TownCatalog = (() => {
   {id:'paddy',name:'Terrace Valley Town',short:'Terraced town',plan:'paddies',kit:'verandas',material:'paddy',roof:'leaf',palace:'paddy',width:.72,scale:.92,wall:0,spacing:1.02,description:'Contour lanes follow irrigation terraces. Deep-eaved veranda houses, dye yards, mills and sluice courts share the slope with the existing water; no new river is cut.',districts:['Water Market','The Sluice Court','River Shrine','Dye & Mill Yards','Veranda Ward','Terrace Commons']},
   {id:'delve',name:'Pithead Town',short:'Mining town',plan:'adits',kit:'headframes',material:'delve',roof:'gable',palace:'delve',width:.85,scale:1.0,wall:1.2,spacing:.92,description:'Lanes climb between spoil terraces to timber headframes. Counting halls, smelting yards, lamp shrines and hewers\u2019 rows form dense working blocks. Ore is worked where the parent world already has it.',districts:['Ore Exchange','The Warden\'s Court','Lamp Shrine','Smelting Yards','Hewers\' Ward','Spoil Terraces']},
   {id:'lagoon',name:'Lagoon Chancery Town',short:'Canal town',plan:'waterfront',kit:'quaysides',material:'lagoon',roof:'hip',palace:'lagoon',width:.92,scale:.96,wall:.5,spacing:1.0,description:'Quays and shaded loggias line the sheltered water. Warehouses, net yards, salt pans and arcaded houses face a walled basin. The lagoon itself is inherited, never dug.',districts:['Canal Market','The Tide Council','Salt Shrine','Net & Cooper Yards','Canal Ward','Lagoon Gardens']},
-  {id:'fjord',name:'Northern Harbor Town',short:'Longhall town',plan:'ribbon',kit:'longhalls',material:'northern',roof:'northern',palace:'fjord',width:.80,scale:1.0,wall:.6,spacing:1.12,description:'A harbor-facing ribbon connects longhalls, boat stores and steep-roofed homes; short uphill lanes lead to a stone council hall. Snow is added only in a cold setting.',districts:['Harbor Exchange','Longhall Court','Memorial Close','Shipwright Yards','Timber Ward','Upland Commons']}
+  {id:'fjord',name:'Northern Harbor Town',short:'Longhall town',plan:'ribbon',kit:'longhalls',material:'northern',roof:'northern',palace:'fjord',width:.80,scale:1.0,wall:.6,spacing:1.12,description:'A harbor-facing ribbon connects longhalls, boat stores and steep-roofed homes; short uphill lanes lead to a stone council hall. Snow is added only in a cold setting.',districts:['Harbor Exchange','Longhall Court','Memorial Close','Shipwright Yards','Timber Ward','Upland Commons']},
+  {id:'taiga',name:'Boreal Log Town',short:'Log town',plan:'clearings',kit:'logyards',material:'taiga',roof:'northern',palace:'taiga',width:.78,scale:.95,wall:.9,spacing:1.24,description:'Lanes link cleared pockets in conifer forest. Log dwellings are banked against the drift line, granaries and wood stores stand on posts, and stone flues serve every hearth. The forest between the clearings is kept, not felled.',districts:['Winter Market','The Moot Yard','Ancestor Grove','Timber & Pitch Yards','Hearthkeepers’ Ward','Cleared Commons']},
+  {id:'monsoon',name:'Monsoon Stilt Town',short:'Stilt town',plan:'stiltlanes',kit:'stilthouses',material:'monsoon',roof:'leaf',palace:'monsoon',width:.70,scale:.88,wall:0,spacing:1.30,description:'Raised plank lanes run between houses standing on hardwood posts under very deep thatched eaves. Screens replace glazing and nothing is heated. The seasonal flood is lived above rather than drained away.',districts:['Plank Market','The Rain Pavilion','Grove Shrine','Dye & Basket Yards','Raised Ward','Wet Commons']}
  ];
  function hash(s){let h=2166136261;for(const ch of String(s)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
  // Thresholds are set against the measured spread of a generated world, not guessed.
@@ -31,10 +33,17 @@ const TownCatalog = (() => {
   // Ore-bearing upland is its own working tradition; basalt stays a volcanic one.
   if(p.ore>.46&&e.bed>620&&!volcanic)return 'delve';
   if(volcanic&&p.ore>.34)return 'basalt';
+  // A cold interior is conifer country. With no harbour it used to fall through every
+  // warm test to the limestone court town, which is how a -1.3 C site was being built
+  // as a Mediterranean courtyard town.
+  if(e.temperature<6)return 'taiga';
   if(p.wet>.10||(p.siteLake>.22&&e.temperature>5))return 'delta';
   if(e.aridity<.72&&e.temperature>=16&&p.fresh>.16)return 'desert';
   // Warm, well-watered and genuinely fertile ground is terraced, not cleared.
   if(p.fertility>.34&&e.temperature>=17&&e.aridity>1.25)return 'paddy';
+  // Hot AND perhumid forest is not the same tradition as a temperate woodland court.
+  // Woodland was covering 6.7 C to 27.8 C with one identical set of buildings.
+  if(e.forestFraction>.35&&e.temperature>=21&&e.aridity>1.2)return 'monsoon';
   if(e.forestFraction>.53)return 'forest';
   // A warm sheltered harbour is a lagoon port; fjord above already took the cold ones.
   if(p.harbor>.80&&e.temperature>=16&&e.bed<200)return 'lagoon';
@@ -56,6 +65,11 @@ const TownCatalog = (() => {
   if(id==='paddy')return e.aridity>.9&&e.temperature>=10;
   if(id==='delve')return p.ore>.20&&(e.bed>320||e.mountainous);
   if(id==='steppe')return e.forestFraction<.45&&e.temperature>=4;
+  // Log building, banked walls and stone flues are a cold-climate answer. They are
+  // buildable in a mild place, but they are not what this kit represents.
+  if(id==='taiga')return e.temperature<9;
+  // Stilts, screen walls and an unheated deep-eaved roof need heat AND real rain.
+  if(id==='monsoon')return e.temperature>=18&&e.aridity>1.0;
   return true;
  }
  function resolve(w,s,p,override={}){
