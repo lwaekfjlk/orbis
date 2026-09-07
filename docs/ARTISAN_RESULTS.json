@@ -3,24 +3,32 @@
   "checks": {
     "geometricFamilies": 15,
     "highland": {
-      "name": "Tinyard",
-      "footprints": 518,
-      "wallSegments": 235,
-      "towers": 23,
-      "gates": 2,
-      "approaches": 2,
+      "name": "Foamchase",
+      "footprints": 237,
+      "wallSegments": 123,
+      "towers": 12,
+      "gates": 1,
+      "approaches": 1,
       "citadelWidth": 26,
       "terrainUnchanged": true
     },
-    "boundedParcels": 17,
+    "boundedParcels": 9,
     "buildingColour": [
       {
-        "town": "Whitebeck",
-        "style": "basilica",
-        "buildings": 294,
-        "wallSaturation": 0.081,
-        "wallBrightness": 0.098,
-        "roofSaturation": 0.151
+        "town": "Scorchwell",
+        "style": "steppe",
+        "buildings": 582,
+        "wallSaturation": 0.11,
+        "wallBrightness": 0.107,
+        "roofSaturation": 0.132
+      },
+      {
+        "town": "Birchgrove",
+        "style": "monsoon",
+        "buildings": 464,
+        "wallSaturation": 0.084,
+        "wallBrightness": 0.096,
+        "roofSaturation": 0.158
       },
       {
         "town": "Great Saltlanding",
@@ -31,20 +39,12 @@
         "roofSaturation": 0.155
       },
       {
-        "town": "Cloudbury",
-        "style": "desert",
-        "buildings": 705,
-        "wallSaturation": 0.155,
-        "wallBrightness": 0.099,
-        "roofSaturation": 0.165
-      },
-      {
-        "town": "Oakdell",
-        "style": "paddy",
-        "buildings": 531,
-        "wallSaturation": 0.084,
-        "wallBrightness": 0.104,
-        "roofSaturation": 0.075
+        "town": "Pineshore",
+        "style": "delve",
+        "buildings": 364,
+        "wallSaturation": 0.071,
+        "wallBrightness": 0.074,
+        "roofSaturation": 0.113
       }
     ]
   },

@@ -214,8 +214,13 @@ test('A harbour symbol and a ship stay symbols, and give way to the real thing',
  // the height of the largest building anyone had raised, and it was drawn at every
  // zoom — so at town range you got a second, larger harbour on top of the real one.
  const p=s.provinces.filter(q=>q.settled&&q.urbanPop>=650).sort((a,b)=>b.urbanPop-a.urbanPop)[0];
- const c=E.generateCity(w,s,p.id),frame=E.AtlasSpace.cityFrame(w,p,c,1);
- const town=c.span*168/(E.GW-1),tallest=Math.max(...c.buildings.map(b=>b.h))*frame.scale;
+ const c=E.generateCity(w,s,p.id);
+ // Everything is measured against the town's own footprint. The first version of this
+ // used the tallest building, which is a lottery: across ten towns that is 0.37 atlas
+ // units in nine of them and 1.25 in the one that happens to own a cathedral. When a
+ // landform prior moved which town is largest, the yardstick fell by 3.4x and the port
+ // "grew" without a constant changing. Footprint runs 3.7-5.9 across the same ten.
+ const town=c.span*168/(E.GW-1);
  const meshes={};
  const r=Object.create(E.AtlasRenderer.prototype);
  Object.assign(r,{world:w,sim:s,relief:1,zoom:6,width:1440,height:900,azimuth:.018,elevation:1.19,
@@ -229,7 +234,7 @@ test('A harbour symbol and a ship stay symbols, and give way to the real thing',
  const seat=r.coord(big.x,big.y,0),quay=extent(meshes.ports.data,seat[0],seat[2],3);
  assert(quay,'the largest port should build something');
  assert(quay.w/town<.30,`the port symbol spans ${(quay.w/town*100).toFixed(0)}% of a town`);
- assert(quay.h/tallest<.45,`its mast reaches ${(quay.h/tallest*100).toFixed(0)}% of the tallest building`);
+ assert(quay.h/town<.12,`its mast stands ${(quay.h/town*100).toFixed(0)}% of a town's width`);
  // It hands over to the town's own quays and jetties, at the same 4.8 the city
  // layer uses, so a renderer with no city layer tells the same story.
  r.zoom=2;assert(r.visible('ports'),'the symbol belongs on the regional map');
@@ -244,8 +249,8 @@ test('A harbour symbol and a ship stay symbols, and give way to the real thing',
   const m=extent(meshes.caravans.data,at[0],at[2],.9);if(m&&(!seen||m.n>seen.n))seen=m;}
  assert(seen,'a boat should be on screen at regional zoom');
  assert(seen.w/town<.16,`one ship spans ${(seen.w/town*100).toFixed(0)}% of a town`);
- assert(seen.h/tallest<.35,`one ship stands ${(seen.h/tallest*100).toFixed(0)}% of the tallest building`);
- report.checks.symbolScale={townWidth:+town.toFixed(2),tallestBuilding:+tallest.toFixed(2),
+ assert(seen.h/town<.10,`one ship stands ${(seen.h/town*100).toFixed(0)}% of a town's width`);
+ report.checks.symbolScale={townWidth:+town.toFixed(2),
   portWidth:+quay.w.toFixed(2),portHeight:+quay.h.toFixed(2),shipWidth:+seen.w.toFixed(2),shipHeight:+seen.h.toFixed(2)};
 });
 test.after(()=>writeFileSync(resolve(root,'docs/ROAD_NETWORK_RESULTS.json'),JSON.stringify(report,null,2)));

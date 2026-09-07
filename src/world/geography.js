@@ -924,25 +924,106 @@ function sculptHydrology(w) {
         if (w.depressions.some(a => Math.hypot(a.x - c.x, a.y - c.y) < 28))
             continue;
         const radius = clamp(w.dist[c.i] * .51, 5.5, 10), rx = radius, ry = radius * (.65 + rnd() * .4), ring = [];
+        // An exact ellipse fills to an exact ellipse. Measured over two worlds, every
+        // lake sitting in one of these depressions came out at .59-.60 circularity
+        // where real lakes run .15-.5 — the shoreline was the contour of a smooth
+        // quadratic bowl and nothing else, since the only relief in it was 18 m of
+        // noise against a 700 m bowl. The rim now wanders with bearing and the floor
+        // carries real relief, so the water finds bays, headlands and islands.
+        const bearing = (dx, dy) => {
+            const a = Math.atan2(dy, dx);
+            return 1 + .37 * noise(Math.cos(a) * 2.3 + c.x * .05, Math.sin(a) * 2.3 + c.y * .05, w.seed + 977)
+                + .15 * noise(Math.cos(a) * 5.7, Math.sin(a) * 5.7, w.seed + 978);
+        };
         for (let k = 0; k < 40; k++) {
-            const a = k / 40 * Math.PI * 2, j = cell(c.x + Math.cos(a) * rx, c.y + Math.sin(a) * ry);
-            ring.push(h[j]);
+            const a = k / 40 * Math.PI * 2, lobe = bearing(Math.cos(a), Math.sin(a));
+            ring.push(h[cell(c.x + Math.cos(a) * rx * lobe, c.y + Math.sin(a) * ry * lobe)]);
         }
         ring.sort((a, b) => a - b);
         if (ring[2] < 130)
             continue;
         const floor = Math.max(40, ring[3] - 700), rim = Math.max(floor + 150, ring[3]), id = w.depressions.length + 1;
-        for (let yy = Math.floor(c.y - ry); yy <= c.y + ry; yy++)
-            for (let xx = Math.floor(c.x - rx); xx <= c.x + rx; xx++) {
-                const r = Math.hypot((xx - c.x) / rx, (yy - c.y) / ry), i = cell(xx, yy);
+        const reach = 1.45;
+        for (let yy = Math.floor(c.y - ry * reach); yy <= c.y + ry * reach; yy++)
+            for (let xx = Math.floor(c.x - rx * reach); xx <= c.x + rx * reach; xx++) {
+                const ex = (xx - c.x) / rx, ey = (yy - c.y) / ry;
+                const r = Math.hypot(ex, ey) / bearing(ex, ey), i = cell(xx, yy);
                 if (r >= 1 || h[i] <= 0)
                     continue;
-                const target = floor + (rim - floor) * r * r + noise(xx * .25, yy * .25, w.seed + 831) * 18;
+                const target = floor + (rim - floor) * r * r
+                    + fbm(xx * .17, yy * .17, w.seed + 831, 3) * (rim - floor) * .38
+                    + noise(xx * .55, yy * .55, w.seed + 832) * 22;
                 h[i] = Math.max(25, lerp(h[i], Math.min(h[i], target), clamp((1 - r) * 5)));
                 w.basinPrior[i] = id;
             }
         w.depressions.push({ ...c, rx, ry, floor, rim });
         if (w.depressions.length >= 7)
+            break;
+    }
+    // Continental collision thickens crust across a whole belt, not only along the
+    // suture, and the land behind a great range rises into a broad upland: Tibet
+    // behind the Himalaya, the Altiplano behind the Andes. Without that prior this
+    // model built ranges and nothing else. Measured over two worlds, 1 of 2426 cells
+    // above 2000 m had local relief low enough to read as a plateau, so the alpine
+    // and cold-desert climates the biome table already knows how to draw had nowhere
+    // to sit. This raises the interior of the widest collision belts and leaves the
+    // peaks that are already higher alone, so a range keeps its crest and gains a
+    // roof behind it. Placed before climate, so the upland casts its own rain shadow
+    // rather than having one painted on.
+    w.plateaus = [];
+    const uplands = [];
+    for (let y = 12; y < GH - 12; y += 2)
+        for (let x = 12; x < GW - 12; x += 2) {
+            const i = y * GW + x;
+            if (h[i] < 400 || w.dist[i] < 7)
+                continue;
+            let broad = 0;
+            for (let dy = -5; dy <= 5; dy++)
+                for (let dx = -5; dx <= 5; dx++)
+                    broad += w.collision[cell(x + dx, y + dy)];
+            if (broad < 22)
+                continue;
+            uplands.push({ i, x, y, broad, score: broad + noise(x * .07, y * .07, w.seed + 523) * 9 });
+        }
+    uplands.sort((a, b) => b.score - a.score);
+    for (const c of uplands) {
+        if (w.plateaus.some(a => Math.hypot(a.x - c.x, a.y - c.y) < 30))
+            continue;
+        if (w.depressions.some(a => Math.hypot(a.x - c.x, a.y - c.y) < 18))
+            continue;
+        const rx = clamp(6 + c.broad * .085, 8, 15), ry = rx * (.62 + rnd() * .45);
+        const bearing = (dx, dy) => {
+            const a = Math.atan2(dy, dx);
+            return 1 + .26 * noise(Math.cos(a) * 2.1 + c.x * .04, Math.sin(a) * 2.1 + c.y * .04, w.seed + 525)
+                + .11 * noise(Math.cos(a) * 4.9, Math.sin(a) * 4.9, w.seed + 526);
+        };
+        const level = clamp(2950 + c.broad * 9, 2950, 4500);
+        let raised = 0;
+        for (let yy = Math.floor(c.y - ry * 1.5); yy <= c.y + ry * 1.5; yy++)
+            for (let xx = Math.floor(c.x - rx * 1.5); xx <= c.x + rx * 1.5; xx++) {
+                const ex = (xx - c.x) / rx, ey = (yy - c.y) / ry, i = cell(xx, yy);
+                const r = Math.hypot(ex, ey) / bearing(ex, ey);
+                if (r >= 1 || h[i] <= 0)
+                    continue;
+                // Both directions, or it is not a plateau. Filling the valleys to the
+                // roof while leaving 6000-9800 m spires standing all over the interior
+                // left 5 km of relief inside the ellipse and nothing that reads as flat.
+                // A plateau's great peaks stand on its rim; its floor is high and
+                // subdued, so the interior keeps only a fraction of whatever rises
+                // above the roof.
+                const top = level + fbm(xx * .13, yy * .13, w.seed + 524, 3) * 165;
+                const inside = clamp((1 - r) * 2.2);
+                const roofed = top + Math.max(0, h[i] - top) * .26;
+                const planed = lerp(h[i], roofed, inside);
+                if (Math.abs(planed - h[i]) > 1) {
+                    h[i] = Math.max(25, planed);
+                    raised++;
+                }
+            }
+        if (raised < 40)
+            continue;
+        w.plateaus.push({ ...c, rx, ry, level, cells: raised });
+        if (w.plateaus.length >= 3)
             break;
     }
 }
