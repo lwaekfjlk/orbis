@@ -73,6 +73,58 @@ test('The atlas renders above CSS resolution, within a pixel budget',async()=>{
  const slow=stage(1440,900);sized(slow,3,null);
  assert.equal(slow.width,2880);
 });
+test('A country is a name and a border tint, not a coat of paint over the land',async()=>{
+ const {loadEngine,defaults}=await import('./engine-loader.mjs');
+ const E=loadEngine();
+ const w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
+ const r=Object.create(E.AtlasRenderer.prototype);
+ Object.assign(r,{world:w,sim:s,relief:1,zoom:1,meshes:{},options:{},layer:'relief',focusRealm:null});
+ let land=0,untouched=0;
+ const same=(a,b)=>a.every((v,k)=>Math.abs(v-b[k])<1e-9);
+ for(let i=0;i<E.GN;i++){
+  if(w.height[i]<=0)continue;
+  land++;
+  r.layer='relief';const terrain=r.palette(i);
+  r.layer='realms';const political=r.palette(i);
+  if(same(terrain,political))untouched++;
+ }
+ // Most of the land must still be its own colour: the relief has to read through
+ // the political layer, which a full-territory wash destroyed.
+ assert(untouched/land>.4,`only ${(untouched/land*100).toFixed(0)}% of land kept its terrain colour`);
+ assert(untouched/land<.95,'the border band has to be visible somewhere');
+ // Where a country IS tinted, the terrain still has to dominate the mix.
+ r.layer='realms';
+ let tinted=0,dominated=0;
+ for(let i=0;i<E.GN;i++){
+  if(w.height[i]<=0)continue;
+  r.layer='relief';const terrain=r.palette(i);
+  r.layer='realms';const political=r.palette(i);
+  if(same(terrain,political))continue;
+  tinted++;
+  const drift=Math.hypot(...political.map((v,k)=>v-terrain[k]));
+  if(drift<.42)dominated++;
+ }
+ assert.equal(dominated,tinted,'the national tint must never overwhelm the ground colour');
+ // Faiths and peoples are measurements, not flags: they keep their full wash
+ // over every cell that layer is defined on.
+ let washed=0,eligible=0;
+ for(let i=0;i<E.GN;i++){
+  if(w.height[i]<=0||w.lake[i]>0||w.ice[i]>120)continue;
+  eligible++;
+  r.layer='relief';const terrain=r.palette(i);
+  r.layer='faiths';if(!same(terrain,r.palette(i)))washed++;
+ }
+ assert.equal(washed,eligible,'the faith layer still colours every cell it covers');
+});
+test('Continent names outrank the wonders that share their ground',()=>{
+ // makeLabels() hands its list to a first-come box packer, so list order IS the
+ // label priority. Putting the seven legends first cost three of seven continent
+ // names on the default world and made the atlas look like it had four.
+ const src=read('src/ui/world-ui.js'),relief=src.slice(src.indexOf("currentLayer === 'relief'"));
+ const continents=relief.indexOf('world.continents'),legends=relief.indexOf('legendLabels()');
+ assert(continents>=0&&legends>=0,'the relief label list must name both');
+ assert(continents<legends,'continents must be listed before legends');
+});
 test('Geography-driven district names leave the society itself untouched, and never number a town',async()=>{
  const {loadEngine,defaults}=await import('./engine-loader.mjs');
  const E=loadEngine(),w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});

@@ -41,4 +41,36 @@ test('composition seed rerolls the town; recipe JSON replays it and invalid comb
  const inland=s.provinces.find(p=>p.city&&!E.TownCatalog.allowed(p,w,'delta'));assert(inland);assert.throws(()=>E.generateCity(w,s,inland.id,{style:'delta'}),/incompatible/);
  records.checks.recipes={rerollChangesLayout:true,JSONReplayExact:true,invalidGeographiesRejected:true};
 });
+test('A walled town closes its ring; only a gateway is left open',()=>{
+ // Every reason the enceinte stopped used to collapse into "water" and be left as
+ // a silent hole, so not one walled town on this world enclosed itself: a harbour
+ // front, a lane hugging the wall and a hull reaching a few units past the tile
+ // margin all read as sea. Waterfront runs now carry a quay section, and a run no
+ // gateway will span goes back to curtain.
+ const towns=s.provinces.filter(p=>p.settled&&p.urbanPop>=650).sort((a,b)=>b.urbanPop-a.urbanPop).slice(0,30);
+ let walled=0,quayed=0,widest=0,widestName='';
+ for(const p of towns){
+  const c=E.generateCity(w,s,p.id),d=c.defenses;
+  if(!d?.walls.length)continue;
+  walled++;if(d.quays.length)quayed++;
+  assert(d.enclosed,p.name+' left its perimeter open');
+  assert.equal(d.terrainGapSegments,0,p.name+' has an unexplained gap');
+  for(const q of d.quays){
+   assert(Number.isFinite(q.a.y+q.b.y+q.height+q.width),p.name+' has a malformed quay');
+   assert(q.height>0&&q.height<d.walls[0].height,'a quay is lower than the curtain it continues');
+  }
+  // Walk the ring: every remaining opening has to be a gateway the builder spanned.
+  const ring=[...d.walls,...d.quays],angle=g=>Math.atan2(g.a.z-c.market.z,g.a.x-c.market.x);
+  ring.sort((a,b)=>angle(a)-angle(b));
+  for(let j=0;j<ring.length;j++){
+   const a=ring[j],b=ring[(j+1)%ring.length],gap=Math.hypot(a.b.x-b.a.x,a.b.z-b.a.z);
+   if(gap>widest){widest=gap;widestName=p.name;}
+  }
+ }
+ assert(walled>=12,'this world should raise walls somewhere');
+ assert(quayed>=6,'and some of those towns stand on water');
+ // 12 is the gate builder's own span limit, so nothing wider than a gate survives.
+ assert(widest<=13,`${widestName} still has a ${widest.toFixed(1)} unit breach`);
+ records.checks.enceinte={walledTowns:walled,withQuays:quayed,allEnclosed:true,widestOpening:+widest.toFixed(2)};
+});
 test.after(()=>writeFileSync(resolve(root,'docs/TOWN_MODEL_RESULTS.json'),JSON.stringify(records,null,2)));

@@ -350,6 +350,18 @@ function legend() {
     $('legend').innerHTML = items.map(([c, t]) => `<span><i style="background:${c}"></i>${escapeHTML(t)}</span>`).join('') + (['faiths', 'peoples'].includes(currentLayer) ? '<span>Color: local majority, not uniform belief or ancestry.</span>' : '');
     $('mapStamp').textContent = layerTitles[currentLayer] + ' / ' + sim.year;
 }
+// The held province closest to the territory's own centre of mass. A country whose
+// land straddles a strait would otherwise take its name out to sea.
+function realmAnchor(held) {
+    if (!held.length)
+        return null;
+    let sx = 0, sy = 0;
+    for (const p of held) { sx += p.x; sy += p.y; }
+    const cx = sx / held.length, cy = sy / held.length;
+    let best = held[0], distance = Infinity;
+    for (const p of held) { const d = (p.x - cx) ** 2 + (p.y - cy) ** 2; if (d < distance) { distance = d; best = p; } }
+    return best;
+}
 // Named wonders only appear when the legend layer itself is switched on.
 function legendLabels() { return $('legends')?.checked === false ? [] : (world.legends || []); }
 function makeLabels() {
@@ -364,13 +376,27 @@ function makeLabels() {
         list = world.continents;
     else if (currentLayer === 'plates')
         list = world.plates.map(p => ({ x: p.x, y: p.y, i: cell(p.x, p.y), name: p.name + ' Plate', kind: '', plate: true }));
-    else if (POLITICAL.includes(currentLayer))
-        list = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength).map(c => { const p = sim.provinces[c.capital]; return { x: p.x, y: p.y, i: p.i, name: c.name, kind: c.gov === 2 ? 'MAGOC RACY'.replace(' ', '') : c.gov === 1 ? 'HOLY KINGDOM' : GOVERNMENTS[c.gov], capital: true, realm: c.id }; });
+    else if (POLITICAL.includes(currentLayer)) {
+        // A country's name belongs over its territory, not stacked on its capital,
+        // and its cities are cities — smaller type, under the country. This is the
+        // ordinary atlas hierarchy, and it needs the realm names placed first so a
+        // dense cluster of towns cannot push a whole country off the map.
+        const realms = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength);
+        list = realms.map(c => {
+            const held = sim.provinces.filter(p => p.owner === c.id);
+            const seat = sim.provinces[c.capital], anchor = realmAnchor(held) || seat;
+            return { x: anchor.x, y: anchor.y, i: anchor.i, name: c.name, kind: c.gov === 2 ? 'MAGOCRACY' : c.gov === 1 ? 'HOLY KINGDOM' : GOVERNMENTS[c.gov], capital: true, realm: c.id };
+        });
+        for (const c of realms)
+            for (const p of sim.provinces.filter(p => p.owner === c.id && p.settled).sort((a, b) => b.urbanPop - a.urbanPop).slice(0, 4))
+                list.push({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.id === c.capital ? 'CAPITAL' : '', town: true });
+    }
     else if (currentLayer === 'relief')
-        // Legends are placed first so a wonder keeps its name when an ordinary
-        // label would otherwise claim the same patch of screen.
-        list = [...legendLabels(),
-            ...world.continents,
+        // Continents claim their names first — they are the coarsest "where am I"
+        // layer and there are only a handful. Wonders come next so they outrank
+        // towns; putting them ahead of the continents cost three continent names.
+        list = [...world.continents,
+            ...legendLabels(),
             ...sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop)
                 .map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() })),
             ...world.features];
@@ -379,10 +405,10 @@ function makeLabels() {
     else if (currentLayer === 'ice')
         list = world.features.filter(f => ['glacier', 'alpine'].includes(f.id)).concat(world.continents.filter(c => Math.abs(world.lat[c.i]) > 60));
     else
-        list = [...legendLabels(), ...world.continents, ...world.features];
+        list = [...world.continents, ...legendLabels(), ...world.features];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.capital ? ' capitalLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '');
+        b.className = 'maplabel' + (f.capital ? ' capitalLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel' : '');
         b.innerHTML = `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
         b.title = 'Inspect ' + f.name;
         b.onclick = () => { if (f.realm != null) {
