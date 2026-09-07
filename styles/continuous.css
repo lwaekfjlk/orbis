@@ -29,3 +29,20 @@ body.continuous-map .cm-context{z-index:2}
 .cm-elsewhere{font:600 10.5px/1 system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:#a8b0a2;margin:16px 0 7px}
 .cm-saga-link{display:block;width:100%;text-align:left;margin:4px 0 2px;padding:7px 10px;border:1px solid rgba(190,170,120,.28);border-radius:7px;background:rgba(255,250,235,.05);color:#e0d6bd;font:13px/1.35 Georgia,serif;cursor:pointer}
 .cm-saga-link:hover{background:rgba(255,250,235,.12);border-color:rgba(210,190,140,.55)}
+
+/* THE NARRATOR. A face, who they are, and then their voice running down the column. */
+.cm-teller{display:flex;gap:13px;align-items:flex-start;margin:0 0 15px;padding:0 0 13px;border-bottom:1px solid rgba(190,170,120,.24)}
+.cm-teller-face{flex:0 0 auto;width:104px;height:104px;border-radius:11px;background:radial-gradient(circle at 50% 34%,rgba(255,248,228,.14),rgba(20,24,22,.30));border:1px solid rgba(190,170,120,.30);overflow:hidden}
+.cm-teller-face svg{display:block;width:100%;height:100%}
+.cm-teller-who{display:flex;flex-direction:column;gap:3px;padding-top:5px;min-width:0}
+.cm-teller-who b{font:17px/1.25 Georgia,serif;color:#e9dfc6}
+.cm-teller-who small{font:11px/1.4 system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;color:#a2ab9d}
+.cm-teller-who em{font:italic 13px/1.4 Georgia,serif;color:#c3ba9f;margin-top:4px}
+/* The card you get the moment you click a town on the world map. */
+.om-teller{display:flex;gap:11px;align-items:center;margin:0 0 10px}
+.om-teller-face{flex:0 0 auto;width:72px;height:72px;border-radius:10px;background:radial-gradient(circle at 50% 34%,rgba(255,248,228,.16),rgba(20,24,22,.28));border:1px solid rgba(190,170,120,.30);overflow:hidden}
+.om-teller-face svg{display:block;width:100%;height:100%}
+.om-teller-said{min-width:0}
+.om-teller-said b{display:block;font:15px/1.25 Georgia,serif;color:#e9dfc6}
+.om-teller-said small{display:block;font:10.5px/1.4 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#a2ab9d;margin:1px 0 5px}
+.om-teller-said p{margin:0;font:italic 13px/1.45 Georgia,serif;color:#d6cdb6}

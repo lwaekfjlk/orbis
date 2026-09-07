@@ -87,26 +87,30 @@ window.ContinuousMap = (() => {
  function zoomBy(factor,sx=renderer.width/2,sy=renderer.height/2){if(!ready())return;cancel();const r=renderer,before=AtlasSpace.pickGround(r,sx,sy);r.zoom=clamp(r.zoom*factor,.6,180);r.updateCamera();const after=before?AtlasSpace.pickGround(r,sx,sy):null;if(before&&after){r.target[0]+=before.point[0]-after.point[0];r.target[2]+=before.point[2]-after.point[2];}r.request();}
  function select(hit){selection=hit;layer.focusId=hit.model.p.id;layer.select(hit);const b=hit.building,m=hit.model;E('omSelection').classList.remove('hidden');E('omSelectionBody').innerHTML=`<small class="om-eyebrow">${escapeHTML(m.p.name)} / ${escapeHTML(m.city.siteEnvironment.label)}</small><h3>${escapeHTML(b.name)}</h3><p>${escapeHTML(CITY_TYPES[b.type]?.description||'An assembled part of this town.')}</p><div class="om-actions"><button id="cmFocusBuilding">Closer</button><button id="cmShowDetails">Details</button><button id="cmShowContext">Wider setting</button></div>`;E('cmFocusBuilding').onclick=()=>focusBuilding(m.p.id,b.id);E('cmShowDetails').onclick=()=>details(m,b);E('cmShowContext').onclick=wider;}
  /* THE SAGA PANEL.
-  * Each settlement's epic, composed from its own model state. Two things in it are
-  * interaction points rather than text: the place a chapter is about, and the other
-  * towns the chronicle ties this one to. Following either is how a reader gets from one
-  * telling to the telling that argues with it.
+  * Somebody who lives in the town tells you its history: their face, their office, and
+  * five chapters in their own voice, each with the model fact it was composed from
+  * underneath. Two things in it are interaction points rather than text — the place a
+  * chapter is about, and the other towns the chronicle ties this one to. Following either
+  * is how a reader gets from one telling to the telling that argues with it.
   */
  const NUMERAL=['I','II','III','IV','V','VI','VII'];
  function sagaHTML(p){
   if(typeof Saga==='undefined')return '';
   const g=Saga.of(world,sim,p);
   if(!g)return '';
+  const n=g.narrator,face=typeof Portrait!=='undefined'?Portrait.svg(n.people,n.seed,{size:104}):'';
   const chapters=g.chapters.map((c,k)=>`<section class="cm-chapter"><h4><i>${NUMERAL[k]||k+1}</i>${escapeHTML(c.heading)}</h4><p>${escapeHTML(c.text)}</p>`+
-   (c.anchor?`<button class="cm-saga-link" data-saga-place="${c.anchor.x}|${c.anchor.y}">Go to ${escapeHTML(c.anchor.name)} ↗</button>`:'')+
+   (c.anchor?`<button class="cm-saga-link" data-saga-place="${c.anchor.x}|${c.anchor.y}">Go and see ${escapeHTML(c.anchor.name)} ↗</button>`:'')+
    `<small class="cm-basis">${escapeHTML(c.basis)}</small></section>`).join('');
-  const told=g.links.length?`<h4 class="cm-elsewhere">Told elsewhere</h4>`+g.links.map(l=>
+  const told=g.links.length?`<h4 class="cm-elsewhere">They tell it differently over there</h4>`+g.links.map(l=>
    `<button class="cm-saga-link" data-saga-town="${l.province}">${escapeHTML(l.name)} · ${escapeHTML(l.relation)} ↗</button><small class="cm-basis">${escapeHTML(l.record)}</small>`).join(''):'';
-  return `<h3>The saga of ${escapeHTML(p.name)}</h3><div class="cm-saga">`+
-   `<p class="cm-saga-title">${escapeHTML(g.title)}</p>`+
-   `<p class="cm-saga-cast"><b>${escapeHTML(g.hero.name)} ${escapeHTML(g.hero.rank)}</b>, ${escapeHTML(PEOPLES[g.hero.people].name)} <i>against</i> <b>${escapeHTML(g.adversary.name)}</b></p>`+
+  return `<h3>Somebody who lives here</h3><div class="cm-saga">`+
+   `<div class="cm-teller"><div class="cm-teller-face">${face}</div>`+
+   `<div class="cm-teller-who"><b>${escapeHTML(n.name)} ${escapeHTML(n.rank)}</b>`+
+   `<small>${escapeHTML(PEOPLES[n.people].name)} · ${escapeHTML(n.office)} of ${escapeHTML(p.name)}</small>`+
+   `<em>${escapeHTML(g.title)}</em></div></div>`+
    chapters+told+
-   `<p class="smallnote">Every line is composed from this world's own state — the district's live people and faith mixtures, its chronicle, and the physical fields beneath it; each chapter shows the fact it was built from. No people is cast as an enemy: an adversary here is a state, a disaster or a place, and both sides of a war tell it as their own.</p></div>`;
+   `<p class="smallnote">The narrator is invented; everything they tell you is composed from this world's own state — the district's live people and faith mixtures, its chronicle, and the physical fields beneath it. The line under each chapter is the fact it was built from. No people is cast as an enemy: an adversary here is a state, a disaster or a place, and both sides of a war tell it as their own.</p></div>`;
  }
  function bindSaga(host,p){
   host.querySelectorAll('[data-saga-town]').forEach(el=>el.onclick=async()=>{
