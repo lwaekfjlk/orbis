@@ -9,7 +9,7 @@
     },
     "parity": {
       "distinctSpeedsAcrossPeoples": 1,
-      "distinctGaits": 59,
+      "distinctGaits": 58,
       "accents": 7
     },
     "townsfolk": {
@@ -32,6 +32,19 @@
         "rider": 12,
         "boat": 40
       }
+    },
+    "pace": {
+      "compoundCrossingSeconds": 6.8,
+      "roundTripSeconds": 87,
+      "cellCrossingSeconds": 14.6,
+      "bodyLengthsPerSecond": 0.179
+    },
+    "scale": {
+      "buildingFootprint": 0.0526,
+      "mooredHull": 0.1002,
+      "seaHull": 0.2365,
+      "hullRatio": 2.4,
+      "symbolInBuildings": 1.9
     },
     "figure": {
       "trianglesPerAccent": {

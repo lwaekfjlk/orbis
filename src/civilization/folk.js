@@ -38,7 +38,14 @@ const Folk = (() => {
         return mixture.length - 1;
     }
     const look = k => LOOKS[k] || LOOKS[0];
-    /** Deliberately blind to agent.people. Only the per-agent gait roll varies. */
+    /** Deliberately blind to agent.people. Only the per-agent gait roll varies.
+     *
+     * The base rates below are SLOW on purpose. A "building" in a town plan is a whole
+     * compound and a parent grid cell is a large piece of a continent, so anything near a
+     * real walking pace reads as figures skating across the map — a resident crossing a
+     * courtyard in under a second, a carter crossing a province in twenty. These are
+     * tuned by what they look like against the scenery, not by any metric speed, and
+     * tests/folk.test.mjs pins them that way. */
     function speedOf(agent) { return agent.base * (.82 + agent.gait * .38); }
     function polyline(points) {
         const pts = points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.z)), acc = [0];
@@ -88,7 +95,7 @@ const Folk = (() => {
         const add = agent => { agents.push(agent); return agent; };
         const dress = (index, kindRoll) => {
             const people = pick(mixture, roll(index, 17, seed)), l = look(people);
-            return { id: `f${index}`, people, look: l, gait: roll(index, 41, seed), base: 2.15,
+            return { id: `f${index}`, people, look: l, gait: roll(index, 41, seed), base: .30,
                 tone: roll(index, 73, seed), phase: roll(index, 97, seed), kindRoll };
         };
         for (let k = 0; k < count; k++) {
@@ -117,7 +124,7 @@ const Folk = (() => {
                 // Stepping out of a compound onto the street it is connected to.
                 const c = city.connectors[Math.floor(roll(k, 29, seed) * city.connectors.length) % city.connectors.length];
                 const ya = city.height[city.index(c.a.x, c.a.z)] + .15, yb = city.height[city.index(c.b.x, c.b.z)] + .15;
-                add({ ...agent, kind: 'walker', base: 1.5, route: polyline([{ ...c.a, y: ya }, { x: c.b.x, z: c.b.z, y: yb }]), speed: 0 });
+                add({ ...agent, kind: 'walker', base: .22, route: polyline([{ ...c.a, y: ya }, { x: c.b.x, z: c.b.z, y: yb }]), speed: 0 });
             }
             else {
                 const a = roll(k, 31, seed) * 6.2831853, radius = 1.6 + roll(k, 37, seed) * 3.4;
@@ -125,7 +132,7 @@ const Folk = (() => {
                 const i = city.index(x, z);
                 if (wet(i))
                     continue;
-                add({ ...agent, kind: 'idler', base: .55, radius: .5 + roll(k, 43, seed) * .9,
+                add({ ...agent, kind: 'idler', base: .07, radius: .5 + roll(k, 43, seed) * .9,
                     anchor: { x, z, y: city.height[i] + .15 }, speed: 0 });
             }
         }
@@ -152,7 +159,7 @@ const Folk = (() => {
                 const kindRoll = roll(k, 53, seed);
                 agents.push({ id: `t${road.from}-${road.to}-${k}`, scope: 'road', road, people, look: l,
                     kind: road.cls === 'highway' && kindRoll < .42 ? 'cart' : kindRoll < .22 ? 'rider' : 'walker',
-                    gait: roll(k, 59, seed), base: .42, tone: roll(k, 61, seed), phase: roll(k, 67, seed),
+                    gait: roll(k, 59, seed), base: .06, tone: roll(k, 61, seed), phase: roll(k, 67, seed),
                     escort: road.cls === 'highway' ? 2 : road.cls === 'road' ? 1 : 0, speed: 0 });
             }
         }
@@ -161,7 +168,7 @@ const Folk = (() => {
                 continue;
             const seed = (route.a * 1301 + route.b * 7717) | 0, home = sim.provinces[route.a];
             agents.push({ id: `s${route.a}-${route.b}`, scope: 'sea', road: route, people: pick(home.people, roll(k, 71, seed)),
-                look: look(0), kind: 'boat', gait: roll(k, 79, seed), base: .55, tone: roll(k, 83, seed),
+                look: look(0), kind: 'boat', gait: roll(k, 79, seed), base: .08, tone: roll(k, 83, seed),
                 phase: roll(k, 89, seed), escort: 0, speed: 0 });
         }
         for (const a of agents)
