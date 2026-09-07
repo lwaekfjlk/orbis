@@ -304,6 +304,18 @@ const ArtisanCityKit=(()=>{
      }
     });
    }
+   // Quay sections: lower and heavier than the curtain, with a coping instead of
+   // crenellations. A harbour wall is a retaining wall that also defends.
+   for(const q of D.quays||[]){const a=q.a,b=q.b,L=Math.hypot(b.x-a.x,b.z-a.z),angle=-Math.atan2(b.z-a.z,b.x-a.x),base=Math.min(a.y,b.y)-.55,h=q.height+Math.abs(a.y-b.y)+.25;
+    K.transform((a.x+b.x)/2,base,(a.z+b.z)/2,-angle,1,()=>{
+     if(D.kind==='timber'){
+      for(let j=-L/2;j<L/2;j+=.42)K.cone(j,0,0,.16,h,'wood',.05,6);K.box(0,h*.62,0,L,.15,.5,'wood');
+     }else{
+      K.box(0,0,0,L+.07,h,q.width,'wall');K.box(0,h-.13,0,L+.16,.17,q.width+.26,'trim');
+      courses(K,0,.25,q.width/2+.01,L,h-.5);courses(K,0,.25,-(q.width/2+.01),L,h-.5,Math.PI);
+     }
+    });
+   }
    for(const t of D.towers){if(D.kind==='timber'){K.box(t.x,t.y,t.z,1.5,t.h,1.5,'wood');K.roof(t.x,t.y+t.h,t.z,2,2,1.6,'roof','northern');}else{bastion(K,t.x,t.y-.3,t.z,t.r,t.h,profile.id);}}
    for(const g of D.gates){const a=g.a,b=g.b,L=Math.hypot(a.x-b.x,a.z-b.z),x=(a.x+b.x)/2,z=(a.z+b.z)/2,y=Math.max(a.y,b.y),angle=Math.atan2(b.z-a.z,b.x-a.x);K.transform(x,y,z,angle,1,()=>{
     // The street remains an actual open span underneath the gateway.
