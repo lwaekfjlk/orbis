@@ -1,7 +1,7 @@
 # What every town remembers
 
 Click a settlement and somebody who lives there turns up to tell you its history: a
-cartoon bust, their name and their office, and five chapters in their own voice. Not a
+layered vector portrait, their name and their office, and five chapters in their own voice. Not a
 story attached to a town — a story *derived from* one, the way the seven legendary places
 are derived from the physical extremes that produced them.
 
@@ -20,22 +20,37 @@ the Humans founded says *"This is where the Humans began… I am Hornkin; my fam
 later"*, never *"still ours"*. That is pinned by test, because the first cut got it wrong.
 
 The face is **procedural SVG** — no image files, no fonts, nothing fetched, the same rule
-the rest of the atlas keeps. About 2 KB per portrait, drawn from a parameter table:
+the rest of the atlas keeps. Layered skin tones, shaped hair, almond-shaped eyes and
+detailed collars give each narrator an illustrated appearance that remains legible at
+72px. Portraits use about 7–9 KB of inline markup, with no shared SVG resource IDs, so
+several copies can appear together. A common parameter table defines the seven silhouettes:
 
 | people | reads as | ears | crown | snout |
 |---|---|---|---|---|
-| Humans | the plain case | round | — | — |
+| Humans | cropped hair, rounded ears | round | — | — |
 | Sylvans | an elf | long | circlet | — |
 | Stonekin | broad, bearded | round | — | — |
 | Beastfolk | tufted, muzzled | tuft | — | short, round |
 | Hornkin | horned | round | curved horns | — |
 | Tideborn | finned, gilled | fin | crest fin | — |
-| Drakekin | **a dragon** | fin | swept horns + crest spikes | long, squared, fanged |
+| Drakekin | **a dragon**, scaled brow, slit pupils | fin | swept horns + crest spikes | broad, squared |
 
-Only build, ears, brow, crown and snout differ. Every face gets the same two eyes, the
-same brow construction and a brow value inside one narrow band, and every colour is mixed
-from that people's own `PEOPLES[k].color` rather than chosen here — so no face is drawn
-nobler, older or more dangerous than another. Tested.
+Build, ears, hair, brow, crown and muzzle distinguish each people. Every face uses the
+same eye and brow construction with restrained expressions; the Drakekin have narrow
+vertical pupils. Skin, hair, clothing and background colours mix that people's own
+`PEOPLES[k].color` with common material tones. Seeded variations in proportions, colouring
+and gaze give residents individual faces, and the same narrator renders identically in
+the map card and town drawer. Open and closed mouth states are available for every people.
+
+Tests check all seven identities, two eyes per face, complete accessible labels, bounded
+markup size, deterministic variation and offline rendering without resource references.
+They also cover invalid inputs: an unknown people falls back to Humans, a non-finite seed
+uses zero, and a non-numeric or non-finite size uses 96px. Finite sizes are limited to
+16–1024px. Visual review determines how the expressions and silhouettes read at display size.
+
+Run `node scripts/preview-portraits.mjs` to rebuild the standalone
+`previews/portraits/index.html` contact sheet. It shows all seven peoples with three
+different residents each, including the 72px map card and 104px town drawer sizes.
 
 ## Nothing is invented on top of the model
 
@@ -89,7 +104,7 @@ saga says, because that town chose its own trial and it is often a different one
 - **On the world map** — click a settlement and the card shows the narrator's face, their
   name and office, and their opening line. *Hear the whole story* flies the camera in and
   opens the full telling.
-- **In the town drawer** — the bust, who they are, and their five chapters, each with its
+- **In the town drawer** — the portrait, who they are, and their five chapters, each with its
   basis beneath it.
 - **The place a chapter is about** — a legendary-place chapter carries a button that flies
   the camera to it.

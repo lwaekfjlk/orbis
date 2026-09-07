@@ -1,144 +1,199 @@
-/** The face that tells you the story.
- *
- * A cartoon bust, drawn as SVG from numbers — no image files, no fonts, nothing fetched,
- * which is the same rule the rest of the atlas keeps. The people is whoever the saga drew
- * as its narrator, so a Drakekin harbourmaster and a Sylvan archivist are the same code
- * with different parameters.
- *
- * The seven faces differ in build, ears, brow, muzzle and crown only. None of them is
- * drawn nobler, older, uglier or more dangerous than another, and the palette is each
- * people's own colour from the civilization model rather than anything assigned here.
+/** Seeded, self-contained vector portraits for the atlas's seven peoples.
+ * Anatomical silhouettes, quiet expressions and layered colour planes stay legible
+ * at 72px. No image/font requests, SVG resource IDs, or mutable random state.
  */
 const Portrait = (() => {
-    // Indexed exactly like PEOPLES. Every field is a shape parameter, not a judgement.
-    // `snout` is [width, length, kind]: a dragon's reaches past the jaw and squares off,
-    // a beastfolk's is short and round, and most peoples have none at all.
     const FACE = [
-        { head: [23, 25], jaw: .86, ear: 'round', crown: null, snout: null, brow: 1.0, hair: 'crop' },
-        { head: [19.5, 27], jaw: .70, ear: 'long', crown: 'circlet', snout: null, brow: .78, hair: 'fall' },
-        { head: [25.5, 22.5], jaw: 1.06, ear: 'round', crown: null, snout: null, brow: 1.35, hair: 'beard' },
-        { head: [21.5, 24], jaw: .92, ear: 'tuft', crown: null, snout: [.55, 13, 'round'], brow: 1.1, hair: 'mane' },
-        { head: [21.5, 24.5], jaw: .90, ear: 'round', crown: 'horns', snout: null, brow: 1.2, hair: 'crop' },
-        { head: [20.5, 25.5], jaw: .80, ear: 'fin', crown: 'fin', snout: null, brow: .82, hair: 'slick' },
-        { head: [20, 22], jaw: .96, ear: 'fin', crown: 'ridge', snout: [.68, 31, 'square'], brow: 1.3, hair: 'scale' }
+        { head: [17.5, 24], jaw: .78, ear: 'round', crown: null, snout: null, brow: 1, hair: 'crop' },
+        { head: [15.5, 25], jaw: .66, ear: 'long', crown: 'circlet', snout: null, brow: .8, hair: 'fall' },
+        { head: [22, 22], jaw: .95, ear: 'round', crown: null, snout: null, brow: 1.2, hair: 'beard' },
+        { head: [19, 23], jaw: .85, ear: 'tuft', crown: null, snout: [.62, 12, 'round'], brow: 1, hair: 'mane' },
+        { head: [17, 24], jaw: .74, ear: 'round', crown: 'horns', snout: null, brow: 1, hair: 'crop' },
+        { head: [16.5, 24], jaw: .72, ear: 'fin', crown: 'fin', snout: null, brow: .8, hair: 'slick' },
+        { head: [19, 23], jaw: .92, ear: 'fin', crown: 'ridge', snout: [.72, 18, 'square'], brow: 1.1, hair: 'scale' }
     ];
     const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
     const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
-    const css = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+    const css = c => `rgb(${c.join(',')})`;
     const rnd = (seed, salt) => hash2(seed | 0, salt | 0, 6271);
-    const pick = (list, r) => list[Math.min(list.length - 1, Math.floor(clamp(r, 0, .9999) * list.length))];
-    /** Skin is the people's own colour, lightened; cloth is that colour worn deeper. */
-    function palette(people, seed) {
+    const validPeople = people => Number.isInteger(people) && FACE[people] ? people : 0;
+    const n = value => +value.toFixed(2);
+    function palette(people, seed = 0) {
+        people = validPeople(people);
         const base = hex(PEOPLES[people].color), tone = rnd(seed, 3);
+        const skin = mix(base, [241, 207, 165], .30 + tone * .32);
+        // hash2 can return exactly 1; keep that endpoint inside the four swatches.
+        const hair = mix(base, [[44, 33, 29], [66, 46, 33], [195, 184, 154], [50, 49, 47]][Math.min(3, Math.floor(rnd(seed, 7) * 4))], .82);
+        const cloth = mix(base, [23, 36, 35], .69);
         return {
-            skin: css(mix(base, [246, 226, 200], .46 + tone * .26)),
-            shade: css(mix(base, [70, 56, 48], .30)),
-            cloth: css(mix(base, [46, 42, 40], .34 + rnd(seed, 5) * .2)),
-            hair: css(mix(base, pick([[58, 44, 36], [92, 78, 60], [38, 36, 40], [140, 126, 100], [104, 60, 44]], rnd(seed, 7)), .62)),
-            eye: css(mix(base, pick([[52, 92, 96], [92, 70, 44], [58, 70, 110], [70, 96, 62]], rnd(seed, 11)), .55)),
-            line: css(mix(base, [34, 30, 28], .74))
+            skin: css(skin), shade: css(mix(skin, [73, 47, 44], .27)),
+            light: css(mix(skin, [255, 237, 204], .30)),
+            cloth: css(cloth), fold: css(mix(cloth, [10, 22, 23], .37)),
+            seam: css(mix(cloth, [192, 177, 136], .38)),
+            hair: css(hair), strand: css(mix(hair, [227, 205, 161], .26)),
+            eye: css(mix(base, [109, 133, 102], .42)),
+            line: css(mix(base, [27, 28, 27], .88)),
+            gold: css(mix(base, [218, 188, 117], .75)),
+            backdrop: css(mix(base, [23, 37, 37], .82))
         };
     }
-    /** A snout is drawn as its own shape in front of the jaw, not as a bump on the face.
-     * A dragon's runs well past the head and squares off with nostrils at the tip; the
-     * beastfolk's is short, round and wet-nosed. Both carry their own mouth. */
-    function snout(spec, rx, ry, cy, p, speaking) {
-        if (!spec)
-            return '';
-        const [w, len, kind] = spec, top = cy + ry * .08, half = rx * w, tipHalf = half * (kind === 'square' ? .74 : .82);
-        const end = top + len, out = [];
-        out.push(kind === 'square'
-            ? `<path d="M${50 - half},${top} L${50 - tipHalf},${end - 5} Q${50 - tipHalf},${end} ${50 - tipHalf + 5},${end} L${50 + tipHalf - 5},${end} Q${50 + tipHalf},${end} ${50 + tipHalf},${end - 5} L${50 + half},${top} Z" fill="${p.skin}" stroke="${p.line}" stroke-width="2" stroke-linejoin="round"/>`
-            : `<ellipse cx="50" cy="${top + len * .48}" rx="${half}" ry="${len * .56}" fill="${p.skin}" stroke="${p.line}" stroke-width="2"/>`);
-        // Nostrils at the tip, and the mouth line across it.
-        const nose = kind === 'square' ? end - 15 : top + len * .22;
-        out.push(`<ellipse cx="${50 - tipHalf * .44}" cy="${nose}" rx="2" ry="2.6" fill="${p.line}"/><ellipse cx="${50 + tipHalf * .44}" cy="${nose}" rx="2" ry="2.6" fill="${p.line}"/>`);
-        const lip = end - (kind === 'square' ? 7 : len * .22);
-        if (speaking === false)
-            out.push(`<path d="M${50 - tipHalf * .74},${lip} q${tipHalf * .74},4 ${tipHalf * 1.48},0" fill="none" stroke="${p.line}" stroke-width="2" stroke-linecap="round"/>`);
-        else {
-            out.push(`<path d="M${50 - tipHalf * .74},${lip - 1} q${tipHalf * .74},${kind === 'square' ? 8 : 6} ${tipHalf * 1.48},0 q${-tipHalf * .74},2 ${-tipHalf * 1.48},0 Z" fill="${p.line}" opacity=".85"/>`);
-            if (kind === 'square')
-                out.push([-1, 1].map(s => `<path d="M${50 + s * tipHalf * .52},${lip + 1} l${s * 2.4},5 l${s * 1.6},-5 Z" fill="#f6f1e2"/>`).join(''));
+    // Fixed precision keeps the offline markup compact; all attributes are internal.
+    const path = (d, fill, stroke = 'none', width = .7, extra = '') => `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"${extra}/>`;
+    const ellipse = (x, y, rx, ry, fill, extra = '') => `<ellipse cx="${n(x)}" cy="${n(y)}" rx="${n(rx)}" ry="${n(ry)}" fill="${fill}"${extra}/>`;
+    const line = (d, colour, width = .7, extra = '') => path(d, 'none', colour, width, extra);
+    const sides = fn => [-1, 1].map(fn).join('');
+
+    function setting(p) {
+        return path('M0 0H100V100H0Z', p.backdrop)
+            + ellipse(50, 46, 37, 40, p.seam, ' opacity=".12"')
+            + line('M12 76V43A38 38 0 0 1 88 43V76 M16 70V43A34 34 0 0 1 84 43V70', p.gold, .45, ' opacity=".24"')
+            + line('M46 8H54 M50 5V11 M8 47H12 M88 47H92', p.gold, .6, ' opacity=".5"');
+    }
+    function clothing(p, f, seed) {
+        const wide = f.hair === 'beard' ? 4 : 0, clasp = 66 + rnd(seed, 29) * 5;
+        return path(`M${8-wide} 100Q11 85 28 81L40 76H60L72 81Q89 85 ${92+wide} 100Z`, p.cloth, p.line, .9)
+            + path('M42 62H58L60 78L50 87L40 78Z', p.shade, p.line)
+            + path('M43 64H54L55 77L49 82L43 77Z', p.skin)
+            + path('M38 76L49 87L43 100H20L27 83Z', p.cloth, p.line)
+            + path('M61 76L51 88L57 100H83L73 84Z', p.fold, p.line)
+            + path('M37 76L47 86L41 92L31 81Z', p.seam)
+            + path('M61 76L53 86L59 91L69 81Z', p.seam)
+            + line('M31 85L24 99 M68 86L78 99 M48 91L46 100', p.seam, .7)
+            + line('M29 81L39 91 M70 82L60 90', p.gold, .65)
+            + ellipse(clasp, 86, 2.7, 2.7, p.line)
+            + ellipse(clasp, 86, 2.1, 2.1, p.gold)
+            + path(`M${n(clasp)} 84.5L${n(clasp+1)} 86L${n(clasp)} 87.5L${n(clasp-1)} 86Z`, p.cloth);
+    }
+    function ears(f, p, rx) {
+        const x = s => n(50 + s * (rx - 1));
+        if (f.ear === 'tuft') return sides(s => {
+            const a = x(s), b = n(50+s*23), c = n(50+s*11);
+            return path(`M${a} 35Q${b} 25 ${b} 14Q${c} 19 ${c} 31Z`, p.hair, p.line, .8)
+                + path(`M${a} 29L${n(50+s*21)} 19L${n(50+s*14)} 27Z`, p.shade)
+                + line(`M${n(50+s*21)} 18L${n(50+s*20)} 14`, p.strand);
+        });
+        if (f.ear === 'long') return sides(s => path(`M${x(s)} 39Q${n(50+s*22)} 34 ${n(50+s*32)} 26Q${n(50+s*28)} 46 ${x(s)} 51Z`, p.skin, p.line, .8)
+            + path(`M${x(s)} 44L${n(50+s*27)} 32L${n(50+s*21)} 44Z`, p.shade)
+            + line(`M${n(50+s*19)} 43L${n(50+s*25)} 35`, p.light, .6));
+        if (f.ear === 'fin') return sides(s => {
+            const edge = n(50+s*31), mid = n(50+s*25), a = x(s);
+            return path(`M${a} 37L${edge} 30L${mid} 41L${edge} 47L${mid} 48L${n(50+s*25)} 56L${a} 52Z`, p.shade, p.line, .75)
+                + path(`M${a} 40L${n(50+s*27)} 35L${n(50+s*22)} 43L${n(50+s*27)} 47L${a} 47Z`, p.skin)
+                + line(`M${a} 43L${edge} 30 M${a} 46L${edge} 47 M${a} 48L${n(50+s*25)} 56`, p.light, .55, ' opacity=".7"');
+        });
+        return sides(s => ellipse(50+s*rx, 45, 3.3, 5.8, p.shade)
+            + line(`M${n(50+s*(rx+.5))} 42Q${n(50+s*(rx+3))} 43 ${n(50+s*rx)} 48`, p.light, .9));
+    }
+    function backHair(f, p, rx) {
+        if (!['fall','beard','crop','mane'].includes(f.hair)) return '';
+        const long = f.hair === 'fall', bottom = long ? 83 : f.hair === 'mane' ? 62 : 58;
+        if (!long) return path(`M${n(48-rx)} 43Q${n(45-rx)} 17 49 16Q${n(55+rx)} 13 ${n(53+rx)} 43L${n(51+rx)} ${bottom}L${n(47+rx)} ${bottom-3}L${n(48+rx)} 34H${n(52-rx)}L${n(53-rx)} ${bottom-3}L${n(49-rx)} ${bottom}Z`, p.hair, p.line, .8);
+        return path(`M${n(48-rx)} 45Q${n(45-rx)} 16 49 16Q${n(55+rx)} 13 ${n(53+rx)} 43L${n(56+rx)} ${bottom}Q66 ${bottom+4} 60 72H39Q26 ${bottom+3} ${n(44-rx)} ${bottom}Z`, p.hair, p.line, .8)
+            + (long ? sides(s => line(`M${n(50+s*(rx+1))} 35Q${n(50+s*(rx-2))} 60 ${n(50+s*(rx+3))} 78`, p.strand, 1.2)) : '');
+    }
+    function horns(f, p, rx) {
+        if (!['horns','ridge'].includes(f.crown)) return '';
+        return sides(s => {
+            const a=n(50+s*(rx-5)), b=n(50+s*(rx+3)), c=n(50+s*(rx+10));
+            return path(`M${a} 28Q${c} 24 ${c} 7Q${n(50+s*(rx+6))} 17 ${n(50+s*(rx-1))} 19L${a} 21Z`, p.gold, p.line, .8)
+                + path(`M${a} 28Q${b} 25 ${c} 7Q${b} 21 ${a} 23Z`, p.shade)
+                + line(`M${n(50+s*(rx-1))} 21L${n(50+s*(rx+2))} 24 M${n(50+s*(rx+3))} 18L${n(50+s*(rx+5))} 20`, p.line, .55);
+        });
+    }
+    function face(f, p, rx, ry) {
+        const top=n(44-ry), chin=n(44+ry), left=n(50-rx), right=n(50+rx), jaw=n(rx*f.jaw);
+        const outline = f.hair === 'scale'
+            ? `M50 ${top}L${right} 29L${n(52+rx)} 45L${n(50+jaw)} 59L57 ${chin}H43L${n(50-jaw)} 59L${n(48-rx)} 45L${left} 29Z`
+            : `M50 ${top}C${right} ${top} ${right} 32 ${right} 43Q${right} 55 ${n(50+jaw)} 59Q57 ${chin} 50 ${chin}Q43 ${chin} ${n(50-jaw)} 59Q${left} 55 ${left} 43C${left} 32 ${left} ${top} 50 ${top}Z`;
+        return path(outline, p.skin, p.line, .85)
+            + path(`M50 ${top}Q${right} ${top} ${right} 43Q${right} 55 ${n(50+jaw)} 59Q57 ${chin} 50 ${chin}L54 61L59 53L61 37Z`, p.shade)
+            + path(`M${n(51-rx)} 36Q${n(54-rx)} 25 47 ${n(47-ry)}L46 36L38 40Z`, p.light, 'none', 0, ' opacity=".6"')
+            + path(`M${n(53-rx)} 50L43 51L41 56L${n(56-rx)} 54Z`, p.light, 'none', 0, ' opacity=".65"');
+    }
+    function hair(f, p, rx, seed) {
+        const l=n(50-rx), r=n(50+rx);
+        if (f.hair === 'scale') return path('M36 30L43 24L50 27L57 24L64 30L57 29L50 33L43 29Z', p.light)
+            + line('M39 34L43 36L47 34 M53 34L57 36L61 34 M46 23L50 20L54 23', p.shade, .8);
+        if (f.hair === 'slick') return path(`M${l} 39Q28 17 48 16Q70 15 ${r} 39L60 30L50 25L40 30Z`, p.hair, p.line, .8)
+            + sides(s => line(`M50 19Q${n(50+s*12)} 22 ${n(50+s*14)} 34 M50 23L${n(50+s*9)} 29`, p.strand, 1));
+        if (f.hair === 'mane') return path(`M${l} 41L29 33L36 22L44 23L49 19L56 23L63 23L71 34L${r} 41L61 32L55 35L50 30L45 35L39 32Z`, p.hair, p.line, .8)
+            + path('M43 26L48 24L50 29L53 24L58 27L54 30L50 28L46 30Z', p.strand);
+        if (f.hair === 'beard') return path(`M${l} 39Q25 20 37 20Q46 15 60 21Q75 20 ${r} 40L65 32Q53 35 42 28L33 34L32 44Z`, p.hair, p.line, .8)
+            + line('M32 29Q41 20 52 25 M48 23Q60 21 67 30 M31 36L31 43 M69 35L69 43', p.strand, 1.1);
+        if (f.hair === 'fall') return path(`M${l} 47Q28 19 45 16Q72 12 ${r} 47L61 34Q55 30 50 23Q43 33 38 35Z`, p.hair, p.line, .8)
+            + line('M47 20Q34 25 35 41 M52 19Q66 22 65 41 M37 49Q35 64 33 73 M64 49Q65 65 68 76', p.strand, .9);
+        const part = n(43 + rnd(seed, 19)*8);
+        return path(`M${l} 46L${n(48-rx)} 31Q${n(47-rx)} 21 38 19Q45 12 61 18L65 16L64 22Q72 26 ${r} 45L${n(47+rx)} 36L61 27Q${part} 36 37 30L36 43Z`, p.hair, p.line, .8)
+            + line(`M35 27Q44 19 58 21 M39 28Q50 27 59 23 M${n(49+rx)} 30L${n(49+rx)} 37`, p.strand, 1.1);
+    }
+    function eyes(f, p, rx, seed) {
+        const ex=rx*.48, y=f.snout?43:44, gaze=n((rnd(seed,11)-.5)*.9), lid=n(2.1+rnd(seed,13)*.5);
+        return sides(s => {
+            const x=n(50+s*ex), a=n(x-4.8), b=n(x+4.8);
+            return path(`M${a} ${y}Q${x} ${n(y-lid-1)} ${b} ${y}Q${x} ${n(y+lid)} ${a} ${y}Z`, '#e9dfc8', 'none', 0, ' data-feature="eye"')
+                + ellipse(x+gaze, y-.1, 2, 1.85, p.eye)
+                + ellipse(x+gaze, y-.1, f.hair==='scale'?.65:1, 1.6, p.line, f.hair==='scale'?' data-feature="slit-pupil"':'')
+                + ellipse(x+gaze-.55, y-.75, .45, .45, '#fff3d9')
+                + line(`M${a} ${y}Q${x} ${n(y-lid-1)} ${b} ${y}`, p.line, 1)
+                + line(`M${n(a+.8)} ${y+2.5}Q${x} ${y+3.6} ${n(b-.8)} ${y+2.3}`, p.shade, .6)
+                + path(`M${n(a-.3)} ${y-5}Q${x} ${n(y-7-f.brow)} ${n(b+.2)} ${y-5.7}L${b} ${y-4.6}Q${x} ${y-6} ${a} ${y-3.9}Z`, f.snout?p.shade:p.hair);
+        });
+    }
+    function noseAndMouth(f, p, rx, ry, seed, speaking) {
+        const lip=n(44+ry*.67), smile=n(.7+rnd(seed,17));
+        if (f.snout) {
+            if (f.snout[2]==='square') return path('M40 49L47 47H53L60 49L65 60L60 66H40L35 60Z', p.shade, p.line, .8, ' data-feature="muzzle"')
+                + path('M40 49L47 47H53L60 49L62 57L55 60H44L38 57Z', p.skin)
+                + path('M42 50L48 48H52L58 50L59 53H42Z', p.light)
+                + sides(s=>ellipse(50+s*7,55,1.7,1.1,p.line))
+                + line('M39 60Q50 64 61 60',p.line,.9)
+                + (speaking?path('M44 62Q50 64 56 62L54 64H46Z',p.line):'')
+                + line('M45 66H55',p.light,.7);
+            return path('M34 48L39 46L46 50H54L61 46L66 48L63 59L56 65H44L37 59Z',p.light,'none',0,' data-feature="muzzle"')
+                + path('M49 51Q41 48 39 55Q39 60 50 59Q61 60 61 55Q59 49 51 51Z',p.light)
+                + path('M45 51Q50 49 55 51L51 55H49Z',p.line)
+                + line('M50 55V59 M41 58Q46 62 50 59Q54 62 59 58',p.line,.8)
+                + (speaking?path('M46 61Q50 63 54 61Q50 66 46 61Z',p.line):'')
+                + sides(s => line(`M${50+s*9} 54L${50+s*11} 53 M${50+s*10} 57L${50+s*12} 57`,p.shade,.65));
         }
-        return out.join('');
+        return path(`M49 46L46 54Q48 57 53 54L51 53Z`,p.shade)
+            + line('M49 47L48 53L50 54',p.light,.9)
+            + line('M47 55Q50 57 53 55',p.line,.55)
+            + path(`M44 ${lip}Q48 ${lip-1.3} 50 ${lip-.3}Q52 ${lip-1.3} 56 ${lip}Q50 ${n(lip+smile+1.4)} 44 ${lip}Z`,p.shade)
+            + line(`M44 ${lip}Q50 ${n(lip+smile)} 56 ${lip}`,p.line,.65)
+            + (speaking?path(`M47 ${lip+.5}Q50 ${lip+1.2} 53 ${lip+.5}Q50 ${lip+2.9} 47 ${lip+.5}Z`,p.line):'')
+            + line(`M47 ${lip+3}Q50 ${lip+3.7} 53 ${lip+3}`,p.light,.6);
     }
-    function ears(kind, rx, cy, p) {
-        if (kind === 'long')
-            return [-1, 1].map(s => `<path d="M${50 + s * rx * .92},${cy - 2} Q${50 + s * (rx + 15)},${cy - 20} ${50 + s * (rx + 3)},${cy + 6} Z" fill="${p.skin}" stroke="${p.line}" stroke-width="1.6" stroke-linejoin="round"/>`).join('');
-        if (kind === 'tuft')
-            return [-1, 1].map(s => `<path d="M${50 + s * rx * .55},${cy - 19} L${50 + s * (rx * .40)},${cy - 34} L${50 + s * (rx * 1.02)},${cy - 20} Z" fill="${p.skin}" stroke="${p.line}" stroke-width="1.6" stroke-linejoin="round"/>`).join('');
-        if (kind === 'fin')
-            return [-1, 1].map(s => `<path d="M${50 + s * rx * .90},${cy - 4} Q${50 + s * (rx + 13)},${cy - 2} ${50 + s * (rx + 2)},${cy + 12} Z" fill="${p.shade}" stroke="${p.line}" stroke-width="1.4" stroke-linejoin="round" opacity=".92"/>`).join('');
-        return [-1, 1].map(s => `<ellipse cx="${50 + s * rx * .98}" cy="${cy + 2}" rx="4.4" ry="5.6" fill="${p.skin}" stroke="${p.line}" stroke-width="1.6"/>`).join('');
+    function beard(f,p) {
+        if(f.hair!=='beard')return '';
+        return path('M29 49L34 51L37 58L43 60L50 64L57 60L63 58L66 51L71 49L68 68L62 78L56 83H44L38 78L32 68Z',p.hair,p.line,.8)
+            + path('M39 57Q44 54 49 57L50 59L51 57Q56 54 61 57L65 61Q55 64 50 60Q45 64 35 61Z',p.hair,p.line,.55)
+            + line('M39 59L45 58 M55 58L61 59 M35 63Q36 71 42 75 M41 66L46 78 M50 68V80 M59 66L54 78 M65 63Q64 71 58 75',p.strand,1)
+            + sides(s=>path(`M${50+s*10} 71l${s*2} 3l${-s*2} 3l${s*1} 2`, 'none',p.strand,1))
+            + sides(s=>path(`M${50+s*10-2} 77h4v3h-4Z`,p.gold,p.line,.4));
     }
-    function crown(kind, rx, ry, cy, p) {
-        if (kind === 'horns')
-            return [-1, 1].map(s => `<path d="M${50 + s * rx * .72},${cy - ry * .74} Q${50 + s * (rx + 12)},${cy - ry - 10} ${50 + s * (rx + 4)},${cy - ry - 20}" fill="none" stroke="${p.shade}" stroke-width="6.5" stroke-linecap="round"/>`).join('');
-        if (kind === 'ridge')
-            // Backswept horns and a row of crest spikes: the pair is what makes the
-            // silhouette read as a dragon rather than as an animal with a long face.
-            return [-1, 1].map(s => `<path d="M${50 + s * rx * .80},${cy - ry * .58} Q${50 + s * (rx + 16)},${cy - ry - 4} ${50 + s * (rx + 10)},${cy - ry - 20}" fill="none" stroke="${p.shade}" stroke-width="7" stroke-linecap="round"/>`).join('')
-                + [0, 1, 2].map(k => { const o = (k - 1) * 8.5, h = 10 - Math.abs(k - 1) * 3.5;
-                    return `<path d="M${50 + o - 4.5},${cy - ry + Math.abs(k - 1) * 2.5} L${50 + o},${cy - ry - h} L${50 + o + 4.5},${cy - ry + Math.abs(k - 1) * 2.5} Z" fill="${p.shade}" stroke="${p.line}" stroke-width="1.2" stroke-linejoin="round"/>`; }).join('');
-        if (kind === 'fin')
-            return `<path d="M${50 - 11},${cy - ry + 3} Q50,${cy - ry - 17} ${50 + 11},${cy - ry + 3} Q50,${cy - ry + 8} ${50 - 11},${cy - ry + 3} Z" fill="${p.shade}" stroke="${p.line}" stroke-width="1.4" stroke-linejoin="round"/>`;
-        if (kind === 'circlet')
-            return `<path d="M${50 - rx * .92},${cy - ry * .48} Q50,${cy - ry * .84} ${50 + rx * .92},${cy - ry * .48}" fill="none" stroke="${p.cloth}" stroke-width="2.6" stroke-linecap="round"/><circle cx="50" cy="${cy - ry * .70}" r="2.6" fill="${p.eye}" stroke="${p.line}" stroke-width="1"/>`;
+    function details(f,p,rx) {
+        if(f.crown==='circlet')return line('M35 32L43 34L50 32L57 34L65 32',p.gold,1.15)
+            + path('M50 29L52 32L50 35L48 32Z',p.gold,p.line,.45);
+        if(f.crown==='fin')return path('M40 24Q40 16 44 12L47 18L51 9L55 18L60 14L59 25L50 22Z',p.skin,p.line,.75)
+            + line('M44 14L46 22 M51 12L51 21 M58 17L55 23',p.light,.8)
+            + sides(s=>line(`M${n(50+s*(rx-4))} 53l${-s*4} 2 M${n(50+s*(rx-4))} 57l${-s*3} 1`,p.shade,.85));
+        if(f.crown==='ridge')return path('M39 24L41 18L46 21L50 14L54 21L59 18L61 24L55 27L50 24L45 27Z',p.shade,p.line,.7)
+            + path('M47 23L50 17L53 23L50 21Z',p.light)
+            + sides(s=>line(`M${50+s*15} 49l${s*3} -2 M${50+s*16} 53l${s*2} -1`,p.light,.8));
+        if(f.hair==='mane')return sides(s=>path(`M${50+s*17} 44L${50+s*22} 49L${50+s*19} 51L${50+s*22} 55L${50+s*16} 57L${50+s*14} 52Z`,p.skin,p.line,.6));
         return '';
     }
-    function hair(kind, rx, ry, cy, p) {
-        if (kind === 'beard')
-            // A beard hangs BELOW the mouth and carries a moustache above it. Filling the
-            // whole lower face instead just reads as a hood with eyes over it.
-            return `<path d="M${50 - rx * .80},${cy + ry * .40} Q${50 - rx * .62},${cy + ry * 1.34} 50,${cy + ry * 1.42} Q${50 + rx * .62},${cy + ry * 1.34} ${50 + rx * .80},${cy + ry * .40} Q50,${cy + ry * .86} ${50 - rx * .80},${cy + ry * .40} Z" fill="${p.hair}" stroke="${p.line}" stroke-width="1.6" stroke-linejoin="round"/>`
-                + `<path d="M${50 - rx * .52},${cy + ry * .44} q${rx * .26},4.5 ${rx * .52},0 q${rx * .26},-4.5 ${rx * .52},0" fill="${p.hair}" stroke="${p.line}" stroke-width="1.4" stroke-linejoin="round"/>`;
-        if (kind === 'fall')
-            return `<path d="M${50 - rx},${cy - ry * .30} Q${50 - rx * 1.16},${cy + ry * 1.05} ${50 - rx * .58},${cy + ry * 1.12} L${50 - rx * .80},${cy + ry * .10} Z" fill="${p.hair}" stroke="${p.line}" stroke-width="1.3"/>`
-                + `<path d="M${50 + rx},${cy - ry * .30} Q${50 + rx * 1.16},${cy + ry * 1.05} ${50 + rx * .58},${cy + ry * 1.12} L${50 + rx * .80},${cy + ry * .10} Z" fill="${p.hair}" stroke="${p.line}" stroke-width="1.3"/>`
-                + `<path d="M${50 - rx * .98},${cy - ry * .34} Q50,${cy - ry * 1.16} ${50 + rx * .98},${cy - ry * .34} Q50,${cy - ry * .58} ${50 - rx * .98},${cy - ry * .34} Z" fill="${p.hair}" stroke="${p.line}" stroke-width="1.4"/>`;
-        if (kind === 'mane')
-            return `<path d="M${50 - rx * 1.02},${cy - ry * .26} Q50,${cy - ry * 1.34} ${50 + rx * 1.02},${cy - ry * .26} Q${50 + rx * .5},${cy - ry * .74} 50,${cy - ry * .66} Q${50 - rx * .5},${cy - ry * .74} ${50 - rx * 1.02},${cy - ry * .26} Z" fill="${p.hair}" stroke="${p.line}" stroke-width="1.5" stroke-linejoin="round"/>`;
-        if (kind === 'slick')
-            return `<path d="M${50 - rx * .96},${cy - ry * .40} Q50,${cy - ry * 1.22} ${50 + rx * .96},${cy - ry * .40} Q50,${cy - ry * .80} ${50 - rx * .96},${cy - ry * .40} Z" fill="${p.shade}" stroke="${p.line}" stroke-width="1.3"/>`;
-        if (kind === 'scale')
-            return [0, 1, 2, 3].map(k => `<path d="M${50 - 15 + k * 10},${cy - ry * .52} q5,-5 10,0" fill="none" stroke="${p.shade}" stroke-width="1.7" stroke-linecap="round" opacity=".8"/>`).join('');
-        return `<path d="M${50 - rx * .98},${cy - ry * .38} Q50,${cy - ry * 1.26} ${50 + rx * .98},${cy - ry * .38} Q50,${cy - ry * .72} ${50 - rx * .98},${cy - ry * .38} Z" fill="${p.hair}" stroke="${p.line}" stroke-width="1.4" stroke-linejoin="round"/>`;
-    }
-    /** One bust. `seed` varies the face within a people; `speaking` opens the mouth. */
+    /** Same narrator/seed, same face in both the world card and the town drawer. */
     function svg(people, seed = 0, options = {}) {
-        const f = FACE[people] || FACE[0], p = palette(people, seed), size = options.size || 96;
-        const [rx, ry] = f.head, cy = 44, slit = people === 6, speaking = options.speaking !== false;
-        const eyeY = cy + (f.snout ? -2 : 1), eyeX = rx * .46, open = .82 + rnd(seed, 13) * .5;
-        const smile = (rnd(seed, 17) - .35) * 4;
-        const parts = [
-            // Shoulders first, so the head sits in front of the collar.
-            `<path d="M12,100 Q16,${74 + f.jaw * 3} 50,72 Q84,${74 + f.jaw * 3} 88,100 Z" fill="${p.cloth}" stroke="${p.line}" stroke-width="2" stroke-linejoin="round"/>`,
-            `<path d="M${50 - 9},${cy + ry * .78} h18 v${10} h-18 Z" fill="${p.skin}" stroke="${p.line}" stroke-width="1.6"/>`,
-            ears(f.ear, rx, cy, p),
-            `<ellipse cx="50" cy="${cy}" rx="${rx}" ry="${ry}" fill="${p.skin}" stroke="${p.line}" stroke-width="2.2"/>`,
-            snout(f.snout, rx, ry, cy, p, options.speaking),
-            hair(f.hair, rx, ry, cy, p),
-            crown(f.crown, rx, ry, cy, p),
-            // Eyes. A slit pupil is a lizard's eye, and carries no character with it.
-            `<ellipse cx="${50 - eyeX}" cy="${eyeY}" rx="${5.4 * open}" ry="${5.8 * open}" fill="#fbf7ec" stroke="${p.line}" stroke-width="1.5"/>`,
-            `<ellipse cx="${50 + eyeX}" cy="${eyeY}" rx="${5.4 * open}" ry="${5.8 * open}" fill="#fbf7ec" stroke="${p.line}" stroke-width="1.5"/>`,
-            slit ? `<ellipse cx="${50 - eyeX}" cy="${eyeY}" rx="1.5" ry="4.4" fill="${p.line}"/><ellipse cx="${50 + eyeX}" cy="${eyeY}" rx="1.5" ry="4.4" fill="${p.line}"/>`
-                : `<circle cx="${50 - eyeX}" cy="${eyeY}" r="2.7" fill="${p.eye}"/><circle cx="${50 + eyeX}" cy="${eyeY}" r="2.7" fill="${p.eye}"/>`
-                    + `<circle cx="${50 - eyeX}" cy="${eyeY}" r="1.3" fill="${p.line}"/><circle cx="${50 + eyeX}" cy="${eyeY}" r="1.3" fill="${p.line}"/>`,
-            `<circle cx="${50 - eyeX + 1.9}" cy="${eyeY - 2}" r="1.2" fill="#fff" opacity=".9"/><circle cx="${50 + eyeX + 1.9}" cy="${eyeY - 2}" r="1.2" fill="#fff" opacity=".9"/>`,
-            // Brows carry the expression, and every face gets the same neutral one.
-            [-1, 1].map(s => `<path d="M${50 + s * eyeX - 6},${eyeY - 8.5 * f.brow} q6,${-2.6 * f.brow} 12,0" fill="none" stroke="${p.line}" stroke-width="${2 * f.brow}" stroke-linecap="round"/>`).join(''),
-            // Mouth, for the faces that have no snout carrying one. Mid-sentence, because
-            // they are telling you something — but a wide black oval reads as alarm, so
-            // this is a lip line with a little space under it.
-            f.snout ? '' : speaking
-                ? `<path d="M${50 - 7.5},${cy + ry * .58} q7.5,${5 + smile} 15,0 q-7.5,2.5 -15,0 Z" fill="${p.line}" opacity=".85"/>`
-                : `<path d="M${50 - 7},${cy + ry * .58} q7,${3 + smile} 14,0" fill="none" stroke="${p.line}" stroke-width="2" stroke-linecap="round"/>`,
-            // A gill line, for the people the model gives them to.
-            f.ear === 'fin' && !f.snout ? [0, 1].map(k => `<path d="M${50 - rx * .72},${cy + 6 + k * 5} q6,1.5 9,0" fill="none" stroke="${p.line}" stroke-width="1.2" opacity=".55"/>`).join('') : ''
-        ];
-        return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${PEOPLES[people].name} narrator" focusable="false">${parts.join('')}</svg>`;
+        people=validPeople(people);
+        seed=Number.isFinite(seed)?seed:0;
+        options=options||{};
+        const size=Number.isFinite(options.size)?clamp(options.size,16,1024):96;
+        const f=FACE[people],p=palette(people,seed);
+        const rx=n(f.head[0]+(rnd(seed,23)-.5)*1.2),ry=n(f.head[1]+(rnd(seed,31)-.5)*1.2);
+        const parts=[setting(p),clothing(p,f,seed),backHair(f,p,rx),ears(f,p,rx),horns(f,p,rx),face(f,p,rx,ry),hair(f,p,rx,seed),eyes(f,p,rx,seed),noseAndMouth(f,p,rx,ry,seed,options.speaking!==false),beard(f,p),details(f,p,rx)];
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="${size}" height="${size}" role="img" aria-label="${PEOPLES[people].name} narrator" focusable="false">${parts.join('')}</svg>`;
     }
-    return { svg, palette, FACE, version: 1 };
+    return {svg,palette,FACE,version:2};
 })();
