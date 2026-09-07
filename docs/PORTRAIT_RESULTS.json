@@ -1,16 +1,16 @@
 {
-  "version": 1,
+  "version": 2,
   "checks": {
     "markup": {
       "peoples": 7,
       "bytes": [
-        1810,
-        2346,
-        2142,
-        2238,
-        2060,
-        2200,
-        3357
+        6930,
+        7888,
+        8113,
+        7675,
+        7916,
+        7980,
+        8799
       ]
     },
     "distinct": {
@@ -22,8 +22,8 @@
     "parity": {
       "sameEyes": true,
       "browRange": [
-        0.78,
-        1.35
+        0.8,
+        1.2
       ]
     },
     "narrators": {
