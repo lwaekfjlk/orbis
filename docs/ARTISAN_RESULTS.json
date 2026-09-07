@@ -4,55 +4,55 @@
     "geometricFamilies": 15,
     "highland": {
       "name": "Foamchase",
-      "footprints": 230,
-      "wallSegments": 125,
-      "towers": 12,
+      "footprints": 236,
+      "wallSegments": 117,
+      "towers": 11,
       "gates": 1,
       "approaches": 1,
       "citadelWidth": 26,
       "terrainUnchanged": true
     },
-    "boundedParcels": 10,
+    "boundedParcels": 9,
     "buildingColour": [
       {
         "town": "Scorchspire",
         "style": "mountain",
-        "buildings": 562,
-        "wallColourSpread": 0.134,
-        "roofColourSpread": 0.111,
-        "wallSaturation": 0.045,
+        "buildings": 557,
+        "wallColourSpread": 0.136,
+        "roofColourSpread": 0.113,
+        "wallSaturation": 0.044,
         "wallBrightness": 0.078,
-        "roofSaturation": 0.133
+        "roofSaturation": 0.138
       },
       {
         "town": "Bluewell",
         "style": "river",
-        "buildings": 473,
-        "wallColourSpread": 0.196,
+        "buildings": 460,
+        "wallColourSpread": 0.194,
         "roofColourSpread": 0.128,
-        "wallSaturation": 0.081,
-        "wallBrightness": 0.103,
+        "wallSaturation": 0.083,
+        "wallBrightness": 0.102,
         "roofSaturation": 0.123
       },
       {
         "town": "Birchgrove",
         "style": "monsoon",
-        "buildings": 556,
-        "wallColourSpread": 0.186,
-        "roofColourSpread": 0.2,
+        "buildings": 481,
+        "wallColourSpread": 0.187,
+        "roofColourSpread": 0.192,
         "wallSaturation": 0.085,
-        "wallBrightness": 0.094,
-        "roofSaturation": 0.162
+        "wallBrightness": 0.095,
+        "roofSaturation": 0.159
       },
       {
         "town": "Scorchwell",
         "style": "steppe",
-        "buildings": 750,
-        "wallColourSpread": 0.206,
-        "roofColourSpread": 0.173,
-        "wallSaturation": 0.114,
+        "buildings": 578,
+        "wallColourSpread": 0.203,
+        "roofColourSpread": 0.167,
+        "wallSaturation": 0.111,
         "wallBrightness": 0.105,
-        "roofSaturation": 0.137
+        "roofSaturation": 0.134
       }
     ]
   },
