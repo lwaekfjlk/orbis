@@ -211,9 +211,11 @@ function generateCity(w, sim, provinceId, design = {}) {
             const q = city.xy(i);
             if (Math.hypot(q.x - city.market.x, q.z - city.market.z) < width * .17)
                 continue;
-            for (let dz = -6; dz <= 6; dz += 1.5) for (let dx = -6; dx <= 6; dx += 1.5)
-                if (dx * dx + dz * dz <= 36)
-                    city.gateReserve[city.index(q.x + dx, q.z + dz)] = 1;
+            for (let dz = -3.6; dz <= 3.6; dz += 1.2) for (let dx = -3.6; dx <= 3.6; dx += 1.2) {
+                const j = city.index(q.x + dx, q.z + dz);
+                if (dx * dx + dz * dz <= 12.96 && !city.citadelReserve?.[j])
+                    city.gateReserve[j] = 1;
+            }
         }
     }
     const shore = [];
@@ -261,29 +263,36 @@ function generateCity(w, sim, provinceId, design = {}) {
     const target = cityClamp(Math.round(120 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 1.05), 120, 620);
     const used = [], usedGrid = cityGrid(8);
     let infill=false;
-    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1) {
-        const q = city.xy(k), ww = landmark ? precinctSize : (infill ? 2.4+rng()*.9 : (4.0 + rng() * (1.8 + recipe.variety)) * profile.scale) * shrink, dd = landmark ? precinctSize : (infill ? 2.6+rng()*.8 : (4.2 + rng() * (1.9 + recipe.variety)) * profile.scale) * shrink;
+    const blocked = j => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.road[j] || city.gateReserve[j] || city.slope[j] > .9;
+    // `plot` is an explicitly surveyed parcel: position and both dimensions decided by the
+    // caller. Without it the old behaviour stands, a near-square footprint on a lot cell.
+    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1, plot = null) {
+        const q = plot ? { x: plot.x, z: plot.z } : city.xy(k), seat = plot ? city.index(q.x, q.z) : k;
+        // The interior passes take whatever the frontage ranks left behind, so their
+        // footprints are drawn small and unevenly: a near-square 4-6 block only ever fitted
+        // in open ground, which is exactly the ground the frontage has already taken.
+        const ww = plot ? plot.w : landmark ? precinctSize : (infill ? 2.2+rng()*1.1 : (2.4 + rng() * (3.6 + recipe.variety * 2.2)) * profile.scale) * shrink,
+            dd = plot ? plot.d : landmark ? precinctSize : (infill ? 2.4+rng()*1.0 : (2.8 + rng() * (4.8 + recipe.variety * 2.6)) * profile.scale) * shrink;
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
         if (ww > 3 || dd > 3) {
-            for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1) {
-                const j = city.index(q.x + dx, q.z + dz);
-                if (city.water[j] || city.environment.ice[j]>25 || city.environment.snow[j]>.5 || city.road[j] || city.slope[j] > .9) return null;
-            }
+            for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1)
+                if (blocked(city.index(q.x + dx, q.z + dz))) return null;
         }
         const a = 0; // Footprints remain aligned to local surveyed blocks; organic roads cut across them.
         for (const dx of [-ww / 2, 0, ww / 2])
-            for (const dz of [-dd / 2, 0, dd / 2]) {
-                const j = city.index(q.x + dx, q.z + dz);
-                if (city.water[j] || city.environment.ice[j]>25 || city.environment.snow[j]>.5 || city.road[j] || city.slope[j] > .9)
+            for (const dz of [-dd / 2, 0, dd / 2])
+                if (blocked(city.index(q.x + dx, q.z + dz)))
                     return null;
-            }
-        const gap = .28 * profile.spacing;
+        // Party walls, not garden walls. The old .28 clearance around every block is most of
+        // why half the buildable ground stayed empty; the style's spacing still separates an
+        // airy woodland town from a tight courtyard one, just at a fraction of the width.
+        const gap = .05 + .30 * (profile.spacing - .8);
         if (usedGrid.near(q.x - ww / 2 - gap, q.z - dd / 2 - gap, q.x + ww / 2 + gap, q.z + dd / 2 + gap).some(b => Math.abs(b.x - q.x) < (b.w + ww) / 2 + gap && Math.abs(b.z - q.z) < (b.d + dd) / 2 + gap))
             return null;
         const district = city.districts.reduce((best, d) => { const dis = Math.hypot(d.x - q.x, d.z - q.z); return dis < best.dist ? { d, dist: dis } : best; }, { d: city.districts[0], dist: Infinity }).d;
         const actual = type || (['garden', 'market', 'civic', 'temple', 'academy', 'harbor'].includes(district.type) ? 'home' : district.type);
         const h = landmark ? (actual === 'academy' ? 10 : actual === 'temple' ? 7 : actual === 'civic' ? 7 : 3.2) : 1.5 + rng() * 2.3;
-        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[k], angle: a, district: district.id, landmark, condition: 1, infill };
+        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill };
         used.push(b);
         usedGrid.add(b, b.x - b.w / 2, b.z - b.d / 2, b.x + b.w / 2, b.z + b.d / 2);
         TownGrammar.moduleFor(city, b, rng);
@@ -309,6 +318,69 @@ function generateCity(w, sim, provinceId, design = {}) {
                 if (buildingAt(lot.k, d.type, true, size)) { placed = true; break; }
             }
             if (placed) break;
+        }
+    }
+    // STREET FRONTAGE. A dense town is a subdivision of the ground along its streets: a
+    // narrow face on the road, a deep plot running back from it, party walls with the
+    // neighbours. Scattering free-standing near-squares over a lot band is what left half
+    // the buildable ground empty and gave every block the same shape. Walking each street
+    // side in order is what makes a terrace form, because the collision test then seats
+    // each plot immediately after the one before it.
+    const frontages = [];
+    for (let k = 0; k < nn; k++) {
+        if (!city.road[k]) continue;
+        const x = k % n, y = Math.floor(k / n), q = city.xy(k);
+        if (Math.hypot(q.x - city.market.x, q.z - city.market.z) > width * .375) continue;
+        let ex = 0, ez = 0;
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const xx = x + dx, yy = y + dz;
+            if (xx >= 0 && xx < n && yy >= 0 && yy < n && city.road[yy * n + xx]) { ex += Math.abs(dx); ez += Math.abs(dz); }
+        }
+        for (const side of [-1, 1]) frontages.push({ k, x, y, alongX: ex >= ez, side });
+    }
+    // One row per street side, nearest row first so the core fills before the outskirts.
+    const rows = new Map();
+    for (const f of frontages) {
+        const key = (f.alongX ? 'x' : 'z') + f.side + ':' + (f.alongX ? f.y : f.x), q = city.xy(f.k);
+        let row = rows.get(key);
+        if (!row) rows.set(key, row = { key, items: [], near: Infinity });
+        row.near = Math.min(row.near, Math.hypot(q.x - city.market.x, q.z - city.market.z));
+        row.items.push(f);
+    }
+    const streetRows = [...rows.values()].sort((a, b) => a.near - b.near || (a.key < b.key ? -1 : 1));
+    for (const row of streetRows) row.items.sort((a, b) => a.alongX ? a.x - b.x : a.y - b.y);
+    const SETBACK = 1.0;
+    // Two ranks. The first is the street frontage itself. The second is the rear tenements
+    // behind it: same street, but the plot probes outward until it clears the row in front,
+    // which is what turns a lined street into a solid quarter instead of a hollow block.
+    for (const rank of [
+        { front: [1.9, 4.0], deep: [4.2, 8.0], probe: [0], taper: [1, .8, .62, .46, .34] },
+        { front: [1.8, 3.4], deep: [2.6, 4.6], probe: [0, 1.7, 3.4, 5.1, 6.8, 8.5, 10.2], taper: [1, .74, .52] }
+    ]) {
+        for (const row of streetRows) {
+            if (city.buildings.length >= target) break;
+            for (const f of row.items) {
+                if (city.buildings.length >= target) break;
+                const q = city.xy(f.k);
+                // Frontage and depth are drawn independently, so plots range from a narrow
+                // burgage strip to a broad hall instead of clustering on one square shape.
+                const front = (rank.front[0] + rng() * (rank.front[1] + recipe.variety * 2.6)) * profile.scale;
+                // Bounded against the frontage: a plot far longer than it is wide has no sane
+                // building to put on it, and the block kit cannot fill that shape either.
+                const deep = cityClamp((rank.deep[0] + rng() * (rank.deep[1] + recipe.variety * 3.2)) * profile.scale, front * .55, front * 4.4);
+                const nx = f.alongX ? 0 : f.side, nz = f.alongX ? f.side : 0;
+                let seated = false;
+                for (const back of rank.probe) {
+                    // A shallower plot still fits where the block behind is thin.
+                    for (const t of rank.taper) {
+                        const dd = deep * t, off = SETBACK + back + dd / 2;
+                        const cx = q.x + nx * off, cz = q.z + nz * off;
+                        if (Math.hypot(cx - city.market.x, cz - city.market.z) > width * .375) continue;
+                        if (buildingAt(f.k, null, false, 3, 1, { x: cx, z: cz, w: f.alongX ? front : dd, d: f.alongX ? dd : front })) { seated = true; break; }
+                    }
+                    if (seated) break;
+                }
+            }
         }
     }
     for (const lot of lots) {

@@ -232,24 +232,42 @@ const ArtisanCityKit=(()=>{
  function compound(b,c,p,realm){
   const style=c.townProfile.id,faith=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular',recipe=LandmarkCatalog.recipe(c.townProfile.palace,c.townRecipe.seed+'/'+b.id,{urbanStyle:style,faith,geography:{freshwater:p.fresh||0,cold:c.siteEnvironment.temperature<4}}),K=kit(recipe,b.lod??2),rng=K.random;
   if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true}),b);
+  // The surveyed parcel is what gets built on. meshAt scales this model uniformly to fit
+  // b.w x b.d, so a court authored square inside a long burgage plot would leave most of
+  // that plot as bare ground AND make every block read the same. Match the parcel's aspect
+  // at constant area, then lay out as many houses along each side as the shape wants.
+  // meshAt seats this model with b.angle, a quarter turn snapped to the street it faces,
+  // so a quarter-turned block presents its X extent along the parcel's depth. Author the
+  // court in that rotated frame or exactly half the plots get their aspect inverted and
+  // shrink to a sliver inside their own parcel.
+  const turned=Math.abs(Math.sin(b.angle||0))>.5,pw=turned?b.d:b.w,pd=turned?b.w:b.d;
+  const ar=Math.max(.2,Math.min(5,pw/Math.max(.001,pd))),CW=9.8*Math.sqrt(ar),CD=9.8/Math.sqrt(ar),sx=CW/9.8,sz=CD/9.8;
   let count=0;K.part('courtyard','The inhabited urban block','architecture',()=>{
-   K.box(0,0,0,9.8,.18,9.8,colorScale(K.color('ground'),1.04));
-   if(b.infill){house(K,0,.18,0,7.5,7.8,style==='desert'?5.8:7.6+rng()*2,style,Math.floor(rng()*5));count=1;return;}
-   if(b.type==='well'){K.fountain(0,.18,0,2);K.arcade(0,.18,-2.8,3,1.8,2.8);return}
-   if(b.type==='granary'){house(K,0,.18,0,5.5,7.7,5,style,1);for(const x of[-3.5,3.5])K.cylinder(x,.18,2.5,.5,1.1,'wood',9);count=1;return;}
-   if(style==='forest'){
-    for(const [x,z,v]of[[-2.7,-2.8,0],[2.5,-2,1],[.3,2.8,2]]){K.cylinder(x,.18,z,1.5,1.0,'wood',10);K.cylinder(x,1.18,z,1.25,2.7,'wall',10);K.using('roof',()=>K.cone(x,3.88,z,1.8,3.3,'roof',0,12));K.beam([x,1.3,z],[0,1.3,0],.25,'wood');windowN(K,x,1.7,z+1.25,.43,.9);count++;}K.tree(-3.5,.2,2.8,7,'broad');
-   }else{
-    const arrangement=b.moduleVariant??0,entries=arrangement===0?[[-2.7,-2.3,3.9,4.6],[1.8,-2.6,3.9,4.0],[-2.9,2.2,3.4,3.2],[2.0,2.1,4.1,3.5]]:arrangement===1?[[-2.9,-.3,3.4,8.1],[1.35,-2.75,4.7,3.3],[2.45,2.45,3.0,4.0]]:[[-2.55,-2.65,4.0,3.9],[2.2,-2.5,3.8,4.0],[-2.5,2.5,4.0,3.8],[2.4,2.3,3.7,3.9]];
-    for(const [x,z,w,d]of entries){const h=(style==='fjord'?3.5:style==='desert'?3.5:4.6)+rng()*1.2;house(K,x,.18,z,w,d,h,style,(count+arrangement)%5);count++;}
-    if(style==='mountain'||style==='basalt'){for(const x of[-4.5,4.5])K.box(x,.2,0,.45,2.4,8.5,'wall');}
+   K.box(0,0,0,CW,.18,CD,colorScale(K.color('ground'),1.04));
+   if(b.infill){house(K,0,.18,0,CW*.77,CD*.80,style==='desert'?5.8:7.6+rng()*2,style,Math.floor(rng()*5));count=1;return;}
+   if(b.type==='well'){K.fountain(0,.18,0,Math.min(CW,CD)*.20);K.arcade(0,.18,-CD*.29,3,1.8,2.8);return}
+   if(b.type==='granary'){house(K,0,.18,0,CW*.56,CD*.79,5,style,1);for(const x of[-1,1])K.cylinder(x*CW*.36,.18,CD*.26,.5,1.1,'wood',9);count=1;return;}
+   // Row count follows the parcel: a narrow burgage strip becomes a row down its length,
+   // a broad plot a row across its face, instead of one stamped 2x2 court everywhere.
+   const cols=Math.max(1,Math.round(CW/5.0)),ranks=Math.max(1,Math.round(CD/5.0)),arrangement=b.moduleVariant??0;
+   for(let r0=0;r0<ranks;r0++)for(let c0=0;c0<cols;c0++){
+    const cw=CW/cols,cd=CD/ranks,x=(c0-(cols-1)/2)*cw,z=(r0-(ranks-1)/2)*cd;
+    if(style==='forest'){
+     const rad=Math.min(cw,cd)*.29,h=2.3+rng()*1.0;
+     K.cylinder(x,.18,z,rad*1.20,1.0,'wood',10);K.cylinder(x,1.18,z,rad,h,'wall',10);
+     K.using('roof',()=>K.cone(x,1.18+h,z,rad*1.44,h*1.25,'roof',0,12));
+     K.beam([x,1.3,z],[0,1.3,0],.25,'wood');windowN(K,x,1.7,z+rad,.43,.9);
+    }else house(K,x,.18,z,cw*(.74+rng()*.15),cd*(.74+rng()*.15),(style==='fjord'?3.5:style==='desert'?3.5:4.6)+rng()*1.2,style,(count+arrangement)%5);
+    count++;
    }
+   if(style==='forest')K.tree(-CW*.36,.2,CD*.29,7,'broad');
+   else if(style==='mountain'||style==='basalt')for(const x of[-1,1])K.box(x*CW*.46,.2,0,.45,2.4,CD*.87,'wall');
    if(K.lod<1)return;
    if(b.type==='workshop'||b.program==='market'||b.type==='market'){
-    for(const x of[-1.1,1.1]){K.box(x,.2,0,1.0,.65,1,'wood');K.box(x,1.4,0,1.6,.09,1.65,x<0?'roof':'trim');for(const z of[-.7,.7])K.box(x+.6,.2,z,.07,1.2,.07,'wood');}
-   }else if(style!=='forest'){K.cylinder(.2,.2,.15,.48,.55,'wall',10);K.cylinder(.2,.75,.15,.34,.04,'water',10);}
-   if(K.lod>=2)for(let j=0;j<3;j++)K.cylinder(-4.15+j*.5,.19,4,.21,.5+(j%2)*.1,'wood',8);
-   if(style==='arcane')K.ring(0,.21,0,1.25,.05,'metal','xz',16);
+    for(const x of[-1.1,1.1]){K.box(x*sx,.2,0,1.0,.65,1,'wood');K.box(x*sx,1.4,0,1.6,.09,1.65,x<0?'roof':'trim');for(const z of[-.7,.7])K.box(x*sx+.6,.2,z*sz,.07,1.2,.07,'wood');}
+   }else if(style!=='forest'){K.cylinder(.2*sx,.2,.15*sz,.48,.55,'wall',10);K.cylinder(.2*sx,.75,.15*sz,.34,.04,'water',10);}
+   if(K.lod>=2)for(let j=0;j<3;j++)K.cylinder(-CW*.42+j*.5,.19,CD*.41,.21,.5+(j%2)*.1,'wood',8);
+   if(style==='arcane')K.ring(0,.21,0,Math.min(CW,CD)*.13,.05,'metal','xz',16);
   });
   const result=meshAt(K.finish(),b);result.structures=count;return result;
  }

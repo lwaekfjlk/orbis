@@ -67,7 +67,9 @@ const TownGrammar = (()=>{
    for(let r=1;r<grids.length;r++)for(let k=0;k<7;k+=2)add(grids[r-1][k],grids[r][k],'lane');add(center,grids[1][3],'street');roles.civic=at(rx*23,rz*23);roles.temple=at(dx*30+rx*16,dz*30+rz*16);roles.academy=at(-dx*28+rx*13,-dz*28+rz*13);
   }
   // Sparse feeder lanes fill remaining districts, avoiding an identical radial city.
-  for(let k=0;k<(profile.plan==='groves'?5:8);k++){const q=candidates[Math.floor(rng()*Math.min(candidates.length,Math.round(1900*S*S)))],t=city.xy(q.k),near=hubs.reduce((a,b)=>Math.hypot(city.xy(a).x-t.x,city.xy(a).z-t.z)<Math.hypot(city.xy(b).x-t.x,city.xy(b).z-t.z)?a:b);add(near,q.k,'lane')}
+  // Feeder count scales with the footprint. A fixed eight was tuned for the old small
+  // town; on a grown one it leaves whole quarters with no street to build a frontage on.
+  for(let k=0,feeders=Math.round((profile.plan==='groves'?5:8)*S*S*1.9);k<feeders;k++){const q=candidates[Math.floor(rng()*Math.min(candidates.length,Math.round(1900*S*S)))],t=city.xy(q.k),near=hubs.reduce((a,b)=>Math.hypot(city.xy(a).x-t.x,city.xy(a).z-t.z)<Math.hypot(city.xy(b).x-t.x,city.xy(b).z-t.z)?a:b);add(near,q.k,'lane')}
   // Attach any accidentally isolated road subgraph to the market over valid ground.
   const flood=()=>{const seen=new Uint8Array(city.road.length),q=[center];seen[center]=1;for(let n0=0;n0<q.length;n0++){const k=q[n0],x=k%n,y=Math.floor(k/n);for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||xx>=n||yy<0||yy>=n)continue;const j=yy*n+xx;if(!seen[j]&&city.road[j]){seen[j]=1;q.push(j)}}}return seen};
   let seen=flood();for(const h of [...hubs])if(!seen[h]){add(center,h,'lane');seen=flood()}
