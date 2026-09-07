@@ -16,15 +16,40 @@ const ArtisanCityKit=(()=>{
   steppe:{wall:'#d3c49b',trim:'#eee1bd',roof:'#8b7650',metal:'#bda162',wood:'#7a6446',dark:'#4d483b',ground:'#b9b281',water:'#7fb0a6',leaf:'#8b9a5d'},
   paddy:{wall:'#dad4bd',trim:'#efe9d1',roof:'#587757',metal:'#b9a46a',wood:'#6c5540',dark:'#3d4b43',ground:'#93a777',water:'#84c0b4',leaf:'#4b8253'},
   delve:{wall:'#8b857f',trim:'#b8b0a2',roof:'#68594f',metal:'#c9a05c',wood:'#695948',dark:'#363438',ground:'#8d887e',water:'#7ba0a5',leaf:'#5c735f'},
-  lagoon:{wall:'#ded5c0',trim:'#f3ebd7',roof:'#3d888e',metal:'#c7ab63',wood:'#7a6450',dark:'#3e555c',ground:'#aeb391',water:'#6cc0c4',leaf:'#5d8868'}
+  lagoon:{wall:'#ded5c0',trim:'#f3ebd7',roof:'#3d888e',metal:'#c7ab63',wood:'#7a6450',dark:'#3e555c',ground:'#aeb391',water:'#6cc0c4',leaf:'#5d8868'},
+  taiga:{wall:'#a08a6c',trim:'#dcd7c6',roof:'#465a63',metal:'#a7a086',wood:'#6a5339',dark:'#31373a',ground:'#8e9a92',water:'#7aa4b0',leaf:'#3d6a63'},
+  monsoon:{wall:'#e5dec6',trim:'#f4eeda',roof:'#9a7943',metal:'#c0a45f',wood:'#5d4833',dark:'#38453e',ground:'#7d9367',water:'#6fbfb2',leaf:'#2f7146'}
  };
  const hex2=v=>Math.round(clamp(v,0,1)*255).toString(16).padStart(2,'0');
+ const hexOf=c=>'#'+c.map(v=>Math.round(clamp(v)*255).toString(16).padStart(2,'0')).join('');
+ function toHSV(c){const mx=Math.max(...c),mn=Math.min(...c),d=mx-mn;
+  const h=d<1e-9?0:mx===c[0]?((c[1]-c[2])/d+6)%6:mx===c[1]?(c[2]-c[0])/d+2:(c[0]-c[1])/d+4;
+  return[h*60,mx?d/mx:0,mx];}
+ function fromHSV(h,s,v){h=((h%360)+360)%360/60;const i=Math.floor(h),f=h-i,p=v*(1-s),q=v*(1-s*f),t=v*(1-s*(1-f));
+  return[[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i%6];}
+ // Saturation moves proportionally AND absolutely: a grey-stone town starts at about
+ // .09, and a pure multiplier leaves every one of its houses just as grey.
+ const shift=(hex,[dh,ds,dv])=>{const[h,s,v]=toHSV(rgb(hex));return hexOf(fromHSV(h+dh,clamp(s*(1+ds)+ds*.10,0,.93),clamp(v*(1+dv),.05,.98)));};
+ // Five building materials inside one construction language, as hue/saturation/value
+ // moves off whatever that town builds in: the profile's own stock, a limewashed
+ // version of it, a warmer fired earth, a colder weathered stone and a deeper tint of
+ // the base. Before this a whole town was one hue — measured across five towns, walls
+ // varied by 2-6 degrees and 8% in brightness, which is one house repeated, not a
+ // quarter. This runs inside weather(), so it lands on the climate-toned palette and
+ // a hot dry town's materials are five variations of ITS whitewash, not of the
+ // tradition's generic stock.
+ const WALL_STOCK=[[0,0,0],[7,-.36,.10],[-16,.44,-.07],[14,-.14,-.14],[-6,.18,.05]];
+ const ROOF_STOCK=[[0,0,0],[-14,.32,-.06],[10,-.30,.09],[-5,.12,-.15]];
  /** One town keeps one construction language, but not one paint pot. Each block shifts its
   * masonry, roof and timber a little — a value change plus a warm/cool lean — so a quarter
   * reads as many separate houses instead of one asset stamped over and over. Drawn from its
   * own stream, so the shift never disturbs the mesh the seed already decided. */
  function weather(palette,seed){
   const r=LandmarkCatalog.rng(seed+'/paint'),out={...palette};
+  // Pick the house's material first, then weather it. Both draws come off the paint
+  // stream, so the mesh the seed already decided is untouched.
+  if(out.wall)out.wall=shift(out.wall,WALL_STOCK[Math.floor(r()*WALL_STOCK.length)%WALL_STOCK.length]);
+  if(out.roof)out.roof=shift(out.roof,ROOF_STOCK[Math.floor(r()*ROOF_STOCK.length)%ROOF_STOCK.length]);
   for(const [key,amount] of [['wall',.16],['trim',.11],['roof',.22],['wood',.15],['dark',.09],['metal',.10]]){
    if(!out[key])continue;
    const c=rgb(out[key]),v=1+(r()-.5)*amount*2,warm=1+(r()-.5)*amount;
@@ -32,7 +57,32 @@ const ArtisanCityKit=(()=>{
   }
   return out;
  }
- function kit(recipe,lod=1){const k=new LandmarkKit(recipe,{base:false,lod});k.palette=weather(PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material],recipe.seed);return k}
+ // A tradition supplies the construction language; the climate supplies the tone and
+ // the weather response. Without one, every town of a family was painted from the
+ // same nine hex values, so a -1 C and a +26 C town of one tradition were identical.
+ const NEUTRAL={t:14,a:1,cold:0,warm:0,frost:0,dry:0,humid:0,alpine:0,load:0,wet:0};
+ function climatePalette(p,cl){
+  const toward=(hex,to,amount)=>{const a=rgb(hex),b=rgb(to);return hexOf(a.map((v,k)=>v+(b[k]-v)*clamp(amount)))};
+  return {...p,
+   // Whitewash against heat, weathered dark timber and stone against cold.
+   wall:toward(toward(p.wall,'#f2ecda',cl.dry*cl.warm*.45),'#948d7e',cl.cold*.36),
+   trim:toward(p.trim,'#cdc4ae',cl.cold*.28),
+   // Wet slate and turf in the north, baked earth and tile in the dry south.
+   roof:toward(toward(p.roof,'#3b4956',cl.load*.50),'#a96f3f',cl.warm*cl.dry*.30),
+   leaf:hexOf(CityEnvironment.leafColor(cl.t,cl.a)),
+   ground:toward(toward(p.ground,'#cdc19e',cl.dry*.40),'#8b9591',cl.cold*.32)};
+ }
+ // The two shifts compose and are applied in that order: the climate decides what the
+ // town is built and painted from, then each block weathers away from that. Reversing
+ // them would let the per-block jitter be flattened back out by the climate tone.
+ function kit(recipe,lod=1,cl=null){
+  const k=new LandmarkKit(recipe,{base:false,lod});
+  let palette=PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material];
+  k.climate=cl||NEUTRAL;
+  if(cl)palette=climatePalette(palette,k.climate);
+  k.palette=weather(palette,recipe.seed);
+  return k;
+ }
  function append(dst,src){for(const n of src.data)dst.data.push(n)}
  // Openings are the single largest triangle cost in a town, so they carry the LOD split:
  // nothing on the outskirts, a recessed panel mid-town, full joinery in the core.
@@ -65,16 +115,39 @@ const ArtisanCityKit=(()=>{
   });
  }
  function house(k,x,y,z,w,d,h,style,variant=0,angle=0){
-  const flat=style==='desert',timber=['fjord','delta','steppe','paddy'].includes(style)||(style==='river'&&variant%3===0),
-   roof=style==='fjord'?'northern':['forest','paddy'].includes(style)?'leaf':flat?'flat':['steppe','lagoon'].includes(style)?'hip':'gable';
+  const cl=k.climate||NEUTRAL;
+  const flatStyle=style==='desert';
+  // The tradition proposes a roof; the weather disposes. Snow load steepens it and
+  // forces a northern pitch whatever the family says; sustained heat with no rain
+  // flattens it to a usable terrace. Neither overrides where the family is already
+  // the right answer, so a fjord longhall stays a fjord longhall.
+  const flat=flatStyle||(cl.warm*cl.dry>.42&&cl.load<.15),
+   timber=['fjord','delta','steppe','paddy','taiga','monsoon'].includes(style)||(style==='river'&&variant%3===0)||cl.cold>.55;
+  let roof=style==='taiga'?'northern'
+   :style==='monsoon'?'leaf'
+   :cl.load>.45?'northern'
+   :style==='fjord'?'northern'
+   :['forest','paddy'].includes(style)?'leaf'
+   :flat?'flat'
+   :cl.warm*cl.humid>.34?'leaf'
+   :['steppe','lagoon'].includes(style)?'hip':'gable';
+  // Overhang is the rain response: a deep eave in the wet tropics, a tight verge
+  // where it is cold and dry and the eave would only catch snow and wind.
+  const eave=(style==='monsoon'?.95:0)+clamp(cl.warm*cl.humid*1.5)*.85-cl.cold*.10,
+   pitch=(style==='taiga'?1.35:1)*(1+cl.load*.62+cl.humid*.18-cl.dry*.22);
+  // Stilts are structural in the two families built for standing water.
+  const raised=['monsoon'].includes(style)||cl.wet>.55;
   k.transform(x,y,z,angle,1,()=>{
    k.mark('inhabited-masonry');k.box(0,0,0,w+.2,.27,d+.2,'wall');
    const wall=timber?'wood':colorScale(k.color('wall'),.89+(variant%4)*.047);
    k.box(0,.27,0,w,h,d,wall);k.box(0,h+.13,0,w+.14,.16,d+.14,'trim');
    const floors=Math.max(1,Math.min(3,Math.floor(h/1.8)));
+   // Opening area is a climate cost: small deep-set lights where heating or shade
+   // matters, generous glazing in the mild middle of the range.
+   const openW=1-cl.cold*.34-cl.warm*cl.dry*.30,openH=1-cl.cold*.26-cl.warm*cl.dry*.20;
    for(let f=0;f<floors;f++)for(const side of[-1,1]){
-    const yy=.6+f*1.6;for(const xx of[-.27,.27])windowN(k,xx*w,yy,side*(d/2+.018),.42,.73,side<0?Math.PI:0,!timber);
-    windowN(k,side*(w/2+.018),yy,0,.38,.7,side<0?-Math.PI/2:Math.PI/2,!timber);
+    const yy=.6+f*1.6;for(const xx of[-.27,.27])windowN(k,xx*w,yy,side*(d/2+.018),.42*openW,.73*openH,side<0?Math.PI:0,!timber);
+    windowN(k,side*(w/2+.018),yy,0,.38*openW,.7*openH,side<0?-Math.PI/2:Math.PI/2,!timber);
    }
    for(const s of[-1,1])for(const t of[-1,1]){
     if(k.lod<1)break;
@@ -86,14 +159,34 @@ const ArtisanCityKit=(()=>{
     k.beam([-w*.4,.35,sign*(d/2+.1)],[0,h*.55,sign*(d/2+.1)],.04,'trim',4);
     k.beam([0,h*.55,sign*(d/2+.1)],[w*.4,.35,sign*(d/2+.1)],.04,'trim',4);
    }}
-   const ph=flat?.3:Math.min(w,d)*(style==='fjord'?.81:.56);
-   slateRoof(k,0,h+.30,0,w+.14,d+.15,ph,roof,style==='arcane');
+   const ph=flat?.3:Math.min(w,d)*(style==='fjord'?.81:.56)*pitch;
+   slateRoof(k,0,h+.30,0,w+.14+eave,d+.15+eave,ph,roof,style==='arcane');
    k.box(0,.27,d/2+.08,.6,1.0,.10,'dark');
    if(k.lod>=1){k.box(0,.3,d/2+.14,.44,.88,.05,'wood');k.box(0,.26,d/2+.39,1,.13,.54,'trim');}
-   if(!flat&&variant%3!==1&&k.lod>=1){k.box(w*.27,h*.9,-d*.20,.42,ph+1,.5,'wall');k.box(w*.27,h*.9+ph+.9,-d*.2,.56,.15,.62,'trim');k.box(w*.27,h*.9+ph+1.06,-d*.2,.32,.02,.34,'dark');}
+   // A flue is heating, so it belongs where the model says heating is needed.
+   const heated=cl.cold>.28||(!flat&&cl.warm<.55);
+   if(!flat&&heated&&variant%3!==1&&k.lod>=1){const ch=.42+cl.cold*.30;k.box(w*.27,h*.9,-d*.20,ch,ph+1+cl.cold*.9,.5,'wall');k.box(w*.27,h*.9+ph+.9+cl.cold*.9,-d*.2,ch+.14,.15,.62,'trim');k.box(w*.27,h*.9+ph+1.06+cl.cold*.9,-d*.2,.32,.02,.34,'dark');}
    // Projecting dormers, not a painted roof texture.
    if(!flat&&w>2.2&&k.lod>=2){k.transform(-w*.35,h+.48,.35,0,1,()=>{k.box(0,0,0,.65,.63,.72,'wall');slateRoof(k,0,.63,0,.76,.81,.48,'gable');windowN(k,0,.08,.40,.27,.43,0);});}
    if(k.lod<1)return;
+   // Snow boards and a ridge cap where the world actually reports a snow load.
+   if(cl.load>.52&&!flat){k.box(0,h+.30+ph*.34,d/2+.10+eave*.5,w*.92,.09,.12,'trim');k.box(0,h+.30+ph*.34,-d/2-.10-eave*.5,w*.92,.09,.12,'trim');}
+   // A posted veranda under the deep eave: the hot-and-wet answer to the same wall.
+   if(eave>.34){k.box(0,.24,d*.5+eave*.55,w+.3,.10,eave*1.05,'wood');for(const t of[-1,1])k.box(t*w*.36,.34,d*.5+eave*.85,.11,h*.60,.11,'wood');}
+   // A raised floor keeps the ground damp out; wetness is a parent-world field.
+   if(raised&&!flat)for(const t of[-1,1])for(const u of[-1,1])k.box(t*w*.40,-.30,u*d*.40,.16,.34,.16,'wood');
+   // Log building: stacked courses with the corner notching that carries them, and a
+   // stone flue, which is the one part of the house that cannot be timber.
+   if(style==='taiga'){
+    for(let yy=.45;yy<h;yy+=.44)for(const s of[-1,1])k.box(0,.27+yy,s*(d/2+.03),w*.98,.19,.06,yy%.88<.44?'wood':'trim');
+    for(const s of[-1,1])for(const t of[-1,1])k.cylinder(s*(w/2-.02),.27,t*(d/2-.02),.19,h,'wood',7);
+    k.box(0,.05,0,w+.5,.24,d+.5,'wall');
+   }
+   // Screen walls, not glazing: louvred panels under the eave, and a work platform.
+   if(style==='monsoon'){
+    for(const s of[-1,1])for(let j=0;j<5;j++)k.box(s*(w/2+.03),.55+j*.30,0,.05,.19,d*.82,'trim');
+    k.box(0,.16,d*.5+.85,w+.5,.11,1.0,'wood');
+   }
    if(style==='desert'){
     if(variant%3===0){k.box(w*.27,h, -d*.26,.68,1.40,.7,'wall');for(const sign of[-1,1])k.box(w*.27+sign*.36,h+.5,-d*.26,.025,.63,.38,'dark');k.box(w*.27,h+1.4,-d*.26,.92,.12,.92,'trim')}
     if(variant%3===1)k.dome(0,h+.35,-d*.1,w*.26,w*.29,'roof');
@@ -115,20 +208,20 @@ const ArtisanCityKit=(()=>{
  }
  function flag(k,x,y,z,h=2.4){k.banner(x,y,z,h)}
  function bastion(k,x,y,z,r,h,style){
-  const square=['mountain','basalt','desert','delve'].includes(style),crown=style==='arcane'?'crystal':['desert','mountain','delve'].includes(style)?'battlement':['basilica','lagoon'].includes(style)?'dome':'spire';
+  const square=['mountain','basalt','desert','delve','taiga'].includes(style),crown=style==='arcane'?'crystal':['desert','mountain','delve'].includes(style)?'battlement':['basilica','lagoon'].includes(style)?'dome':'spire';
   if(square){k.box(x,y,z,r*1.85,h,r*1.85,'wall');for(let j=1;j<h;j+=1.2)k.box(x,y+j,z,r*1.94,.13,r*1.94,'trim');k.parapet(x,y+h,z,r*1.9,r*1.9);windowN(k,x,y+h-1.35,z+r*.94,r*.4,1.0);}
   else k.tower(x,y,z,r,h,crown);
  }
  function greatHall(k,x,y,z,w,d,h,style,opts={}){
-  k.hall(x,y,z,w,d,h,{roof:style==='desert'?'flat':style==='forest'?'leaf':style==='fjord'?'northern':'gable',roofHeight:opts.roofHeight||Math.min(w,d)*.58,entrance:opts.entrance!==false});
+  k.hall(x,y,z,w,d,h,{roof:style==='desert'?'flat':['forest','monsoon'].includes(style)?'leaf':['fjord','taiga'].includes(style)?'northern':'gable',roofHeight:opts.roofHeight||Math.min(w,d)*.58,entrance:opts.entrance!==false});
   for(const side of[-1,1]){
    courses(k,x,y+.3,z+side*(d/2+.015),w,h-.65,side===1?0:Math.PI);
    courses(k,x+side*(w/2+.015),y+.3,z,d,h-.65,side===1?Math.PI/2:-Math.PI/2);
   }
-  if(style!=='desert')slateRoof(k,x,y+h,z,w+.38,d+.38,opts.roofHeight||Math.min(w,d)*.58,style==='fjord'?'northern':'gable',true);
+  if(style!=='desert')slateRoof(k,x,y+h,z,w+.38,d+.38,opts.roofHeight||Math.min(w,d)*.58,['fjord','taiga'].includes(style)?'northern':style==='monsoon'?'leaf':'gable',true);
  }
  function precinct(recipe,options={}){
-  const K=kit(recipe,options.lod??1),id=recipe.urbanStyle||recipe.style,style=PALETTES[id]?id:'river';
+  const K=kit(recipe,options.lod??1,options.climate||null),id=recipe.urbanStyle||recipe.style,style=PALETTES[id]?id:'river';
   const foundation=()=>{K.box(0,0,0,23,.75,23,'wall');K.box(0,.70,0,23.5,.18,23.5,'trim');K.box(0,.89,2.8,19,.05,11,colorScale(K.color('ground'),1.15));};
   K.part('precinct-base','The terraced civic precinct','foundation',foundation,'Architectural foundations above the inherited ground; not newly generated mountain terrain.');
   if(style==='forest'){
@@ -208,6 +301,44 @@ const ArtisanCityKit=(()=>{
     K.dome(0,8.4,-6.2,2.9,3.3,'metal');K.arch(0,.9,-.6,2.7,3.7,.6,'trim');
     K.emblem(0,5.7,-9.9,.65);flag(K,0,10.7,-6.2,2.6);
    });
+  }else if(style==='taiga'){
+   K.part('winterhold','The log moot-hall, stave tower and wood stores','architecture',()=>{
+    K.terrace(0,.9,-3.2,17,12,1.1);
+    greatHall(K,0,2.0,-5.4,9.0,7.4,5.6,style,{roofHeight:5.4});
+    // The doubled pitch is the snow detail: a second roof laid over the first.
+    K.using('roof',()=>{K.roof(0,7.6,-5.4,9.4,7.8,5.2,'trim','northern');K.roof(0,12.6,-5.4,5.0,4.6,2.1,'roof','northern')});
+    for(const s of[-1,1]){
+     K.tower(s*7.6,.9,2.6,1.35,9.4,'spire');
+     // Fuel and grain lifted clear of the drift line, each under its own roof.
+     K.box(s*8.6,2.4,-9.0,4.2,1.4,2.4,'wood');K.roof(s*8.6,3.8,-9.0,5.0,3.2,1.8,'roof','northern');
+     for(const t of[-1,1])K.cylinder(s*8.6+t*1.7,.9,-9.0,.28,1.5,'wood',7);
+     K.box(s*5.2,2.0,-1.0,1.3,6.2,1.4,'wall');
+    }
+    K.arch(0,.9,9.4,2.8,3.6,.9,'wall');
+    // Split-log palisade rather than a masonry curtain: this is what grows here.
+    for(const [x,z,len,along]of[[0,-11.6,20,1],[-10.4,0,20,0],[10.4,0,20,0]])
+     for(let t=-len/2;t<len/2;t+=.66)K.cone(x+(along?t:0),.9,z+(along?0:t),.26,2.9,'wood',.18,6);
+    K.emblem(0,6.4,-9.6,.65);flag(K,0,11.0,-5.4,2.6);
+   });
+  }else if(style==='monsoon'){
+   K.part('rainpavilion','The raised assembly pavilion and plank walks','architecture',()=>{
+    // The precinct floor is a deck on posts. There is no plinth, because the ground
+    // under it is wet for part of every year.
+    for(let x=-9;x<=9;x+=3)for(let z=-8;z<=8;z+=3)K.cylinder(x,.9,z,.30,2.5,'wood',7);
+    K.box(0,3.4,0,21,.34,19,'wood');
+    greatHall(K,0,3.74,-4.6,9.4,7.0,5.0,style,{roofHeight:5.6});
+    // The eave is the building: carried well clear of the wall on posts.
+    K.using('roof',()=>K.roof(0,7.2,-4.6,16.4,13.6,2.9,'roof','leaf'));
+    for(const s of[-1,1])for(const z of[-8,-4.6,-1.2])K.cylinder(s*7.6,3.74,z,.28,3.0,'wood',7);
+    for(const s of[-1,1]){
+     greatHall(K,s*7.8,3.74,4.4,3.6,7.6,3.2,style,{entrance:false,roofHeight:3.4});
+     K.using('roof',()=>K.roof(s*7.8,6.94,4.4,7.0,11.0,1.9,'roof','leaf'));
+     // Louvred screens instead of windows: shade and through-draught.
+     for(let j=0;j<6;j++)K.box(s*5.9,4.2+j*.34,-4.6,.06,.22,6.4,'trim');
+    }
+    K.rail(-10.2,9.2,10.2,9.2,3.74,'wood');K.box(0,3.3,9.6,5.6,.16,3.4,'wood');
+    K.emblem(0,10.4,-4.6,.7);flag(K,0,9.4,-4.6,2.4);
+   });
   }else if(style==='delta'){
    K.part('tidal-hall','The stilted civic halls','architecture',()=>{for(const x of[-8,-4,0,4,8])for(const z of[-8,-4,0,4,8])K.box(x,.9,z,.25,2,.25,'wood');K.box(0,2.6,0,21,.3,20,'wood');greatHall(K,0,2.9,-3,8,12,5,style);for(const s of[-1,1])greatHall(K,s*7,2.9,2,4,10,3,style);K.rail(-10,10,10,10,2.9,'wood');K.rail(-10,-10,-10,10,2.9,'wood');});
   }else{
@@ -243,9 +374,20 @@ const ArtisanCityKit=(()=>{
   const body=new Geometry(),roof=new Geometry();for(const p of model.parts)append(p.role==='roof'?roof:body,LandmarkTemplates.transformGeometry(p.geometry,scale,offset,angle));
   return{body,roof,height:(hi[1]-lo[1])*scale,model};
  }
+ // The climate at THIS block's own cell, and the paint that follows from it. Both the
+ // detailed mesh and the regional silhouette come through these, so a town cannot
+ // change colour as you close in on it — the two would otherwise have to reproduce
+ // the same climate-then-weather composition separately and stay in step by luck.
+ const blockClimate=(c,b)=>{const seat=c.index(b.x,b.z);return{...CityEnvironment.localClimate(c.environment,seat),wet:c.wet?.[seat]||0}};
+ const blockPaint=(c,b)=>weather(climatePalette(PALETTES[c.townProfile.id]||PALETTES.river,blockClimate(c,b)),c.townRecipe.seed+'/'+b.id);
  function compound(b,c,p,realm){
-  const style=c.townProfile.id,faith=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular',recipe=LandmarkCatalog.recipe(c.townProfile.palace,c.townRecipe.seed+'/'+b.id,{urbanStyle:style,faith,geography:{freshwater:p.fresh||0,cold:c.siteEnvironment.temperature<4}}),K=kit(recipe,b.lod??2),rng=K.random;
-  if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true}),b);
+  const style=c.townProfile.id,faith=['sun','stars','grove','hearth','tide','secular'][cDominant(p.faith)]||'secular',recipe=LandmarkCatalog.recipe(c.townProfile.palace,c.townRecipe.seed+'/'+b.id,{urbanStyle:style,faith,geography:{freshwater:p.fresh||0,cold:c.siteEnvironment.temperature<4}});
+  // Read the climate at THIS block's own cell, not the town centre's. A town with
+  // relief spans several degrees between its lower and upper districts, and 67 of
+  // the 96 towns in a default world span more than four.
+  const cl=blockClimate(c,b);
+  const K=kit(recipe,b.lod??2,cl),rng=K.random;
+  if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true},{climate:cl}),b);
   // The surveyed parcel is what gets built on. meshAt scales this model uniformly to fit
   // b.w x b.d, so a court authored square inside a long burgage plot would leave most of
   // that plot as bare ground AND make every block read the same. Match the parcel's aspect
@@ -274,10 +416,16 @@ const ArtisanCityKit=(()=>{
      K.cylinder(x,.18,z,rad*1.20,1.0,'wood',10);K.cylinder(x,1.18,z,rad,h,'wall',10);
      K.using('roof',()=>K.cone(x,1.18+h,z,rad*1.44,h*1.25,'roof',0,12));
      K.beam([x,1.3,z],[0,1.3,0],.25,'wood');windowN(K,x,1.7,z+rad,.43,.9);
-    }else house(K,x,.18,z,cw*(.74+rng()*.15),cd*(.74+rng()*.15),(style==='fjord'?3.5:style==='desert'?3.5:4.6)+rng()*1.2,style,(count+arrangement)%5);
+    }else house(K,x,.18,z,cw*(.74+rng()*.15),cd*(.74+rng()*.15),(style==='fjord'?3.5:style==='desert'?3.5:style==='taiga'?3.2:style==='monsoon'?3.8:4.6)+rng()*1.2,style,(count+arrangement)%5);
     count++;
    }
    if(style==='forest')K.tree(-CW*.36,.2,CD*.29,7,'broad');
+   else if(style==='taiga'){K.tree(-CW*.38,.2,CD*.31,6,'conifer');K.tree(CW*.36,.2,-CD*.33,5,'conifer');
+    // A covered wood store is a working part of the block in this climate.
+    K.box(CW*.34,.2,CD*.30,1.7,.9,1.1,'wood');K.roof(CW*.34,1.1,CD*.30,2.1,1.5,.8,'roof','northern');}
+   else if(style==='monsoon'){K.tree(-CW*.37,.2,CD*.30,7,'palm');K.tree(CW*.35,.2,-CD*.32,6.5,'rainforest');
+    // The plank walk between raised houses is the street here.
+    K.box(0,.34,CD*.30,CW*.86,.10,.9,'wood');}
    else if(style==='mountain'||style==='basalt')for(const x of[-1,1])K.box(x*CW*.46,.2,0,.45,2.4,CD*.87,'wall');
    if(K.lod<1)return;
    if(b.type==='workshop'||b.program==='market'||b.type==='market'){
@@ -325,5 +473,5 @@ const ArtisanCityKit=(()=>{
   });
   const m=K.finish(),body=new Geometry(),roof=new Geometry();for(const p of m.parts)append(p.role==='roof'?roof:body,p.geometry);return{body,roof};
  }
- return{palettes:PALETTES,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,version:1};
+ return{palettes:PALETTES,paint:weather,blockPaint,blockClimate,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,climatePalette,neutralClimate:NEUTRAL,version:1};
 })();

@@ -5,7 +5,7 @@ import {resolve} from 'node:path';
 import {scripts} from '../scripts/manifest.mjs';
 import {root,defaults} from './engine-loader.mjs';
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');
-const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,createCityRenderer,ContinuousCityLayer,AtlasRenderer,GW,GH,Geometry};')();
+const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,AtlasSpace,createCityRenderer,ContinuousCityLayer,AtlasRenderer,ArtisanCityKit,GW,GH,Geometry};')();
 let w,s,city,p;
 test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});p=s.provinces[507];assert(p?.settled);city=E.generateCity(w,s,p.id);});
 test('A single parent surface is preserved at every original grid vertex',()=>{
@@ -43,6 +43,27 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
   checked++;
  }
  assert(checked>1e5,'expected the whole terrain to be checked, saw '+checked);
+});
+test('The regional silhouette of a town is painted, not stamped',()=>{
+ // 4.8 to 18 is where a whole town is on screen, so it is the view most of the map is
+ // read in — and every silhouette in every town on the world shared one hardcoded
+ // beige wall and one slate roof, the wall not even asking which town it was in.
+ const meshes={};
+ globalThis.window={world:w,sim:s};
+ const stub={relief:1,upload(name,g){meshes[name]={data:g.data};}};
+ const layer=new E.ContinuousCityLayer(stub);layer.world=w;layer.sim=s;
+ const model=layer.build(p);
+ const data=meshes[`cm:${p.id}:silhouettes`].data;
+ const seen=new Set();
+ for(let k=0;k<data.length;k+=9)seen.add([6,7,8].map(j=>Math.round(data[k+j]*255)).join(','));
+ assert(seen.size>model.city.buildings.length,`${seen.size} colours for ${model.city.buildings.length} buildings`);
+ // The paint has to be the one the detailed mesh uses for the same building, or the
+ // town changes colour as you close in.
+ const first=model.city.buildings[0];
+ const paint=E.ArtisanCityKit.blockPaint(model.city,first);
+ const wall=[1,3,5].map(i=>Math.round(parseInt(paint.wall.slice(i,i+2),16)));
+ assert(seen.has(wall.join(',')),'the silhouette must use the same wall paint as the detail');
+ delete globalThis.window;
 });
 test('City coordinates refer to the actual Stonefall source and preserve nearby glacial relief',()=>{
  const h=E.physicalFingerprint(w),f=E.AtlasSpace.cityFrame(w,p,city);assert.equal(city.source.parentWorldCell,p.i);assert(city.siteEnvironment.glacialFoothills);assert(city.siteEnvironment.maxElevation>city.siteEnvironment.minElevation+1000);

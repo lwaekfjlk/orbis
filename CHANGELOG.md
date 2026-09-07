@@ -1,3 +1,41 @@
+# 13.3.1 — A town is many houses
+
+- **Every building in a town was still the same colour.** 13.3.0 gave each tradition a
+  climate tone, so a cold town and a hot one of the same family finally differ — but within
+  one town, every wall was still one hue. Measured across five towns: 2-6 degrees of hue and
+  8% of brightness, one house at slightly different exposures, repeated. Each house now takes
+  one of the town's building materials before it weathers — the stock it is built from, a
+  limewashed version, a warmer fired earth, a colder weathered stone, a deeper tint of the
+  base. This runs inside `weather()`, so it lands on the climate-toned palette: a hot dry
+  town's five materials are variations of *its* whitewash, not of the tradition's generic
+  stock. `ArtisanCityKit.blockClimate` and `blockPaint` are now the one place the
+  climate-then-weather composition lives, so the detailed mesh and the silhouette cannot
+  drift apart. Wall saturation spread ±0.054 to ±0.157 on a desert town, roofs ±0.031 to ±0.167,
+  wall hue ±2.4° to ±12.2°.
+- **The regional silhouette was worse: two colours for the whole world.** Between zoom 4.8 and
+  18 — the range a whole town is actually read in — every building in every town shared one
+  hardcoded beige wall and one slate roof, and the wall did not even ask which town it stood
+  in. Each silhouette now takes the same paint the detailed mesh gives that same building, so
+  closing in changes the geometry and not the colour of the town.
+- Colour spread per town, and the silhouette matching the detail, are asserted in
+  `tests/artisan.test.mjs` and `tests/continuous.test.mjs`.
+
+---
+
+# 13.3.0 — Climate-conditioned atlas
+
+- One shared resolver, `CityEnvironment.climate`, drives ground colour, vegetation and architecture from the existing temperature/aridity/ice fields, so map and town agree by construction.
+- Ground colour grades continuously inside each biome. The flat 40% khaki blend over all five forest biomes is gone: boreal and tropical forest were ~5/255 apart and are now ~40.
+- Vegetation has seven climate-chosen forms with a temperature-driven treeline. Savanna, tundra, dry steppe and alpine meadow carry cover for the first time; tropical rainforest no longer draws conifers.
+- Every town tradition now adapts to its own site: roof pitch and form, eave depth, opening area, chimneys, stilts, wall material and palette are read per block, not per town.
+- Two traditions added for the extremes — **Boreal Log Town** (`taiga`) and **Monsoon Stilt Town** (`monsoon`) — with their own grammars, block kits and palace precincts. Fifteen families in total.
+- A −1.3 °C site is no longer built as a Mediterranean limestone courtyard town.
+- New regression suite `tests/climate.test.mjs` (`npm run test:climate`) locks colour separation, the treeline, the house response and same-tradition divergence.
+- `physicalFingerprint` and `settlementFingerprint` are unchanged: this changes how the world is drawn, not what it is.
+- Incidental: repaired two stale references in `tests/continuous_browser.py` that predated this work (a renamed town, and a hardcoded sanctuary province id now looked up dynamically).
+
+---
+
 # 13.2.2 — No paint on the borders, and symbols that stay symbols
 
 - **The border band is gone.** 13.2.1 replaced the full-territory wash with a soft tint just

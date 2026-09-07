@@ -4,38 +4,58 @@
  */
 const TownBuildingKit = (()=>{
  function build(b,c,p,realm){
-  const localIndex=c.index(b.x,b.z),env=c.environment,localCold=env.temperature[localIndex]<6,profile={...c.townProfile,roof:localCold&&c.townProfile.roof==='flat'?'northern':c.townProfile.roof},rng=LandmarkCatalog.rng(c.townRecipe.seed+'/'+b.id),v=b.moduleVariant??0;
+  const localIndex=c.index(b.x,b.z),env=c.environment;
+  // Local climate at THIS block's cell, not the town centre's. The whole town used
+  // to respond to climate with one boolean, which is why a -1 C and a +26 C town of
+  // the same tradition were built identically.
+  const cl={...CityEnvironment.localClimate(env,localIndex),wet:c.wet?.[localIndex]||0};
+  const localCold=cl.cold>.42;
+  // Snow load steepens and re-pitches a roof; sustained heat with no rain flattens
+  // it. The tradition still chooses the language everywhere in between.
+  const roofFor=r=>cl.load>.45?'northern':(localCold&&r==='flat')?'northern':(cl.warm*cl.dry>.42&&cl.load<.15&&r!=='leaf')?'flat':r;
+  const profile={...c.townProfile,roof:roofFor(c.townProfile.roof)},rng=LandmarkCatalog.rng(c.townRecipe.seed+'/'+b.id),v=b.moduleVariant??0;
   const faithKeys=['sun','stars','grove','hearth','tide','secular'];let f=0,t=rng();
   for(let i=0;i<(p.faith?.length||0);i++){t-=p.faith[i];if(t<=0){f=i;break}}
   const recipe=LandmarkCatalog.recipe(profile.palace,c.townRecipe.seed+'/'+b.id,{material:profile.material,faith:faithKeys[f]||'secular',complexity:0,roofLanguage:profile.roof,geography:{freshwater:p.fresh||0,cold:localCold}}),K=new LandmarkKit(recipe,{lod:0});let structures=0;
+  K.climate=cl;
   K.palette={...K.palette,ground:'#'+Array.from(env.color.slice(localIndex*3,localIndex*3+3)).map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join('')};
+  // The tradition's palette, toned by the weather it stands in. ArtisanCityKit loads
+  // after this module, so the shared tinting is resolved at call time when present.
+  if(typeof ArtisanCityKit!=='undefined')K.palette={...ArtisanCityKit.climatePalette(K.palette,cl),ground:K.palette.ground};
   if(profile.id==='forest')K.palette={...K.palette,wall:'#e1dbc4',roof:'#80ad9f',trim:'#e9e4ce'};
   const hall=(x,z,w,d,h,roof=profile.roof,options={})=>{
    structures++;h*=.85+v*.17;
+   // Snow load steepens the pitch, rain deepens the eave, drought tightens both.
+   const pitch=1+cl.load*.62+cl.humid*.18-cl.dry*.22,eave=clamp(cl.warm*cl.humid*1.5)*.55;
    K.transform(x,options.y||.10,z,options.angle||0,1,()=>{
-    if(options.stilt){for(const xx of[-.38,.38])for(const zz of[-.38,.38])K.box(xx*w,0,zz*d,.16,.85,.16,'wood');K.box(0,.75,0,w+.12,.18,d+.12,'wood')}
-    const y=options.stilt?.88:0,wall=options.timber?'wood':'wall';
+    // A raised floor answers wet ground; the traditions that always stilt still do.
+    if(options.stilt||cl.wet>.6){for(const xx of[-.38,.38])for(const zz of[-.38,.38])K.box(xx*w,0,zz*d,.16,.85,.16,'wood');K.box(0,.75,0,w+.12,.18,d+.12,'wood')}
+    const y=(options.stilt||cl.wet>.6)?.88:0,wall=(options.timber||cl.cold>.62)?'wood':'wall';
     K.box(0,y,0,w,h,d,wall);K.box(0,y+h-.12,0,w+.06,.12,d+.06,'trim');
     if(roof==='flat')K.using('roof',()=>{K.box(0,y+h,0,w+.16,.14,d+.16,'trim');for(const xx of[-1,1])K.box(xx*w/2,y+h,0,.14,.32,d,'wall');K.box(0,y+h,-d/2,w,.32,.14,'wall')});
-    else K.roof(0,y+h,0,w,d,Math.min(w,d)*(roof==='northern'?.80:roof==='leaf'?.70:.46),'roof',roof==='northern'?'northern':roof==='leaf'?'leaf':'gable');
+    else K.roof(0,y+h,0,w+eave,d+eave,Math.min(w,d)*(roof==='northern'?.80:roof==='leaf'?.70:.46)*pitch,'roof',roof==='northern'?'northern':roof==='leaf'?'leaf':'gable');
+    // Opening area is a climate cost: small deep-set lights at both extremes.
+    const open=1-cl.cold*.34-cl.warm*cl.dry*.30;
     const rows=Math.max(1,Math.min(3,Math.floor(h/1.6)));for(let row=0;row<rows;row++)for(const x of[-.25,.25]){
-      K.box(x*w,y+.65+row*1.4,d/2+.025,.27,.43,.045,'dark');K.box(x*w,y+.68+row*1.4,d/2+.052,.18,.29,.025,'water');
+      K.box(x*w,y+.65+row*1.4,d/2+.025,.27*open,.43,.045,'dark');K.box(x*w,y+.68+row*1.4,d/2+.052,.18*open,.29,.025,'water');
     }
     K.box(0,y+.01,d/2+.04,.42,.72,.05,'dark');
-    if(options.timber||profile.id==='fjord'){for(const xx of[-.43,.43])K.box(xx*w,y, d/2+.07,.10,h,.10,'trim');K.box(0,y+h*.55,d/2+.07,w,.08,.08,'trim');K.beam([-w*.44,y+.1,d/2+.08],[w*.44,y+h-.2,d/2+.08],.035,'trim')}
-    if(options.chimney)K.box(w*.30,y+h*.8,-d*.2,.34,h*.5+.5,.40,'wall');
-    if(options.awning){K.box(0,y+1.28,d/2+.48,w*.95,.12,.85,'roof');for(const xx of[-.40,.40])K.box(xx*w,y,d/2+.84,.08,1.3,.08,'wood')}
+    if(options.timber||profile.id==='fjord'||cl.cold>.62){for(const xx of[-.43,.43])K.box(xx*w,y, d/2+.07,.10,h,.10,'trim');K.box(0,y+h*.55,d/2+.07,w,.08,.08,'trim');K.beam([-w*.44,y+.1,d/2+.08],[w*.44,y+h-.2,d/2+.08],.035,'trim')}
+    // A flue is heating: it belongs where the model says heating is needed.
+    if(options.chimney&&(cl.cold>.28||cl.warm<.55))K.box(w*.30,y+h*.8,-d*.2,.34,h*.5+.5+cl.cold*.7,.40,'wall');
+    if(options.awning||eave>.28){K.box(0,y+1.28,d/2+.48,w*.95,.12,.85+eave,'roof');for(const xx of[-.40,.40])K.box(xx*w,y,d/2+.84+eave,.08,1.3,.08,'wood')}
    });
   };
   const stall=(x,z)=>{K.box(x,.12,z,1,.60,.72,'wood');K.box(x,.96,z,1.32,.10,1.12,v%2?'roof':'trim');for(const xx of[-.5,.5])K.box(x+xx,0,z+.42,.075,.97,.075,'wood')};
-  const tree=(x,z,h=3)=>K.tree(x,.12,z,h,localCold?'pine':profile.id==='desert'?'palm':'broad');
+  // Planting follows the same canopy resolver the atlas and the town scene use.
+  const tree=(x,z,h=3)=>K.tree(x,.12,z,h,CityEnvironment.treeKind(env,localIndex));
   const crest=(x,z,y=2)=>K.emblem(x,y,z,.35);
   const tinyTower=(x,z,h=4,rad=.45)=>{K.cylinder(x,.1,z,rad,h,'wall',8);K.cone(x,h+.1,z,rad*1.3,1.45,'roof',0,8)};
   K.part('block',b.name,'body',()=>K.transform(0,0,0,b.angle||0,1,()=>{
    const mat='ground';K.box(0,-.08,0,9.8,.10,9.8,mat);
    // Even a small settlement has houses and workplaces, not a field of palaces.
    if(b.type==='well'){K.pool(0,.15,0,3.5,3.5);K.arcade(0,.35,-2.2,2,1.3,2.3);crest(0,-2.1,3.1);return}
-   if(b.type==='granary'){hall(0,-.8,5.5,6.0,3.3,profile.roof,{stilt:['delta','fjord'].includes(profile.id)});for(const x of[-3.7,3.7]){K.cylinder(x,.1,-2,.6,2,'wood',8);K.cone(x,2.1,-2,.75,.7,'roof',0,8)}stall(0,3.2);return}
+   if(b.type==='granary'){hall(0,-.8,5.5,6.0,3.3,profile.roof,{stilt:['delta','fjord','monsoon','taiga'].includes(profile.id)});for(const x of[-3.7,3.7]){K.cylinder(x,.1,-2,.6,2,'wood',8);K.cone(x,2.1,-2,.75,.7,'roof',0,8)}stall(0,3.2);return}
    if(b.type==='market'){for(const x of[-3.1,0,3.1])hall(x,-2.5,2.4,3.0,2.6,profile.roof,{awning:true});for(const x of[-3,-1,1,3])stall(x,2);K.box(0,.12,3.8,2,.1,1,'wood');return}
    if(b.type==='harbor'){hall(-2,-1,3.1,5.5,3.2,profile.roof,{timber:true});hall(2.2,-2,3.4,3,2.7,profile.roof,{timber:true});for(const x of[.6,2.2,3.6])K.cylinder(x,.1,2,.38,.65,'wood',8);K.beam([3,.1,4],[3,4.6,4],.13,'wood');K.beam([3,4.4,4],[.2,3.3,4],.10,'wood');K.beam([.2,3.3,4],[.2,1.1,4],.035,'metal');return}
    const id=profile.id;
@@ -111,6 +131,25 @@ const TownBuildingKit = (()=>{
     // Mooring posts and a quay edge: the block is entered from the water.
     for(const x of[-2.6,0,2.6])K.cylinder(x,.05,4.3,.20,1.1,'wood',7);
     K.box(0,.12,2.5,7.2,.12,1.1,'wood');K.rail(-3.6,2.5,3.6,2.5,.6,'metal');crest(0,-1.4,3.6);
+   }else if(id==='taiga'){
+    // Log dwellings banked against the drift line, around a swept winter yard.
+    hall(-2.5,-2.6,3.4,3.2,3.0,'northern',{timber:true,chimney:true});hall(2.6,-2.4,3.0,3.0,2.6,'northern',{timber:true,chimney:true});
+    hall(-2.2,2.4,3.2,2.8,2.3,'northern',{timber:true});
+    // Grain and fuel stand on posts, clear of the snow, each under its own roof.
+    K.box(2.8,1.5,2.2,2.2,1.1,1.9,'wood');K.roof(2.8,2.6,2.2,2.8,2.5,1.5,'roof','northern');
+    for(const x of[-.9,.9])for(const z of[-.75,.75])K.cylinder(2.8+x,.1,2.2+z,.19,1.4,'wood',7);
+    // A split-log run rather than a masonry wall.
+    for(let t=-4.4;t<4.4;t+=.66)K.cone(t,.1,4.5,.22,2.3,'wood',.15,6);
+    tree(-4.2,-4.2,4.2);tree(4.2,4.0,3.6);crest(-2.2,2.4,3.1);
+   }else if(id==='monsoon'){
+    // Everything stands on posts: the ground floods for part of every year.
+    for(let x=-4;x<=4;x+=2.7)for(let z=-4;z<=4;z+=2.7)K.box(x,0,z,.16,1.05,.16,'wood');
+    K.box(0,1.05,0,9.4,.20,9.2,'wood');
+    for(const [x,z,h] of [[-2.6,-2.4,2.4],[2.5,-2.3,2.2],[-1.0,2.6,2.1]])hall(x,z,3.0,2.8,h,'leaf',{y:1.15,timber:true});
+    // The eave is the point: carried out on posts well clear of every wall.
+    for(const [x,z] of [[-2.6,-2.4],[2.5,-2.3],[-1.0,2.6]]){K.box(x,1.15+2.9,z,4.3,.10,4.1,'roof');for(const t of[-1,1])K.cylinder(x+t*1.9,1.25,z+1.8,.13,2.8,'wood',6)}
+    K.rail(-4.5,4.4,4.5,4.4,1.25,'wood');K.box(0,1.10,4.0,8.6,.12,1.0,'wood');
+    tree(4.0,-4.1,5.2);tree(-4.3,3.9,4.6);crest(-1.0,2.6,3.0);
    }else if(id==='fjord'){
     hall(-1.6,-1.2,3.5,6.4,3,'northern',{timber:true,chimney:true});hall(2.4,-2.6,2.4,3.3,1.9,'northern',{timber:true,stilt:true});hall(2.4,2.1,2.4,3.0,1.8,'northern',{timber:true});
     K.rail(-3.8,3.1,-.4,3.1,.12,'wood');K.cylinder(-2.9,.1,3.8,.26,1.1,'wood',8);crest(-.8,3.8,2.8);
@@ -131,7 +170,7 @@ const TownBuildingKit = (()=>{
 const TownCityBinding = (()=>{
  function resolve(w,s,p,c,kind){
   const base=LandmarkBinding.resolve(w,s,p,kind),f=c.townProfile;
-  let style=kind==='civic'?f.palace:kind==='academy'?'arcane':f.id==='forest'?'grove':['desert','mountain','delta','fjord','basalt','steppe','paddy','delve','lagoon'].includes(f.id)?f.id:'basilica';
+  let style=kind==='civic'?f.palace:kind==='academy'?'arcane':f.id==='forest'?'grove':['desert','mountain','delta','fjord','basalt','steppe','paddy','delve','lagoon','taiga','monsoon'].includes(f.id)?f.id:'basilica';
   const saved=s.landmarkRecipes?.[base.id];
   const sacred=kind==='temple'&&c.buildings.some(b=>b.sacred&&b.type===kind);
   return LandmarkCatalog.recipe(style,`${c.townRecipe.seed}/${kind}`,{...base,...(sacred?{sacred:true,sacredVersion:1,name:p.name+' · Grand Sanctuary',material:'ivory'}:{}),style,material:sacred?'ivory':f.material,roofLanguage:saved?.roofLanguage||f.roof,crown:saved?.crown||'native',seed:`${c.townRecipe.seed}/${kind}`,townRecipe:c.townRecipe,artisan:kind==='civic',urbanStyle:f.id,provenance:base.provenance+' The urban ensemble supplies the material and roof family.'});

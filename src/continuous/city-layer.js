@@ -88,13 +88,19 @@ class ContinuousCityLayer {
    const e=CityEnvironment.sample(w,gx,gy);if(e.water||e.ice>12||hash2(Math.round(dx*100),Math.round(dy*100),w.seed+11)>e.treeDensity*.65)continue;
    const lx=dx*c.width/c.span,lz=dy*c.width/c.span;if(c.buildings.some(b=>Math.abs(b.x-lx)<b.w/2+2&&Math.abs(b.z-lz)<b.d/2+2))continue;
    const v=AtlasSpace.point(w,gx,gy,this.r.relief),h=.09+hash2(dx*100,dy*100,w.seed)*.055;
-   vegetation.cone(v[0],v[1],v[2],.007,.005,h*.48,rgb('#776f51'),4);
-   if(e.temperature<10)vegetation.cone(v[0],v[1]+h*.2,v[2],h*.32,0,h,rgb('#4a7568'),6);
-   else vegetation.blob(v[0],v[1]+h*.66,v[2],h*.37,rgb('#5b8866'),1.2);
+   // Same form vocabulary and climate colour as the town scene and the atlas symbols,
+   // replacing a bare temperature<10 cone/blob switch in two fixed greens.
+   const form=CityEnvironment.canopy(e.biome,e.temperature,e.aridity).form;
+   plantForm(vegetation,v,form,h,CityEnvironment.leafColor(e.temperature,e.aridity),()=>hash2(Math.round(dx*61),Math.round(dy*61),w.seed+17));
   }
   this.r.upload(`cm:${p.id}:vegetation`,vegetation,true);model.meshNames.push(`cm:${p.id}:vegetation`);
   // Screen-scale LOD: readable roofs at regional zoom; fine carved assemblies close up.
-  const low=new Geometry();for(const b of c.buildings){const a=frame.anchors.get(b.id),h=(model.heights[b.id]||b.h)*frame.scale,wall=rgb('#d2ccb6'),roof=rgb(c.townProfile.id==='desert'?'#b99b77':'#586e78');
+  // Regional LOD. This is what a whole town looks like from 4.8 to 18, so it is the
+  // view most of the map is seen in — and every building in every town on the world
+  // shared one beige wall and one slate roof, with the wall not even asking which
+  // town it belonged to. Each silhouette now takes the same paint the detailed mesh
+  // will give that same building, so closing in changes the geometry, not the colour.
+  const low=new Geometry();for(const b of c.buildings){const a=frame.anchors.get(b.id),h=(model.heights[b.id]||b.h)*frame.scale,paint=ArtisanCityKit.blockPaint(c,b),wall=rgb(paint.wall),roof=rgb(paint.roof);
    low.box(a.x,a.y,a.z,b.w*frame.sx*.48,b.d*frame.sz*.48,h*.58,wall);const A=[a.x-b.w*frame.sx*.55,a.y+h*.58,a.z-b.d*frame.sz*.55],B=[a.x+b.w*frame.sx*.55,a.y+h*.58,a.z-b.d*frame.sz*.55],C=[a.x+b.w*frame.sx*.55,a.y+h*.58,a.z+b.d*frame.sz*.55],D=[a.x-b.w*frame.sx*.55,a.y+h*.58,a.z+b.d*frame.sz*.55],P=[a.x,a.y+h,a.z];low.tri(A,B,P,roof);low.tri(B,C,P,roof);low.tri(C,D,P,roof);low.tri(D,A,P,roof);}
   this.r.upload(`cm:${p.id}:silhouettes`,low,true);model.meshNames.push(`cm:${p.id}:silhouettes`);
   return model;
