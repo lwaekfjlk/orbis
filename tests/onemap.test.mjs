@@ -60,3 +60,14 @@ test('Geography-driven district names leave the society itself untouched, and ne
  assert(harbours.length>3);
  assert(!harbours.every(p=>inland.some(t=>p.name.endsWith(t))));
 });
+
+test('Returning to the whole world restores the home heading, not just the position',()=>{
+ // focusTown deliberately swings the camera toward a mountain peak, and shift-drag rotates
+ // it freely. home() has to undo both or the atlas comes back skewed with no way to
+ // straighten it. world-renderer.js is byte-locked, so the constant cannot be shared;
+ // the third assertion is what catches the two copies drifting apart.
+ const src=read('src/ui/continuous-map.js'),home=src.match(/function home\(\)\{.*/)[0];
+ assert(/animate\(\[0,0,0\][^)]*HOME_AZIMUTH/.test(home),'home() must pass an explicit azimuth to animate()');
+ assert(/HOME_AZIMUTH\s*=\s*\.018/.test(src),'the home heading must be the atlas default');
+ assert(/reset\(\)\s*\{[^}]*azimuth\s*=\s*\.018/.test(read('src/render/world-renderer.js')),'AtlasRenderer.reset() still defines that same heading');
+});
