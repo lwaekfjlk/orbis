@@ -85,7 +85,17 @@ function generateCity(w, sim, provinceId, design = {}) {
     const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
     const wanted = (6.4 + 7.0 * crowd) * (capital ? 1.10 : 1);
     const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / 7.8;
-    const settled = .52 + .74 * crowd;
+    // Capped at 1. The 1.16 separation divisor above sizes `span` on the assumption
+    // that the built disc reaches 0.375*width; letting `settled` climb past 1 pushed a
+    // large town's edge 26% beyond that and ate the gap the divisor exists to protect —
+    // the tightest neighbours were left 1.4 cells apart across 6.7, which reads as one
+    // conurbation when you zoom in. The range comes from small towns building less of
+    // their window, never from large ones building past it.
+    // Capped at 1: the 1.16 separation divisor sizes `span` assuming the built disc
+    // reaches 0.375*width, and letting this climb past 1 ate the gap that protects.
+    // The floor is not free either — shrink a town too far and FortressPlan runs out of
+    // room to hang a gate on, so a small town came out walled with no way in.
+    const settled = .74 + .26 * crowd;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
     const n = 111, width = 152 * grow, depth = 124 * grow, nn = n * n;
@@ -231,7 +241,10 @@ function generateCity(w, sim, provinceId, design = {}) {
     // blocks pack right up against it and seal the perimeter again.
     city.gateReserve = new Uint8Array(nn);
     for (let k = 0; k < 4; k++) {
-        const a = k / 4 * Math.PI * 2 + .4, tx = city.market.x + Math.cos(a) * width * .36, tz = city.market.z + Math.sin(a) * depth * .36;
+        // The radials have to reach the edge of what is BUILT, not the edge of the sampled
+        // window. Aimed at a fixed .36 they now ran outside a small town's wall entirely,
+        // so FortressPlan found no approach to hang a gate on and the circuit came out sealed.
+        const a = k / 4 * Math.PI * 2 + .4, tx = city.market.x + Math.cos(a) * width * .36 * settled, tz = city.market.z + Math.sin(a) * depth * .36 * settled;
         const goal = candidates.reduce((best, c0) => { const q = city.xy(c0.k), v = Math.hypot(q.x - tx, q.z - tz) + city.slope[c0.k] * 9; return v < best.v ? { k: c0.k, v } : best; }, { k: -1, v: Infinity });
         if (goal.k < 0) continue;
         const nodes = route(center, goal.k);
