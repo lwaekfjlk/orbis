@@ -10,7 +10,11 @@ const baseline=baselineIndex<0?null:process.argv[baselineIndex+1];
 if(baselineIndex>=0&&!baseline)throw Error('--baseline requires an existing git revision');
 const engineFiles=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js'));
 const current=(await Promise.all(engineFiles.map(f=>readFile(resolve(root,f),'utf8')))).join('\n');
-const prior=baseline?engineFiles.map(f=>execFileSync('git',['show',`${baseline}:${f}`],{cwd:root,encoding:'utf8',maxBuffer:8*1024*1024})).join('\n'):current;
+// A historical revision must use its own module list: newer modules may not exist there.
+const atBaseline=f=>execFileSync('git',['show',`${baseline}:${f}`],{cwd:root,encoding:'utf8',maxBuffer:8*1024*1024});
+const priorScripts=baseline?(await import('data:text/javascript;base64,'+Buffer.from(atBaseline('scripts/manifest.mjs')).toString('base64'))).scripts:scripts;
+const priorFiles=priorScripts.slice(0,priorScripts.indexOf('src/ui/world-ui.js'));
+const prior=baseline?priorFiles.map(atBaseline).join('\n'):current;
 const exports='return {LandmarkCatalog,LandmarkKit,LandmarkTemplates,SacredCityKit,ArtisanCityKit,createLandmarkRenderer,exportGeometryGLB};';
 const escapeScript=s=>s.replace(/<\/script/gi,'<\\/script');
 const html=`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Telluric · 建筑精修对照</title>
