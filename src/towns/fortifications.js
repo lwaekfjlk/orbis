@@ -8,20 +8,39 @@
  * far you travelled. Loaded here because fortifications reserves the parcel a wonder stands
  * on, before the streets are routed. */
 const TOWN_WONDERS = {
-    basilica: { id: 'cathedral',       name: 'Grand Sanctuary',   material: 'ivory' },
-    forest:   { id: 'grove-sanctuary', name: 'Grove Sanctuary',   material: 'woodland' },
-    arcane:   { id: 'sky-crystal',     name: 'Suspended Crystal', material: 'moonstone' },
-    basalt:   { id: 'dread-keep',      name: 'Dread Keep',        material: 'basalt' },
-    mountain: { id: 'deep-city',       name: 'Deep City',         material: 'granite' },
-    delve:    { id: 'deep-city',       name: 'Deep City',         material: 'delve' }
+    basilica: [{ id: 'cathedral',        name: 'Grand Sanctuary',   material: 'ivory' }],
+    forest:   [{ id: 'grove-sanctuary',  name: 'Grove Sanctuary',   material: 'woodland' }],
+    // Two traditions are broad enough to hold a second answer, chosen by what the site has
+    // rather than by a roll: an arcane town on a deep mana field raises the tower instead of
+    // the crystal, and a volcanic town over real ore keeps a dragon rather than a warlord.
+    arcane:   [{ id: 'suspended-tower',  name: 'Suspended Tower',   material: 'moonstone', when: p => p.mana > .58 },
+               { id: 'sky-crystal',      name: 'Suspended Crystal', material: 'moonstone' }],
+    basalt:   [{ id: 'dragon-court',     name: 'Dragon Court',      material: 'basalt', when: p => p.ore > .42 },
+               { id: 'dread-keep',       name: 'Dread Keep',        material: 'basalt' }],
+    mountain: [{ id: 'deep-city',        name: 'Deep City',         material: 'granite' }],
+    delve:    [{ id: 'forge-hollow',     name: 'Forge Hollow',      material: 'delve' }],
+    river:    [{ id: 'gilded-palace',    name: 'Gilded Palace',     material: 'limestone' }],
+    desert:   [{ id: 'sunless-well',     name: 'Sunless Well',      material: 'sandstone' }],
+    delta:    [{ id: 'reed-throne',      name: 'Reed Throne',       material: 'reed' }],
+    fjord:    [{ id: 'whale-moot',       name: 'Whalebone Moot',    material: 'northern' }],
+    steppe:   [{ id: 'sky-court',        name: 'Sky Court',         material: 'steppe' }],
+    paddy:    [{ id: 'water-pagoda',     name: 'Water Pagoda',      material: 'paddy' }],
+    lagoon:   [{ id: 'tide-palace',      name: 'Tide Palace',       material: 'lagoon' }]
 };
-const wonderFor = (style, support) => support >= 6500 ? TOWN_WONDERS[style] || null : null;
+function wonderFor(style, support, p) {
+    if (support < 6500)
+        return null;
+    const list = TOWN_WONDERS[style];
+    if (!list)
+        return null;
+    return list.find(v => !v.when || (p && v.when(p))) || list[list.length - 1];
+}
 const FortressPlan=(()=>{
  const inside=(q,b,pad=0)=>Math.abs(q.x-b.x)<=b.w/2+pad&&Math.abs(q.z-b.z)<=b.d/2+pad;
  function reserve(c,candidates,p,steep=.85){
   // A hamlet does not acquire a royal capital just because its view was opened.
   if((p.detailSupport??p.urbanSupport)<1500||c.townProfile.id==='delta')return null;
-  const wonder=wonderFor(c.townProfile.id,p.detailSupport??p.urbanSupport),sacred=!!wonder;
+  const wonder=wonderFor(c.townProfile.id,p.detailSupport??p.urbanSupport,p),sacred=!!wonder;
   const ordinary=candidates.filter(a=>{const q=c.xy(a.k),d=Math.hypot(q.x-c.market.x,q.z-c.market.z);const S=c.width/152;return d>(sacred?23:19)*S&&d<(sacred?34:43)*S&&Math.abs(q.x)<c.width*.34&&Math.abs(q.z)<c.depth*.32});
   const ranked=ordinary.map(a=>({k:a.k,score:c.height[a.k]*(sacred?1.7:2.4)-Math.max(0,c.slope[a.k]-.8)*4-Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)*(sacred?.14:.05)})).sort((a,b)=>b.score-a.score);
   for(const size of (sacred?[38,34,30,26,22]:[26,22,18])) for(const {k}of ranked.slice(0,700)){

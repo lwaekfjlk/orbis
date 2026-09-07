@@ -34,17 +34,17 @@
       }
     },
     "pace": {
-      "compoundCrossingSeconds": 13.3,
+      "compoundCrossingSeconds": 6.9,
       "roundTripSeconds": 146,
       "cellCrossingSeconds": 119.6,
       "bodyLengthsPerSecond": 0.213
     },
     "scale": {
-      "buildingFootprint": 0.0167,
-      "mooredHull": 0.0119,
+      "buildingFootprint": 0.0176,
+      "mooredHull": 0.0136,
       "seaHull": 0.0227,
-      "hullRatio": 1.9,
-      "symbolInBuildings": 1.8
+      "hullRatio": 1.7,
+      "symbolInBuildings": 1.7
     },
     "figure": {
       "trianglesPerAccent": {

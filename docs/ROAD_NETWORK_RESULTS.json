@@ -32,7 +32,7 @@
       "quays": 45,
       "jetties": 4,
       "moorings": 4,
-      "sheds": 0,
+      "sheds": 1,
       "kind": "sea",
       "beacon": true,
       "inlandTown": "Crowstead"
