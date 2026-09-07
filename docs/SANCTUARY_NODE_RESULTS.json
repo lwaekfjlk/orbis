@@ -13,7 +13,7 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 153
+        "buildings": 226
       }
     },
     {
@@ -65,43 +65,43 @@
         {
           "id": 259,
           "name": "Scorchquay",
-          "blocks": 153,
+          "blocks": 226,
           "sanctuary": 38
         },
         {
           "id": 288,
           "name": "Whitebeck",
-          "blocks": 249,
-          "sanctuary": 34
+          "blocks": 294,
+          "sanctuary": 38
         },
         {
           "id": 289,
           "name": "Whitecombe",
-          "blocks": 243,
+          "blocks": 322,
           "sanctuary": 38
         },
         {
           "id": 452,
           "name": "Kelplanding",
-          "blocks": 361,
+          "blocks": 443,
           "sanctuary": 38
         },
         {
           "id": 462,
           "name": "Larkfield",
-          "blocks": 402,
+          "blocks": 460,
           "sanctuary": 38
         },
         {
           "id": 480,
           "name": "Sedgecombe",
-          "blocks": 604,
+          "blocks": 747,
           "sanctuary": 38
         },
         {
           "id": 485,
           "name": "Netherford",
-          "blocks": 245,
+          "blocks": 290,
           "sanctuary": 34
         }
       ]

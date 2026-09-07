@@ -146,8 +146,11 @@ function generateCity(w, sim, provinceId, design = {}) {
     let head=0,tail=0;connected[center]=1;queue[tail++]=center;
     while(head<tail){const k=queue[head++],x=k%n,y=Math.floor(k/n);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){const xx=x+dx,yy=y+dy;if(xx<2||xx>=n-2||yy<2||yy>=n-2)continue;const j=yy*n+xx;if(connected[j]||!passable(j)||(dx&&dy&&(!passable(y*n+xx)||!passable(yy*n+x))))continue;connected[j]=1;queue[tail++]=j;}}
     for(let i=candidates.length-1;i>=0;i--)if(!connected[candidates[i].k])candidates.splice(i,1);
+    // Shared between the reserve and the precinct build, so the two cannot disagree about
+    // what counts as buildable ground for a citadel.
+    const CITADEL_SLOPE = 1.9;
     if(typeof FortressPlan!=='undefined'){
-        FortressPlan.reserve(city,candidates,p);
+        FortressPlan.reserve(city,candidates,p,CITADEL_SLOPE);
         if(city.citadelSite)for(let j=candidates.length-1;j>=0;j--)if(city.citadelReserve[candidates[j].k])candidates.splice(j,1);
     }
     function route(start, goal) {
@@ -213,7 +216,9 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.roads.push({ kind: 'arterial', nodes, points: nodes.map(i => ({ ...city.xy(i), y: city.height[i] + .13, bridge: !!city.water[i] })), role: 'gate-road' });
         for (const i of nodes) {
             const q = city.xy(i);
-            if (Math.hypot(q.x - city.market.x, q.z - city.market.z) < width * .17)
+            // Only the stretch near the wall line has to stay open for the approach; holding
+            // a corridor through the market quarter as well cost most of a tenth of the core.
+            if (Math.hypot(q.x - city.market.x, q.z - city.market.z) < width * .30)
                 continue;
             for (let dz = -3.6; dz <= 3.6; dz += 1.2) for (let dx = -3.6; dx <= 3.6; dx += 1.2) {
                 const j = city.index(q.x + dx, q.z + dz);
@@ -267,10 +272,12 @@ function generateCity(w, sim, provinceId, design = {}) {
     const target = cityClamp(Math.round(260 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 2.3), 260, 1500);
     const used = [], usedGrid = cityGrid(8);
     let infill=false;
-    const blocked = j => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.road[j] || city.gateReserve[j] || city.slope[j] > .9;
+    // A citadel is cut into its hill rather than set on a pad, so it may take ground far
+    // steeper than a house will; `steep` is what the caller is willing to build across.
+    const blocked = (j, steep = .9) => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.road[j] || city.gateReserve[j] || city.slope[j] > steep;
     // `plot` is an explicitly surveyed parcel: position and both dimensions decided by the
     // caller. Without it the old behaviour stands, a near-square footprint on a lot cell.
-    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1, plot = null) {
+    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1, plot = null, steep = .9) {
         const q = plot ? { x: plot.x, z: plot.z } : city.xy(k), seat = plot ? city.index(q.x, q.z) : k;
         // The interior passes take whatever the frontage ranks left behind, so their
         // footprints are drawn small and unevenly: a near-square 4-6 block only ever fitted
@@ -280,17 +287,19 @@ function generateCity(w, sim, provinceId, design = {}) {
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
         if (ww > 3 || dd > 3) {
             for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1)
-                if (blocked(city.index(q.x + dx, q.z + dz))) return null;
+                if (blocked(city.index(q.x + dx, q.z + dz), steep)) return null;
         }
         const a = 0; // Footprints remain aligned to local surveyed blocks; organic roads cut across them.
         for (const dx of [-ww / 2, 0, ww / 2])
             for (const dz of [-dd / 2, 0, dd / 2])
-                if (blocked(city.index(q.x + dx, q.z + dz)))
+                if (blocked(city.index(q.x + dx, q.z + dz), steep))
                     return null;
         // Party walls, not garden walls. The old .28 clearance around every block is most of
         // why half the buildable ground stayed empty; the style's spacing still separates an
         // airy woodland town from a tight courtyard one, just at a fraction of the width.
-        const gap = .05 + .30 * (profile.spacing - .8);
+        // Party walls, not garden walls; the style's spacing still tells an airy woodland
+        // town from a tight courtyard one, at a fraction of the old .28 clearance.
+        const gap = .02 + .17 * (profile.spacing - .8);
         if (usedGrid.near(q.x - ww / 2 - gap, q.z - dd / 2 - gap, q.x + ww / 2 + gap, q.z + dd / 2 + gap).some(b => Math.abs(b.x - q.x) < (b.w + ww) / 2 + gap && Math.abs(b.z - q.z) < (b.d + dd) / 2 + gap))
             return null;
         const district = city.districts.reduce((best, d) => { const dis = Math.hypot(d.x - q.x, d.z - q.z); return dis < best.dist ? { d, dist: dis } : best; }, { d: city.districts[0], dist: Infinity }).d;
@@ -307,7 +316,7 @@ function generateCity(w, sim, provinceId, design = {}) {
         return b;
     }
     if(city.citadelSite&&city.citadelSite.gateway!=null){
-        const a=city.citadelSite,b=buildingAt(a.k,a.sacred?'temple':'civic',true,a.w);
+        const a=city.citadelSite,b=buildingAt(a.k,a.sacred?'temple':'civic',true,a.w,1,null,CITADEL_SLOPE);
         if(b){b.y=a.deck;b.foundationBed=a.bed;b.precinct=true;b.sacred=!!a.sacred;b.name=a.sacred?p.name+' · Grand Sanctuary':'The High Citadel';b.h=a.sacred?44:13;city.primaryMonumentId=b.id;}
     }
     for (const d of city.districts.filter(d => d.type !== 'home' && d.type !== 'garden' && !city.buildings.some(b=>b.precinct&&b.type===d.type))) {
@@ -353,42 +362,32 @@ function generateCity(w, sim, provinceId, design = {}) {
     }
     const streetRows = [...rows.values()].sort((a, b) => a.near - b.near || (a.key < b.key ? -1 : 1));
     for (const row of streetRows) row.items.sort((a, b) => a.alongX ? a.x - b.x : a.y - b.y);
-    // Halving the parcels only halves the buildings unless the ranks reach as deep as the
-    // old large ones did: each rank probes further back, so small plots tile the whole block
-    // instead of leaving a hollow core two rows in.
-    const STEPS = (gap, count) => Array.from({ length: count }, (_, i) => i * gap);
-    const SETBACK = .95;
-    // Two ranks. The first is the street frontage itself. The second is the rear tenements
-    // behind it: same street, but the plot probes outward until it clears the row in front,
-    // which is what turns a lined street into a solid quarter instead of a hollow block.
-    for (const rank of [
-        { front: [1.1, 2.3], deep: [2.2, 4.3], probe: [0], taper: [1, .8, .62, .46, .34] },
-        { front: [1.0, 1.9], deep: [1.8, 3.2], probe: STEPS(.9, 12), taper: [1, .74, .52] },
-        { front: [.9, 1.7], deep: [1.4, 2.4], probe: STEPS(1.1, 18), taper: [1, .7, .48] }
-    ]) {
-        for (const row of streetRows) {
+    const SETBACK = Math.max(.62, width / (n - 1) * .53);
+    // Walk each frontage INWARD, seating plot after plot until the block is used up. The
+    // previous scheme allowed one plot per rank per frontage, so a block was never more than
+    // three rows deep however far back it ran, and its core stayed empty. Where a plot will
+    // not fit the cursor steps past the obstruction and tries again rather than giving up.
+    for (const row of streetRows) {
+        if (city.buildings.length >= target) break;
+        for (const f of row.items) {
             if (city.buildings.length >= target) break;
-            for (const f of row.items) {
-                if (city.buildings.length >= target) break;
-                const q = city.xy(f.k);
-                // Frontage and depth are drawn independently, so plots range from a narrow
-                // burgage strip to a broad hall instead of clustering on one square shape.
-                const front = (rank.front[0] + rng() * (rank.front[1] + recipe.variety * 2.6)) * profile.scale;
+            const q = city.xy(f.k), nx = f.alongX ? 0 : f.side, nz = f.alongX ? f.side : 0;
+            let off = SETBACK;
+            for (let rank = 0; rank < 9 && off < width * .21; rank++) {
+                // The street rank takes the wider, deeper plots; the yards behind it are
+                // back-plots, which is the size gradient a real burgage block has.
+                const wide = rank ? [.9, 1.8] : [1.1, 2.3], long = rank ? [1.5, 3.0] : [2.2, 4.3];
+                const front = (wide[0] + rng() * (wide[1] + recipe.variety * 2.6)) * profile.scale;
                 // Bounded against the frontage: a plot far longer than it is wide has no sane
                 // building to put on it, and the block kit cannot fill that shape either.
-                const deep = cityClamp((rank.deep[0] + rng() * (rank.deep[1] + recipe.variety * 3.2)) * profile.scale, front * .55, front * 4.4);
-                const nx = f.alongX ? 0 : f.side, nz = f.alongX ? f.side : 0;
-                let seated = false;
-                for (const back of rank.probe) {
-                    // A shallower plot still fits where the block behind is thin.
-                    for (const t of rank.taper) {
-                        const dd = deep * t, off = SETBACK + back + dd / 2;
-                        const cx = q.x + nx * off, cz = q.z + nz * off;
-                        if (Math.hypot(cx - city.market.x, cz - city.market.z) > width * .375) continue;
-                        if (buildingAt(f.k, null, false, 3, 1, { x: cx, z: cz, w: f.alongX ? front : dd, d: f.alongX ? dd : front })) { seated = true; break; }
-                    }
-                    if (seated) break;
+                const deep = cityClamp((long[0] + rng() * (long[1] + recipe.variety * 3.2)) * profile.scale, front * .55, front * 4.4);
+                let seated = 0;
+                for (const t of [1, .84, .7, .57, .45, .35]) {
+                    const dd = deep * t, cx = q.x + nx * (off + dd / 2), cz = q.z + nz * (off + dd / 2);
+                    if (Math.hypot(cx - city.market.x, cz - city.market.z) > width * .375) break;
+                    if (buildingAt(f.k, null, false, 3, 1, { x: cx, z: cz, w: f.alongX ? front : dd, d: f.alongX ? dd : front })) { seated = dd; break; }
                 }
+                off += seated ? seated + .10 : 1.25;
             }
         }
     }
@@ -563,7 +562,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     // corner puts the downhill side on a plinth that can be taller than the house; burying
     // three quarters of the fall is shorter, and is what a hillside building actually does.
     // A citadel still stands proud of its own hill, which is the whole point of a citadel.
-    for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=b.precinct?Math.max(b.y,hi+.07):lo+(hi-lo)*.25+.07;}
+    for(const b of city.buildings){let lo=Infinity,hi=-Infinity;for(const x of[-b.w/2,0,b.w/2])for(const z of[-b.d/2,0,b.d/2]){const h=city.height[city.index(b.x+x,b.z+z)];lo=Math.min(lo,h);hi=Math.max(hi,h)}b.foundationBed=lo;b.y=lo+(hi-lo)*(b.precinct?.6:.25)+.07;}
     // Fidelity is bought against a triangle budget rather than granted to every block.
     // The core keeps full joinery, the outskirts fall back to massed volumes, and a
     // larger town simply gets a smaller detailed core instead of a larger download.

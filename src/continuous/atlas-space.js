@@ -23,7 +23,7 @@ const AtlasSpace = (() => {
   // asinh, so a slope the generator judged mild can render as a tall skirt here. Seat the
   // block a quarter of the way up its own fall: the uphill side buries into the bank and
   // only the downhill quarter shows as masonry. A citadel keeps its full podium.
-  for(const b of c.buildings){let top=-Infinity,low=Infinity;for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const y=ground(b.x+dx*b.w,b.z+dz*b.d);top=Math.max(top,y);low=Math.min(low,y);}const seat=b.precinct?top:low+(top-low)*.25;anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:seat+.006,low,top,b,scale});}
+  for(const b of c.buildings){let top=-Infinity,low=Infinity;for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const y=ground(b.x+dx*b.w,b.z+dz*b.d);top=Math.max(top,y);low=Math.min(low,y);}const seat=low+(top-low)*(b.precinct?.6:.25);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:seat+.006,low,top,b,scale});}
   function vertex(x,y,z,anchor=null){return[origin[0]+x*sx,anchor?anchor.y+(y-anchor.b.y)*scale:ground(x,z)+(y-localGround(x,z))*scale+.003,origin[2]+z*sz];}
   return{origin,sx,sz,scale,at,ground,localGround,anchors,vertex};
  }
