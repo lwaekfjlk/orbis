@@ -10,6 +10,7 @@
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
     "build": "node scripts/build.mjs",
+    "pretest": "node scripts/build.mjs",
     "test": "node --test --test-concurrency=1 tests/*.test.mjs",
     "test:browser": "python tests/continuous_browser.py",
     "assets": "node scripts/export-landmarks.mjs",
@@ -32,6 +33,8 @@
     "test:portrait": "node --test tests/portrait.test.mjs",
     "test:legacy-modals": "python tests/onemap_browser.py",
     "test:climate": "node --test tests/climate.test.mjs",
-    "test:vocabulary": "node --test tests/vocabulary.test.mjs"
+    "test:vocabulary": "node --test tests/vocabulary.test.mjs",
+    "setup:git": "node scripts/setup-git.mjs",
+    "postinstall": "node scripts/setup-git.mjs"
   }
 }
