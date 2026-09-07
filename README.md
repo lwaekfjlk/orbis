@@ -4,6 +4,8 @@ One visible map canvas, one georeference, one camera. Zoom towards a real settle
 
 Open `dist/telluric-onemap.html`, or run `npm run dev` with Node.js 20+. There are no npm dependencies or external assets. Run `npm run build` after changing source; it rebuilds both the trusted Blob Worker source and the self-contained HTML.
 
+Countries draw recognizable names from ten mythological traditions, including Asgard, Avalon, Olympus and Kunlun. Inspired by Azgaar's namebases, each short name has a separate government title and a visible explanation of its mythological source. New worlds, new political histories and secessions use these names; loaded saves retain their existing names, and manual renaming clears the generated origin. See [realm names and sources](docs/REALM_NAMES.md).
+
 Scroll to approach, drag to pan, Shift-drag to orbit, click a building to inspect, and use **Wider setting** to pull back. Search → **Zoom** flies the same camera to the town. The timeline, regeneration and world saves remain available.
 
 Heavy meshes are synthesized in a Worker and mounted in atlas coordinates. The model cache is bounded to two detailed towns; regional silhouettes are replaced with finer geometry nearby. This does not promise zero LOD popping or real-time frame rates on software graphics.
@@ -13,6 +15,8 @@ Seven **legendary places** are named from the finished physical model, not inven
 Terrain refinement follows the camera — a grid cell is subdivided up to eight ways once it covers enough screen — and the map renders above CSS resolution. Refined vertices sample the same parent surface, so this adds triangles, not landscape.
 
 Terrain is sampled from the unchanged physical world. Refined triangles do not invent new mountains or water, and buildings use re-seated foundations. Render scale remains exaggerated and non-metric. Architecture is synthetic and not a surveyed, engineering-valid city.
+
+Sanctuaries, palaces and houses use modeled window reveals, layered entrances, supported bell chambers and finished roof edges. See the [architecture refinement and synchronized comparison](docs/ARCHITECTURE_REFINEMENT.md), or run `npm run preview:architecture -- --baseline b5f00bc` to inspect the original and refined meshes together.
 
 Roads join settlements over real ground — bridges only where the world has a channel, never a metre of road over open water — and coastal towns get a working waterfront. Small figures of the world's seven peoples walk the streets and the roads; each is one sample of its province's population mixture, and appearance is the only thing that differs between peoples. None of this feeds back into the simulation: roads carry no trade and figures carry no cargo. See [roads, ports and folk](docs/ROADS_PORTS_FOLK.md).
 Ground colour, vegetation and building form all read one climate resolver over the existing temperature, aridity and ice fields, so a boreal town and a tropical town are visibly different places at both scales. Roof pitch, eaves, openings, chimneys and palette are decided per block from that block's own cell. This is a legibility pass over data the model already produced — no snow, water or terrain is invented, and the physical world is byte-identical to before it.

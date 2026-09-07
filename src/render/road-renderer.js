@@ -36,7 +36,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
     // A cartographic ribbon has to clear the coarse jittered terrain of the world view.
     // Inside a town that same clearance is a road floating a storey above the street, so
     // the near band is rebuilt against the ground it actually sits on.
-    const LIFT = .085, NEAR_LIFT = .004, DECK = .30;
+    const LIFT = .085, DECK = .30;
     /** Sub-cell sampling. One quad per parent cell sags visibly across a refined slope. */
     const SUBDIVISIONS = 3;
     const GRID_X = MAP_X / (GW - 1), GRID_Z = MAP_Z / (GH - 1);
@@ -405,10 +405,14 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
                 return false;
             // The cartographic ribbon hands over to the ground-seated one where a town's
             // own streets appear, so the two are never drawn at the same time.
+            // Handover moved from FOLK_ZOOM to TOWN_ZOOM. The cartographic ribbon is a map
+            // symbol at map width; leaving it on until 60 meant that across the whole
+            // 16-60 band a full-width road ran past a town only a fifth as wide as the
+            // road was long. Ports already hand over at TOWN_ZOOM for the same reason.
             if (name === 'roads' || name === 'bridges')
-                return this.zoom < AtlasRenderer.FOLK_ZOOM;
+                return this.zoom < AtlasSpace.TOWN_ZOOM;
             if (name === 'roadsNear')
-                return this.zoom >= AtlasRenderer.FOLK_ZOOM;
+                return this.zoom >= AtlasSpace.TOWN_ZOOM;
             // The atlas symbol for a harbour gives way to the harbour. ContinuousCityLayer
             // draws the same line at 4.8, where the town's own cm:*:port waterfront
             // appears, and its answer wins; this is the same rule for a renderer with no

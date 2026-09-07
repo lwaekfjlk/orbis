@@ -119,11 +119,50 @@ const ArtisanCityKit=(()=>{
  // Openings are the single largest triangle cost in a town, so they carry the LOD split:
  // nothing on the outskirts, a recessed panel mid-town, full joinery in the core.
  function windowN(k,x,y,z,w=.55,h=.9,angle=0,stone=true){if(k.lod<1)return;k.transform(x,y,z,angle,1,()=>{
-  k.box(0,0,0,w,h,.07,'dark');k.box(0,.08,.042,w*.66,h*.79,.025,stone?'water':'metal');
+  // The glass is behind a splayed reveal. Four broad surfaces carry real depth;
+  // they replace two overlapping boxes and cost fewer triangles than either box.
+  k.mark('recessed-window');
+  const left=-w/2,right=w/2,front=.15,inset=.045;
+  k.quad([left,0,.012],[right,0,.012],[right,h,.012],[left,h,.012],'dark');
+  k.quad([left+w*.14,h*.13,.024],[right-w*.14,h*.13,.024],[right-w*.14,h*.87,.024],[left+w*.14,h*.87,.024],stone?'water':'metal');
+  const outer=[[left-.07,-.06,front],[right+.07,-.06,front],[right+.07,h+.06,front],[left-.07,h+.06,front]],
+   inner=[[left+inset,inset,.032],[right-inset,inset,.032],[right-inset,h-inset,.032],[left+inset,h-inset,.032]];
+  for(let i=0;i<4;i++)k.quad(outer[i],outer[(i+1)%4],inner[(i+1)%4],inner[i],stone?'trim':'wood');
+  k.box(0,-.095,.13,w+.22,.08,.27,stone?'trim':'wood');
   if(k.lod<2)return;
-  k.box(0,-.08,.08,w+.19,.08,.19,'trim');k.box(0,h-.04,.02,w+.12,.07,.1,'trim');k.box(0,.06,.06,.045,h-.09,.04,'trim');k.box(0,h*.48,.06,w*.9,.04,.04,'trim');
-  if(!stone)for(const s of[-1,1])k.box(s*(w*.66),0,.035,w*.24,h,.09,'wood');
+  k.box(0,h+.015,.13,w+.19,.095,.21,stone?'trim':'wood');
+  k.box(0,.05,.08,.045,h-.08,.05,stone?'trim':'wood');
+  k.box(0,h*.48,.08,w*.87,.045,.05,stone?'trim':'wood');
+  if(!stone)for(const side of[-1,1])k.box(side*(w*.73),-.03,.10,w*.28,h+.08,.12,'wood');
  })}
+ function entranceN(k,w,d,plinth,h,material,style,variant){
+  const timber=['log','timber','thatch','felt'].includes(material),doorW=Math.min(.76,w*.27),doorH=Math.min(1.55,h*.58),front=d/2+(material==='log'?.20:material==='adobe'?.08:0);
+  k.transform(0,plinth,front,0,1,()=>{
+   k.mark('framed-entrance');
+   k.quad([-doorW/2,0,.018],[doorW/2,0,.018],[doorW/2,doorH,.018],[-doorW/2,doorH,.018],'dark');
+   if(k.lod<1)return;
+   const frame=timber?'wood':'trim';
+   k.box(0,.045,.058,doorW*.76,doorH*.9,.06,'wood');
+   for(const s of[-1,1])k.box(s*(doorW/2+.06),-.02,.12,.12,doorH+.06,.24,frame);
+   k.box(0,doorH,.12,doorW+.29,.15,.28,frame);
+   k.box(0,-.03,.28,doorW+.42,.11,.61,'trim');
+   if(k.lod<2)return;
+   k.box(0,.11,.095,.025,doorH*.78,.025,'dark');
+   for(const yy of[.30,.93])k.box(0,doorH*yy,.11,doorW*.77,.065,.04,'metal');
+   // A sheltered threshold is sized for a person; it does not expand to a full
+   // classical portico on a small cottage or a portable felt dwelling.
+   if(variant%3!==0||material==='felt'||style==='desert'||w<2.6)return;
+   k.mark(timber?'timber-doorhood':'stone-doorhood');
+   const span=Math.min(w*.56,1.6),top=doorH+.22,reach=.64;
+   if(timber){
+    k.using('roof',()=>k.roof(0,top,reach*.44,span,.86,.43,'roof','gable'));
+    for(const s of[-1,1])k.beam([s*span*.38,top-.43,.15],[s*span*.38,top-.04,reach],.07,'wood',4);
+   }else{
+    k.box(0,top,.30,span,.17,.86,'trim');
+    for(const s of[-1,1])k.box(s*span*.36,top-.30,.22,.16,.30,.32,'trim');
+   }
+  });
+ }
  function courses(k,x,y,z,w,h,angle=0){if(k.lod<1)return;k.transform(x,y,z,angle,1,()=>{
   for(let row=0;row<Math.floor(h/.52);row++){
    const yy=row*.52+.1;k.box(0,yy,.018,w,.018,.025,colorScale(k.color('wall'),.76));
@@ -134,16 +173,23 @@ const ArtisanCityKit=(()=>{
   }
  })}
  function slateRoof(k,x,y,z,w,d,h,kind='gable',ornate=false){
-  if(kind==='flat'){k.using('roof',()=>{k.box(x,y,z,w+.22,.19,d+.22,'trim');k.parapet(x,y+.15,z,w,d);});return;}
+  if(kind==='flat'){
+   k.using('roof',()=>{
+    k.mark('roof-terrace');k.box(x,y,z,w+.22,.19,d+.22,'trim');
+    // Domestic terraces have a continuous protective coping, not castle merlons.
+    for(const side of[-1,1]){
+     k.box(x+side*w*.5,y+.16,z,.19,.48,d+.16,'wall');
+     k.box(x,y+.16,z+side*d*.5,w,.48,.19,'wall');
+     if(k.lod>0){k.box(x+side*w*.5,y+.60,z,.25,.09,d+.25,'trim');k.box(x,y+.60,z+side*d*.5,w+.25,.09,.25,'trim');}
+    }
+   });return;
+  }
   k.roof(x,y,z,w,d,h,'roof',kind);
-  k.using('roof',()=>{
-   const D=d*.55,W=w*.55,hip=kind!=='gable';
-   for(let row=1;row<8;row+=k.lod<2?7:1)for(const side of[-1,1]){
-    const t=row/8,xx=W*(1-t)*side,yy=y+h*t+.025,span=hip?D-(W*.65)*t:D;
-    k.beam([x+xx,yy,z-span],[x+xx,yy,z+span],.024,colorScale(k.color('roof'),.76),3);
-   }
-   k.beam([x,y+h+.05,z-D*.7],[x,y+h+.05,z+D*.7],.07,'metal',5);
-   if(ornate)for(const sign of[-1,1])k.cone(x,y+h,z+sign*D*.72,.11,.60,'metal',0,6);
+  // Profile-specific seams and fascia belong to the shared roof primitive; adding
+  // another generic slope grid here would float above curved roofs and hip ends.
+  if(ornate&&k.lod>=2&&['gable','hip','northern'].includes(kind))k.using('roof',()=>{
+   const D=d*.55,W=w*.55,ridge=kind==='gable'?D:Math.max(0,D-W*.65);
+   for(const sign of[-1,1])k.cone(x,y+h,z+sign*ridge*.88,.10,.45,'metal',0,6);
   });
  }
  /* Snow lying on a surface, not a white repaint of it. `k.roof()` already knows the
@@ -210,26 +256,40 @@ const ArtisanCityKit=(()=>{
    // An earth wall stands on a stone plinth that keeps damp out of it; a log wall
    // stands on one that keeps the bottom course off the ground and out of the snow.
    const plinth=material==='adobe'?.34:material==='log'?.30+cl.cover*.22:.27;
-   k.box(0,0,0,w+.2,plinth,d+.2,'wall');
+   k.box(0,0,0,w+.2,plinth,d+.2,colorScale(k.color('wall'),.78));
+   if(k.lod>=1){k.mark('damp-course');k.box(0,plinth-.075,0,w+.25,.085,d+.25,timber?'wood':'trim');}
    const wall=material==='log'||material==='timber'?'wood'
     :material==='thatch'?colorScale(k.color('wall'),1.04)
     :material==='adobe'?colorScale(k.color('wall'),.95+(variant%4)*.03)
     :colorScale(k.color('wall'),.89+(variant%4)*.047);
    // An earth wall is battered: thicker at the base than at the head.
-   if(material==='adobe')k.box(0,plinth,0,w+.16,h*.45,d+.16,colorScale(k.color('wall'),.92));
+   const batter=material==='adobe'?.08:0,batterTop=plinth+h*.45;
+   if(batter)k.box(0,plinth,0,w+batter*2,h*.45,d+batter*2,colorScale(k.color('wall'),.92));
    k.box(0,plinth,0,w,h,d,wall);k.box(0,plinth+h-.14,0,w+.14,.16,d+.14,'trim');
-   const floors=Math.max(1,Math.min(3,Math.floor(h/1.8)));
+   const floors=Math.max(1,Math.min(4,Math.floor(h/1.8))),floorHeight=h/floors;
    // Opening area is a climate cost: small deep-set lights where heating or shade
    // matters, generous glazing in the mild middle of the range.
    const openW=1-cl.cold*.34-cl.warm*cl.dry*.30,openH=1-cl.cold*.26-cl.warm*cl.dry*.20;
    for(let f=0;f<floors;f++)for(const side of[-1,1]){
-    const yy=plinth+.33+f*1.6;for(const xx of[-.27,.27])windowN(k,xx*w,yy,side*(d/2+.018),.42*openW,.73*openH,side<0?Math.PI:0,!timber);
-    windowN(k,side*(w/2+.018),yy,0,.38*openW,.7*openH,side<0?-Math.PI/2:Math.PI/2,!timber);
+    const lightH=Math.min(1.20,floorHeight*.53)*openH,yy=plinth+f*floorHeight+floorHeight*.23,
+     // Seat each opening outside the thickest wall it crosses. Using the upper
+     // wall plane buried the lower windows inside an adobe building's battered base.
+     openingStand=material==='log'?.19:.018+(yy<batterTop?batter:0);
+    for(const xx of[-.27,.27])windowN(k,xx*w,yy,side*(d/2+openingStand),Math.min(.68,w*.18)*openW,lightH,side<0?Math.PI:0,!timber);
+    const sideBays=d>3.8?[-.25,.25]:[0];
+    for(const zz of sideBays)windowN(k,side*(w/2+openingStand),yy,zz*d,Math.min(.65,d*.19)*openW,lightH,side<0?Math.PI/2:-Math.PI/2,!timber);
    }
-   for(const s of[-1,1])for(const t of[-1,1]){
-    if(k.lod<1)break;
-    k.box(s*(w/2-.10),.22,t*(d/2+.035),.17,h+.05,.13,'trim');
-    if(k.lod>=2)for(let j=0;j<Math.floor(h/.62);j++)k.box(s*(w/2-.16),j*.62+.25,t*(d/2+.045),.29,.18,.08,'trim');
+   if(k.lod>=1&&floors>1&&material!=='felt')for(let f=1;f<floors;f++){
+    k.mark('storey-stringcourse');
+    k.box(0,plinth+f*floorHeight-.12,0,w+.10,.09,d+.10,timber?'wood':colorScale(k.color('trim'),.94));
+   }
+   if(k.lod>=1)for(const s of[-1,1])for(const t of[-1,1]){
+    const corner=timber?'wood':'trim';
+    k.box(s*(w/2-.055),plinth,t*(d/2-.035),.16,h,.19,corner);
+    if(k.lod>=2&&['masonry','cutstone','firedbrick'].includes(material)){
+     k.mark('bonded-quoins');
+     for(let j=0;j<Math.min(6,Math.floor(h/.68));j++)k.box(s*(w/2-.07),plinth+j*.68,t*(d/2-.015),j%2?.18:.32,.28,j%2?.33:.19,'trim');
+    }
    }
    if(k.lod>=1){
     // LOG: round courses stacked up the wall with the corner notching that holds them.
@@ -274,19 +334,29 @@ const ArtisanCityKit=(()=>{
      for(const s of[-1,1])for(const t of[-1,1])k.cylinder(s*(w/2-.03),plinth,t*(d/2-.03),.10,h,'wood',6);
     }
     else if(material==='timber')for(const sign of[-1,1]){
-     k.box(0,h*.55,sign*(d/2+.08),w,.08,.08,'trim');
-     k.beam([-w*.4,.35,sign*(d/2+.1)],[0,h*.55,sign*(d/2+.1)],.04,'trim',4);
-     k.beam([0,h*.55,sign*(d/2+.1)],[w*.4,.35,sign*(d/2+.1)],.04,'trim',4);
+     // Bracing occupies the solid spandrel below the sill, not the window glass.
+     for(let f=0;f<floors;f++){
+      const low=plinth+f*floorHeight+.05,high=plinth+f*floorHeight+floorHeight*.17;
+      k.beam([-w*.4,low,sign*(d/2+.1)],[0,high,sign*(d/2+.1)],.045,'wood',4);
+      k.beam([0,high,sign*(d/2+.1)],[w*.4,low,sign*(d/2+.1)],.045,'wood',4);
+     }
     }
    }
    const ph=flat?.3:Math.min(w,d)*(style==='fjord'?.81:.56)*pitch;
    const roofTop=plinth+h+.03;
    slateRoof(k,0,roofTop,0,w+.14+eave,d+.15+eave,ph,roof,style==='arcane');
+   if(k.lod>=1&&roof==='gable')k.using('roof',()=>{
+    k.mark('gable-frame');
+    for(const side of[-1,1]){
+     const face=side*((d+.15+eave)*.55+.035);
+     k.box(0,roofTop+.035,face,w*.88,.105,.10,timber?'wood':'trim');
+     if(k.lod>=2&&timber)k.box(0,roofTop+.11,face,.095,ph*.83,.09,'wood');
+    }
+   });
    // Snow settles on the roof it actually has. Driven by the model's cold-season
    // field, so it appears on every town whose winter freezes, not only on glaciers.
    snowShell(k,0,roofTop,0,w+.14+eave,d+.15+eave,ph,roof,cl.cover);
-   k.box(0,plinth,d/2+.08,.6,1.0,.10,'dark');
-   if(k.lod>=1){k.box(0,plinth+.03,d/2+.14,.44,.88,.05,'wood');k.box(0,plinth-.01,d/2+.39,1,.13,.54,'trim');}
+   entranceN(k,w,d,plinth,h,material,style,variant);
    // A flue is heating, so it belongs where the model says heating is needed.
    const heated=cl.cold>.28||(!flat&&cl.warm<.55);
    if(!flat&&heated&&variant%3!==1&&k.lod>=1){
@@ -296,8 +366,23 @@ const ArtisanCityKit=(()=>{
     // A cap of snow on the chimney head, where it always sits.
     if(cl.cover>.25)k.box(w*.27,top+.19,-d*.2,ch+.18,.05+cl.cover*.10,.66,'snow');
    }
-   // Projecting dormers, not a painted roof texture.
-   if(!flat&&w>2.2&&k.lod>=2){k.transform(-w*.35,plinth+h+.21,.35,0,1,()=>{k.box(0,0,0,.65,.63,.72,'wall');slateRoof(k,0,.63,0,.76,.81,.48,'gable');snowShell(k,0,.63,0,.76,.81,.48,'gable',cl.cover);windowN(k,0,.08,.40,.27,.43,0);});}
+   // The dormer grows out of a pitched slope and faces downhill. Previously the
+   // cabin sat near the eave BELOW the roof, with its window facing along the ridge.
+   if(['gable','hip','northern'].includes(roof)&&w>2.8&&d>2.6&&k.lod>=2&&material!=='felt'){
+    const side=variant%2?-1:1,dx=side*w*.30,base=roofTop+ph*(1-Math.abs(dx)/((w+.14+eave)*.55))-.16,
+     dw=Math.min(.85,d*.25),dh=Math.max(.66,ph*.25);
+    // The entire dormer belongs to the removable roof, including its wall and
+    // glazing; hiding the roof must not leave an attic cabin floating in the air.
+    k.using('roof',()=>{
+     k.mark('slope-dormer');
+     k.transform(dx,base,-d*.12,side>0?-Math.PI/2:Math.PI/2,1,()=>{
+      k.box(0,0,0,dw,dh,.80,'wall');
+      k.roof(0,dh,0,dw+.16,.97,.44,'roof','gable');
+      snowShell(k,0,dh,0,dw+.16,.97,.44,'gable',cl.cover);
+      windowN(k,0,.11,.41,dw*.45,dh*.66,0,!timber);
+     });
+    });
+   }
    if(k.lod<1)return;
    // Snow on the sills and ledges that catch it. The ground it stands on is tinted
    // by the town terrain instead, so the cover reads as landscape and not as a
@@ -338,12 +423,43 @@ const ArtisanCityKit=(()=>{
   else k.tower(x,y,z,r,h,crown);
  }
  function greatHall(k,x,y,z,w,d,h,style,opts={}){
-  k.hall(x,y,z,w,d,h,{roof:style==='desert'?'flat':['forest','monsoon'].includes(style)?'leaf':['fjord','taiga'].includes(style)?'northern':'gable',roofHeight:opts.roofHeight||Math.min(w,d)*.58,entrance:opts.entrance!==false});
-  for(const side of[-1,1]){
-   courses(k,x,y+.3,z+side*(d/2+.015),w,h-.65,side===1?0:Math.PI);
-   courses(k,x+side*(w/2+.015),y+.3,z,d,h-.65,side===1?Math.PI/2:-Math.PI/2);
-  }
-  if(style!=='desert')slateRoof(k,x,y+h,z,w+.38,d+.38,opts.roofHeight||Math.min(w,d)*.58,['fjord','taiga'].includes(style)?'northern':style==='monsoon'?'leaf':'gable',true);
+  const timber=['forest','fjord','taiga','monsoon','paddy','delta','steppe'].includes(style),
+   roof=style==='desert'?'flat':['forest','monsoon','paddy'].includes(style)?'leaf':['fjord','taiga'].includes(style)?'northern':'gable';
+  // hall() owns its roof and openings. A second nearly coincident roof used to hide
+  // its structure and cover the gable; thousands of mortar boxes obscured the bays.
+  k.hall(x,y,z,w,d,h,{roof,roofHeight:opts.roofHeight||Math.min(w,d)*.58,entrance:opts.entrance!==false});
+  if(k.lod<1)return;
+  k.transform(x,y,z,0,1,()=>{
+   k.mark(timber?'framed-civic-range':'masonry-civic-range');
+   if(timber){
+    // A longhall's wall is held by posts and a tie beam; a wet-climate pavilion
+    // carries the same loads on open brackets. Never add ashlar joints to timber.
+    const bays=Math.max(2,Math.floor(d/1.7)),bayPitch=(d-.72)/bays;
+    for(const side of[-1,1]){
+     k.box(side*(w/2+.07),h-.40,0,.20,.23,d+.30,'wood');
+     for(let j=1;j<bays;j++){
+      const zz=(j-bays/2)*bayPitch;
+      k.box(side*(w/2+.07),.28,zz,.23,h-.53,.23,'wood');
+      if(k.lod>=2)k.beam([side*(w/2+.07),h-1.0,zz],[side*(w/2+.43),h-.25,zz],.10,'wood',4);
+     }
+    }
+   }else{
+    // The thicker lowest course reads as bearing masonry at middle distance.
+    k.box(0,.12,0,w+.56,.17,d+.56,colorScale(k.color('wall'),.80));
+    if(k.lod>=2&&w>=6&&h>=4&&opts.entrance!==false){
+     k.mark('civic-portico');
+     const span=Math.min(3.2,w*.40),yy=Math.min(3.0,h*.57),front=d/2+.68;
+     k.box(0,.09,front-.04,span+.72,.18,1.44,'trim');
+     for(const side of[-1,1]){
+      k.box(side*span*.43,.27,front,.26,yy-.27,.26,'wall');
+      k.box(side*span*.43,.24,front,.42,.18,.42,'trim');
+      k.box(side*span*.43,yy-.20,front,.43,.22,.44,'trim');
+     }
+     k.box(0,yy,front,span+.35,.20,.73,'trim');
+     k.roof(0,yy+.20,front,span+.46,1.10,.52,'roof','gable');
+    }
+   }
+  });
  }
  function precinct(recipe,options={}){
   const K=kit(recipe,options.lod??1,options.climate||null),id=recipe.urbanStyle||recipe.style,style=PALETTES[id]?id:'river';
@@ -519,7 +635,7 @@ const ArtisanCityKit=(()=>{
    accent:realm?.color||null
   }:null;
   const K=kit(recipe,b.lod??2,cl,vocab),rng=K.random;
-  if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true},{climate:cl}),b);
+  if(b.type==='civic')return meshAt(precinct({...recipe,artisan:true},{climate:cl,lod:b.lod??2}),b);
   // The surveyed parcel is what gets built on. meshAt scales this model uniformly to fit
   // b.w x b.d, so a court authored square inside a long burgage plot would leave most of
   // that plot as bare ground AND make every block read the same. Match the parcel's aspect
@@ -547,7 +663,19 @@ const ArtisanCityKit=(()=>{
      const rad=Math.min(cw,cd)*.29,h=2.3+rng()*1.0;
      K.cylinder(x,.18,z,rad*1.20,1.0,'wood',10);K.cylinder(x,1.18,z,rad,h,'wall',10);
      K.using('roof',()=>K.cone(x,1.18+h,z,rad*1.44,h*1.25,'roof',0,12));
-     K.beam([x,1.3,z],[0,1.3,0],.25,'wood');windowN(K,x,1.7,z+rad,.43,.9);
+     K.beam([x,1.3,z],[0,1.3,0],.25,'wood');
+     if(K.lod>=1){
+      K.mark('canopy-house-frame');
+      K.lathe(x,1.18+h-.12,z,[[rad*1.02,0],[rad*1.18,.08],[rad*1.18,.19]],'wood',10);
+      for(let j=0;j<4;j++){
+       const a=j*Math.PI/2,xx=x+Math.sin(a)*rad,zz=z+Math.cos(a)*rad;
+       windowN(K,xx,1.55,zz,Math.min(.48,rad*.50),.80,-a,false);
+       const post=a+Math.PI/4;
+       K.box(x+Math.sin(post)*rad*.96,1.18,z+Math.cos(post)*rad*.96,.13,h,.13,'wood',-post);
+      }
+      K.box(x,1.05,z+rad*1.11,rad*.88,.16,rad*.40,'wood');
+      if(K.lod>=2)for(const side of[-1,1])K.beam([x+side*rad*.56,1.20,z+rad*.9],[x+side*rad*.76,1.18+h-.02,z+rad*.74],.065,'wood',5);
+     }
     }else house(K,x,.18,z,cw*(.74+rng()*.15),cd*(.74+rng()*.15),(style==='fjord'?3.5:style==='desert'?3.5:style==='taiga'?3.2:style==='monsoon'?3.8:4.6)+rng()*1.2,style,(count+arrangement)%5);
     count++;
    }
@@ -624,5 +752,5 @@ const ArtisanCityKit=(()=>{
   });
   const m=K.finish(),body=new Geometry(),roof=new Geometry();for(const p of m.parts)append(p.role==='roof'?roof:body,p.geometry);return{body,roof};
  }
- return{palettes:PALETTES,paint:weather,blockPaint,blockClimate,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,snowShell,climatePalette,neutralClimate:NEUTRAL,version:1};
+ return{palettes:PALETTES,paint:weather,blockPaint,blockClimate,precinct,compound,meshAt,fortificationMeshes,house,courses,slateRoof,snowShell,climatePalette,neutralClimate:NEUTRAL,version:2};
 })();

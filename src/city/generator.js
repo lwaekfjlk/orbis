@@ -518,6 +518,14 @@ function generateCity(w, sim, provinceId, design = {}) {
     city.port = null;
     const harborDistrict = city.districts.find(d => d.type === 'harbor');
     const openWater = j => city.water[j] && city.waterKind[j] !== 3;
+    const mooringFits = m => {
+        const ca=Math.abs(Math.cos(m.angle)),sa=Math.abs(Math.sin(m.angle));
+        const rx=(m.length*ca+m.beam*sa)/2,rz=(m.length*sa+m.beam*ca)/2;
+        if(m.x-rx<-width/2||m.x+rx>width/2||m.z-rz<-depth/2||m.z+rz>depth/2)return false;
+        const lo=city.index(m.x-rx,m.z-rz),hi=city.index(m.x+rx,m.z+rz);
+        for(let y=Math.floor(lo/n);y<=Math.floor(hi/n);y++)for(let x=lo%n;x<=hi%n;x++)if(!openWater(y*n+x))return false;
+        return true;
+    };
     const portBand = [];
     if (harborDistrict && shore.length) {
         const seaward = k => {
@@ -560,12 +568,16 @@ function generateCity(w, sim, provinceId, design = {}) {
                 const tip = { x: s.q.x + s.nx * length, z: s.q.z + s.nz * length };
                 jetties.push({ a: s.q, b: tip, y: s.y + .32, width: .55 });
                 const roll = hash2(s.k, city.buildings.length, seed);
-                moorings.push({ x: tip.x + s.nz * (roll < .5 ? 1.1 : -1.1), z: tip.z - s.nx * (roll < .5 ? 1.1 : -1.1),
+                // A wet jetty tip does not guarantee a wet berth beside it on a
+                // curved shore. Try the other side before leaving the berth empty;
+                // the whole hull must fit, without changing the shore or jetty.
+                const mooring=(roll<.5?[1.1,-1.1]:[-1.1,1.1]).map(side=>({x:tip.x+s.nz*side,z:tip.z-s.nx*side,
                     // A moored fishing boat ran twice the length of a whole house block. It is
                     // read against the quay it is tied to, so it shrinks with the sea-going
                     // hull rather than the ratio between them being bent to fit.
                     y: s.y + .06, angle: Math.atan2(-s.nx, s.nz), length: .85 + roll * .78, beam: .34 + roll * .13,
-                    kind: roll < .38 ? 'barge' : 'boat' });
+                    kind: roll < .38 ? 'barge' : 'boat' })).find(mooringFits);
+                if(mooring)moorings.push(mooring);
                 bollards.push({ x: s.q.x - s.nx * .5, z: s.q.z - s.nz * .5, y: s.y + .30 });
                 // Landward sheds, on dry road-free ground that no compound already holds.
                 for (const back of [2.9, 4.6]) {

@@ -48,32 +48,42 @@
     "houseResponse": {
       "arctic": {
         "height": 10.15,
-        "width": 4.52,
-        "depth": 6.38,
+        "width": 4.91,
+        "depth": 6.61,
+        "roofWidth": 4.53,
+        "roofDepth": 6.61,
         "load": 1
       },
       "boreal": {
         "height": 8.02,
-        "width": 4.56,
-        "depth": 6,
+        "width": 4.58,
+        "depth": 6.17,
+        "roofWidth": 4.58,
+        "roofDepth": 6.17,
         "load": 0
       },
       "temperate": {
         "height": 7.64,
-        "width": 4.6,
-        "depth": 6.03,
+        "width": 4.62,
+        "depth": 6.19,
+        "roofWidth": 4.62,
+        "roofDepth": 6.19,
         "load": 0
       },
       "hotDry": {
-        "height": 5.94,
-        "width": 4.56,
-        "depth": 5.93,
+        "height": 5.56,
+        "width": 4.73,
+        "depth": 6.17,
+        "roofWidth": 4.39,
+        "roofDepth": 5.4,
         "load": 0
       },
       "hotWet": {
         "height": 7.92,
-        "width": 6.58,
+        "width": 6.6,
         "depth": 8.61,
+        "roofWidth": 6.6,
+        "roofDepth": 8.45,
         "load": 0
       }
     },
@@ -109,10 +119,10 @@
         "span": 9.7
       },
       {
-        "style": "river",
-        "coldC": 12.8,
-        "hotC": 20.4,
-        "span": 7.6
+        "style": "basilica",
+        "coldC": 14,
+        "hotC": 26.9,
+        "span": 12.9
       }
     ],
     "materials": {
@@ -129,8 +139,8 @@
     "coldTown": {
       "name": "Elmwell",
       "annualC": -1.3,
-      "coverLo": 0.48,
-      "coverHi": 1,
+      "coverLo": 0.8,
+      "coverHi": 0.97,
       "snowedFraction": 1
     },
     "palette": {

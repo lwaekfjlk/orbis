@@ -8,10 +8,10 @@
       "type": "palace",
       "file": "river.glb",
       "recipe": "river.recipe.json",
-      "signature": "469ba84c",
-      "triangles": 61338,
+      "signature": "270c73ad",
+      "triangles": 62636,
       "groups": 16,
-      "bytes": 6635148
+      "bytes": 6775364
     },
     {
       "id": "basilica",
@@ -19,10 +19,10 @@
       "type": "palace",
       "file": "basilica.glb",
       "recipe": "basilica.recipe.json",
-      "signature": "136d67ae",
-      "triangles": 88802,
+      "signature": "749e738f",
+      "triangles": 97924,
       "groups": 19,
-      "bytes": 9603064
+      "bytes": 10588276
     },
     {
       "id": "arcane",
@@ -30,10 +30,10 @@
       "type": "palace",
       "file": "arcane.glb",
       "recipe": "arcane.recipe.json",
-      "signature": "ba23b950",
-      "triangles": 39890,
+      "signature": "0802a769",
+      "triangles": 38476,
       "groups": 19,
-      "bytes": 4320704
+      "bytes": 4167996
     },
     {
       "id": "forest",
@@ -41,10 +41,10 @@
       "type": "palace",
       "file": "forest.glb",
       "recipe": "forest.recipe.json",
-      "signature": "61c5b7c8",
-      "triangles": 28205,
+      "signature": "40dc1ab1",
+      "triangles": 28963,
       "groups": 13,
-      "bytes": 3054860
+      "bytes": 3136736
     },
     {
       "id": "mountain",
@@ -52,10 +52,10 @@
       "type": "palace",
       "file": "mountain.glb",
       "recipe": "mountain.recipe.json",
-      "signature": "9c3facb0",
-      "triangles": 36116,
+      "signature": "c81cec49",
+      "triangles": 39792,
       "groups": 11,
-      "bytes": 3908004
+      "bytes": 4305064
     },
     {
       "id": "desert",
@@ -63,10 +63,10 @@
       "type": "palace",
       "file": "desert.glb",
       "recipe": "desert.recipe.json",
-      "signature": "99dab3f8",
-      "triangles": 60570,
+      "signature": "04219421",
+      "triangles": 55618,
       "groups": 14,
-      "bytes": 6551040
+      "bytes": 6016244
     },
     {
       "id": "delta",
@@ -74,10 +74,10 @@
       "type": "palace",
       "file": "delta.glb",
       "recipe": "delta.recipe.json",
-      "signature": "f22f2fa2",
-      "triangles": 21216,
+      "signature": "b9496cfb",
+      "triangles": 22880,
       "groups": 10,
-      "bytes": 2298244
+      "bytes": 2477980
     },
     {
       "id": "basalt",
@@ -85,10 +85,10 @@
       "type": "palace",
       "file": "basalt.glb",
       "recipe": "basalt.recipe.json",
-      "signature": "0646b03c",
-      "triangles": 47976,
+      "signature": "af9aa75d",
+      "triangles": 47852,
       "groups": 12,
-      "bytes": 5189556
+      "bytes": 5176184
     },
     {
       "id": "fjord",
@@ -96,10 +96,76 @@
       "type": "palace",
       "file": "fjord.glb",
       "recipe": "fjord.recipe.json",
-      "signature": "d55be8ad",
-      "triangles": 36776,
+      "signature": "bf1f6cd8",
+      "triangles": 37498,
       "groups": 12,
-      "bytes": 3979976
+      "bytes": 4057964
+    },
+    {
+      "id": "steppe",
+      "name": "The Windward Standard",
+      "type": "palace",
+      "file": "steppe.glb",
+      "recipe": "steppe.recipe.json",
+      "signature": "c7f1c1fe",
+      "triangles": 44724,
+      "groups": 11,
+      "bytes": 4837860
+    },
+    {
+      "id": "paddy",
+      "name": "The Sluicewater Prefecture",
+      "type": "palace",
+      "file": "paddy.glb",
+      "recipe": "paddy.recipe.json",
+      "signature": "8f72139e",
+      "triangles": 57372,
+      "groups": 12,
+      "bytes": 6204460
+    },
+    {
+      "id": "delve",
+      "name": "The Lamplit Warrens",
+      "type": "palace",
+      "file": "delve.glb",
+      "recipe": "delve.recipe.json",
+      "signature": "25528dbf",
+      "triangles": 38192,
+      "groups": 12,
+      "bytes": 4132940
+    },
+    {
+      "id": "lagoon",
+      "name": "The Tidewater Chancery",
+      "type": "palace",
+      "file": "lagoon.glb",
+      "recipe": "lagoon.recipe.json",
+      "signature": "c1211a4e",
+      "triangles": 64958,
+      "groups": 12,
+      "bytes": 7023724
+    },
+    {
+      "id": "taiga",
+      "name": "The Winterhold Moot",
+      "type": "palace",
+      "file": "taiga.glb",
+      "recipe": "taiga.recipe.json",
+      "signature": "1f53f25b",
+      "triangles": 40446,
+      "groups": 14,
+      "bytes": 4377644
+    },
+    {
+      "id": "monsoon",
+      "name": "The Rainpavilion Assembly",
+      "type": "palace",
+      "file": "monsoon.glb",
+      "recipe": "monsoon.recipe.json",
+      "signature": "10e548db",
+      "triangles": 32590,
+      "groups": 10,
+      "bytes": 3526736
     },
     {
       "id": "lighthouse",
@@ -107,10 +173,10 @@
       "type": "landmark",
       "file": "lighthouse.glb",
       "recipe": "lighthouse.recipe.json",
-      "signature": "e949ad77",
-      "triangles": 28004,
+      "signature": "0eaa0e4a",
+      "triangles": 28058,
       "groups": 9,
-      "bytes": 3030672
+      "bytes": 3036524
     },
     {
       "id": "observatory",
@@ -118,10 +184,10 @@
       "type": "landmark",
       "file": "observatory.glb",
       "recipe": "observatory.recipe.json",
-      "signature": "3342afed",
-      "triangles": 29332,
+      "signature": "5f4d4098",
+      "triangles": 27402,
       "groups": 8,
-      "bytes": 3173572
+      "bytes": 2965152
     },
     {
       "id": "labyrinth",
@@ -129,10 +195,10 @@
       "type": "landmark",
       "file": "labyrinth.glb",
       "recipe": "labyrinth.recipe.json",
-      "signature": "ca928c26",
-      "triangles": 19134,
+      "signature": "96450a37",
+      "triangles": 22850,
       "groups": 9,
-      "bytes": 2072876
+      "bytes": 2474236
     },
     {
       "id": "bridge",
@@ -140,10 +206,10 @@
       "type": "landmark",
       "file": "bridge.glb",
       "recipe": "bridge.recipe.json",
-      "signature": "bbf8abf9",
-      "triangles": 21832,
+      "signature": "df9fe7bc",
+      "triangles": 22656,
       "groups": 7,
-      "bytes": 2363024
+      "bytes": 2452028
     },
     {
       "id": "ice",
@@ -151,10 +217,10 @@
       "type": "landmark",
       "file": "ice.glb",
       "recipe": "ice.recipe.json",
-      "signature": "9c6eb113",
-      "triangles": 23748,
+      "signature": "690fd67e",
+      "triangles": 25824,
       "groups": 8,
-      "bytes": 2570504
+      "bytes": 2794728
     },
     {
       "id": "grove",
@@ -162,10 +228,10 @@
       "type": "landmark",
       "file": "grove.glb",
       "recipe": "grove.recipe.json",
-      "signature": "99f16421",
-      "triangles": 14655,
+      "signature": "997db334",
+      "triangles": 14739,
       "groups": 7,
-      "bytes": 1587852
+      "bytes": 1596936
     }
   ]
 }

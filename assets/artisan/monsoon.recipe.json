@@ -1,0 +1,24 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-monsoon",
+  "style": "monsoon",
+  "seed": "Artisan11-monsoon",
+  "name": "The Rainpavilion Assembly",
+  "material": "monsoon",
+  "faith": "grove",
+  "culture": "Riverfolk craft",
+  "complexity": 1,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 2,
+  "roofPitch": 0.9341058345604688,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.7
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "artisan": true,
+  "urbanStyle": "monsoon"
+}

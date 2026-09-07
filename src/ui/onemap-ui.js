@@ -194,9 +194,9 @@ window.OneMap = (() => {
         if(scene==='landmark'){E('omMonumentRoofs').checked=E('lmRoofs').checked;E('omMonumentExplode').checked=E('lmExplode').checked;E('omLocalCamera').value=E('lmCamera').value==='plan'?'overhead':E('lmCamera').value==='front'?'low':'relief';}
     }
     function clearSelection(){selection=null;show('omSelection',false);}
-    function selectionCard(kicker,title,text,buttons,media=''){
+    function selectionCard(kicker,title,text,buttons,media='',realm=null){
         // `media` is markup we generated ourselves (a narrator portrait), never input.
-        E('omSelectionBody').innerHTML=media+`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="om-actions">${buttons.map((b,i)=>`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`).join('')}</div>`;
+        E('omSelectionBody').innerHTML=media+`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p>${realmNameOriginHTML(realm)}<div class="om-actions">${buttons.map((b,i)=>`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`).join('')}</div>`;
         E('omSelectionBody').querySelectorAll('[data-selection-action]').forEach(b=>b.onclick=buttons[+b.dataset.selectionAction].run);
         show('omSelection',true);
     }
@@ -222,7 +222,7 @@ window.OneMap = (() => {
         const kicker=f?.legend?'LEGENDARY PLACE · '+f.kind
             :told?`${(realm?.name||'FREE COMMUNITIES').toUpperCase()} · ${told.title.toUpperCase()}`
             :realm?.name||'NATURAL WORLD';
-        selectionCard(kicker,title,subtitle,buttons,media);
+        selectionCard(kicker,title,subtitle,buttons,media,realm);
     }
     async function readSaga(id){
         if(!interactive())return;

@@ -86,8 +86,9 @@ test('the same house responds to snow load, heat, drought and rain', () => {
   const k = new E.LandmarkKit(recipe, {base: false, lod: 2});
   k.palette = {...E.ArtisanCityKit.palettes.river}; k.climate = cl;
   k.part('p', 'p', 'architecture', () => E.ArtisanCityKit.house(k, 0, 0, 0, 4, 5, 4.5, 'river', 0));
-  const m = k.finish();
-  return {height: m.bounds.max[1] - m.bounds.min[1], width: m.bounds.max[0] - m.bounds.min[0], depth: m.bounds.max[2] - m.bounds.min[2], cl};
+  const m = k.finish(), roofs = m.parts.filter(p => p.role === 'roof');
+  const roofSpan = axis => Math.max(...roofs.map(p => p.bounds.max[axis])) - Math.min(...roofs.map(p => p.bounds.min[axis]));
+  return {height: m.bounds.max[1] - m.bounds.min[1], width: m.bounds.max[0] - m.bounds.min[0], depth: m.bounds.max[2] - m.bounds.min[2], roofWidth: roofSpan(0), roofDepth: roofSpan(2), cl};
  };
  const arctic = probe(-8, 1.3, 40, .6), boreal = probe(2, 1.2), temperate = probe(14, 1.0), hotDry = probe(26, .25), hotWet = probe(26, 2.4);
  // Snow load steepens the roof; a dry heat flattens it into a terrace.
@@ -95,11 +96,12 @@ test('the same house responds to snow load, heat, drought and rain', () => {
  assert(boreal.height > temperate.height, 'a boreal roof must be steeper than a temperate one');
  assert(temperate.height > hotDry.height, 'a hot arid house must be lower than a temperate one');
  assert(arctic.height / hotDry.height > 1.35, 'the extremes must differ by more than a rounding error');
- // Rain is answered with overhang, so the hot-wet house is the widest on its plot.
- assert(hotWet.width > temperate.width + .5 && hotWet.depth > temperate.depth + .8, 'deep eaves must project in a hot wet climate');
- assert(hotDry.width <= temperate.width + .1, 'a dry climate must not grow an eave');
+ // Measure the roof itself: adobe window sills project past the battered wall
+ // and can widen the house's body without adding any eave to its dry terrace.
+ assert(hotWet.roofWidth > temperate.roofWidth + .5 && hotWet.roofDepth > temperate.roofDepth + .8, 'deep eaves must project in a hot wet climate');
+ assert(hotDry.roofWidth <= temperate.roofWidth + .1, 'a dry climate must not grow an eave');
  report.checks.houseResponse = Object.fromEntries(Object.entries({arctic, boreal, temperate, hotDry, hotWet})
-  .map(([k, v]) => [k, {height: +v.height.toFixed(2), width: +v.width.toFixed(2), depth: +v.depth.toFixed(2), load: +v.cl.load.toFixed(2)}]));
+  .map(([k, v]) => [k, {height: +v.height.toFixed(2), width: +v.width.toFixed(2), depth: +v.depth.toFixed(2), roofWidth: +v.roofWidth.toFixed(2), roofDepth: +v.roofDepth.toFixed(2), load: +v.cl.load.toFixed(2)}]));
 });
 
 test('one tradition built at both ends of its own range is not the same town twice', () => {
