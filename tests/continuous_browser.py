@@ -25,11 +25,11 @@ with sync_playwright() as pw:
  start=snapshot(page);mark('Initial geography, towns and polities load',page.evaluate('window.__generationReport'))
  shots(page,'world')
  # Actual search controls, then a camera approach rather than a scene switch.
- page.locator('#omSearchToggle').click();page.locator('#omSearch').fill('Stonefall 5')
+ page.locator('#omSearchToggle').click();page.locator('#omSearch').fill('Glassbeck')  # province 507; renamed from 'Stonefall 5' by the district-naming pass
  page.locator('[data-search-enter]').first.click();page.wait_for_function('ContinuousMap.layer.models.has(507)',timeout=240000);stable(page)
- check=no_jump(page);assert check=={'canvas':'map','same':True,'scene':'world','openCity':False,'openMonument':False};mark('Search zooms to Stonefall without replacing the map',check)
+ check=no_jump(page);assert check=={'canvas':'map','same':True,'scene':'world','openCity':False,'openMonument':False};mark('Search zooms to Glassbeck without replacing the map',check)
  assert snapshot(page)==start;mark('Exploration leaves geography, population and politics unchanged')
- mark('Stonefall inherits a dry lake basin and real glacial foothills',page.evaluate('ContinuousMap.layer.models.get(507).city.siteEnvironment.label'))
+ mark('Glassbeck inherits a dry lake basin and real glacial foothills',page.evaluate('ContinuousMap.layer.models.get(507).city.siteEnvironment.label'))
  shots(page,'stonefall-town')
  page.locator('#cmContext').click();stable(page);shots(page,'stonefall-setting')
  assert abs(page.evaluate('renderer.zoom')-10)<1e-6;mark('Wider setting is only a continuous camera pullback')
@@ -44,11 +44,15 @@ with sync_playwright() as pw:
  shots(page,'stonefall-building')
  page.locator('#cmShowDetails').click();page.wait_for_selector('#cmTownGLB');mark('Details open only a small side drawer')
  page.locator('#omDrawerClose').click()
- # Sacred city retains its surrounding coast/terrain and same model recipe.
- page.evaluate('ContinuousMap.focusTown(213)');stable(page);page.wait_for_function('ContinuousMap.layer.models.has(213)',timeout=240000)
- shots(page,'silverford-town')
- sacred=page.evaluate('ContinuousMap.layer.models.get(213).city.buildings.find(b=>b.sacred)?.id')
- assert sacred;page.evaluate('([p,b])=>ContinuousMap.focusBuilding(p,b)',[213,sacred]);stable(page);shots(page,'silverford-temple')
+ # Sacred city retains its surrounding coast/terrain and same model recipe. The
+ # pilgrimage town is looked up rather than hardcoded: which province earns a grand
+ # sanctuary moves whenever settlement support or the tradition rules change.
+ sacredId=page.evaluate('''(()=>{const p=sim.provinces.filter(p=>p.city&&TownCatalog.native(p,world)==='basilica'&&(p.detailSupport??p.urbanSupport)>=6500).sort((a,b)=>b.urbanPop-a.urbanPop)[0];return p?p.id:null;})()''')
+ assert sacredId is not None, 'no pilgrimage town large enough for a grand sanctuary'
+ page.evaluate('(id)=>ContinuousMap.focusTown(id)',sacredId);stable(page);page.wait_for_function(f'ContinuousMap.layer.models.has({sacredId})',timeout=240000)
+ shots(page,'sanctuary-town')
+ sacred=page.evaluate('(id)=>ContinuousMap.layer.models.get(id).city.buildings.find(b=>b.sacred)?.id',sacredId)
+ assert sacred;page.evaluate('([p,b])=>ContinuousMap.focusBuilding(p,b)',[sacredId,sacred]);stable(page);shots(page,'sanctuary-temple')
  mark('Existing grand sanctuary stays in the actual town during zoom',no_jump(page))
  assert snapshot(page)==start;mark('Repeated city/building zooms do not mutate the world')
  # Population/year changes are still the original simulation.

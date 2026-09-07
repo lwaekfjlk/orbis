@@ -1,4 +1,4 @@
-/** Authored compositions assembled from the reusable kit. Thirteen palace families + six landmarks. */
+/** Authored compositions assembled from the reusable kit. Fifteen palace families + six landmarks. */
 const LandmarkTemplates = (() => {
  function pavilion(k,x,y,z,r=2,h=3){k.mark('open-pavilion');k.cylinder(x,y,z,r*1.14,.3,'trim',8);for(let i=0;i<8;i++){const a=i*Math.PI/4;k.cylinder(x+Math.cos(a)*r*.83,y+.3,z+Math.sin(a)*r*.83,.11,h,'wall',6)}k.using('roof',()=>{k.lathe(x,y+h+.3,z,[[0,0],[r*1.3,0],[r*.92,.25],[r*.54,r*.6],[r*.2,r*1.15],[0,r*1.5]],'roof',8);k.cone(x,y+h+.3+r*1.5,z,.16,.65,'metal',0,6)})}
  function gate(k,x,y,z,w=7,h=7){k.mark('gatehouse');for(const s of[-1,1])k.tower(x+s*(w*.5+.6),y,z,1.2,h,'battlement');k.arch(x,y,z,w,h-1,1.5,'wall');k.box(x,y+h-.8,z,w,.6,1.8,'trim');k.using('ornament',()=>{k.emblem(x,y+h+1,z+.3,.7);k.cultureDetail(x,y,z+1.2)})}
@@ -7,7 +7,7 @@ const LandmarkTemplates = (() => {
  }
  function stage(k){if(k.options.base===false)return;const id=k.recipe.style,r=k.random,p=k.palette;
  k.part('site','The inherited setting','site',()=>{
-  const wet=['delta','fjord','river','lighthouse','bridge'].includes(id);const groundY=wet?-.65:-.12;
+  const wet=['delta','fjord','river','lighthouse','bridge','monsoon'].includes(id);const groundY=wet?-.65:-.12;
   k.box(0,-2.4,0,59,1.9,47,colorScale(k.color('ground'),.83));
   const n=20;for(let z=0;z<16;z++)for(let x=0;x<n;x++){const xx=(x-(n-1)/2)*2.95,zz=(z-7.5)*2.94;let mat=colorScale(k.color('ground'),.97+r()*.07);if(wet&&(id==='delta'||zz>11.8||id==='bridge'&&Math.abs(xx)<5))mat=colorScale(k.color('water'),.94+r()*.08);k.box(xx,groundY,zz,2.965,.21,2.96,mat)}
   if(id==='delta'){for(let i=0;i<18;i++){const x=(r()-.5)*52,z=(r()-.5)*42;if(Math.abs(x)<19&&Math.abs(z)<17)continue;k.rock(x,-.3,z,1.1+r()*2,.35,1.2,7,'ground');for(let a=0;a<3;a++)k.cone(x+(a-1)*.35,.05,z,.07,1.1+r(),'leaf',.03,4)}}
@@ -20,10 +20,12 @@ const LandmarkTemplates = (() => {
    if(k.recipe.geography.freshwater>.3)for(let i=0;i<9;i++){const a=i/9*Math.PI*2;k.tree(Math.cos(a)*24,0,Math.sin(a)*18,3.8+r()*1.5,'palm')}
    for(let a=0;a<12;a++){const x=(r()-.5)*52,z=18+r()*4;k.rock(x,-.35,z,1.4,.20,.35,8,'ground')}
   }else if(id!=='delta'){
-   for(let i=0;i<22;i++){let a=i/22*Math.PI*2,x=Math.cos(a)*(25+r()*2),z=Math.sin(a)*(19+r()*1.8);if(['river','fjord','lighthouse','bridge'].includes(id)&&z>10)continue;if(id==='bridge'&&Math.abs(x)<6)continue;k.tree(x,0,z,2.5+r()*2.2,k.recipe.geography.cold||['mountain','basalt'].includes(id)?'pine':'broad')}
+   // The specimen planted around a precinct is the species its climate grows.
+   const species=id==='taiga'?'conifer':id==='monsoon'?'rainforest':id==='lagoon'?'palm':k.recipe.geography.cold||['mountain','basalt'].includes(id)?'conifer':'broad';
+   for(let i=0;i<22;i++){let a=i/22*Math.PI*2,x=Math.cos(a)*(25+r()*2),z=Math.sin(a)*(19+r()*1.8);if(['river','fjord','lighthouse','bridge'].includes(id)&&z>10)continue;if(id==='bridge'&&Math.abs(x)<6)continue;k.tree(x,0,z,2.5+r()*2.2,species)}
   }
   // Small buildings provide a scale cue; none are added to population statistics.
-  if(!['mountain','ice','delta','grove','bridge','labyrinth'].includes(id))for(let i=0;i<7;i++){const x=i%2?-24:24,z=-9+Math.floor(i/2)*5;if(id==='forest')pavilion(k,x,0,z,1.2,1.3);else k.hall(x,0,z,2.6,3.3,1.8,{roof:k.recipe.geography.cold?'northern':k.recipe.geography.dry?'flat':'hip',entrance:false})}
+  if(!['mountain','ice','delta','grove','bridge','labyrinth','monsoon'].includes(id))for(let i=0;i<7;i++){const x=i%2?-24:24,z=-9+Math.floor(i/2)*5;if(id==='forest')pavilion(k,x,0,z,1.2,1.3);else k.hall(x,0,z,2.6,3.3,1.8,{roof:id==='taiga'||k.recipe.geography.cold?'northern':k.recipe.geography.dry?'flat':'hip',entrance:false})}
  },'Small outer buildings and vegetation are scale cues, not additional simulated settlements.');
  }
  function river(k){const v=k.recipe.variant,wy=3.1;
@@ -186,7 +188,76 @@ const LandmarkTemplates = (() => {
   k.part('old-tree','The ancient heart-tree','landscape',()=>{k.tree(0,.5,-3,25);for(let i=0;i<7;i++){const a=i/7*Math.PI*2;k.beam([0,3,-3],[Math.cos(a)*5,.5,-3+Math.sin(a)*5],.45,'wood')}});
   k.part('shrine','The sheltered shrine','architecture',()=>{pavilion(k,0,.6,5,3.7,4);k.using('ornament',()=>k.emblem(0,10,5,1.2));k.bridge(0,-2.5,13,9,2.2,Math.PI/2)});
  }
- const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,steppe,paddy,delve,lagoon,lighthouse,observatory,labyrinth,bridge,ice,grove};
+ /* Cold conifer interior. Everything here is a snow response: the roof is pitched to
+  * shed rather than to be admired, the walls are banked, the stores are lifted off
+  * the drift line, and the enclosure is split log because that is what grows here. */
+ function taiga(k){const v=k.recipe.variant;
+  k.part('banked-platform','The banked earth platform and wood stores','foundation',()=>{
+   k.terrace(0,0,-2,34,26,1.6);k.terrace(0,1.6,-8,24,13,1.1);stairsN(k,0,0,13,7,7,.26,.48);
+   // Fuel is architecture in this climate: covered, raised, and close to the hall.
+   for(const s of[-1,1])for(const z of[6,11]){k.box(s*14,1.7,z,4.6,1.5,2.6,'wood');k.roof(s*14,3.2,z,5.4,3.4,1.9,'roof','northern')}
+  });
+  k.part('moot-hall','The great log moot-hall','architecture',()=>{
+   k.hall(0,1.6,-8,10,16,5.4,{roof:'northern',roofHeight:6.4+v*.3});
+   // A second roof laid over the first: the doubled pitch is the snow detail.
+   k.using('roof',()=>{k.roof(0,7.0,-8,9.6,15.6,6.3,'trim','northern');k.roof(0,13.1,-8,5.0,10.4,2.4,'roof','northern')});
+   // Stacked log courses and the corner notching that carries them.
+   for(const s of[-1,1]){for(let y=1.9;y<6.6;y+=.62)k.beam([s*5.05,y,-15.6],[s*5.05,y,-.4],.28,y%1.24<.62?'wood':'trim',5);
+    for(const z of[-15.4,-8,-.6])k.cylinder(s*5.3,1.6,z,.42,6.0,'wood',7)}
+   k.using('ornament',()=>k.emblem(0,15.2,-8,.9));
+  });
+  k.part('stave-tower','The stave tower and hearth range','architecture',()=>{
+   k.tower(-9.5,1.6,2,1.7,12+v,'spire');
+   k.hall(9.4,1.6,1,5.2,12,3.6,{roof:'northern',roofHeight:3.9,entrance:false});
+   // Stone flues: the one part of the hall that is not timber, for the obvious reason.
+   for(const z of[-3,3])k.box(9.4,5.2,z,1.3,3.6,1.4,'wall');
+   k.using('ornament',()=>k.cultureDetail(0,1.6,8));
+  });
+  k.part('palisade','The split-log palisade and gate','landscape',()=>{
+   for(const [x,z,len,along]of[[0,-15,30,1],[-15.6,0,26,0],[15.6,0,26,0],[-10,14.6,10,1],[10,14.6,10,1]])
+    for(let t=-len/2;t<len/2;t+=.62)k.cone(x+(along?t:0),0,z+(along?0:t),.30,3.5,'wood',.22,6);
+   gate(k,0,0,14.6,5.2,5.4);
+   for(const s of[-1,1])for(const z of[-9,0,9])k.tree(s*12.4,0,z,4.2+((z+9)%5)*.4,'conifer');
+  },'Timber defences and conifers keyed to the site. No terrain or snowfield is added.');
+ }
+ /* Hot perhumid forest. The floor is lifted clear of the wet season, the eave is
+  * enormous because the rain is, the wall is a screen rather than a window, and
+  * there is no chimney anywhere in the precinct. */
+ function monsoon(k){const v=k.recipe.variant,deck=3.4;
+  k.part('posts','The hardwood post field and raised deck','foundation',()=>{
+   for(let x=-16;x<=16;x+=4)for(let z=-14;z<=14;z+=4)k.cylinder(x,-.4,z,.34,deck+.4,'wood',7);
+   k.box(0,deck,0,35,.38,30,'wood');
+   for(const s of[-1,1]){k.rail(-16.5,s*14.5,16.5,s*14.5,deck+.38,'wood');k.rail(s*16.5,-14.5,s*16.5,14.5,deck+.38,'wood')}
+   // The approach is a ramp, because there is standing water under all of this.
+   for(let j=0;j<8;j++)k.box(0,deck-j*.42,15.5+j*1.15,6.4,.42,1.15,'wood');
+  },'A raised timber platform over ground the parent world already models as wet.');
+  k.part('assembly','The great screen-walled assembly pavilion','architecture',()=>{
+   k.hall(0,deck+.38,-7,13,10,5.2,{roof:'leaf',roofHeight:6.0+v*.3});
+   // The eave is the building: posted well clear of the wall on every side.
+   k.using('roof',()=>k.roof(0,deck+3.6,-7,21,18,3.1,'roof','leaf'));
+   for(const s of[-1,1])for(const z of[-12,-7,-2])k.cylinder(s*9.6,deck+.38,z,.32,3.3,'wood',7);
+   // Louvred screens instead of glazing: shade and through-draught, not a sealed wall.
+   for(const s of[-1,1])for(let j=0;j<7;j++)k.box(s*6.55,deck+1.0+j*.42,-7,.07,.28,9.4,'trim');
+   k.using('ornament',()=>k.emblem(0,deck+11.4,-7,.85));
+  });
+  k.part('ranges','The flanking pavilions and plank walks','architecture',()=>{
+   for(const s of[-1,1]){
+    k.hall(s*12.6,deck+.38,4,5.0,11,3.4,{roof:'leaf',roofHeight:3.8,entrance:false});
+    k.using('roof',()=>k.roof(s*12.6,deck+3.9,4,9.4,15.2,2.0,'roof','leaf'));
+    pavilion(k,s*8,deck+.38,12.5,2.2,3.0);
+    k.box(s*8,deck+.30,8,1.8,.16,9,'wood');
+   }
+   k.box(0,deck+.30,6,26,.16,1.8,'wood');
+  });
+  k.part('water-garden','The flood garden and landing','garden',()=>{
+   // Water is the ground here, not an ornamental pool cut into it.
+   for(const s of[-1,1]){k.tree(s*19.5,0,-6,7.5,'palm');k.tree(s*19.5,0,7,6.4,'rainforest')}
+   k.tree(0,0,-19,9,'rainforest');
+   for(const s of[-1,1])for(const z of[17,21])k.cylinder(s*4.6,-.4,z,.26,2.6,'wood',7);
+   k.using('ornament',()=>k.cultureDetail(0,deck+.38,13.5));
+  },'Planting follows the site climate; no watercourse or clearing is created.');
+ }
+ const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,steppe,paddy,delve,lagoon,taiga,monsoon,lighthouse,observatory,labyrinth,bridge,ice,grove};
  function build(recipe,options={}){if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.build(recipe,options);if(recipe.artisan&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.precinct(recipe,options);const r=LandmarkCatalog.validate(recipe),k=new LandmarkKit(r,options);stage(k);builders[r.style](k);return k.finish()}
  function transformGeometry(g,scale=1,offset=[0,0,0],angle=0){const out=new Geometry(),c=Math.cos(angle),s=Math.sin(angle);for(let i=0;i<g.data.length;i+=9){const a=g.data,x=a[i],z=a[i+2],nx=a[i+3],nz=a[i+5];out.data.push((x*c-z*s)*scale+offset[0],a[i+1]*scale+offset[1],(x*s+z*c)*scale+offset[2],nx*c-nz*s,a[i+4],nx*s+nz*c,a[i+6],a[i+7],a[i+8])}return out}
  function meshes(model){const m={};for(const p of model.parts)m[p.id]={vertices:new Float32Array(p.geometry.data)};return m}

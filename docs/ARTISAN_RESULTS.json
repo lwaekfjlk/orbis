@@ -1,7 +1,7 @@
 {
   "version": "11.0.0",
   "checks": {
-    "geometricFamilies": 13,
+    "geometricFamilies": 15,
     "highland": {
       "name": "Tinyard",
       "footprints": 518,
@@ -105,6 +105,20 @@
       "parts": 4,
       "sha256": "3c821fdebe87c780566ea963b120f71b2ba91adf37bd72e0780524e2d59477d7",
       "glbBytes": 3526268
+    },
+    {
+      "style": "taiga",
+      "triangles": 16642,
+      "parts": 4,
+      "sha256": "7201e47f8350df2b0b2c5ffd4895904f699158dd56b9c1ce221f3ea0b29a9d9b",
+      "glbBytes": 1800604
+    },
+    {
+      "style": "monsoon",
+      "triangles": 19974,
+      "parts": 4,
+      "sha256": "ebb649c73e22b6e178baa844d220711b355a73f9259283f78ffb9183e659cda8",
+      "glbBytes": 2160440
     }
   ]
 }

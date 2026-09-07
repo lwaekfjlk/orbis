@@ -2,13 +2,82 @@
  * Continuous quantities are interpolated; biome IDs are NEVER averaged. Ground
  * colors use the same biome palette as the world, independent of town recipes.
  * Ice is inherited from the cryosphere, not invented from altitude or a style.
+ *
+ * `climate()` is the ONE place that turns the physical fields into the factors
+ * that colour, vegetation and architecture all read, so the map and the town can
+ * never disagree about what kind of place this is. Biome IDs are categorical;
+ * temperature and aridity are continuous, and a biome spans most of its own
+ * range, so a category alone cannot say whether a forest is boreal or tropical.
  */
 const CityEnvironment = (() => {
- const version=1, cached=new WeakMap(), profiles=new WeakMap();
+ const version=2, cached=new WeakMap(), profiles=new WeakMap();
  const rgbHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const colors=BIOME.map(b=>rgbHex(b[1]));
  const frozen=rgbHex('#d9eff0');
- const forestDensity={7:.46,8:.52,9:.67,10:.42,11:.74,6:.07,20:.04};
+ /* Break points are the measured spread of a generated world, not guesses. Over
+  * land: temperature p10 -15.0, p25 -6.7, p50 6.2, p75 18.7, p90 24.4 C;
+  * aridity p10 .08, p25 .19, p50 .55, p75 1.35, p90 2.36; bedrock p75 1200 m,
+  * p90 2061 m. A factor reads 0 at the ordinary end and 1 at the world's own
+  * extreme, so nothing saturates across the whole map. */
+ function climate(t,a,bed=0,ice=0,snow=0){
+  const cold=clamp((12-t)/24),warm=clamp((t-10)/16),frost=clamp((8-t)/16),
+   dry=clamp((.55-a)/.42),humid=clamp((a-1.35)/1.3),alpine=clamp((bed-1200)/1800);
+  // Snow load is what actually shapes a roof: cold alone does not, a dry cold
+  // interior sheds little. Stored ice and the snow biomes are world data.
+  const load=clamp(frost*(.45+.55*clamp(a/1.2))+clamp(ice/60)*.5+snow*.5);
+  return {t,a,cold,warm,frost,dry,humid,alpine,load,
+   thermal:clamp((t+18)/46),moisture:clamp(a/2.4),band:band(t,a)};
+ }
+ function band(t,a){
+  const thermal=t<-8?'Polar':t<0?'Subpolar':t<8?'Boreal':t<16?'Cool temperate':t<22?'Warm temperate':'Tropical';
+  const moisture=a<.2?'arid':a<.7?'semi-arid':a<1.4?'subhumid':a<2.2?'humid':'perhumid';
+  return `${thermal} · ${moisture}`;
+ }
+ /* Woody cover fraction per biome. Values above .3 count as forest in profile(),
+  * which town-tradition routing reads, so every open-country biome is deliberately
+  * kept below that line: a steppe now shows scattered scrub instead of nothing, but
+  * it is still not a forest. */
+ const baseDensity={7:.46,8:.52,9:.67,10:.42,11:.74,6:.28,20:.14,5:.22,2:.16,12:.14,19:.34,18:.11,13:.04,4:.02,3:.05};
+ /* Canopy form and density from the biome AND where the cell sits inside that
+  * biome's own climate range. The old table was a flat per-biome constant, so a
+  * boreal and a tropical forest grew the same trees, and savanna, steppe, tundra
+  * and alpine meadow grew none at all. Density stays 0 where the world has no
+  * woody cover; callers still test `treeDensity > 0` before planting. */
+ function canopy(biome,t,a){
+  let density=baseDensity[biome]||0;
+  if(!density)return {density:0,form:'none'};
+  // The treeline is a temperature, not an altitude: w.temp already carries the
+  // lapse rate, so the same test zones a mountainside and a latitude band.
+  if(t<-4)return {density:0,form:'none'};
+  if(t<2)density*=clamp((t+4)/6)*.55;
+  else if(t<6)density*=.55+.45*clamp((t-2)/4);
+  if(a<.35)density*=clamp(a/.35);
+  const form=t<-1?'cushion'
+   :biome===19?'mangrove'
+   :t<6?(density<.14?'cushion':'conifer')
+   :biome===8||biome===12?'conifer'
+   :t<11?'conifer'
+   :biome===11&&a>1.6?'rainforest'
+   // Open country reads by biome first. A generic warm-and-dry test placed ahead of
+   // this turned every steppe into savanna and lost the distinction entirely.
+   :biome===6?'acacia'
+   :biome===5||biome===2||biome===3||biome===13||biome===4?'scrub'
+   :a<.75&&t>=18?'acacia'
+   :t>=22&&a>1.2?'palm'
+   :'broadleaf';
+  return {density:clamp(density),form};
+ }
+ // Foliage colour follows the same factors, so a stand of trees agrees with the
+ // ground it stands on instead of being one hardcoded green at every latitude.
+ function leafColor(t,a){
+  const c=climate(t,a);
+  let col=rgbHex('#5f8a5e');
+  const mix=(hex,amount)=>{const z=rgbHex(hex);col=col.map((v,k)=>v+(z[k]-v)*clamp(amount))};
+  mix('#3f6a64',c.cold*.85);          // boreal blue-green
+  mix('#2f7146',c.warm*c.humid*.80);  // tropical deep green
+  mix('#8a9159',c.dry*.65);           // dry olive
+  return col;
+ }
  function prepare(w){
   let a=cached.get(w);if(a)return a;
   a={water:new Uint8Array(GN),kind:new Uint8Array(GN),surface:new Float32Array(GN)};
@@ -26,9 +95,32 @@ const CityEnvironment = (() => {
   if(w.ice[i]>25){const f=clamp(w.ice[i]/900),a=rgbHex('#a1d5df'),z=rgbHex('#eef3ee');return a.map((v,k)=>v+(z[k]-v)*f);}
   let c=(colors[b]||colors[3]).slice();
   const blend=(z,t)=>{c=c.map((v,k)=>v+(z[k]-v)*clamp(t));};
-  if([7,8,9,10,11].includes(b))blend(rgbHex('#a6b486'),.40);
-  if(h>2300&&b!==1&&b!==16)blend(rgbHex(b===13?'#b59e86':'#939589'),(h-2300)/1500);
-  // No altitude-only snow or warm-arid beach tint. Snow/ice come from the world.
+  const cl=climate(w.temp[i],w.arid[i],h,w.ice[i]);
+  // Canopy shading used to be one khaki at 40% over all five forest biomes,
+  // which collapsed boreal and tropical forest onto nearly the same colour.
+  // Interpolate a cold canopy into a warm one instead, continuously: a forest
+  // reads its own temperature rather than which of five categories it fell in.
+  if([7,8,9,10,11,19].includes(b)){
+   const cool=rgbHex('#6f9a94'),warmLeaf=rgbHex('#83a855'),m=clamp((cl.t-2)/22);
+   blend(cool.map((v,k)=>v+(warmLeaf[k]-v)*m),.30);
+  }
+  // Continuous grading INSIDE the biome. Capped so the category still reads:
+  // this separates the two ends of a biome's range, it does not repaint it.
+  blend(rgbHex('#8aa2b0'),cl.cold*cl.cold*.40); // cold ground goes blue-slate
+  blend(rgbHex('#bb9d5c'),cl.warm*.18);         // warm ground goes ochre
+  // Dry ground pales, but toward different things: a cold desert is grey-tan gravel
+  // and a hot one is bright sand. One shared target left them near-identical, and
+  // left the two ends of a single desert biome 12 C apart looking the same.
+  {const cool=rgbHex('#b6b0a1'),hot=rgbHex('#e8c47f');blend(cool.map((v,k)=>v+(hot[k]-v)*cl.warm),cl.dry*.34);}
+  blend(rgbHex('#3f7551'),cl.humid*.24);        // wet ground deepens and saturates
+  // Bare rock and scree above the local treeline. Gated on elevation as well as
+  // cold: a cold LOW plain is tundra and keeps its own colour, while a cold HIGH
+  // slope loses its cover. Temperature already carries the lapse rate, so this
+  // zones by real elevation without a fixed metre constant.
+  if(b!==1&&b!==16)blend(rgbHex(b===13||cl.dry>.5?'#b59e86':'#939589'),cl.alpine*(.30+.45*clamp((cl.frost-.45)*1.8)));
+  // Stored ice below the glacier threshold is real world data, not invented
+  // snow: show it as faint frost rather than discarding it entirely.
+  if(w.ice[i]>0&&w.ice[i]<=25)blend(frozen,clamp(w.ice[i]/25)*.30);
   return c;
  }
  function sample(w,x,y){
@@ -44,7 +136,7 @@ const CityEnvironment = (() => {
    if(land){
     landWeight+=t;if(t>bestWeight){s.biome=b;bestWeight=t;}
     const snow=b===16||b===1?1:0;s.snow+=t*snow;
-    s.treeDensity+=t*(snow?0:(forestDensity[b]||0));
+    s.treeDensity+=t*(snow?0:canopy(b,w.temp[i],w.arid[i]).density);
     const col=cellColor(w,i);for(let c=0;c<3;c++)s.color[c]+=t*col[c];
    }
   }
@@ -62,12 +154,13 @@ const CityEnvironment = (() => {
   for(let dy=-6;dy<=6;dy++)for(let dx=-6;dx<=6;dx++){
    const x=p.x+dx,y=p.y+dy;if(x<0||x>=GW||y<0||y>=GH)continue;const i=y*GW+x;
    if(w.height[i]<=0||w.lake[i]>0)continue;
-   const h=w.height[i];if(h>max){max=h;peak={x,y,height:h};}min=Math.min(min,h);land++;biomes.add(w.biome[i]);if(forestDensity[w.biome[i]]>.3)forest++;
+   const h=w.height[i];if(h>max){max=h;peak={x,y,height:h};}min=Math.min(min,h);land++;biomes.add(w.biome[i]);if(canopy(w.biome[i],w.temp[i],w.arid[i]).density>.3)forest++;
    if(w.ice[i]>25||w.biome[i]===1)nearestGlacier=Math.min(nearestGlacier,Math.hypot(dx,dy));
   }
   const mountainous=max>1800&&max-min>1200,glacialFoothills=mountainous&&nearestGlacier<=6.5;
+  const cl=climate(core.temperature,core.aridity,core.bed,core.ice,core.snow);
   const label=glacialFoothills?`${BIOME[core.biome][0]} · glacial foothills`:mountainous?`${BIOME[core.biome][0]} · mountain slopes`:BIOME[core.biome][0];
-  const out={...core,version,label,maxElevation:max,minElevation:min,relief:max-min,peak,nearestGlacier:Number.isFinite(nearestGlacier)?nearestGlacier:null,glacialFoothills,mountainous,forestFraction:land?forest/land:0,biomes:[...biomes]};
+  const out={...core,version,label,climate:cl,climateBand:cl.band,maxElevation:max,minElevation:min,relief:max-min,peak,nearestGlacier:Number.isFinite(nearestGlacier)?nearestGlacier:null,glacialFoothills,mountainous,forestFraction:land?forest/land:0,biomes:[...biomes]};
   m.set(p.i,out);return out;
  }
  function createGrid(n){const grid={n};for(const key of ['bed','surface','temperature','aridity','rain','ice','snow','wetness','farm','treeDensity'])grid[key]=new Float32Array(n*n);grid.parentIndex=new Int32Array(n*n);grid.biome=new Uint8Array(n*n);grid.color=new Float32Array(n*n*3);return grid;}
@@ -95,7 +188,10 @@ const CityEnvironment = (() => {
    }
   }
  }
- function treeKind(g,k){return g.temperature[k]<10||g.biome[k]===8?'pine':'broadleaf';}
+ // The town-grid form of the same resolvers, so a placed tree and the ground
+ // under it were decided by one rule.
+ function treeKind(g,k){return canopy(g.biome[k],g.temperature[k],g.aridity[k]).form;}
+ function localClimate(g,k){return climate(g.temperature[k],g.aridity[k],g.bed[k],g.ice[k],g.snow[k]);}
  function roofSnow(g,k){return g.snow[k]>.5&&g.ice[k]>0;}
- return {version,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow};
+ return {version,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,climate,localClimate,canopy,leafColor,band};
 })();

@@ -9,7 +9,7 @@ const code=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(s=>readFil
 const E=Function(code+'\nreturn {generateWorld,createCivilization,generateCity,auditCity,physicalFingerprint,ArtisanCityKit,LandmarkCatalog,LandmarkTemplates,FortressPlan,exportGeometryGLB};')();
 let world,sim;const report={version:'11.0.0',checks:{},models:[]};
 test.before(async()=>{world=await E.generateWorld(defaults);sim=E.createCivilization(world,{realms:18,historySeed:'First-dawn'});});
-test('Nine precinct families have distinct finite geometry and deterministic replay',()=>{
+test('Fifteen precinct families have distinct finite geometry and deterministic replay',()=>{
  const signatures=[];
  for(const style of Object.keys(E.ArtisanCityKit.palettes)){
   const recipe=E.LandmarkCatalog.recipe(style,'artisan-reference',{artisan:true,urbanStyle:style}),m=E.ArtisanCityKit.precinct(recipe);
@@ -19,7 +19,7 @@ test('Nine precinct families have distinct finite geometry and deterministic rep
   const bytes=E.exportGeometryGLB(E.LandmarkTemplates.meshes(m),{recipe});assert.equal(new DataView(bytes).getUint32(0,true),0x46546c67);
   report.models.push({style,triangles:m.stats.triangles,parts:m.parts.length,sha256:digest,glbBytes:bytes.byteLength});
  }
- assert.equal(new Set(signatures).size,13);report.checks.geometricFamilies=13;
+ assert.equal(new Set(signatures).size,15);report.checks.geometricFamilies=15;
 });
 test('Hilltop reserve precedes roads; main citadel remains dry and road accessible',()=>{
  const before=E.physicalFingerprint(world),snapshot=JSON.stringify(sim),p=sim.provinces[179],c=E.generateCity(world,sim,p.id),b=c.buildings.find(b=>b.precinct);

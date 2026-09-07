@@ -250,15 +250,12 @@ function createCityRenderer(canvas, onChange, config = {}) {
         const defense=ArtisanCityKit.fortificationMeshes(c,p);
         for(const x of defense.body.data)walls.data.push(x);
         for(const x of defense.roof.data)roofs.data.push(x);
+        // Town foliage uses the same form vocabulary and the same climate colour as
+        // the atlas symbols. It used to be a two-way pine/blob switch in two fixed
+        // greens, so a boreal and a tropical town were planted identically.
         for (const t of c.trees) {
-            details.cone(t.x, t.y, t.z, .12, .1, t.h * .65, rgb('#827b5c'), 5);
-            if (t.kind === 'pine') {
-                trees.cone(t.x, t.y + .65, t.z, .95, 0, t.h, rgb('#54786a'), 6);
-            }
-            else {
-                trees.blob(t.x, t.y + t.h * .7, t.z, 1.05, rgb('#70947b'), t.h * .35);
-                trees.blob(t.x + .25, t.y + t.h * .95, t.z - .3, .7, rgb('#84a181'), .9);
-            }
+            const i = c.index(t.x, t.z), col = colorScale(CityEnvironment.leafColor(c.environment.temperature[i], c.environment.aridity[i]), .88 + hash2(t.x, t.z, c.seed + 5) * .24);
+            plantForm(trees, [t.x, t.y, t.z], t.kind, t.h, col, () => hash2(t.x * 7, t.z * 7, c.seed + 9));
         }
         // Scaffolding is stateful: project completion removes it on the next refresh.
         for (const proj of state.projects || []) {

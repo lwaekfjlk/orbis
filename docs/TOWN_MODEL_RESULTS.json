@@ -1,7 +1,7 @@
 {
   "version": 10,
   "checks": {
-    "grammars": 13,
+    "grammars": 15,
     "sameSite": {
       "provinceId": 151,
       "roadsDiffer": true,
@@ -9,7 +9,7 @@
       "terrainAndWaterIdentical": true
     },
     "realMeshes": {
-      "families": 13,
+      "families": 15,
       "boundedByDryParcels": true,
       "deterministic": true
     },
@@ -207,6 +207,34 @@
       "terrainHash": "5480e1d3cc1c37d7d8666a4258ed95edbc652d9a190e063002ac838e70ff860e",
       "waterHash": "80c32b0944f04fd660e700e27b3a8310e68d70c45b7e79177d4a7e6a4d277c1b",
       "fingerprint": "2b933440"
+    },
+    {
+      "style": "taiga",
+      "provinceId": 577,
+      "town": "Rowanchase",
+      "modules": 704,
+      "landmarks": 6,
+      "roads": 55,
+      "grammar": "clearings",
+      "blocksConnected": 710,
+      "footprints": 710,
+      "terrainHash": "64cb9df8a9b99afb81d35ef467250ec70fc100552bf20b23d6f50d95a3cfd4f1",
+      "waterHash": "9e69bc777e14eacc9f5a7479aca43fc6a5c742ce417df2b2de44dc311d445568",
+      "fingerprint": "2f03cd2"
+    },
+    {
+      "style": "monsoon",
+      "provinceId": 386,
+      "town": "Bonedown",
+      "modules": 543,
+      "landmarks": 7,
+      "roads": 79,
+      "grammar": "stiltlanes",
+      "blocksConnected": 550,
+      "footprints": 550,
+      "terrainHash": "e209faa6e8a59de5d52f1b885f6dfbc500dea9fe3dfc7deb0eae88ba489c80c9",
+      "waterHash": "c4511532eba73bf86bf4da1318b4b64afa36bf6182a79de3b07081af07d5dc5e",
+      "fingerprint": "f84aff66"
     }
   ]
 }

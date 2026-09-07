@@ -19,11 +19,15 @@ function fbm(x, y, s, n = 4) { let v = 0, a = .57; for (let k = 0; k < n; k++) {
     x = x * 2.07 + 3.1;
     y = y * 2.03 - 7.7;
 } return v; }
+// Base ground colours. These are the CATEGORY colour only; CityEnvironment.cellColor
+// grades each cell inside its own biome by temperature and aridity. The cold and the
+// warm forests are deliberately far apart here: at #6b8c7c and #548668 they differed
+// by less than the shading noise, so a boreal and a tropical province read the same.
 const BIOME = [
-    ['Open ocean', '#a4caca'], ['Persistent snow', '#e6eadf'], ['Tundra', '#a9b5a0'], ['Cold desert', '#c4b698'],
-    ['Sand desert', '#d9ac68'], ['Dry steppe', '#baaf79'], ['Savanna', '#a6ae6d'], ['Temperate forest', '#6f9872'],
-    ['Boreal forest', '#6b8c7c'], ['Temperate rainforest', '#578971'], ['Monsoon woodland', '#839b5f'],
-    ['Tropical rainforest', '#548668'], ['Alpine meadow', '#969983'], ['Rock desert', '#b79e81'], ['Salt basin', '#e4d2b0'], ['Lake', '#7cbbbb'], ['Glacier / ice sheet', '#d9eff0'], ['Sea ice', '#c8e7e9'], ['Freshwater marsh', '#679a8d'], ['Mangrove wetland', '#487d6c'], ['Floodplain meadow', '#93ac75']
+    ['Open ocean', '#a4caca'], ['Persistent snow', '#e8ebe4'], ['Tundra', '#9fa89b'], ['Cold desert', '#c1b79f'],
+    ['Sand desert', '#ddab5f'], ['Dry steppe', '#c0b273'], ['Savanna', '#b0b062'], ['Temperate forest', '#6f9a6a'],
+    ['Boreal forest', '#4e7f7a'], ['Temperate rainforest', '#4b8a6c'], ['Monsoon woodland', '#8ba354'],
+    ['Tropical rainforest', '#3d7f4c'], ['Alpine meadow', '#9a9c86'], ['Rock desert', '#b79e81'], ['Salt basin', '#e4d2b0'], ['Lake', '#7cbbbb'], ['Glacier / ice sheet', '#d9eff0'], ['Sea ice', '#c8e7e9'], ['Freshwater marsh', '#679a8d'], ['Mangrove wetland', '#3f7c60'], ['Floodplain meadow', '#93ac75']
 ];
 const BOUNDARY = { 1: 'Continental collision', 2: 'Subduction margin', 3: 'Oceanic island arc', 4: 'Divergent boundary', 5: 'Transform boundary' };
 const PLATE_NAMES = ['Aurelian', 'Vesper', 'Boreal', 'Nacre', 'Cinder', 'Thalassic', 'Orison', 'Sable', 'Pelagic', 'Veyran', 'Crown', 'Morrow', 'Istrian', 'Eldwyn', 'Lacuna', 'Umbra', 'Nival', 'Caldera', 'Serene', 'Brass', 'Halcyon', 'Mistral', 'Tamar', 'Astral', 'Coralline', 'Meridian', 'Fallow', 'Caelian', 'Ember', 'Obsidian'];

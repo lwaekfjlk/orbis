@@ -41,6 +41,64 @@ class Geometry {
 }
 const PLATE_COLORS = Array.from({ length: 30 }, (_, i) => { const a = i * 2.39996; return [.66 + .16 * Math.cos(a), .69 + .13 * Math.cos(a + 2.1), .64 + .17 * Math.cos(a - 2.1)]; });
 const BCOL = { 1: rgb('#9e4f4a'), 2: rgb('#d47847'), 3: rgb('#d47847'), 4: rgb('#338e94'), 5: rgb('#86718b') };
+/* Schematic vegetation, not literal plant populations. One form vocabulary shared by
+ * the atlas symbols, the town scene and the streaming city layer, so the same climate
+ * grows the same plant at every scale. `unit` is the height of an average specimen in
+ * that scale's own units; everything else is proportional to it.
+ * Forms come from CityEnvironment.canopy(), which reads the same temperature and
+ * aridity fields the ground colour reads.
+ */
+function plantForm(g, p, form, unit, col, jitter = () => .5) {
+    const trunk = rgb('#79644a'), r = unit * .34;
+    if (form === 'cushion') { // Above the treeline: dwarf tufts, no trunk.
+        g.blob(p[0], p[1] + unit * .05, p[2], r * .52, col, .40);
+        return;
+    }
+    if (form === 'scrub') { // Semi-arid bushes sitting straight on the ground.
+        g.blob(p[0], p[1] + unit * .11, p[2], r * .64, col, .70);
+        g.blob(p[0] + r * .44, p[1] + unit * .08, p[2] - r * .32, r * .42, colorScale(col, .93), .62);
+        return;
+    }
+    if (form === 'acacia') { // Savanna: bare stem, wide flat crown.
+        g.cone(p[0], p[1], p[2], r * .14, r * .10, unit * .78, trunk, 5);
+        g.blob(p[0], p[1] + unit * .84, p[2], r * 1.24, col, .30);
+        g.blob(p[0], p[1] + unit * .96, p[2], r * .76, colorScale(col, 1.07), .26);
+        return;
+    }
+    if (form === 'palm') { // Slender leaning stem, radiating fronds.
+        const lean = (jitter() - .5) * r * .60, top = p[1] + unit * 1.02;
+        g.cone(p[0], p[1], p[2], r * .15, r * .10, unit, trunk, 5);
+        for (let k = 0; k < 6; k++) {
+            const a = k / 6 * Math.PI * 2 + jitter(), s = r * 1.04;
+            g.tri([p[0] + lean, top, p[2]], [p[0] + lean + Math.cos(a) * s, top - r * .40, p[2] + Math.sin(a) * s],
+                [p[0] + lean + Math.cos(a + .5) * s * .8, top - r * .52, p[2] + Math.sin(a + .5) * s * .8], col);
+        }
+        return;
+    }
+    if (form === 'mangrove') { // Low dark canopy carried on visible prop roots.
+        for (let k = 0; k < 4; k++) {
+            const a = k / 4 * Math.PI * 2;
+            g.line([p[0] + Math.cos(a) * r * .60, p[1], p[2] + Math.sin(a) * r * .60], [p[0], p[1] + unit * .42, p[2]], r * .07, trunk);
+        }
+        g.blob(p[0], p[1] + unit * .60, p[2], r * .88, col, .82);
+        return;
+    }
+    if (form === 'rainforest') { // Tall clear trunk under a layered crown.
+        g.cone(p[0], p[1], p[2], r * .17, r * .12, unit * .96, trunk, 5);
+        g.blob(p[0], p[1] + unit * 1.00, p[2], r, col, .72);
+        g.blob(p[0] - r * .40, p[1] + unit * .84, p[2] + r * .36, r * .76, colorScale(col, .90), .60);
+        g.blob(p[0] + r * .32, p[1] + unit * 1.18, p[2] - r * .24, r * .54, colorScale(col, 1.10), .58);
+        return;
+    }
+    g.cone(p[0], p[1], p[2], r * .18, r * .14, unit * .52, trunk, 5);
+    if (form === 'conifer' || form === 'pine') {
+        g.cone(p[0], p[1] + unit * .20, p[2], r * .88, 0, unit * .86, col, 6, jitter());
+        g.cone(p[0], p[1] + unit * .56, p[2], r * .60, 0, unit * .76, colorScale(col, 1.06), 6, jitter());
+    } else {
+        g.blob(p[0], p[1] + unit * .66, p[2], r * .98, col, 1.17);
+        g.blob(p[0] - r * .36, p[1] + unit * .60, p[2] + r * .32, r * .70, colorScale(col, .96), 1);
+    }
+}
 class AtlasRenderer {
     constructor(canvas, onChange, forceSoftware = false) {
         this.canvas = canvas;
@@ -192,29 +250,41 @@ class AtlasRenderer {
     buildSymbols() {
         const w = this.world, rnd = random32(w.seed + 962), trees = new Geometry(), vents = new Geometry(), smoke = new Geometry(), dunes = new Geometry(), rocks = new Geometry();
         let treeCount = 0, duneCount = 0;
-        // Groups of 2-4 schematic trees represent a forest, not literal tree populations.
+        const forms = {};
+        // Schematic vegetation, not literal plant populations. Form, density and
+        // colour all come from CityEnvironment, which reads the same temperature and
+        // aridity fields the ground colour reads, so a stand of trees agrees with the
+        // ground under it. The old pass covered five biomes with two shapes and three
+        // fixed colours, drew conifers over tropical rainforest, and left savanna,
+        // tundra, steppe and alpine meadow bare.
+        // Form, density and colour all come from CityEnvironment, so a stand of trees
+        // agrees with the ground under it. The old pass covered five biomes with two
+        // shapes and three fixed colours, drew conifers over tropical rainforest, and
+        // left savanna, tundra, steppe and alpine meadow entirely bare.
         for (let y = 5; y < GH - 5; y += 3.5)
             for (let x = 5; x < GW - 5; x += 3.5) {
-                const xx = x + rnd() * 2 - 1, yy = y + rnd() * 2 - 1, i = cell(xx, yy), b = w.biome[i];
-                if (![7, 8, 9, 10, 11].includes(b) || w.height[i] > 2600 || rnd() > .73)
+                const xx = x + rnd() * 2 - 1, yy = y + rnd() * 2 - 1, i = cell(xx, yy);
+                if (w.ice[i] > 25 || w.height[i] <= 0 || w.lake[i] > 0)
+                    continue;
+                const here = CityEnvironment.canopy(w.biome[i], w.temp[i], w.arid[i]);
+                // Density is the acceptance test, so a thin steppe reads as scattered
+                // cover and a rainforest as closed canopy, from one continuous field.
+                if (!here.density || rnd() > here.density * 1.15)
                     continue;
                 if (w.volcanoes.some(v => Math.hypot(v.x - xx, v.y - yy) < 3))
                     continue;
-                const count = 2 + Math.floor(rnd() * 3);
+                const low = here.form === 'cushion' || here.form === 'scrub';
+                const count = low ? 2 + Math.floor(rnd() * 2) : 2 + Math.floor(rnd() * 3);
                 for (let k = 0; k < count; k++) {
                     const tx = xx + (rnd() - .5) * 1.8, ty = yy + (rnd() - .5) * 1.8, ti = cell(tx, ty);
-                    if (![7, 8, 9, 10, 11].includes(w.biome[ti]))
+                    if (w.height[ti] <= 0 || w.lake[ti] > 0 || w.ice[ti] > 25)
                         continue;
-                    const p = this.coord(tx, ty), scale = .56 + rnd() * .38, h = 1.6 * scale, col = colorScale(rgb(b === 8 ? '#386353' : b === 11 ? '#49704e' : '#4c7955'), .86 + rnd() * .26);
-                    trees.cone(p[0], p[1], p[2], .09 * scale, .07 * scale, h * .52, rgb('#79644a'), 5);
-                    if (b === 8 || rnd() < .55) {
-                        trees.cone(p[0], p[1] + h * .2, p[2], .48 * scale, 0, h * .80, col, 6, rnd());
-                        trees.cone(p[0], p[1] + h * .52, p[2], .34 * scale, 0, h * .7, colorScale(col, 1.06), 6, rnd());
-                    }
-                    else {
-                        trees.blob(p[0], p[1] + h * .66, p[2], .49 * scale, col, 1.17);
-                        trees.blob(p[0] - .18 * scale, p[1] + h * .60, p[2] + .16 * scale, .35 * scale, colorScale(col, .96), 1);
-                    }
+                    const at = CityEnvironment.canopy(w.biome[ti], w.temp[ti], w.arid[ti]);
+                    if (!at.density)
+                        continue;
+                    const p = this.coord(tx, ty), scale = (low ? .48 : at.form === 'rainforest' ? .68 : .56) + rnd() * .38;
+                    plantForm(trees, p, at.form, 1.6 * scale, colorScale(CityEnvironment.leafColor(w.temp[ti], w.arid[ti]), .86 + rnd() * .26), rnd);
+                    forms[at.form] = (forms[at.form] || 0) + 1;
                     treeCount++;
                 }
             }
@@ -250,7 +320,7 @@ class AtlasRenderer {
                     smoke.blob(p[0] + .08 + k * .14, top + .20 + k * .42, p[2] - k * .07, .16 + k * .065, rgb('#d6d4c4'), 1.1);
             }
         }
-        this.symbolStats = { trees: treeCount, dunes: duneCount };
+        this.symbolStats = { trees: treeCount, dunes: duneCount, forms };
         this.upload('trees', trees, true);
         this.upload('volcanoes', vents, true);
         this.upload('dunes', dunes, true);

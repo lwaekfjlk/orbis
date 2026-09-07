@@ -513,7 +513,11 @@ function generateCity(w, sim, provinceId, design = {}) {
             continue;
         // Stature follows the form, so a scrub belt or a cushion field above the
         // treeline is not planted at full forest height on the same hillside.
+        // treeDensity is interpolated across four parent cells, so it can be non-zero
+        // on a cell whose own form is 'none'; that would file a tree that draws nothing.
         const kind = CityEnvironment.treeKind(city.environment, i);
+        if (kind === 'none')
+            continue;
         const stature = kind === 'cushion' ? .30 : kind === 'scrub' ? .55 : kind === 'rainforest' ? 1.35 : kind === 'acacia' || kind === 'palm' ? 1.12 : 1;
         city.trees.push({ x, z, y: city.height[i], h: (2 + rng() * 2.1) * stature, kind });
     }

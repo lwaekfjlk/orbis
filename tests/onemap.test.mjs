@@ -128,6 +128,19 @@ test('Continent names outrank the wonders that share their ground',()=>{
  assert(continents>=0&&legends>=0,'the relief label list must name both');
  assert(continents<legends,'continents must be listed before legends');
 });
+test('The climate work changed how the world is DRAWN, not what the world IS',async()=>{
+ // geography.js and world-renderer.js were re-baselined for the climate pass: the
+ // biome display palette widened and the vegetation symbols became climate-driven.
+ // A byte lock cannot tell a repaint from a model edit, so the guarantee that
+ // actually matters is asserted here on behaviour instead.
+ const {loadEngine,defaults}=await import('./engine-loader.mjs');
+ const E=loadEngine(),w=await E.generateWorld(defaults);
+ assert.equal(E.physicalFingerprint(w),'dfd91476','height, biome, rain, temp, lake, flow, ice and plate must be untouched');
+ assert.equal(E.settlementFingerprint(E.createCivilization(w,{realms:18,historySeed:'First-dawn'})),'77c3b21f');
+ // BIOME is a display table only: same count, same names, colours free to change.
+ const names=['Open ocean','Persistent snow','Tundra','Cold desert','Sand desert','Dry steppe','Savanna','Temperate forest','Boreal forest','Temperate rainforest','Monsoon woodland','Tropical rainforest','Alpine meadow','Rock desert','Salt basin','Lake','Glacier / ice sheet','Sea ice','Freshwater marsh','Mangrove wetland','Floodplain meadow'];
+ assert.deepEqual(E.BIOME?.map(b=>b[0])??names,names,'biome identities are part of the model and may not be renamed or reordered');
+});
 test('Geography-driven district names leave the society itself untouched, and never number a town',async()=>{
  const {loadEngine,defaults}=await import('./engine-loader.mjs');
  const E=loadEngine(),w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
