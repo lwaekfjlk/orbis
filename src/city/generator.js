@@ -397,7 +397,9 @@ function generateCity(w, sim, provinceId, design = {}) {
     // Fidelity is bought against a triangle budget rather than granted to every block.
     // The core keeps full joinery, the outskirts fall back to massed volumes, and a
     // larger town simply gets a smaller detailed core instead of a larger download.
-    const LOD_COST = [1600, 3200, 7600], LOD_BUDGET = 850000;
+    // A citadel or grand sanctuary is a large fixed cost, so the blocks make room for it.
+    const monument = city.buildings.find(b => b.precinct);
+    const LOD_COST = [1600, 3200, 7600], LOD_BUDGET = 950000 - (monument?.sacred ? 340000 : monument ? 140000 : 0);
     const graded = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
     const spare = Math.max(0, LOD_BUDGET - LOD_COST[0] * graded.length);
     const full = Math.min(graded.length, Math.floor(spare * .62 / (LOD_COST[2] - LOD_COST[0])));

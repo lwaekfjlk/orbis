@@ -1,4 +1,4 @@
-/** Authored compositions assembled from the reusable kit. Nine palace families + six landmarks. */
+/** Authored compositions assembled from the reusable kit. Thirteen palace families + six landmarks. */
 const LandmarkTemplates = (() => {
  function pavilion(k,x,y,z,r=2,h=3){k.mark('open-pavilion');k.cylinder(x,y,z,r*1.14,.3,'trim',8);for(let i=0;i<8;i++){const a=i*Math.PI/4;k.cylinder(x+Math.cos(a)*r*.83,y+.3,z+Math.sin(a)*r*.83,.11,h,'wall',6)}k.using('roof',()=>{k.lathe(x,y+h+.3,z,[[0,0],[r*1.3,0],[r*.92,.25],[r*.54,r*.6],[r*.2,r*1.15],[0,r*1.5]],'roof',8);k.cone(x,y+h+.3+r*1.5,z,.16,.65,'metal',0,6)})}
  function gate(k,x,y,z,w=7,h=7){k.mark('gatehouse');for(const s of[-1,1])k.tower(x+s*(w*.5+.6),y,z,1.2,h,'battlement');k.arch(x,y,z,w,h-1,1.5,'wall');k.box(x,y+h-.8,z,w,.6,1.8,'trim');k.using('ornament',()=>{k.emblem(x,y+h+1,z+.3,.7);k.cultureDetail(x,y,z+1.2)})}
@@ -87,6 +87,76 @@ const LandmarkTemplates = (() => {
   k.part('watchtowers','The harbor watchtowers','architecture',()=>{for(const s of[-1,1]){k.tower(s*13,2.4,5,1.65,8,s<0?'spire':'battlement');k.hall(s*10,2.4,-5,5,12,3.2,{roof:'northern',roofHeight:3.0})}});
   k.part('gallery','The covered gathering gallery','architecture',()=>{k.arcade(0,2.4,4,7,1.8,2.9);k.roof(0,5.75,4,16,3,1.2,'roof','northern');k.using('ornament',()=>k.cultureDetail(0,2.4,7))});
  }
+ function steppe(k){
+  k.part('moot-ground','The trodden moot ground','foundation',()=>{k.terrace(0,0,0,40,32,1.1);k.terrace(0,1.1,-3,27,18,.7);stairsN(k,0,0,16.5,7,4,.28,.5);
+   for(const s of[-1,1])for(let j=0;j<9;j++)k.cylinder(s*19.4,1.1,(j-4)*3.5,.16,1.5,'wood',5)});
+  k.part('standard','The standing mast and its guys','architecture',()=>{k.cylinder(0,1.8,-3,.75,19,'wood',10);k.cylinder(0,20.8,-3,1.15,.5,'trim',10);k.banner(0,20.4,-3,5.2);
+   for(let i=0;i<6;i++){const a=i*Math.PI/3+.3;k.beam([0,17.6,-3],[Math.cos(a)*9.5,1.9,-3+Math.sin(a)*8.4],.09,'metal',4)}
+   k.using('ornament',()=>k.emblem(0,13.4,-2.1,1.0))});
+  k.part('felt-halls','The ring of felted assembly halls','architecture',()=>{
+   // Low guyed halls, not a masonry keep: this tradition strikes camp and rebuilds.
+   for(let i=0;i<6;i++){const a=i*Math.PI/3+.52,x=Math.cos(a)*12.4,z=-3+Math.sin(a)*10.6;
+    k.hall(x,1.8,z,7.4,5.2,3.6,{roof:'hip',roofHeight:2.8,angle:a+Math.PI/2,entrance:i===1});
+    k.roof(x,6.9,z,5.4,3.8,1.6,'trim','hip',a+Math.PI/2)}});
+  k.part('stock-pens','Windbreaks, pens and the drove lane','landscape',()=>{
+   for(const s of[-1,1]){k.rail(s*17,-13,s*17,13,1.2,'wood');k.box(s*20.6,1.1,0,.6,3.1,26,'wood')}
+   k.rail(-17,13,17,13,1.2,'wood');gate(k,0,1.1,15.6,5.4,5.2);
+   for(const s of[-1,1])for(const z of[-9,-1,7])k.hedge(s*15.2,1.1,z,2.6,5.4)});
+ }
+ function paddy(k){
+  k.part('terraces','The irrigated terrace foundation','foundation',()=>{
+   for(let t=0;t<5;t++){k.terrace(0,t*1.5,10-t*5.2,38-t*5.4,5.2,1.5);if(t<4)k.pool(0,t*1.5+.1,10-t*5.2,32-t*5.4,3.4)}
+   stairsN(k,0,0,15.5,5,6,.25,.46);for(let t=0;t<4;t++)stairsN(k,0,t*1.5,7.2-t*5.2,4.2,6,.25,.42)});
+  k.part('prefecture','The deep-eaved veranda halls','architecture',()=>{
+   k.hall(0,7.5,-16,14,9,6.2,{roof:'leaf',roofHeight:5.0});k.roof(0,18.7,-16,9.5,6,2.6,'roof','leaf');
+   // The eave is structural here: posted galleries carry it well clear of the wall.
+   for(const s of[-1,1]){k.roof(s*9.6,11.4,-16,7,10.4,1.5,'roof','leaf');for(const z of[-20,-16,-12])k.cylinder(s*9.4,7.5,z,.30,3.9,'wood',7)}
+   k.using('ornament',()=>k.emblem(0,20.4,-16,.9))});
+  k.part('side-galleries','Dye yards, mills and the sluice court','architecture',()=>{
+   for(const s of[-1,1]){k.hall(s*13.5,4.5,-6.5,5.4,11,3.9,{roof:'leaf',roofHeight:3.1});k.arcade(s*8.6,4.5,-6,5,1.7,2.6,Math.PI/2);
+    k.cylinder(s*17.6,4.5,2.4,1.7,3.2,'wood',10);k.ring(s*17.6,6.2,2.4,2.5,.16,'wood','xy',14)}
+   pavilion(k,0,4.6,-4.5,2.6,3.2)});
+  k.part('water-stair','The public water stair and plantings','garden',()=>{
+   gate(k,0,0,17.2,5.6,5.6);for(const s of[-1,1]){k.garden(s*11,0,13.4,7,5.4);k.tree(s*14.6,0,7.6,5,'broad')}
+   k.using('ornament',()=>k.cultureDetail(0,0,13.4))},'Basins reuse the terraces the site already has; no new watercourse is cut.');
+ }
+ function delve(k){
+  k.part('spoil-terraces','Cut benches and spoil terraces','foundation',()=>{k.terrace(0,0,2,40,26,1.8);k.terrace(0,1.8,-6,29,13,2.0);
+   for(let t=0;t<4;t++)k.terrace(0,0,14+t*1.9,34-t*6,1.9,.6);stairsN(k,0,0,13.5,6,7,.26,.46)});
+  k.part('headframe','The timber winding frame over the shaft','architecture',()=>{
+   const hz=-4;k.box(0,3.8,hz,9,.7,9,'dark');k.box(0,4.5,hz,5.2,.5,5.2,'wood');
+   for(const a of[-1,1])for(const b of[-1,1])k.beam([a*3.9,4.5,hz+b*3.9],[a*1.1,21.5,hz+b*1.1],.42,'wood',6);
+   for(const y of[9,14,18.5])for(const a of[-1,1]){const t=(y-4.5)/17;k.beam([a*(3.9-2.8*t),y,hz-(3.9-2.8*t)],[a*(3.9-2.8*t),y,hz+(3.9-2.8*t)],.16,'wood',4)}
+   k.box(0,21.5,hz,4.6,2.2,4.6,'wood');k.roof(0,23.7,hz,5.6,5.6,1.8,'roof','hip');
+   k.ring(0,22.4,hz,2.1,.24,'metal','yz',20);k.ring(0,22.4,hz,1.3,.16,'metal','yz',16);
+   // The haulage rope runs to the winding house, which is why that hall is where it is.
+   k.beam([0,20.6,hz],[-11,9.6,-6],.16,'metal',5)});
+  k.part('counting-hall','The counting hall, lamp shrine and winding house','architecture',()=>{
+   k.hall(-11,3.8,-6,8.4,10,7.2,{roof:'gable',roofHeight:3.4});k.hall(11.5,3.8,-5,7,9,5.4,{roof:'gable',roofHeight:2.8});
+   for(const s of[-1,1])k.tower(s*15.5,1.8,-11,1.5,7.6,'battlement');
+   pavilion(k,10.5,1.8,6.5,2.4,3.4);k.using('ornament',()=>{k.emblem(-11,12.4,-1.2,.85);k.cultureDetail(10.5,1.8,10)})});
+  k.part('ore-yard','Ore chutes, tips and the guarded gate','landscape',()=>{
+   for(const s of[-1,1])for(let j=0;j<3;j++){const x=s*(5.5+j*2.6);k.box(x,1.9,9.2,1.9,.5,5.4,'wood');k.beam([x,3.4,6.6],[x,2.1,11.8],.19,'wood',4)}
+   gate(k,0,0,16.4,5.4,6.2);for(const s of[-1,1])k.rock(s*18.5,0,10.5,3.2,2.1,3.4,8,'ground')});
+ }
+ function lagoon(k){
+  k.part('basin','The walled tidal basin and quays','foundation',()=>{k.terrace(0,0,-6,40,22,1.6);
+   k.pool(0,.1,14,30,17);for(const s of[-1,1]){k.box(s*16.6,0,14,2.4,1.9,17,'wall');k.rail(s*15.6,6,s*15.6,22,1.7,'metal')}
+   for(const s of[-1,1])for(let j=0;j<5;j++)k.box(s*9.4,1.5-j*.3,6.4+j*.62,5.2,.3,.62,'trim');
+   for(const s of[-1,1])for(const z of[10,15,20])k.cylinder(s*13.4,.1,z,.34,2.6,'wood',8)});
+  k.part('chancery','The arcaded chancery ranges','architecture',()=>{
+   k.hall(0,1.6,-12,15,9,8.4,{roof:'hip',roofHeight:3.6});k.dome(0,11.6,-12,4.2,4.6,'metal');
+   for(const s of[-1,1]){k.hall(s*13,1.6,-1,5.6,13,5.6,{roof:'hip',roofHeight:2.6});k.tower(s*17.4,1.6,-12,1.6,12.5,'dome')}
+   k.using('ornament',()=>k.emblem(0,13.9,-7.2,.95))});
+  k.part('loggias','Shaded loggias facing the water','architecture',()=>{
+   for(const s of[-1,1]){k.arcade(s*8.4,1.6,-1.5,6,1.8,2.8,Math.PI/2);k.roof(s*8.4,6.2,-1.5,3.4,15,1.3,'roof','hip')}
+   k.arcade(0,1.6,4.2,7,1.9,3.0);k.roof(0,6.5,4.2,20,3.6,1.4,'roof','hip');
+   k.arch(0,1.6,-6.6,3.4,4.4,.7,'trim')});
+  k.part('water-garden','Salt gardens and the water gate','garden',()=>{
+   for(const s of[-1,1]){k.garden(s*11.5,1.6,-19,6.4,5.2);k.tree(s*15.6,1.6,-19,4,'palm')}
+   k.fountain(0,1.6,-2.2,1.3);gate(k,0,0,23.4,6,5.8);
+   k.using('ornament',()=>k.cultureDetail(0,1.6,-20))},'The basin is the lagoon the site already has, enclosed rather than excavated.');
+ }
  function lighthouse(k){
   k.part('headland','The lantern terrace','foundation',()=>{k.cylinder(0,0,0,11,2,'wall',12);k.cylinder(0,2,0,11.25,.25,'trim',12);stairsN(k,0,0,14,5,9,.25,.45)});
   k.part('tower','The tiered navigation tower','architecture',()=>{k.cylinder(0,2.25,-2,4,1,'wall',8);k.lathe(0,3.25,-2,[[3.5,0],[3.2,6],[3.8,6.2],[3.6,6.6],[2.8,6.8],[2.3,14],[3,14.1],[3,14.6]],'wall',8);for(const y of[8.9,17.8])k.cylinder(0,y,-2,y>10?3:3.8,.3,'trim',8);for(const y of[5,9,13])for(let a=0;a<4;a++)k.window(Math.sin(a*Math.PI/2)*2.85,y,-2+Math.cos(a*Math.PI/2)*2.85,.8,1.7,a*Math.PI/2);for(let a=0;a<8;a++){const t=a*Math.PI/4;k.cylinder(Math.cos(t)*2.5,18.0,-2+Math.sin(t)*2.5,.13,3.1,'wall',6)}k.crystal(0,18.4,-2,.6,2.2);k.dome(0,21.1,-2,3.05,2.4,'metal');k.ring(0,18.6,-2,3,.07,'metal')});
@@ -116,7 +186,7 @@ const LandmarkTemplates = (() => {
   k.part('old-tree','The ancient heart-tree','landscape',()=>{k.tree(0,.5,-3,25);for(let i=0;i<7;i++){const a=i/7*Math.PI*2;k.beam([0,3,-3],[Math.cos(a)*5,.5,-3+Math.sin(a)*5],.45,'wood')}});
   k.part('shrine','The sheltered shrine','architecture',()=>{pavilion(k,0,.6,5,3.7,4);k.using('ornament',()=>k.emblem(0,10,5,1.2));k.bridge(0,-2.5,13,9,2.2,Math.PI/2)});
  }
- const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,lighthouse,observatory,labyrinth,bridge,ice,grove};
+ const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,steppe,paddy,delve,lagoon,lighthouse,observatory,labyrinth,bridge,ice,grove};
  function build(recipe,options={}){if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.build(recipe,options);if(recipe.artisan&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.precinct(recipe,options);const r=LandmarkCatalog.validate(recipe),k=new LandmarkKit(r,options);stage(k);builders[r.style](k);return k.finish()}
  function transformGeometry(g,scale=1,offset=[0,0,0],angle=0){const out=new Geometry(),c=Math.cos(angle),s=Math.sin(angle);for(let i=0;i<g.data.length;i+=9){const a=g.data,x=a[i],z=a[i+2],nx=a[i+3],nz=a[i+5];out.data.push((x*c-z*s)*scale+offset[0],a[i+1]*scale+offset[1],(x*s+z*c)*scale+offset[2],nx*c-nz*s,a[i+4],nx*s+nz*c,a[i+6],a[i+7],a[i+8])}return out}
  function meshes(model){const m={};for(const p of model.parts)m[p.id]={vertices:new Float32Array(p.geometry.data)};return m}

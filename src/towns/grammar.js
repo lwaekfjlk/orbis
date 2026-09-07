@@ -31,6 +31,33 @@ const TownGrammar = (()=>{
    const dx=-gz/L||1,dz=gx/L,rx=-dz,rz=dx;let last=center;
    for(let row=-2;row<=2;row++){const line=[];for(let col=-2;col<=2;col++){const x=col*19,z=row*16;line.push(at(dx*x+rx*z,dz*x+rz*z))}for(let j=1;j<5;j++)add(line[j-1],line[j],'street');add(last,line[row%2?0:4],'lane');last=line[row%2?4:0]}
    roles.civic=at(-rx*31,-rz*31);roles.temple=at(rx*23+dx*15,rz*23+dz*15);roles.academy=at(dx*25,dz*25);
+  }else if(profile.plan==='droveway'){
+   // Two long droving lanes with stock pens hung off them; the pasture between stays open.
+   const dx=axisX,dz=axisZ,rx=-dz,rz=dx;
+   for(const off of[-13,13]){let line=[];for(let k=-4;k<=4;k++)line.push(at(dx*k*21+rx*off,dz*k*21+rz*off));for(let k=1;k<line.length;k++)add(line[k-1],line[k],'arterial');
+    for(let k=1;k<line.length;k+=2)add(line[k],at(dx*(k-4)*21+rx*off*2.9,dz*(k-4)*21+rz*off*2.9),'lane');}
+   add(center,at(rx*13,rz*13),'street');add(center,at(-rx*13,-rz*13),'street');
+   roles.civic=at(rx*30,rz*30);roles.temple=at(dx*34-rx*24,dz*34-rz*24);roles.academy=at(-dx*36,-dz*36);
+  }else if(profile.plan==='paddies'){
+   // Contour lanes with short water stairs between them, following the actual slope.
+   const ix=city.index(c.x+8,c.z),jx=city.index(c.x-8,c.z),iz=city.index(c.x,c.z+8),jz=city.index(c.x,c.z-8);
+   const gx=city.height[ix]-city.height[jx],gz=city.height[iz]-city.height[jz],L=Math.hypot(gx,gz)||1;
+   const dx=-gz/L||1,dz=gx/L,rx=-dz,rz=dx;
+   let prev=null;
+   for(let row=-3;row<=3;row++){const line=[];for(let col=-3;col<=3;col++)line.push(at(dx*col*15+rx*row*12,dz*col*15+rz*row*12));
+    for(let j=1;j<line.length;j++)add(line[j-1],line[j],row===0?'arterial':'street');
+    if(prev)for(let j=1;j<line.length;j+=3)add(prev[j],line[j],'lane');prev=line;}
+   roles.civic=at(rx*30,rz*30);roles.temple=at(-rx*28+dx*18,-rz*28+dz*18);roles.academy=at(dx*32,dz*32);
+  }else if(profile.plan==='adits'){
+   // Switchbacks up the slope to a row of pitheads; spoil terraces sit between them.
+   const ix=city.index(c.x+8,c.z),jx=city.index(c.x-8,c.z),iz=city.index(c.x,c.z+8),jz=city.index(c.x,c.z-8);
+   const gx=city.height[ix]-city.height[jx],gz=city.height[iz]-city.height[jz],L=Math.hypot(gx,gz)||1;
+   const ux=gx/L||1,uz=gz/L,rx=-uz,rz=ux;let last=center;
+   for(let step=1;step<=4;step++){const side=step%2?1:-1,head=at(ux*step*13+rx*side*22,uz*step*13+rz*side*22);
+    add(last,head,'arterial');last=head;
+    for(const t of[-9,9])add(head,at(ux*step*13+rx*(side*22+t),uz*step*13+rz*(side*22+t)),'lane');}
+   for(const t of[-26,26])add(center,at(rx*t,rz*t),'street');
+   roles.civic=at(-ux*24,-uz*24);roles.temple=at(rx*26-ux*14,rz*26-uz*14);roles.academy=at(ux*30,uz*30);
   }else if(profile.plan==='labyrinth'||profile.plan==='grid'){
    const step=profile.plan==='labyrinth'?14:20,grid=[];for(let j=-3;j<=3;j++){const row=[];for(let i=-3;i<=3;i++){const jitter=profile.plan==='labyrinth'?2.5:0;row.push(at(i*step+(rng()-.5)*jitter,j*step*.8+(rng()-.5)*jitter))}grid.push(row)}
    for(let j=0;j<7;j++)for(let i=0;i<7;i++){if(i)add(grid[j][i-1],grid[j][i],j===3?'arterial':'lane');if(j&&(profile.plan==='grid'||i%2===0||j%2===0))add(grid[j-1][i],grid[j][i],i===3?'arterial':'street')}add(center,grid[3][3],'arterial');roles.civic=at(-22,-25);roles.temple=at(24,-22);roles.academy=at(23,23);
@@ -54,8 +81,8 @@ const TownGrammar = (()=>{
   if(b.landmark){b.module='landmark-precinct';return}
   const f=city.townProfile,variant=Math.floor(rng()*3),kind=f.kit;
   b.program=city.districts[b.district].type;
-  b.module=`${kind}/${b.program}-${variant}`;b.moduleVariant=variant;b.components=kind==='longhalls'?3:kind==='campuses'?4:kind==='pavilions'?3:kind==='terraces'?3:kind==='bastions'?3:kind==='decks'?3:kind==='cloisters'?4:4;
-  b.blockType=kind;b.name=`${{courts:'Courtyard block',cloisters:'Cloister & guesthouse block',campuses:'Scholar campus',pavilions:'Pavilion clearing',terraces:'Workshop terrace',courtyards:'Courtyard compound',decks:'Raised waterside court',bastions:'Fortified working yard',longhalls:'Longhall & storehouses'}[kind]} ${b.id.slice(1)}`;
+  b.module=`${kind}/${b.program}-${variant}`;b.moduleVariant=variant;b.components=kind==='longhalls'?3:kind==='campuses'?4:kind==='pavilions'?3:kind==='terraces'?3:kind==='bastions'?3:kind==='decks'?3:kind==='cloisters'?4:kind==='stockades'?3:kind==='verandas'?4:kind==='headframes'?3:kind==='quaysides'?4:4;
+  b.blockType=kind;b.name=`${{courts:'Courtyard block',cloisters:'Cloister & guesthouse block',campuses:'Scholar campus',pavilions:'Pavilion clearing',terraces:'Workshop terrace',courtyards:'Courtyard compound',decks:'Raised waterside court',bastions:'Fortified working yard',longhalls:'Longhall & storehouses',stockades:'Stockade & felt yard',verandas:'Veranda terrace house',headframes:'Pithead working yard',quaysides:'Quayside warehouse block'}[kind]} ${b.id.slice(1)}`;
  }
  return {plan,moduleFor};
 })();

@@ -3,8 +3,8 @@
   "checks": [
     {
       "name": "existing-city-placement",
-      "provinceId": 213,
-      "city": "Wildcombe",
+      "provinceId": 259,
+      "city": "Scorchquay",
       "width": 38,
       "audit": {
         "iceBuildings": 0,
@@ -13,7 +13,7 @@
         "overlaps": 0,
         "nonfinite": 0,
         "seaRoads": 0,
-        "buildings": 217
+        "buildings": 135
       }
     },
     {
@@ -51,34 +51,17 @@
         "banner": 6,
         "cistern": 2
       },
-      "sha256": "6abb79013968d0a7ebff19a17aef8a400acd412d66943699b697fe6e57fe7533"
+      "sha256": "7aca6a119bef5b63e483b83e313806944473b3ef4898b043c0ff9eb151c6b6de"
     },
     {
       "name": "same-recipe-at-three-scales",
-      "signature": "ab063dc3/great-sanctuary-1",
+      "signature": "769d69fb/great-sanctuary-1",
       "placedHeight": 49.233936471812996
     },
     {
-      "name": "nine-existing-towns",
+      "name": "native-sacred-towns",
+      "count": 7,
       "rows": [
-        {
-          "id": 213,
-          "name": "Wildcombe",
-          "blocks": 217,
-          "sanctuary": 38
-        },
-        {
-          "id": 240,
-          "name": "Foxwaystead",
-          "blocks": 183,
-          "sanctuary": 38
-        },
-        {
-          "id": 258,
-          "name": "Terngarth",
-          "blocks": 218,
-          "sanctuary": 38
-        },
         {
           "id": 259,
           "name": "Scorchquay",
@@ -86,21 +69,15 @@
           "sanctuary": 38
         },
         {
-          "id": 297,
-          "name": "Great Saltlanding",
-          "blocks": 130,
+          "id": 288,
+          "name": "Whitebeck",
+          "blocks": 228,
           "sanctuary": 38
         },
         {
-          "id": 343,
-          "name": "Ravenness",
-          "blocks": 224,
-          "sanctuary": 38
-        },
-        {
-          "id": 403,
-          "name": "Gullley",
-          "blocks": 108,
+          "id": 289,
+          "name": "Whitecombe",
+          "blocks": 282,
           "sanctuary": 38
         },
         {
@@ -113,6 +90,18 @@
           "id": 462,
           "name": "Larkfield",
           "blocks": 171,
+          "sanctuary": 38
+        },
+        {
+          "id": 480,
+          "name": "Sedgecombe",
+          "blocks": 331,
+          "sanctuary": 38
+        },
+        {
+          "id": 485,
+          "name": "Netherford",
+          "blocks": 244,
           "sanctuary": 38
         }
       ]
@@ -128,7 +117,7 @@
     },
     {
       "name": "embedded-GLB",
-      "bytes": 23898652,
+      "bytes": 23898648,
       "meshes": 10
     }
   ]

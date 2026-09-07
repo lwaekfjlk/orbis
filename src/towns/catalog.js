@@ -12,20 +12,36 @@ const TownCatalog = (() => {
   {id:'desert',name:'Caravan Courtyard Town',short:'Courtyard town',plan:'labyrinth',kit:'courtyards',material:'sandstone',roof:'flat',palace:'desert',width:.68,scale:.83,wall:1,spacing:.80,description:'Compact courtyard compounds, wind towers, shaded bazaars and caravan yards form close-knit blocks. Cisterns use the existing freshwater supply; no oasis is invented.',districts:['Covered Bazaar','Governor\'s Court','Sanctuary Court','Caravanserai Yards','Cistern Ward','Orchard Enclosures']},
   {id:'delta',name:'Waterside Stilt Town',short:'Waterside town',plan:'waterfront',kit:'decks',material:'reed',roof:'hip',palace:'delta',width:.62,scale:.90,wall:0,spacing:1.18,description:'Linked shore lanes serve raised timber compounds, fishing yards, warehouses and reed halls. New homes stay on valid shore ground; the parent lake or delta is unchanged.',districts:['Landing Market','Reed Council','Tidal Sanctuary','Boatwright Yards','Raised Courts','Reed Commons']},
   {id:'basalt',name:'Frontier Bastion Town',short:'Fortified town',plan:'grid',kit:'bastions',material:'basalt',roof:'hip',palace:'basalt',width:1,scale:1.0,wall:1.6,spacing:1.0,description:'Defensible streets connect workshop blocks, heavy-walled dwellings, supply courts and bastions. Dark stone is a material tradition, not a reason to add lava or volcanoes.',districts:['Supply Market','The Bastion','Hearth Sanctuary','Foundry Yards','Citadel Ward','Protected Commons']},
+  {id:'steppe',name:'Drove Road Town',short:'Grassland town',plan:'droveway',kit:'stockades',material:'steppe',roof:'hip',palace:'steppe',width:1.25,scale:.95,wall:.8,spacing:1.3,description:'Wide droving lanes run the length of the settlement, with stock pens, felt-and-timber halls, windbreak screens and a standing mast court. Pasture between compounds is kept open on purpose.',districts:['Drove Market','The Standing Court','Wind Shrine','Felt & Leather Yards','Herders\' Ward','Open Pasture']},
+  {id:'paddy',name:'Terrace Valley Town',short:'Terraced town',plan:'paddies',kit:'verandas',material:'paddy',roof:'leaf',palace:'paddy',width:.72,scale:.92,wall:0,spacing:1.02,description:'Contour lanes follow irrigation terraces. Deep-eaved veranda houses, dye yards, mills and sluice courts share the slope with the existing water; no new river is cut.',districts:['Water Market','The Sluice Court','River Shrine','Dye & Mill Yards','Veranda Ward','Terrace Commons']},
+  {id:'delve',name:'Pithead Town',short:'Mining town',plan:'adits',kit:'headframes',material:'delve',roof:'gable',palace:'delve',width:.85,scale:1.0,wall:1.2,spacing:.92,description:'Lanes climb between spoil terraces to timber headframes. Counting halls, smelting yards, lamp shrines and hewers\u2019 rows form dense working blocks. Ore is worked where the parent world already has it.',districts:['Ore Exchange','The Warden\'s Court','Lamp Shrine','Smelting Yards','Hewers\' Ward','Spoil Terraces']},
+  {id:'lagoon',name:'Lagoon Chancery Town',short:'Canal town',plan:'waterfront',kit:'quaysides',material:'lagoon',roof:'hip',palace:'lagoon',width:.92,scale:.96,wall:.5,spacing:1.0,description:'Quays and shaded loggias line the sheltered water. Warehouses, net yards, salt pans and arcaded houses face a walled basin. The lagoon itself is inherited, never dug.',districts:['Canal Market','The Tide Council','Salt Shrine','Net & Cooper Yards','Canal Ward','Lagoon Gardens']},
   {id:'fjord',name:'Northern Harbor Town',short:'Longhall town',plan:'ribbon',kit:'longhalls',material:'northern',roof:'northern',palace:'fjord',width:.80,scale:1.0,wall:.6,spacing:1.12,description:'A harbor-facing ribbon connects longhalls, boat stores and steep-roofed homes; short uphill lanes lead to a stone council hall. Snow is added only in a cold setting.',districts:['Harbor Exchange','Longhall Court','Memorial Close','Shipwright Yards','Timber Ward','Upland Commons']}
  ];
  function hash(s){let h=2166136261;for(const ch of String(s)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+ // Thresholds are set against the measured spread of a generated world, not guessed.
+ // The old delta (wet>.24) and basalt (rift>.65 AND ore>.38) tests were above the
+ // observed maxima, so neither tradition was ever assigned to anywhere.
  function native(p,w){
   const e=CityEnvironment.profile(w,p);
   if(e.temperature<6&&p.harbor>.12)return 'fjord';
   // A cold/dry foothill is not a hot-desert architectural assignment.
   if(e.glacialFoothills||e.bed>1500)return 'mountain';
-  if(p.wet>.24||(p.siteLake>.45&&e.temperature>5))return 'delta';
+  const volcanic=w.arc[p.i]>.30||w.rift[p.i]>.42;
+  // Ore-bearing upland is its own working tradition; basalt stays a volcanic one.
+  if(p.ore>.46&&e.bed>620&&!volcanic)return 'delve';
+  if(volcanic&&p.ore>.34)return 'basalt';
+  if(p.wet>.10||(p.siteLake>.22&&e.temperature>5))return 'delta';
   if(e.aridity<.72&&e.temperature>=16&&p.fresh>.16)return 'desert';
+  // Warm, well-watered and genuinely fertile ground is terraced, not cleared.
+  if(p.fertility>.34&&e.temperature>=17&&e.aridity>1.25)return 'paddy';
   if(e.forestFraction>.53)return 'forest';
-  if((w.arc[p.i]>.48||w.rift[p.i]>.65)&&p.ore>.38)return 'basalt';
+  // A warm sheltered harbour is a lagoon port; fjord above already took the cold ones.
+  if(p.harbor>.80&&e.temperature>=16&&e.bed<200)return 'lagoon';
+  // Dry treeless grassland, between the desert and the woods.
+  if(e.forestFraction<.18&&e.aridity<1.35&&e.temperature>=8)return 'steppe';
   if(p.mana>.58)return 'arcane';
-  return hash(w.params.seed+'/urban-tradition/'+p.i)%4===0?'basilica':'river';
+  return hash(w.params.seed+'/urban-tradition/'+p.i)%2===0?'basilica':'river';
  }
  function allowed(p,w,id){
   const e=CityEnvironment.profile(w,p);
@@ -36,6 +52,10 @@ const TownCatalog = (() => {
   // This kit includes palms and hot-climate wind towers. Cold courtyard
   // architecture is possible, but is not what this specific kit represents.
   if(id==='desert')return e.aridity<1&&e.temperature>=16&&p.fresh>.16;
+  if(id==='lagoon')return p.harbor>.20&&e.temperature>=10;
+  if(id==='paddy')return e.aridity>.9&&e.temperature>=10;
+  if(id==='delve')return p.ore>.20&&(e.bed>320||e.mountainous);
+  if(id==='steppe')return e.forestFraction<.45&&e.temperature>=4;
   return true;
  }
  function resolve(w,s,p,override={}){

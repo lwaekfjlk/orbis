@@ -85,6 +85,32 @@ const TownBuildingKit = (()=>{
    }else if(id==='basalt'){
     K.box(0,.0,0,9,.30,9,'wall');hall(0,-2.9,6.8,2.8,3.3,'hip',{y:.3,chimney:true});hall(-2.9,.5,2.4,3.7,2.4,'hip',{y:.3,chimney:true});hall(2.8,.5,2.4,3.7,2.6,'hip',{y:.3});
     for(const x of[-3.5,3.5]){K.box(x,.3,3.6,.9,3,.9,'wall');K.parapet(x,3.3,3.6,1,1)}K.arch(0,.3,3.7,2.5,2.4,.6,'wall');K.box(0,.30,.2,1.1,.65,1.1,'metal');crest(0,3.7,3.1);
+   }else if(id==='steppe'){
+    // Felted halls behind windbreak screens; the pasture between them stays open.
+    for(const [x,z,h]of[[-2.7,-2.2,2.6],[2.5,-2.4,2.4],[-.4,2.4,2.2]])hall(x,z,3.2,2.9,h,'hip',{timber:true});
+    for(const x of[-4.4,4.4])K.box(x,.1,0,.16,1.9,7.4,'wood');
+    K.rail(-4.2,3.6,4.2,3.6,.9,'wood');K.cylinder(3.4,.1,2.6,.22,4.2,'wood',6);K.banner(3.4,3.1,2.6,1.5);
+    K.hedge(1.4,.12,1.2,2.2,.4);crest(-.4,2.4,3.0);
+   }else if(id==='paddy'){
+    K.terrace(0,0,-1.2,8.6,4.6,.5);K.pool(0,.05,3.4,7.8,2.6);
+    for(const [x,z,h]of[[-2.6,-2.3,2.5],[2.5,-2.3,2.3],[0,.9,2.1]])hall(x,z,3.0,2.7,h,'leaf',{y:z<0?.5:0,timber:true});
+    // The veranda deck is what this family is for; it runs the width of the block.
+    K.box(0,.62,-.6,7.6,.09,.9,'trim');for(const x of[-2.6,2.5])K.box(x,.5,-.55,3.4,.10,.8,'wood');
+    K.rail(-3.9,3.4,3.9,3.4,.5,'wood');tree(3.5,-3.6,3.4);crest(0,.9,2.9);
+   }else if(id==='delve'){
+    hall(-2.4,-2.4,3.6,3.4,3.2,'gable',{chimney:true});hall(-2.6,1.9,3.0,3.0,2.4,'gable');
+    // A working headframe over the shaft, roped back to the winding shed.
+    const hx=2.6,hz=1.1;K.box(hx,.1,hz,2.5,.22,2.5,'dark');
+    for(const a2 of[-1,1])for(const b2 of[-1,1])K.beam([hx+a2*1.0,.3,hz+b2*1.0],[hx+a2*.28,4.6,hz+b2*.28],.10,'wood',4);
+    K.box(hx,4.6,hz,1.2,.55,1.2,'wood');K.ring(hx,4.9,hz,.55,.07,'metal','yz',12);K.beam([hx,4.3,hz],[-2.4,3.0,-2.4],.055,'metal',4);
+    for(const x of[-.2,1.0])K.box(x,.12,-3.4,1.0,.5,1.4,'wood');K.rock(3.7,.1,-3.2,1.5,.9,1.4,7,'ground');crest(-2.4,3.4,3.4);
+   }else if(id==='lagoon'){
+    K.pool(0,.05,3.5,8.4,2.4);
+    hall(0,-3.0,7.0,2.6,3.4,'hip');hall(-3.0,.4,2.4,3.9,2.9,'hip');hall(3.0,.4,2.4,3.9,2.7,'hip');
+    K.arcade(0,.1,-1.4,3,1.3,2.0);K.arch(0,.1,1.9,1.6,2.2,.35);
+    // Mooring posts and a quay edge: the block is entered from the water.
+    for(const x of[-2.6,0,2.6])K.cylinder(x,.05,4.3,.20,1.1,'wood',7);
+    K.box(0,.12,2.5,7.2,.12,1.1,'wood');K.rail(-3.6,2.5,3.6,2.5,.6,'metal');crest(0,-1.4,3.6);
    }else if(id==='fjord'){
     hall(-1.6,-1.2,3.5,6.4,3,'northern',{timber:true,chimney:true});hall(2.4,-2.6,2.4,3.3,1.9,'northern',{timber:true,stilt:true});hall(2.4,2.1,2.4,3.0,1.8,'northern',{timber:true});
     K.rail(-3.8,3.1,-.4,3.1,.12,'wood');K.cylinder(-2.9,.1,3.8,.26,1.1,'wood',8);crest(-.8,3.8,2.8);
@@ -105,7 +131,7 @@ const TownBuildingKit = (()=>{
 const TownCityBinding = (()=>{
  function resolve(w,s,p,c,kind){
   const base=LandmarkBinding.resolve(w,s,p,kind),f=c.townProfile;
-  let style=kind==='civic'?f.palace:kind==='academy'?'arcane':f.id==='forest'?'grove':f.id==='desert'?'desert':f.id==='mountain'?'mountain':f.id==='delta'?'delta':f.id==='fjord'?'fjord':f.id==='basalt'?'basalt':'basilica';
+  let style=kind==='civic'?f.palace:kind==='academy'?'arcane':f.id==='forest'?'grove':['desert','mountain','delta','fjord','basalt','steppe','paddy','delve','lagoon'].includes(f.id)?f.id:'basilica';
   const saved=s.landmarkRecipes?.[base.id];
   const sacred=kind==='temple'&&c.buildings.some(b=>b.sacred&&b.type===kind);
   return LandmarkCatalog.recipe(style,`${c.townRecipe.seed}/${kind}`,{...base,...(sacred?{sacred:true,sacredVersion:1,name:p.name+' · Grand Sanctuary',material:'ivory'}:{}),style,material:sacred?'ivory':f.material,roofLanguage:saved?.roofLanguage||f.roof,crown:saved?.crown||'native',seed:`${c.townRecipe.seed}/${kind}`,townRecipe:c.townRecipe,artisan:kind==='civic',urbanStyle:f.id,provenance:base.provenance+' The urban ensemble supplies the material and roof family.'});

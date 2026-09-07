@@ -12,7 +12,11 @@ const ArtisanCityKit=(()=>{
   desert:{wall:'#c7a576',trim:'#ecce99',roof:'#348c88',metal:'#bf9551',wood:'#846342',dark:'#5d4c3e',ground:'#bdae8d',water:'#68bec2',leaf:'#728950'},
   delta:{wall:'#baa775',trim:'#e5d3a0',roof:'#7c7b49',metal:'#adbc98',wood:'#725338',dark:'#374f47',ground:'#8b9575',water:'#7fbdb6',leaf:'#466d50'},
   basalt:{wall:'#5e6268',trim:'#a7a497',roof:'#755e4d',metal:'#c49859',wood:'#51473b',dark:'#2b313c',ground:'#8a8981',water:'#8dabad',leaf:'#4c6555'},
-  fjord:{wall:'#abaeac',trim:'#d8dacd',roof:'#405669',metal:'#bbab7e',wood:'#685340',dark:'#303f4b',ground:'#a0a59b',water:'#7baebb',leaf:'#405f54'}
+  fjord:{wall:'#abaeac',trim:'#d8dacd',roof:'#405669',metal:'#bbab7e',wood:'#685340',dark:'#303f4b',ground:'#a0a59b',water:'#7baebb',leaf:'#405f54'},
+  steppe:{wall:'#d3c49b',trim:'#eee1bd',roof:'#8b7650',metal:'#bda162',wood:'#7a6446',dark:'#4d483b',ground:'#b9b281',water:'#7fb0a6',leaf:'#8b9a5d'},
+  paddy:{wall:'#dad4bd',trim:'#efe9d1',roof:'#587757',metal:'#b9a46a',wood:'#6c5540',dark:'#3d4b43',ground:'#93a777',water:'#84c0b4',leaf:'#4b8253'},
+  delve:{wall:'#8b857f',trim:'#b8b0a2',roof:'#68594f',metal:'#c9a05c',wood:'#695948',dark:'#363438',ground:'#8d887e',water:'#7ba0a5',leaf:'#5c735f'},
+  lagoon:{wall:'#ded5c0',trim:'#f3ebd7',roof:'#3d888e',metal:'#c7ab63',wood:'#7a6450',dark:'#3e555c',ground:'#aeb391',water:'#6cc0c4',leaf:'#5d8868'}
  };
  function kit(recipe,lod=1){const k=new LandmarkKit(recipe,{base:false,lod});k.palette={...(PALETTES[recipe.urbanStyle||recipe.style]||LandmarkCatalog.palettes[recipe.material])};return k}
  function append(dst,src){for(const n of src.data)dst.data.push(n)}
@@ -47,7 +51,8 @@ const ArtisanCityKit=(()=>{
   });
  }
  function house(k,x,y,z,w,d,h,style,variant=0,angle=0){
-  const flat=style==='desert',timber=['fjord','delta'].includes(style)||(style==='river'&&variant%3===0),roof=style==='fjord'?'northern':style==='forest'?'leaf':flat?'flat':'gable';
+  const flat=style==='desert',timber=['fjord','delta','steppe','paddy'].includes(style)||(style==='river'&&variant%3===0),
+   roof=style==='fjord'?'northern':['forest','paddy'].includes(style)?'leaf':flat?'flat':['steppe','lagoon'].includes(style)?'hip':'gable';
   k.transform(x,y,z,angle,1,()=>{
    k.mark('inhabited-masonry');k.box(0,0,0,w+.2,.27,d+.2,'wall');
    const wall=timber?'wood':colorScale(k.color('wall'),.89+(variant%4)*.047);
@@ -86,11 +91,17 @@ const ArtisanCityKit=(()=>{
     if(variant%4===0){k.ring(0,h*.73,d/2+.055,.27,.035,'metal','xy',16);}
    }
    if(style==='arcane'&&variant%3===0){k.crystal(w*.36,h+1.6,-d*.24,.18,.9);}
+   // Felted windbreak screens on the exposed sides, not a decorative fence.
+   if(style==='steppe'){for(const t of[-1,1])k.box(t*(w*.5+.30),.27,0,.12,h*.72,d*.86,'wood');if(variant%3===0)k.box(0,h+.34,0,.30,1.5,.30,'wood');}
+   // A raised veranda under a deep eave is the whole point of this family.
+   if(style==='paddy'){k.box(0,.20,d*.5+.55,w+.5,.14,1.1,'wood');for(const t of[-1,1])k.box(t*w*.36,.34,d*.5+.95,.12,h*.62,.12,'wood');k.box(0,h*.62+.34,d*.5+.95,w+.6,.11,1.2,'trim');}
+   if(style==='delve'&&variant%3!==2){k.box(w*.34,.27,-d*.42,.55,h*.55,.55,'dark');k.beam([w*.34,h*.55,-d*.42],[w*.34,h+.9,-d*.05],.07,'wood',4);}
+   if(style==='lagoon'){k.arch(0,.27,d/2+.22,.72,1.45,.16,'trim');if(variant%3===1)k.box(0,h*.52,d/2+.34,w*.7,.12,.66,'trim');}
   });
  }
  function flag(k,x,y,z,h=2.4){k.banner(x,y,z,h)}
  function bastion(k,x,y,z,r,h,style){
-  const square=['mountain','basalt','desert'].includes(style),crown=style==='arcane'?'crystal':style==='desert'?'battlement':style==='basilica'?'dome':style==='mountain'?'battlement':'spire';
+  const square=['mountain','basalt','desert','delve'].includes(style),crown=style==='arcane'?'crystal':['desert','mountain','delve'].includes(style)?'battlement':['basilica','lagoon'].includes(style)?'dome':'spire';
   if(square){k.box(x,y,z,r*1.85,h,r*1.85,'wall');for(let j=1;j<h;j+=1.2)k.box(x,y+j,z,r*1.94,.13,r*1.94,'trim');k.parapet(x,y+h,z,r*1.9,r*1.9);windowN(k,x,y+h-1.35,z+r*.94,r*.4,1.0);}
   else k.tower(x,y,z,r,h,crown);
  }
@@ -134,6 +145,54 @@ const ArtisanCityKit=(()=>{
    K.part('oasis-courts','The wind-tower kasbah and garden courts','architecture',()=>{
     greatHall(K,0,1.0,-6.2,14,6,5.2,style);for(const s of[-1,1]){greatHall(K,s*8,.9,-.7,4,10,3.6,style);K.arcade(s*5.8,.9,-1,5,1.55,2.2,Math.PI/2);bastion(K,s*9,.9,8.7,1.1,5.9,style);K.box(s*5.5,6.2,-6.2,1.5,3.3,1.5,'wall');for(const t of[-1,1])K.box(s*5.5+t*.77,7.1,-6.2,.06,1.5,1,'dark');K.box(s*5.5,9.5,-6.2,1.9,.16,1.9,'trim');}
     K.dome(0,6.2,-6.2,2.8,3.4,'roof');K.pool(0,.91,1.1,2.6,5.9);K.arch(0,.9,9.2,3,3.8,.6,'wall');for(const s of[-1,1]){K.garden(s*3.4,.9,3.8,3.4,4.2);if(recipe.geography.freshwater>.3)K.tree(s*3.8,.9,6.8,4,'palm');}
+   });
+  }else if(style==='steppe'){
+   K.part('standard-court','The mast court, felt halls and stock pens','architecture',()=>{
+    K.terrace(0,.9,0,19,17,.55);
+    // A ring of low halls guyed back to one standing mast, not a walled keep.
+    for(let k=0;k<6;k++){const a=k/6*Math.PI*2,x=Math.cos(a)*7.1,z=Math.sin(a)*6.3;
+     greatHall(K,x,1.45,z,5.0,3.7,3.0,style,{entrance:k===0,roofHeight:2.1});
+     K.beam([x,4.2,z],[0,9.2,0],.14,'wood');}
+    K.cylinder(0,1.45,0,.52,10.2,'wood',10);flag(K,0,10.4,0,3.2);
+    for(const t of[-1,1]){K.rail(t*10.6,-9.2,t*10.6,9.2,.95,'wood');K.rail(-10.6,t*9.2,10.6,t*9.2,.95,'wood');}
+    K.emblem(0,3.0,9.4,.7);
+   });
+  }else if(style==='paddy'){
+   K.part('sluice-courts','The veranda prefecture and its water stair','architecture',()=>{
+    for(let t=0;t<3;t++)K.terrace(0,.9+t*1.15,-2.4-t*3.2,18-t*3.4,7.2,1.15);
+    greatHall(K,0,4.35,-8.8,8.6,5.8,5.2,style,{roofHeight:4.0});
+    for(const t of[-1,1]){greatHall(K,t*7.0,2.05,-2.2,3.5,8.0,3.1,style,{entrance:false});
+     K.arcade(t*4.1,1.45,3.3,4,1.6,2.4,Math.PI/2);}
+    // Basins are irrigation, not ornament: they step with the terraces.
+    K.pool(0,.92,6.2,8.6,5.0);K.pool(0,.92,-.4,6.6,2.4);
+    for(let j=0;j<7;j++)K.box(0,.9+j*.25,3.4-j*.40,4.2,.25,.48,'trim');
+    K.arch(0,.9,10.1,2.7,3.5,.5,'trim');K.emblem(0,6.4,-5.9,.6);
+   });
+  }else if(style==='delve'){
+   K.part('pithead','The headframe, counting hall and spoil terraces','architecture',()=>{
+    K.terrace(0,.9,-3.0,16.5,11.5,1.2);
+    greatHall(K,-5.2,2.1,-4.2,6.8,7.2,5.4,style);
+    // A timber winding frame over the shaft mouth, braced back to the counting hall.
+    const hx=5.4,hz=-2.9;K.box(hx,2.1,hz,4.4,.5,4.4,'dark');
+    for(const a of[-1,1])for(const b of[-1,1])K.beam([hx+a*1.8,2.5,hz+b*1.8],[hx+a*.5,11.8,hz+b*.5],.22,'wood',5);
+    K.box(hx,11.8,hz,2.3,1.1,2.3,'wood');K.ring(hx,12.5,hz,1.1,.14,'metal','yz',18);
+    K.beam([hx,11.1,hz],[-5.2,7.2,-4.2],.13,'metal',5);
+    for(let t=0;t<4;t++)K.terrace(0,.9,6.6+t*1.5,14-t*2.4,1.5,.5);
+    for(const t of[-1,1])bastion(K,t*8.4,.9,-9.1,1.1,6.2,style);
+    K.arch(0,.9,-9.6,2.6,3.4,.9,'wall');K.emblem(0,5.2,-8.4,.6);flag(K,-5.2,8.0,-4.2,2.4);
+   });
+  }else if(style==='lagoon'){
+   K.part('tidewater-chancery','The chancery ranges and walled basin','architecture',()=>{
+    K.terrace(0,.9,-4.4,19,9.6,.9);
+    greatHall(K,0,1.8,-6.2,10.6,6.2,6.6,style);
+    for(const t of[-1,1]){greatHall(K,t*8.2,.9,.6,3.7,9.6,4.1,style,{entrance:false});
+     K.arcade(t*5.3,.9,.4,5,1.7,2.5,Math.PI/2);}
+    // The basin is the approach: mooring steps and posts, not a processional stair.
+    K.pool(0,.9,6.0,10.6,6.8);
+    for(const t of[-1,1])for(let j=0;j<4;j++)K.box(t*6.0,.9-j*.2,3.3+j*.52,3.2,.2,.52,'trim');
+    for(const t of[-1,1]){K.cylinder(t*4.5,.9,10.1,.28,2.5,'wood',8);K.cylinder(t*1.9,.9,10.6,.24,2.1,'wood',8);}
+    K.dome(0,8.4,-6.2,2.9,3.3,'metal');K.arch(0,.9,-.6,2.7,3.7,.6,'trim');
+    K.emblem(0,5.7,-9.9,.65);flag(K,0,10.7,-6.2,2.6);
    });
   }else if(style==='delta'){
    K.part('tidal-hall','The stilted civic halls','architecture',()=>{for(const x of[-8,-4,0,4,8])for(const z of[-8,-4,0,4,8])K.box(x,.9,z,.25,2,.25,'wood');K.box(0,2.6,0,21,.3,20,'wood');greatHall(K,0,2.9,-3,8,12,5,style);for(const s of[-1,1])greatHall(K,s*7,2.9,2,4,10,3,style);K.rail(-10,10,10,10,2.9,'wood');K.rail(-10,-10,-10,10,2.9,'wood');});

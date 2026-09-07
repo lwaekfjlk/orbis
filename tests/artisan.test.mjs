@@ -19,7 +19,7 @@ test('Nine precinct families have distinct finite geometry and deterministic rep
   const bytes=E.exportGeometryGLB(E.LandmarkTemplates.meshes(m),{recipe});assert.equal(new DataView(bytes).getUint32(0,true),0x46546c67);
   report.models.push({style,triangles:m.stats.triangles,parts:m.parts.length,sha256:digest,glbBytes:bytes.byteLength});
  }
- assert.equal(new Set(signatures).size,9);report.checks.nineGeometricFamilies=true;
+ assert.equal(new Set(signatures).size,13);report.checks.geometricFamilies=13;
 });
 test('Hilltop reserve precedes roads; main citadel remains dry and road accessible',()=>{
  const before=E.physicalFingerprint(world),snapshot=JSON.stringify(sim),p=sim.provinces[179],c=E.generateCity(world,sim,p.id),b=c.buildings.find(b=>b.precinct);

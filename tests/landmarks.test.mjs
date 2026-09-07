@@ -9,18 +9,18 @@ const e=Function(scripts.map(f=>readFileSync(resolve(root,f),'utf8')).join('\n')
 const C=e.LandmarkCatalog,T=e.LandmarkTemplates;
 function geometryHash(m,filter=()=>true){const h=createHash('sha256');for(const p of m.parts.filter(filter))h.update(Buffer.from(new Float32Array(p.geometry.data).buffer));return h.digest('hex')}
 
-test('catalog has nine palace families and six separately composed regional landmarks',()=>{
- assert.equal(C.styles.filter(s=>s.type==='palace').length,9);assert.equal(C.styles.filter(s=>s.type==='landmark').length,6);
+test('catalog has thirteen palace families and six separately composed regional landmarks',()=>{
+ assert.equal(C.styles.filter(s=>s.type==='palace').length,13);assert.equal(C.styles.filter(s=>s.type==='landmark').length,6);
  for(const s of C.styles)assert.ok(T.builders[s.id]);
 });
-test('all fifteen assemblies are deterministic finite meshes, with separate named roof groups',()=>{
+test('all nineteen assemblies are deterministic finite meshes, with separate named roof groups',()=>{
  const hashes=new Set();
  for(const s of C.styles){const r=C.recipe(s.id,'mesh-test'),a=T.build(r),b=T.build(r);
   assert.equal(geometryHash(a),geometryHash(b),s.id);assert.ok(a.stats.triangles>3000);assert.ok(a.parts.some(p=>p.role==='roof'));assert.equal(a.parts.length,new Set(a.parts.map(p=>p.id)).size);
   for(const p of a.parts){assert.equal(p.geometry.data.length%27,0);for(const v of p.geometry.data)assert.ok(Number.isFinite(v));}
   hashes.add(geometryHash(a,p=>p.role==='architecture'));
  }
- assert.equal(hashes.size,15,'Architecture differs geometrically, not only through color or metadata.');
+ assert.equal(hashes.size,19,'Architecture differs geometrically, not only through color or metadata.');
 });
 test('seed recombination, tower-crown substitution and roof substitution change actual mesh geometry',()=>{
  const r=C.recipe('river','composition-test'),a=T.build(r),b=T.build({...r,seed:'composition-test-2',variant:2}),c=T.build({...r,crown:'crystal'}),d=T.build({...r,roofLanguage:'flat'});

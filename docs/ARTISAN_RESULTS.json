@@ -1,7 +1,7 @@
 {
   "version": "11.0.0",
   "checks": {
-    "nineGeometricFamilies": true,
+    "geometricFamilies": 13,
     "highland": {
       "name": "Tinyard",
       "footprints": 393,
@@ -77,6 +77,34 @@
       "parts": 4,
       "sha256": "6d4a507ad0873c3a3a436b773c442fb27e953b0da4613a503234f669eb49977f",
       "glbBytes": 3478480
+    },
+    {
+      "style": "steppe",
+      "triangles": 17816,
+      "parts": 4,
+      "sha256": "5f8b5c134bfe718848d3d2c5687e82c5fde039db3d1f633b34c3cb1c6b98914b",
+      "glbBytes": 1927416
+    },
+    {
+      "style": "paddy",
+      "triangles": 18588,
+      "parts": 4,
+      "sha256": "77683f81f8fd87dda699f3e48ce69605595477958586222666a12261386c59b5",
+      "glbBytes": 2010760
+    },
+    {
+      "style": "delve",
+      "triangles": 9944,
+      "parts": 4,
+      "sha256": "20416ea03a18ee2eb0a7d9a5d82cdfd5893c74434d8da6fb9c00cc45a989b1f2",
+      "glbBytes": 1077204
+    },
+    {
+      "style": "lagoon",
+      "triangles": 32620,
+      "parts": 4,
+      "sha256": "97e7de7bd83db36df44b40e9193c4546c27a03bfc7d8a11305c6cd47e5ca531a",
+      "glbBytes": 3526268
     }
   ]
 }

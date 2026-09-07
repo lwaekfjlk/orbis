@@ -7,15 +7,15 @@ import {root,defaults} from './engine-loader.mjs';
 const sources=['src/world/geography.js','src/civilization/simulation.js','src/city/environment.js', 'src/towns/catalog.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js','src/landmarks/world-binding.js','src/towns/building-kit.js'];
 const E=Function(sources.map(f=>readFileSync(resolve(root,f),'utf8')).join('\n')+'\nreturn {generateWorld,createCivilization,generateCity,auditCity,physicalFingerprint,settlementFingerprint,politicalFingerprint,TownCatalog,TownBuildingKit,TownCityBinding};')();
 const digest=x=>createHash('sha256').update(Buffer.from(x.buffer??JSON.stringify(x))).digest('hex');
-let w,s,base;const records={version:9,checks:{},styles:[]};
+let w,s,base;const records={version:10,checks:{},styles:[]};
 test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});base=E.physicalFingerprint(w);});
 const pick=id=>s.provinces.filter(p=>p.city&&E.TownCatalog.allowed(p,w,id)).sort((a,b)=>((E.TownCatalog.native(b,w)===id?1e9:0)+b.urbanPop)-((E.TownCatalog.native(a,w)===id?1e9:0)+a.urbanPop))[0];
 function check(c){const a=E.auditCity(c);for(const key of ['wetBuildings','roadBuildings','overlaps','nonfinite','seaRoads'])assert.equal(a[key],0,c.name+':'+key);assert(c.buildings.length>15);assert.equal(c.connectors.length,c.buildings.length);assert(c.blocks.every(b=>b.streetSocket!=null));return a;}
-test('nine whole-town grammars place connected compounds on existing settlements, without changing nature',()=>{
+test('thirteen whole-town grammars place connected compounds on existing settlements, without changing nature',()=>{
  const snapshot=JSON.stringify(s),planHashes=new Set();
  for(const t of E.TownCatalog.styles){const p=pick(t.id);assert(p,t.id+' has compatible source town');const c=E.generateCity(w,s,p.id,{style:t.id,seed:'Town-assembly-9'});check(c);assert.equal(E.physicalFingerprint(w),base);planHashes.add(c.fingerprint);
  records.styles.push({style:t.id,provinceId:p.id,town:p.name,modules:c.stats.modules,landmarks:c.stats.landmarks,roads:c.roads.length,grammar:c.townProfile.plan,blocksConnected:c.connectors.length,footprints:c.buildings.length,terrainHash:digest(c.height),waterHash:digest(c.water),fingerprint:c.fingerprint});}
- assert.equal(planHashes.size,9);assert.equal(JSON.stringify(s),snapshot);records.checks.nineGrammars=true;
+ assert.equal(planHashes.size,13);assert.equal(JSON.stringify(s),snapshot);records.checks.grammars=13;
 });
 test('on the SAME site four types change streets and ordinary modules, not only a central palace',()=>{
  const p=pick('river'),rows=['river','basilica','arcane','basalt'].map(style=>E.generateCity(w,s,p.id,{style,seed:'one-site'}));
@@ -30,7 +30,7 @@ test('ordinary compounds are distinct actual 3D meshes, bounded by their placed 
   for(const g of [m.body,m.roof])for(let i=0;i<g.data.length;i+=9){assert(g.data.slice(i,i+9).every(Number.isFinite));assert(g.data[i]>=b.x-b.w/2-1e-5&&g.data[i]<=b.x+b.w/2+1e-5);assert(g.data[i+2]>=b.z-b.d/2-1e-5&&g.data[i+2]<=b.z+b.d/2+1e-5)}
   hashes.add(digest(new Float32Array(m.body.data)));const again=E.TownBuildingKit.build(b,c,p,s.realms[p.owner]);assert.equal(digest(new Float32Array(m.body.data)),digest(new Float32Array(again.body.data)));
  }
- assert.equal(hashes.size,9);records.checks.realMeshes={families:9,boundedByDryParcels:true,deterministic:true};
+ assert.equal(hashes.size,13);records.checks.realMeshes={families:13,boundedByDryParcels:true,deterministic:true};
 });
 test('composition seed rerolls the town; recipe JSON replays it and invalid combinations are rejected',()=>{
  const p=pick('river'),c=E.generateCity(w,s,p.id,{style:'river',seed:'draft-A'}),d=E.generateCity(w,s,p.id,{style:'river',seed:'draft-B'});
