@@ -83,6 +83,21 @@ function plantForm(g, p, form, unit, col, jitter = () => .5) {
         g.blob(p[0], p[1] + unit * .60, p[2], r * .88, col, .82);
         return;
     }
+    if (form === 'laurel') { // Evergreen subtropics: short bole, one heavy dark dome.
+        g.cone(p[0], p[1], p[2], r * .22, r * .17, unit * .40, trunk, 5);
+        g.blob(p[0], p[1] + unit * .62, p[2], r * 1.02, colorScale(col, .88), .96);
+        g.blob(p[0] + r * .30, p[1] + unit * .50, p[2] - r * .26, r * .62, colorScale(col, .80), .88);
+        return;
+    }
+    if (form === 'hardleaf') { // Dry subtropics: low forked stems, open grey-green crown.
+        for (const side of [-1, 1]) {
+            const lean = side * r * .30;
+            g.cone(p[0], p[1], p[2], r * .11, r * .08, unit * .46, trunk, 4);
+            g.blob(p[0] + lean, p[1] + unit * .58, p[2] + lean * .4, r * .58, colorScale(col, 1.04), .74);
+        }
+        g.blob(p[0], p[1] + unit * .70, p[2], r * .46, colorScale(col, .93), .66);
+        return;
+    }
     if (form === 'rainforest') { // Tall clear trunk under a layered crown.
         g.cone(p[0], p[1], p[2], r * .17, r * .12, unit * .96, trunk, 5);
         g.blob(p[0], p[1] + unit * 1.00, p[2], r, col, .72);

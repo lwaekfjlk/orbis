@@ -15,36 +15,44 @@
     "boundedParcels": 9,
     "buildingColour": [
       {
-        "town": "Scorchwell",
-        "style": "steppe",
-        "buildings": 582,
-        "wallSaturation": 0.11,
-        "wallBrightness": 0.107,
-        "roofSaturation": 0.132
+        "town": "Scorchspire",
+        "style": "mountain",
+        "buildings": 598,
+        "wallColourSpread": 0.135,
+        "roofColourSpread": 0.113,
+        "wallSaturation": 0.044,
+        "wallBrightness": 0.078,
+        "roofSaturation": 0.139
+      },
+      {
+        "town": "Bluewell",
+        "style": "river",
+        "buildings": 455,
+        "wallColourSpread": 0.191,
+        "roofColourSpread": 0.127,
+        "wallSaturation": 0.082,
+        "wallBrightness": 0.102,
+        "roofSaturation": 0.123
       },
       {
         "town": "Birchgrove",
         "style": "monsoon",
         "buildings": 464,
+        "wallColourSpread": 0.187,
+        "roofColourSpread": 0.198,
         "wallSaturation": 0.084,
         "wallBrightness": 0.096,
         "roofSaturation": 0.158
       },
       {
-        "town": "Great Saltlanding",
-        "style": "lagoon",
-        "buildings": 500,
-        "wallSaturation": 0.081,
-        "wallBrightness": 0.099,
-        "roofSaturation": 0.155
-      },
-      {
-        "town": "Pineshore",
-        "style": "delve",
-        "buildings": 364,
-        "wallSaturation": 0.071,
-        "wallBrightness": 0.074,
-        "roofSaturation": 0.113
+        "town": "Scorchwell",
+        "style": "steppe",
+        "buildings": 580,
+        "wallColourSpread": 0.201,
+        "roofColourSpread": 0.173,
+        "wallSaturation": 0.111,
+        "wallBrightness": 0.107,
+        "roofSaturation": 0.132
       }
     ]
   },

@@ -76,8 +76,18 @@ test('a position is a pure function of the clock, so nothing drifts',()=>{
  const walker=roster.find(a=>a.kind==='walker'&&a.route.len>1);
  const cycle=2*walker.route.len/walker.speed,start=E.Folk.positionAt(walker,0),loop=E.Folk.positionAt(walker,cycle);
  assert(Math.hypot(start.x-loop.x,start.z-loop.z)<1e-6,'the round trip closes');
- const half=E.Folk.positionAt(walker,cycle/2);
- assert(Math.hypot(start.x-half.x,start.z-half.z)>walker.route.len*.5,'the walker actually goes somewhere');
+ // route.len is distance ALONG the path; the check below is straight-line displacement.
+ // For a route that winds or doubles back those are very different — across this town's
+ // 49 walkers the ratio runs 0.06 to 0.92 — so demanding half of the path length from
+ // whichever walker happens to be first in the roster was asking the roster order, not
+ // the model. Nobody may stand still, and the town as a whole must be walking.
+ const displacement=a=>{const c=2*a.route.len/a.speed,p0=E.Folk.positionAt(a,0),p1=E.Folk.positionAt(a,c/2);
+  return Math.hypot(p0.x-p1.x,p0.z-p1.z);};
+ const walkers=roster.filter(a=>a.kind==='walker'&&a.route.len>1);
+ assert(walkers.length>4,'a town this size has people in the street');
+ for(const a of walkers)assert(displacement(a)>1e-6,'a walker that never leaves its doorstep');
+ const ratios=walkers.map(a=>displacement(a)/a.route.len).sort((x,y)=>x-y);
+ assert(ratios[ratios.length>>1]>.25,`the median walker covers only ${ratios[ratios.length>>1].toFixed(2)} of its route`);
  report.checks.purity={deterministic:true,cycleCloses:true};
 });
 

@@ -21,16 +21,6 @@
           "spread": 12.9
         },
         {
-          "biome": 7,
-          "degrees": 12.5,
-          "spread": 17.1
-        },
-        {
-          "biome": 9,
-          "degrees": 13.1,
-          "spread": 17.8
-        },
-        {
           "biome": 13,
           "degrees": 12.6,
           "spread": 19.7
@@ -53,7 +43,7 @@
         0,
         0
       ],
-      "biomesResolved": 18
+      "biomesResolved": 20
     },
     "houseResponse": {
       "arctic": {
@@ -89,10 +79,22 @@
     },
     "sameTraditionDiffers": [
       {
+        "style": "forest",
+        "coldC": 6.7,
+        "hotC": 25.3,
+        "span": 18.6
+      },
+      {
         "style": "delta",
         "coldC": 11.1,
         "hotC": 27.6,
         "span": 16.4
+      },
+      {
+        "style": "steppe",
+        "coldC": 13.9,
+        "hotC": 26.3,
+        "span": 12.4
       },
       {
         "style": "lagoon",
@@ -101,22 +103,16 @@
         "span": 10.7
       },
       {
-        "style": "basalt",
-        "coldC": 7.8,
-        "hotC": 17.4,
-        "span": 9.6
-      },
-      {
-        "style": "basilica",
-        "coldC": 13.9,
-        "hotC": 26.9,
-        "span": 13
+        "style": "desert",
+        "coldC": 17.1,
+        "hotC": 26.8,
+        "span": 9.7
       },
       {
         "style": "river",
-        "coldC": 12.4,
-        "hotC": 21.2,
-        "span": 8.8
+        "coldC": 12.8,
+        "hotC": 20.4,
+        "span": 7.6
       }
     ],
     "materials": {
@@ -133,7 +129,7 @@
     "coldTown": {
       "name": "Elmwell",
       "annualC": -1.3,
-      "coverLo": 0.41,
+      "coverLo": 0.4,
       "coverHi": 1,
       "snowedFraction": 1
     },
@@ -143,8 +139,13 @@
       "coldRoof": "#495b6a",
       "hotRoof": "#65696b"
     },
+    "subtropics": {
+      "laurel": 317,
+      "hard": 252,
+      "temperate": 689
+    },
     "traditions": {
-      "count": 13,
+      "count": 14,
       "reachableAcrossSeeds": 15,
       "taiga": [
         5.7,
@@ -157,12 +158,13 @@
         27.8,
         26.8,
         27.2,
-        27.5
+        27.5,
+        23.5
       ]
     },
     "unchanged": {
-      "physicalFingerprint": "4b02963c",
-      "settlementFingerprint": "73c1127f"
+      "physicalFingerprint": "440ae5d0",
+      "settlementFingerprint": "6b6c5ea8"
     }
   }
 }
