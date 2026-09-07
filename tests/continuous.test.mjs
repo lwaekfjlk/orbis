@@ -45,7 +45,7 @@ test('Terrain refinement follows the camera, stays on the parent surface and sta
  assert(checked>1e5,'expected the whole terrain to be checked, saw '+checked);
 });
 test('The regional silhouette of a town is painted, not stamped',()=>{
- // 4.8 to 18 is where a whole town is on screen, so it is the view most of the map is
+ // TOWN_ZOOM to DETAIL_ZOOM is where a whole town is on screen, so it is the view most of the map is
  // read in — and every silhouette in every town on the world shared one hardcoded
  // beige wall and one slate roof, the wall not even asking which town it was in.
  const meshes={};
@@ -117,9 +117,18 @@ test('Mesh collection does not request a second canvas or graphics context',()=>
  const h=E.physicalFingerprint(w),pop=E.settlementFingerprint(s),collector=E.createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(city,p,s.realms[p.owner],s.cityState?.[p.id]||{});
  assert(collector.meshes.buildings.count>0);assert(collector.meshes.roofs.vertices.every(Number.isFinite));assert.equal(E.physicalFingerprint(w),h);assert.equal(E.settlementFingerprint(s),pop);delete globalThis.window;delete globalThis.document;
 });
+test('The folk and ship scales stay pinned to the town footprint',()=>{
+ // folk-renderer sizes people and hulls in ATLAS units reconciled against the town
+ // model, so it has to shrink with it. It cannot read AtlasSpace at module-eval time
+ // (temporal dead zone in the concatenated bundle), so the literal is cross-checked.
+ const src=readFileSync(resolve(root,'src/render/folk-renderer.js'),'utf8');
+ const m=src.match(/const F = \.(\d+);/);
+ assert(m,'folk-renderer must declare its footprint factor as a literal');
+ assert.equal(Number('.'+m[1]),E.AtlasSpace.CITY_FOOTPRINT,'folk-renderer F has drifted from AtlasSpace.CITY_FOOTPRINT');
+});
 test('Exploration routes delegate to a camera operation, with no city dialog open',()=>{
  const c=readFileSync(resolve(root,'src/ui/city-ui.js'),'utf8');assert(c.includes('if(window.ContinuousMap?.active)return ContinuousMap.focusTown(id)'));
- const u=readFileSync(resolve(root,'src/ui/continuous-map.js'),'utf8');assert(!u.includes('.showModal('));assert(!u.includes("setScene('city')"));assert(!u.includes("setScene('landmark')"));assert(u.includes('max(1,pinch.d),.6,180'));
+ const u=readFileSync(resolve(root,'src/ui/continuous-map.js'),'utf8');assert(!u.includes('.showModal('));assert(!u.includes("setScene('city')"));assert(!u.includes("setScene('landmark')"));assert(u.includes('max(1,pinch.d),.6,AtlasSpace.MAX_ZOOM'));
 });
 test('The cartographic quay hands over to the town waterfront, exactly where the town marker does',()=>{
  // A quay symbol is drawn to the same scale as the town marker beside it, which is about
@@ -133,7 +142,7 @@ test('The cartographic quay hands over to the town waterfront, exactly where the
   assert.equal(l.visible('ports'),l.visible('settlements'),`at zoom ${zoom} the quay symbol must follow the town symbol`);
   assert.equal(l.visible('seaLanes'),l.visible('settlements'));
  }
- for(const zoom of [4.8,12,18,30,120]){
+ for(const zoom of [16,40,60,100,400]){
   const l=at(zoom);
   assert.equal(l.visible('settlements'),false,`town markers are already gone at zoom ${zoom}`);
   assert.equal(l.visible('ports'),false,`a quay symbol forty buildings across is still drawn at zoom ${zoom}`);
@@ -162,8 +171,8 @@ test('The town waterfront streams into the atlas with the rest of the town',()=>
 });
 test('Figures and ground-seated roads change over at the existing detail threshold',()=>{
  const road=readFileSync(resolve(root,'src/render/road-renderer.js'),'utf8');
- assert(/AtlasRenderer\.FOLK_ZOOM\s*=\s*18/.test(road),'the crowd threshold is the town-detail threshold');
- assert(/zoom>=4\.8&&this\.r\.zoom<18/.test(readFileSync(resolve(root,'src/continuous/city-layer.js'),'utf8')),'silhouettes still hand over at the same zoom');
+ assert(new RegExp('AtlasRenderer\\.FOLK_ZOOM\\s*=\\s*'+E.AtlasSpace.DETAIL_ZOOM).test(road),'the crowd threshold is the town-detail threshold');
+ assert(/zoom>=AtlasSpace\.TOWN_ZOOM&&this\.r\.zoom<AtlasSpace\.DETAIL_ZOOM/.test(readFileSync(resolve(root,'src/continuous/city-layer.js'),'utf8')),'silhouettes still hand over at the same zoom');
  // The locked world renderer is extended, never edited.
  assert(/const priorBuild\s*=\s*AtlasRenderer\.prototype\.buildCivilization/.test(road));
  assert(/const priorVisible\s*=\s*AtlasRenderer\.prototype\.visible/.test(road));

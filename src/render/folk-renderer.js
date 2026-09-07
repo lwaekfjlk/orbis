@@ -57,7 +57,19 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
     // SHIP was reconciled against the moored dinghies at a town's own quay, which made the
     // sea-lane hull match them — but a vessel three cells out on open water is read against
     // the coastline behind it, not against a jetty, and at that reading it was far too large.
-    const LOCAL_HEIGHT = 1.5, NOMINAL = .043, SYMBOL = .10, SHIP = 1.6, HULL = 1.1;
+    // These three are ATLAS-unit sizes reconciled against the town model, so they move
+    // with it. The town footprint quoted above was ~3.7 atlas units when it mapped onto
+    // its whole sampling window; it is now AtlasSpace.CITY_FOOTPRINT of that. Leaving
+    // them fixed made a sea-going hull 6.3x the dinghies at the town's own quay and put
+    // people in the streets three times over-size.
+    // Written as a literal, not read from AtlasSpace: that is a `const` declared later
+    // in the concatenated bundle, so touching it here is a temporal-dead-zone throw.
+    // tests/continuous.test.mjs asserts this stays equal to AtlasSpace.CITY_FOOTPRINT.
+    const F = .30;
+    // F applies ONCE. NOMINAL and SYMBOL are absolute atlas sizes; SHIP and HULL are
+    // multipliers on top of NOMINAL, so scaling them too shrank a hull elevenfold and
+    // left it smaller than the dinghies it was reconciled against.
+    const LOCAL_HEIGHT = 1.5, NOMINAL = .043 * F, SYMBOL = .10 * F, SHIP = 1.6, HULL = 1.1;
     AtlasRenderer.FOLK_SCALE = { near: NOMINAL, symbol: SYMBOL, ship: SHIP, hullLength: HULL };
     const GRID_X = MAP_X / (GW - 1), GRID_Z = MAP_Z / (GH - 1);
     const skinOf = (cloth, tone) => colorMix(cloth, rgb('#e7d3b6'), .34 + tone * .22);

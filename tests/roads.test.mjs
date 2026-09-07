@@ -266,10 +266,10 @@ test('A harbour symbol and a ship stay symbols, and give way to the real thing',
  assert(quay,'the largest port should build something');
  assert(quay.w/town<.30,`the port symbol spans ${(quay.w/town*100).toFixed(0)}% of a town`);
  assert(quay.h/town<.12,`its mast stands ${(quay.h/town*100).toFixed(0)}% of a town's width`);
- // It hands over to the town's own quays and jetties, at the same 4.8 the city
+ // It hands over to the town's own quays and jetties, at the same TOWN_ZOOM the city
  // layer uses, so a renderer with no city layer tells the same story.
  r.zoom=2;assert(r.visible('ports'),'the symbol belongs on the regional map');
- r.zoom=4.8;assert(!r.visible('ports'),'and must be gone once the real harbour is drawn');
+ r.zoom=E.AtlasSpace.TOWN_ZOOM;assert(!r.visible('ports'),'and must be gone once the real harbour is drawn');
  r.zoom=6;
  // A hull and a cart reach vehicle() with the same size; their factors have to agree.
  r.buildFolk(0);

@@ -200,7 +200,7 @@ test('a figure is a small bounded mesh, and every accent is real geometry',()=>{
 
 test('a walking crowd never forces a shadow pass',()=>{
  const r=Object.create(E.AtlasRenderer.prototype);
- Object.assign(r,{world:w,sim:s,layer:'relief',options:{},zoom:30,relief:1,meshes:{},target:[0,0,0],
+ Object.assign(r,{world:w,sim:s,layer:'relief',options:{},zoom:E.AtlasSpace.DETAIL_ZOOM*1.7,relief:1,meshes:{},target:[0,0,0],
   azimuth:.018,elevation:1.19,width:1400,height:900,dirtyShadow:false,software:false,
   upload(name,g,shadow=true,unlit=0,alpha=1){this.meshes[name]={count:g.data.length/9,shadow,unlit,alpha};this.dirtyShadow=true;},
   request(){}});
