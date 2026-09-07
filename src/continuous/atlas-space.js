@@ -3,40 +3,23 @@
  */
 const AtlasSpace = (() => {
  const X=MAP_X/(GW-1), Z=MAP_Z/(GH-1);
- /* A city is a very small thing on a world map. The town model's art-unit width used to
-  * be mapped onto its FULL sampling window, which put a median town 5.0 cells across
-  * against 8.6 cells to its nearest neighbour — 58% of the gap — so a small drag at
-  * building zoom already showed the next town. The window is what the town READS for
-  * its terrain and stays as it was; its buildings now occupy a fraction of it, which
-  * brings the same pair to about 17%.
-  *
-  * ZOOM is expressed in this scale, so the whole LOD ladder below is derived from it
-  * rather than restated: shrinking the footprint without moving the thresholds would
-  * just show the same tiny models from the same distance. */
- const CITY_FOOTPRINT=.30, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
- function height(w,i,relief=1){const h=w.lake[i]>0?w.lake[i]:w.height[i]>0?w.height[i]+(w.ice?.[i]||0):0;return h>0?.14+Math.pow(h/1000,.98)*relief:0;}
- function weights(x,y){
-  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
-  const a=Math.min(GW-2,Math.floor(x)),b=Math.min(GH-2,Math.floor(y)),u=x-a,v=y-b,i=b*GW+a;
-  if((a+b)%2)return u+v<=1?[[i,i+1,i+GW],[1-u-v,u,v]]:[[i+1,i+GW,i+GW+1],[1-v,1-u,u+v-1]];
-  return v>=u?[[i,i+GW,i+GW+1],[1-v,v-u,u]]:[[i,i+GW+1,i+1],[1-u,v,u-v]];
- }
- function surface(w,x,y,relief=1){const[ids,q]=weights(x,y);let h=0;for(let k=0;k<3;k++)h+=height(w,ids[k],relief)*q[k];return h;}
+ // Layout surveying and mesh placement share one footprint. The broader site
+ // profile still reads the surrounding valley independently of the built area.
+ const CITY_FOOTPRINT=CityEnvironment.cityFootprint, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
+ const height=CityEnvironment.atlasHeight,weights=CityEnvironment.atlasWeights,surface=CityEnvironment.atlasSurface;
  function point(w,x,y,relief=1){return[(x/(GW-1)-.5)*MAP_X,surface(w,x,y,relief),(y/(GH-1)-.5)*MAP_Z];}
  function grid(x,z){return[(x/MAP_X+.5)*(GW-1),(z/MAP_Z+.5)*(GH-1)];}
  function cityFrame(w,p,c,relief=1){
-  // Cells of parent world the BUILT town covers, as against c.span which it samples.
-  const cells=c.span*CITY_FOOTPRINT;
+  // Parent cells covered by both the surveyed parcels and their mounted meshes.
+  const cells=c.terrainSpan??c.span*CITY_FOOTPRINT;
   const sx=cells/c.width*X,sz=cells/c.width*Z,scale=Math.sqrt(sx*sz),origin=point(w,p.x,p.y,relief);
   const at=(x,z)=>[p.x+x/c.width*cells,p.y+z/c.width*cells];
   const ground=(x,z)=>{const a=at(x,z);return surface(w,a[0],a[1],relief);};
   const localGround=(x,z)=>{const xx=clamp((x/c.width+.5)*(c.n-1),0,c.n-1),zz=clamp((z/c.depth+.5)*(c.n-1),0,c.n-1),a=Math.floor(xx),b=Math.floor(zz),u=xx-a,v=zz-b,read=(i,j)=>c.height[Math.min(c.n-1,j)*c.n+Math.min(c.n-1,i)];return lerp(lerp(read(a,b),read(a+1,b),u),lerp(read(a,b+1),read(a+1,b+1),u),v);};
   const anchors=new Map();
-  // The atlas reads elevation almost linearly while the town grid compresses it through
-  // asinh, so a slope the generator judged mild can render as a tall skirt here. Seat the
-  // block a quarter of the way up its own fall: the uphill side buries into the bank and
-  // only the downhill quarter shows as masonry. A citadel keeps its full podium.
-  for(const b of c.buildings){let top=-Infinity,low=Infinity;for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const y=ground(b.x+dx*b.w,b.z+dz*b.d);top=Math.max(top,y);low=Math.min(low,y);}const seat=low+(top-low)*(b.precinct?.6:.25);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:seat+.006,low,top,b,scale});}
+  // The parcel survey limits its fall; seat the whole rigid compound above its
+  // highest point. Lowering the anchor into a bank buried uphill walls and roofs.
+  for(const b of c.buildings){const a=at(b.x-b.w/2,b.z-b.d/2),z=at(b.x+b.w/2,b.z+b.d/2),{top,low}=CityEnvironment.atlasBounds(w,a[0],a[1],z[0],z[1],relief);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:top+.006,low,top,b,scale});}
   function vertex(x,y,z,anchor=null){return[origin[0]+x*sx,anchor?anchor.y+(y-anchor.b.y)*scale:ground(x,z)+(y-localGround(x,z))*scale+.003,origin[2]+z*sz];}
   return{origin,sx,sz,scale,cells,at,ground,localGround,anchors,vertex};
  }

@@ -181,13 +181,12 @@ class ContinuousCityLayer {
  }
  build(p){const w=this.world,s=this.sim,c=generateCity(w,s,p.id),collector=createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(c,p,s.realms[p.owner],s.cityState?.[p.id]||{});
   const frame=AtlasSpace.cityFrame(w,p,c,this.r.relief),model={p,city:c,frame,key:this.key(p),meshNames:[],last:++this.sequence,heights:collector.landmarkHeights,triangles:0};
-  const buckets=new Map();for(const anchor of frame.anchors.values()){const b=anchor.b;for(let z=Math.floor((b.z-b.d*.5-1)/5);z<=Math.floor((b.z+b.d*.5+1)/5);z++)for(let x=Math.floor((b.x-b.w*.5-1)/5);x<=Math.floor((b.x+b.w*.5+1)/5);x++){const k=x+','+z;if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(anchor);}}
-  const find=(x,z)=>{const options=buckets.get(Math.floor(x/5)+','+Math.floor(z/5));if(!options)return null;return options.find(a=>Math.abs(a.b.x-x)<=a.b.w*.5+.85&&Math.abs(a.b.z-z)<=a.b.d*.5+.85)||null;};
-  const rigid=['buildings','roofs','details'];
   for(const[name,m]of Object.entries(collector.meshes)){
    if(!['buildings','roofs','details','streets','farms','cityWalls','trees','port'].includes(name))continue;
-   const g=new Geometry(),data=m.vertices;
-   for(let k=0;k<data.length;k+=27){const x=(data[k]+data[k+9]+data[k+18])/3,z=(data[k+2]+data[k+11]+data[k+20])/3,anchor=rigid.includes(name)?find(x,z):null,pts=[];
+   const g=new Geometry(),data=m.vertices,ranges=collector.buildingRanges[name]||[];let rangeIndex=0;
+   for(let k=0;k<data.length;k+=27){
+    while(rangeIndex<ranges.length&&ranges[rangeIndex].end<=k)rangeIndex++;
+    const range=ranges[rangeIndex],anchor=range&&range.start<=k?frame.anchors.get(range.id):null,pts=[];
     for(let j=0;j<3;j++){const t=k+j*9;const q=frame.vertex(data[t],data[t+1],data[t+2],anchor);
      // Footings reach the actual slope instead of hovering below flat compounds.
      if(anchor&&data[t+1]<anchor.b.y-.015)q[1]=Math.min(q[1],frame.ground(data[t],data[t+2])-.006);
@@ -202,7 +201,8 @@ class ContinuousCityLayer {
   const vegetation=new Geometry();
   for(let dy=-9;dy<=9;dy+=.43)for(let dx=-11;dx<=11;dx+=.43){const gx=p.x+dx+noise(dx*3,dy*3,w.seed)*.10,gy=p.y+dy+noise(dx*3,dy*3,w.seed+6)*.10;if(gx<0||gx>=GW||gy<0||gy>=GH)continue;
    const e=CityEnvironment.sample(w,gx,gy);if(e.water||e.ice>12||hash2(Math.round(dx*100),Math.round(dy*100),w.seed+11)>e.treeDensity*.65)continue;
-   const lx=dx*c.width/c.span,lz=dy*c.width/c.span;if(c.buildings.some(b=>Math.abs(b.x-lx)<b.w/2+2&&Math.abs(b.z-lz)<b.d/2+2))continue;
+   const [lx,lz]=[(gx-p.x)*c.width/frame.cells,(gy-p.y)*c.width/frame.cells];
+   if(Math.abs(lx)<=c.width/2&&Math.abs(lz)<=c.depth/2&&(c.road[c.index(lx,lz)]||c.buildings.some(b=>Math.abs(b.x-lx)<b.w/2+2&&Math.abs(b.z-lz)<b.d/2+2)))continue;
    const v=AtlasSpace.point(w,gx,gy,this.r.relief),h=.09+hash2(dx*100,dy*100,w.seed)*.055;
    // Same form vocabulary and climate colour as the town scene and the atlas symbols,
    // replacing a bare temperature<10 cone/blob switch in two fixed greens.
@@ -254,7 +254,7 @@ class ContinuousCityLayer {
    if(kind==='falls')return this.r.options.rivers!==false;
    return true;
   }
- if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>AtlasSpace.TOWN_ZOOM*.88;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&this.r.zoom<AtlasSpace.DETAIL_ZOOM;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<AtlasSpace.DETAIL_ZOOM)return false;return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
+ if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>AtlasSpace.TOWN_ZOOM*.88;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&this.r.zoom<AtlasSpace.DETAIL_ZOOM;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<AtlasSpace.DETAIL_ZOOM)return false;return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(!['port','streets'].includes(type)||this.r.options.roads!==false);}
   // The cartographic overlay stops where the town itself begins. A quay symbol is drawn
   // to the same scale as the town marker beside it — about forty buildings across — so
   // leaving it on once the architecture resolves puts a giant pier through the streets.

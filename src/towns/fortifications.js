@@ -37,7 +37,7 @@ function wonderFor(style, support, p) {
 }
 const FortressPlan=(()=>{
  const inside=(q,b,pad=0)=>Math.abs(q.x-b.x)<=b.w/2+pad&&Math.abs(q.z-b.z)<=b.d/2+pad;
- function reserve(c,candidates,p,steep=.85){
+ function reserve(c,candidates,p,steep=.85,terrain=null){
   // A hamlet does not acquire a royal capital just because its view was opened.
   if((p.detailSupport??p.urbanSupport)<1500||c.townProfile.id==='delta')return null;
   const wonder=wonderFor(c.townProfile.id,p.detailSupport??p.urbanSupport,p),sacred=!!wonder;
@@ -53,6 +53,8 @@ const FortressPlan=(()=>{
    for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>steep){valid=false;break}samples.push(c.height[j])}if(!valid)break}
    // A cut-in citadel spans a real bank, so it is allowed far more fall than a pad would be.
    if(!valid||Math.max(...samples)-Math.min(...samples)>13)continue;
+   // Choose a supported precinct before streets commit to its protected parcel.
+   if(terrain){const bounds=terrain.bounds(q.x,q.z,size,size);if((bounds.top-bounds.low)/terrain.scale>(sacred?44:13)*.65)continue;}
    site.sacred=sacred;site.wonder=wonder;site.deck=Math.max(...samples)+.16;site.bed=Math.min(...samples);site.relief=site.deck-site.bed;
    // buildingAt() snaps its footprint samples to the NEAREST cell, so a cell centre up to
    // half a cell beyond the parcel edge is still tested. Mask that far or a street routes
@@ -64,7 +66,7 @@ const FortressPlan=(()=>{
  }
  function hull(points){const pts=points.slice().sort((a,b)=>a.x-b.x||a.z-b.z),cross=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);const lo=[],hi=[];for(const p of pts){while(lo.length>1&&cross(lo.at(-2),lo.at(-1),p)<=0)lo.pop();lo.push(p)}for(const p of pts.reverse()){while(hi.length>1&&cross(hi.at(-2),hi.at(-1),p)<=0)hi.pop();hi.push(p)}lo.pop();hi.pop();return lo.concat(hi)}
  function build(c){
-  c.defenses={version:1,walls:[],gates:[],towers:[],quays:[],perimeter:[],enclosed:false,kind:['forest','delta'].includes(c.townProfile.id)?'timber':'stone'};
+  c.defenses={version:2,walls:[],gates:[],towers:[],quays:[],perimeter:[],enclosed:false,kind:['forest','delta'].includes(c.townProfile.id)?'timber':'stone'};
   if(c.buildings.length<12)return c.defenses;
   const points=[];for(const b of c.buildings)for(const sx of[-1,1])for(const sz of[-1,1])points.push({x:b.x+sx*(b.w/2+2.4),z:b.z+sz*(b.d/2+2.4)});
   const poly=hull(points),samples=[];
@@ -92,70 +94,85 @@ const FortressPlan=(()=>{
    const nodes=[];let i=goal;while(i>=0){nodes.push(i);if(distance[i]===0)break;i=parent[i];}if(nodes.length<3)continue;nodes.reverse();
    nodes.forEach(i=>c.road[i]=1);c.roads.push({kind:'arterial',nodes,points:nodes.map(i=>({...c.xy(i),y:c.height[i]+.14,bridge:false})),role:'gate-approach'});approaches.push(q);if(approaches.length>=3)break;
   }
-  const nearRoad=q=>{let r=Infinity;for(const road of c.roads)for(const pt of road.points)r=Math.min(r,Math.hypot(q.x-pt.x,q.z-pt.z));return r};
-  // Why the enceinte stops, told apart. Previously every reason collapsed into
-  // "water" and was silently left as a hole, which is why no town on a coast or a
-  // river ever closed its ring: a harbour front, a house in the line and a hull
-  // that merely reached past the tile margin all read as sea.
-  //  - wet: genuine water or standing ice -> a quay section, not a gap.
-  //  - blocked: a building stands in the line -> the one real gap.
-  //  - past the tile margin is NOT a reason. The hull is buffered off real
-  //    buildings and reaches at most a few units beyond it, and the atlas frame
-  //    seats geometry out there on the parent surface exactly as it does inside.
   const wet=q=>{const i=c.index(q.x,q.z);return !!c.water[i]||c.environment.ice[i]>=25};
   const blocked=q=>c.buildings.some(b=>inside(q,b,.45));
-  // Nobody builds a curtain up a rock face. Closing the ring over everything was the
-  // opposite error to leaving the waterfront open: on a town like Osiercrest 83 of its
-  // 229 segments were drawn on ground steeper than 60%, 26 of them past vertical-ish
-  // 100%, up to 222%. A scarp that steep IS the defence — the enceinte stops at its
-  // foot and picks up again on the crest, which is what a hill fort actually looks
-  // like. Measured on atlasSlope, the grade the atlas draws, because the plan's own
-  // height field is asinh-compressed and reports a cliff as a gentle rise.
-  const SCARP=.60;
-  const scarp=q=>c.atlasSlope?c.atlasSlope[c.index(q.x,q.z)]>SCARP:false;
-  const tags=samples.map((a,j)=>{const b=samples[(j+1)%samples.length],mid={x:(a.x+b.x)/2,z:(a.z+b.z)/2},three=[a,b,mid];
-   if(three.some(blocked))return 'blocked';
-   if(three.every(scarp))return 'scarp';
-   if(three.some(wet))return 'quay';
-   return Math.min(nearRoad(a),nearRoad(b))<1.55?'gate':'wall'});
-  // Widen a road opening instead of quietly blocking its shoulders.
-  const expanded=tags.slice();tags.forEach((t,j)=>{if(t==='gate')for(const d of[-1,1]){const k=(j+d+tags.length)%tags.length;if(expanded[k]==='wall')expanded[k]='gate'}});
-  const d=c.defenses,n=samples.length;d.perimeter=poly;
-  // A lane that merely runs alongside the enceinte is not a gateway. Only an
-  // opening the gate builder will actually span stays open; every other run goes
-  // back to curtain or quay, matching the ground under it. Without this a road
-  // hugging the wall silently costs a town a whole flank — Valemeadow lost 52
-  // units of ring to one such run.
-  const spannable=(j,end)=>{const a=samples[j],b=samples[end%n],len=Math.hypot(a.x-b.x,a.z-b.z);return len>=2&&len<=12&&legal(a)&&legal(b)};
-  for(let j=0;j<n;j++)if(expanded[j]==='gate'&&expanded[(j-1+n)%n]!=='gate'){
-   let end=j+1;while(end<j+n&&expanded[end%n]==='gate')end++;
-   if(spannable(j,end))continue;
-   for(let k=j;k<end;k++)expanded[k%n]=scarp(samples[k%n])?'scarp':wet(samples[k%n])?'quay':'wall';
+  // The frame interpolates the ground between cells. Snapping each wall endpoint
+  // to a cell made consecutive masonry pieces jump above and below that surface.
+  const ground=q=>{
+   const x=Math.max(0,Math.min(c.n-1,(q.x/c.width+.5)*(c.n-1))),z=Math.max(0,Math.min(c.n-1,(q.z/c.depth+.5)*(c.n-1)));
+   const i=Math.floor(x),j=Math.floor(z),u=x-i,v=z-j,at=(a,b)=>c.height[Math.min(c.n-1,b)*c.n+Math.min(c.n-1,a)];
+   return (at(i,j)*(1-u)+at(i+1,j)*u)*(1-v)+(at(i,j+1)*(1-u)+at(i+1,j+1)*u)*v;
+  };
+  const n=samples.length,d=c.defenses;d.perimeter=poly;
+  const tags=samples.map((a,j)=>{const b=samples[(j+1)%n],mid={x:(a.x+b.x)/2,z:(a.z+b.z)/2};
+   if([a,b,mid].some(blocked))return 'blocked';
+   return [a,b,mid].some(wet)?'quay':'wall';
+  });
+  // A slope is not a physical wall. Keep short, joined sections on steep ground,
+  // where the mesh can follow the bank; the previous scarp tag silently deleted
+  // whole stretches and nevertheless reported their ring as enclosed.
+  const cross=(a,b)=>a.x*b.z-a.z*b.x;
+  const within=q=>poly.every((a,j)=>{const b=poly[(j+1)%poly.length];return cross({x:b.x-a.x,z:b.z-a.z},{x:q.x-a.x,z:q.z-a.z})>=-1e-7});
+  const cumulative=[0];for(let j=0;j<n;j++)cumulative.push(cumulative[j]+Math.hypot(samples[(j+1)%n].x-samples[j].x,samples[(j+1)%n].z-samples[j].z));
+  const circumference=cumulative[n],crossings=[];
+  // Only an actual inside/outside crossing may cut the curtain. Proximity to a
+  // street running alongside it used to open unrelated stretches of the wall.
+  for(const road of c.roads)for(let k=1;k<road.points.length;k++){
+   const a=road.points[k-1],b=road.points[k];if(within(a)&&within(b))continue;
+   const v={x:b.x-a.x,z:b.z-a.z},roadLength=Math.hypot(v.x,v.z);if(roadLength<1e-7)continue;
+   for(let j=0;j<n;j++){
+    const q=samples[j],r=samples[(j+1)%n],u={x:r.x-q.x,z:r.z-q.z},den=cross(v,u);if(Math.abs(den)<1e-8)continue;
+    const offset={x:q.x-a.x,z:q.z-a.z},t=cross(offset,u)/den,f=cross(offset,v)/den;
+    if(t<0||t>1||f<0||f>1)continue;
+    const before={x:a.x+v.x*(t-1e-5),z:a.z+v.z*(t-1e-5)},after={x:a.x+v.x*(t+1e-5),z:a.z+v.z*(t+1e-5)};
+    if(within(before)===within(after))continue;
+    const length=cumulative[j+1]-cumulative[j],sine=Math.abs(den)/(roadLength*length);
+    const halfRoad=(c.townProfile.width||1)*(road.kind==='arterial'?.67:road.kind==='street'?.5:.37);
+    crossings.push({position:cumulative[j]+f*length,half:Math.min(4.8,Math.max(2.2,halfRoad/Math.max(.2,sine)+1.25))});
+   }
+  }
+  const expanded=tags.slice();
+  for(const crossing of crossings)for(let j=0;j<n;j++){
+   const center=(cumulative[j]+cumulative[j+1])/2,delta=Math.abs(center-crossing.position),distance=Math.min(delta,circumference-delta);
+   if(tags[j]==='wall'&&distance<crossing.half)expanded[j]='gate';
+  }
+  // A gateway must span the complete run it replaces. If several close crossings
+  // produce one broad opening, keep individual portals separated by a short pier.
+  const runs=()=>{const result=[];if(expanded.every(t=>t==='gate')){result.push([0,n]);return result;}
+   for(let j=0;j<n;j++)if(expanded[j]==='gate'&&expanded[(j-1+n)%n]!=='gate'){let end=j+1;while(end<j+n&&expanded[end%n]==='gate')end++;result.push([j,end]);}return result;};
+  const spannable=(j,end)=>{const a=samples[j%n],b=samples[end%n],len=Math.hypot(a.x-b.x,a.z-b.z);return len>=2&&len<=12&&legal(a)&&legal(b)};
+  for(const [j,end]of runs())if(!spannable(j,end)){
+   for(let k=j;k<end;k++)expanded[k%n]=tags[k%n];
+   // Restore compact openings at the actual crossing positions instead of
+   // sealing a whole flank merely because its road openings merged.
+   for(const crossing of crossings){
+    let start=-1,stop=-1;for(let k=j;k<end;k++){const center=(cumulative[k%n]+cumulative[k%n+1])/2,delta=Math.abs(center-crossing.position);if(Math.min(delta,circumference-delta)<2.2){if(start<0)start=k;stop=k+1;}}
+    if(start>=0&&spannable(start,stop)&&[start-1,stop].every(k=>expanded[(k+n)%n]!=='gate'))for(let k=start;k<stop;k++)expanded[k%n]='gate';
+   }
   }
   for(let j=0;j<n;j++)if(expanded[j]==='wall'){
-   const a=samples[j],b=samples[(j+1)%n],ya=c.height[c.index(a.x,a.z)],yb=c.height[c.index(b.x,b.z)];
+   const a=samples[j],b=samples[(j+1)%n],ya=ground(a),yb=ground(b);
    d.walls.push({a:{...a,y:ya},b:{...b,y:yb},height:d.kind==='timber'?2.0:3.5,width:d.kind==='timber'?.35:.85});
-   if(j%10===0&&[0,1,2,-1,-2].every(k=>expanded[(j+k+n)%n]==='wall'))d.towers.push({...a,y:ya,r:d.kind==='timber'?.65:1.1,h:d.kind==='timber'?3.1:5.1});
+   if((j%10===0||poly.some(q=>Math.hypot(q.x-a.x,q.z-a.z)<1e-7))&&[0,1,2,-1,-2].every(k=>expanded[(j+k+n)%n]==='wall'))d.towers.push({...a,y:ya,r:d.kind==='timber'?.65:1.1,h:d.kind==='timber'?3.1:5.1});
   }
   // Group contiguous openings. Only dry, road-crossed ones become gateway spans.
   for(let j=0;j<n;j++)if(expanded[j]==='gate'&&expanded[(j-1+n)%n]!=='gate'){
    let end=j+1;while(end<j+n&&expanded[end%n]==='gate')end++;
-   const a=samples[j],b=samples[end%n],len=Math.hypot(a.x-b.x,a.z-b.z);
-   if(len>=2&&len<=12&&legal(a)&&legal(b))d.gates.push({a:{...a,y:c.height[c.index(a.x,a.z)]},b:{...b,y:c.height[c.index(b.x,b.z)]},name:['The Lower Gate','The Pilgrim Gate','The Crown Gate','The Water Gate'][d.gates.length%4]});
+   const a=samples[j],b=samples[end%n];
+   if(spannable(j,end))d.gates.push({a:{...a,y:ground(a)},b:{...b,y:ground(b)},name:['The Lower Gate','The Pilgrim Gate','The Crown Gate','The Water Gate'][d.gates.length%4]});
   }
   // Waterfront runs carry a lower, heavier quay section rather than a hole. A
   // harbour town closed its enceinte along the water; leaving the run open is
   // what made half of every coastal town read as breached.
   for(let j=0;j<n;j++)if(expanded[j]==='quay'){
-   const a=samples[j],b=samples[(j+1)%n],ya=c.height[c.index(a.x,a.z)],yb=c.height[c.index(b.x,b.z)];
+   const a=samples[j],b=samples[(j+1)%n],ya=ground(a),yb=ground(b);
    d.quays.push({a:{...a,y:ya},b:{...b,y:yb},height:d.kind==='timber'?1.5:2.3,width:d.kind==='timber'?.5:1.15});
   }
-  // "Enclosed" means no opening the ground does not already close. A scarp counts as
-  // closed; a building standing in the line does not.
+  // Enclosed now means every perimeter section has actual masonry or a gateway.
   d.enclosed=expanded.every(t=>t!=='blocked');
   d.terrainGapSegments=expanded.filter(t=>t==='blocked').length;
   d.waterfrontSegments=expanded.filter(t=>t==='quay').length;
-  d.scarpSegments=expanded.filter(t=>t==='scarp').length;
+  d.scarpSegments=0;
   d.approachCount=approaches.length;
   c.walls=[];return d;
  }

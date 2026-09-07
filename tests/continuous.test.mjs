@@ -114,10 +114,8 @@ test('City coordinates refer to the actual Stonefall source and preserve nearby 
 });
 test('Every building is seated in its own ground, with a rigid finite transformation',()=>{
  const f=E.AtlasSpace.cityFrame(w,p,city);
- // Blocks used to sit on their HIGHEST corner, which left the downhill side on a plinth
- // taller than the house. They now cut into the bank, so an uphill sample legitimately
- // stands above the anchor. What must still never happen is a block floating clear of the
- // parcel it was surveyed on, or perching on a plinth instead of cutting in.
+ // Parcel generation limits the required footing; rigid architecture stays
+ // above the complete footprint instead of burying its uphill roofs in the bank.
  for(const b of city.buildings){const a=f.anchors.get(b.id);
   // .006 is the seating lift that keeps the slab off the terrain it stands on.
   assert(a&&a.y>=a.low-1e-9&&a.y<=a.top+.0061,b.id+' is anchored outside its own ground range');
@@ -126,9 +124,8 @@ test('Every building is seated in its own ground, with a rigid finite transforma
    if(f.ground(x,z)<=a.y+1e-9)seated++;
    const v=f.vertex(x,b.y+b.h,z,a);assert(v.every(Number.isFinite));assert(Math.abs(v[1]-a.y-b.h*f.scale)<1e-9);}
   assert(seated>0,b.id+' floats clear of its own parcel');
-  // The same .006 lift dominates on ground that is essentially level, where there is no
-  // bank to cut into in the first place.
-  if(!b.precinct)assert(a.y-a.low<=(a.top-a.low)*.5+.0061,b.id+' stands on a plinth instead of cutting into the bank');}
+  assert(a.y>=a.top,b.id+' is buried below its highest ground');
+  if(!b.precinct)assert((a.top-a.low)/a.scale<=b.footingLimit+1e-5,b.id+' needs an oversized footing');}
 });
 test('A sea lane holds a bearing, and never holds one across land',()=>{
  // The flood fill that finds a lane may only step N/S/E/W, so its raw path is a staircase
@@ -208,7 +205,9 @@ test('The town waterfront streams into the atlas with the rest of the town',()=>
  // It is a ground-hugging assembly, so it must NOT be in the rigid-anchor list that
  // seats compounds on a level deck; a quay follows the shore it was fitted to.
  assert(!/const rigid=\[[^\]]*'port'/.test(src));
- assert(/type!=='port'\|\|this\.r\.options\.roads!==false/.test(src),'the port follows the roads and ports toggle');
+ const r={zoom:E.AtlasSpace.DETAIL_ZOOM,options:{roads:false}},view=new E.ContinuousCityLayer(r);
+ assert.equal(view.visible('cm:507:port'),false,'the port follows the roads and ports toggle');
+ r.options.roads=true;assert.equal(view.visible('cm:507:port'),true);
 });
 test('Figures and ground-seated roads change over at the existing detail threshold',()=>{
  const road=readFileSync(resolve(root,'src/render/road-renderer.js'),'utf8');

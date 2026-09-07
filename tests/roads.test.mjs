@@ -96,9 +96,15 @@ test('a quay stands on real shore beside real water, and inland towns get none',
 });
 
 test('the town waterfront is fitted to existing water, ground and blocks',()=>{
- const harbour=s.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)[0];
- assert(harbour,'this world has a sheltered harbour town');
- const snapshot=JSON.stringify(s),city=E.generateCity(w,s,harbour.id);
+ const snapshot=JSON.stringify(s);
+ // A province's harbour can be outside its town's compact built footprint.
+ // Exercise the largest town whose surveyed parcels actually reach the shore.
+ let waterfront;
+ for(const p of s.provinces.filter(p=>p.settled&&p.urbanPop>=650&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)){
+  const city=E.generateCity(w,s,p.id);if(city.port){waterfront={p,city};break;}
+ }
+ assert(waterfront,'this world has a town with a surveyed waterfront');
+ const {p:harbour,city}=waterfront;
  assert(city.port,harbour.name+' has a working waterfront');
  const open=k=>city.water[k]&&city.waterKind[k]!==3;
  for(const q of city.port.quays)for(const e of [q.a,q.b])assert(!city.water[city.index(e.x,e.z)],'a quay stands on the bank');

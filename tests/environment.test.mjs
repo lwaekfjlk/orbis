@@ -16,13 +16,16 @@ test('A dry basin beside glacier-bearing mountains is not given a hot-desert the
  assert.equal(c.siteEnvironment.biome,14);assert(c.siteEnvironment.temperature>0);assert.equal(c.siteEnvironment.ice,0);
  assert(c.siteEnvironment.glacialFoothills);assert(c.siteEnvironment.nearestGlacier<=6);assert(c.siteEnvironment.maxElevation>6000);
  assert.equal(c.townRecipe.style,'mountain');assert(!E.TownCatalog.allowed(p,w,'desert'));assert.throws(()=>E.generateCity(w,s,p.id,{style:'desert'}),/incompatible/);
- assert.equal(E.auditCity(c).iceBuildings,0);assert(c.environment.ice.some(x=>x>25));assert(new Set(c.environment.biome).size>3);
+ assert.equal(E.auditCity(c).iceBuildings,0);
+ // The wider setting keeps its glacier and biome diversity. Those distant peaks
+ // must not be compressed into the town's much smaller surveyed footprint.
+ assert(c.siteEnvironment.biomes.some(b=>b===1||b===16));assert(new Set(c.siteEnvironment.biomes).size>3);
  report.site={id:p.id,name:p.name,sourceCell:p.i,siteTemperature:c.siteEnvironment.temperature,siteBiome:'Salt basin',siteIce:c.siteEnvironment.ice,closestGlacierGridDistance:c.siteEnvironment.nearestGlacier,maximumSurroundingElevation:c.siteEnvironment.maxElevation,oldStyle:'desert',newStyle:c.townRecipe.style,buildingCount:c.buildings.length,localBiomes:[...new Set(c.environment.biome)],iceSampleCount:Array.from(c.environment.ice).filter(x=>x>25).length};
  report.checks.stonefall=true;
 });
 test('local biome, temperature, ice and surface color are sampled from parent coordinates',()=>{
  let samples=0;
- for(let k=0;k<c.n*c.n;k+=29){const x=k%c.n,y=Math.floor(k/c.n),gx=p.x+(x/(c.n-1)-.5)*c.span,gy=p.y+(y/(c.n-1)-.5)*c.span*c.depth/c.width,expected=E.CityEnvironment.sample(w,gx,gy);
+ for(let k=0;k<c.n*c.n;k+=29){const x=k%c.n,y=Math.floor(k/c.n),gx=p.x+(x/(c.n-1)-.5)*c.terrainSpan,gy=p.y+(y/(c.n-1)-.5)*c.terrainSpan*c.depth/c.width,expected=E.CityEnvironment.sample(w,gx,gy);
   for(const key of ['temperature','aridity','rain','ice','bed','surface'])assert(Math.abs(c.environment[key][k]-expected[key])<Math.max(.002,Math.abs(expected[key])*1e-6),key);
   assert.equal(c.environment.parentIndex[k],expected.parentIndex);assert.equal(c.environment.biome[k],expected.biome);
   for(let j=0;j<3;j++)assert(Math.abs(c.environment.color[k*3+j]-expected.color[j])<1e-6);samples++;

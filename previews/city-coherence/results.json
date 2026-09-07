@@ -1,0 +1,44 @@
+{
+  "checks": [
+    {
+      "id": 507,
+      "name": "Glassbeck",
+      "buildings": 535,
+      "walls": 294,
+      "gates": 3,
+      "scarps": 0,
+      "worker": true,
+      "error": null,
+      "sameCanvas": true
+    },
+    {
+      "id": 349,
+      "name": "Scorchspire",
+      "buildings": 519,
+      "walls": 308,
+      "gates": 2,
+      "scarps": 0,
+      "worker": true,
+      "error": null,
+      "sameCanvas": true
+    },
+    {
+      "id": 415,
+      "name": "Bluewell",
+      "buildings": 499,
+      "walls": 287,
+      "gates": 2,
+      "scarps": 0,
+      "worker": true,
+      "error": null,
+      "sameCanvas": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "buildingPicking": true,
+  "closer": true,
+  "orbit": true,
+  "mobile": true,
+  "regeneration": true
+}

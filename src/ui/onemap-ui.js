@@ -331,5 +331,5 @@ window.OneMap = (() => {
         if(['+','=','-'].includes(e.key)&&!e.target.closest('button')){e.preventDefault();e.stopImmediatePropagation();zoom(e.key==='-'?1/1.2:1.2);}
         if(e.key.toLowerCase()==='h'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();home();}
     }
-    return {init,bind,setScene,inspectWorld,inspectBuilding,inspectPart,onWorldUpdate,onPlayback,onBusy,onAdvancing,enterTown,openDrawer,closeDrawer,openRegenerate,home,back,locate,clearSelection,get scene(){return scene;},get panel(){return drawer;},get activeRenderer(){return activeRenderer();}};
+    return {init,bind,setScene,inspectWorld,inspectBuilding,inspectPart,onWorldUpdate,onPlayback,onBusy,onAdvancing,enterTown,openDrawer,closeDrawer,closeMenus,openRegenerate,home,back,locate,clearSelection,get scene(){return scene;},get panel(){return drawer;},get activeRenderer(){return activeRenderer();}};
 })();

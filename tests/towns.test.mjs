@@ -41,96 +41,48 @@ test('composition seed rerolls the town; recipe JSON replays it and invalid comb
  const inland=s.provinces.find(p=>p.city&&!E.TownCatalog.allowed(p,w,'delta'));assert(inland);assert.throws(()=>E.generateCity(w,s,inland.id,{style:'delta'}),/incompatible/);
  records.checks.recipes={rerollChangesLayout:true,JSONReplayExact:true,invalidGeographiesRejected:true};
 });
-test('Nothing is built up a cliff, and a scarp is left to defend itself',()=>{
- // The plan's own height field is asinh-compressed — 6000 m of relief folded into 18
- // plan units — while the frame seats everything back on the parent surface at very
- // nearly its full range. Every slope constraint in the layout was therefore reading a
- // gentle rise where the atlas draws a cliff: measured over 30 towns, 174 wall segments
- // and 990 street segments came out steeper than 60% and 50% respectively, and 31 walls
- // and 48 streets went past 100%, up to 222%.
+test('Walls follow terrain continuously and streets remain traversable',()=>{
  const towns=s.provinces.filter(q=>q.settled&&q.urbanPop>=650).sort((a,b)=>b.urbanPop-a.urbanPop).slice(0,20);
- let walls=0,streets=0,steepWalls=0,steepStreets=0,scarped=0,worstWall=0,worstStreet=0,worstName='';
+ let walls=0,streets=0,steepStreets=0,worstStreet=0;
  for(const p of towns){
-  const c=E.generateCity(w,s,p.id);
+  const c=E.generateCity(w,s,p.id),f=E.AtlasSpace.cityFrame(w,p,c,1);
   assert(c.atlasSlope,'the layout needs the grade the atlas draws');
-  const f=E.AtlasSpace.cityFrame(w,p,c,1);
-  if(c.defenses?.scarpSegments)scarped++;
   for(const seg of c.defenses?.walls||[]){
-   const A=f.vertex(seg.a.x,seg.a.y,seg.a.z),B=f.vertex(seg.b.x,seg.b.y,seg.b.z);
-   const run=Math.hypot(B[0]-A[0],B[2]-A[2]);
-   if(run<1e-9)continue;
-   const grade=Math.abs(B[1]-A[1])/run;
-   walls++;if(grade>.6)steepWalls++;
-   if(grade>worstWall){worstWall=grade;worstName=p.name;}
+   assert(Math.hypot(seg.b.x-seg.a.x,seg.b.z-seg.a.z)<=1.401,'curtains need short sections to follow terrain');
+   for(const q of[seg.a,seg.b])assert(Math.abs(q.y-f.localGround(q.x,q.z))<1e-6,'wall footing must use the rendered ground interpolation');
+   walls++;
   }
-  for(const road of c.roads||[])
-   for(let k=1;k<(road.points||[]).length;k++){
-    const a=road.points[k-1],b=road.points[k];
-    const A=f.vertex(a.x,a.y,a.z),B=f.vertex(b.x,b.y,b.z);
-    const run=Math.hypot(B[0]-A[0],B[2]-A[2]);
-    if(run<1e-9)continue;
-    const grade=Math.abs(B[1]-A[1])/run;
-    streets++;if(grade>.5)steepStreets++;
-    worstStreet=Math.max(worstStreet,grade);
-   }
+  for(const road of c.roads||[])for(let k=1;k<(road.points||[]).length;k++){
+   const a=road.points[k-1],b=road.points[k],A=f.vertex(a.x,a.y,a.z),B=f.vertex(b.x,b.y,b.z),run=Math.hypot(B[0]-A[0],B[2]-A[2]);
+   if(run<1e-9)continue;
+   const grade=Math.abs(B[1]-A[1])/run;streets++;if(grade>.5)steepStreets++;worstStreet=Math.max(worstStreet,grade);
+  }
  }
  assert(walls>2000&&streets>8000,'expected a lot of both to measure');
- // A wall may simply stop, so it has no excuse for a cliff.
- assert(worstWall<1,`a wall is drawn at ${(worstWall*100).toFixed(0)}% grade in ${worstName}`);
- // A street has one: the town has to reach itself. A hard limit at 55% starved two
- // towns outright — Foammeadow went from 118 buildings to none — because on a steep
- // site the gentle ground is fragmented and a router that may not cross anything
- // steeper cannot reach it. The cost term does the shaping and the gate only refuses
- // what nothing could be laid on, so a handful of stair-grade segments survive.
- const brutal=[worstStreet].filter(v=>v>1).length;
+ // Streets may include a few hillside stairs; wall continuity must not be
+ // sacrificed to a slope cutoff, since an invisible scarp does not close a ring.
  assert(worstStreet<1.2,`a street is drawn at ${(worstStreet*100).toFixed(0)}% grade`);
- assert(steepWalls/walls<.02,`${steepWalls} of ${walls} wall segments are on cliff-grade ground`);
  assert(steepStreets/streets<.05,`${steepStreets} of ${streets} street segments are on cliff-grade ground`);
- assert(brutal<=1,'more than one street is drawn past vertical');
- // ...and the enceinte is allowed to stop where the ground already defends it, which
- // is the whole point: closing the ring over everything was the opposite error.
- assert(scarped>0,'no town in this world lets a scarp stand in for a wall');
- records.checks.gradients={walls,steepWalls,worstWall:+worstWall.toFixed(2),
-  streets,steepStreets,worstStreet:+worstStreet.toFixed(2),townsWithScarp:scarped};
+ records.checks.gradients={walls,streets,steepStreets,worstStreet:+worstStreet.toFixed(2)};
 });
-test('A walled town closes its ring; only a gateway is left open',()=>{
- // Every reason the enceinte stopped used to collapse into "water" and be left as
- // a silent hole, so not one walled town on this world enclosed itself: a harbour
- // front, a lane hugging the wall and a hull reaching a few units past the tile
- // margin all read as sea. Waterfront runs now carry a quay section, and a run no
- // gateway will span goes back to curtain.
+test('A walled town has one continuous circuit including its gateways and waterfront',()=>{
  const towns=s.provinces.filter(p=>p.settled&&p.urbanPop>=650).sort((a,b)=>b.urbanPop-a.urbanPop).slice(0,30);
- let walled=0,quayed=0,widest=0,widestName='',scarpBacked=false;
+ let walled=0,quayed=0,widest=0;
+ const key=q=>[q.x,q.y,q.z].map(v=>v.toFixed(7)).join(',');
  for(const p of towns){
-  const c=E.generateCity(w,s,p.id),d=c.defenses;
-  if(!d?.walls.length)continue;
+  const c=E.generateCity(w,s,p.id),d=c.defenses;if(!d?.walls.length)continue;
   walled++;if(d.quays.length)quayed++;
-  assert(d.enclosed,p.name+' left its perimeter open');
-  assert.equal(d.terrainGapSegments,0,p.name+' has an unexplained gap');
-  for(const q of d.quays){
-   assert(Number.isFinite(q.a.y+q.b.y+q.height+q.width),p.name+' has a malformed quay');
-   assert(q.height>0&&q.height<d.walls[0].height,'a quay is lower than the curtain it continues');
-  }
-  // Walk the ring: every remaining opening has to be a gateway the builder spanned.
-  const ring=[...d.walls,...d.quays],angle=g=>Math.atan2(g.a.z-c.market.z,g.a.x-c.market.x);
-  ring.sort((a,b)=>angle(a)-angle(b));
-  for(let j=0;j<ring.length;j++){
-   const a=ring[j],b=ring[(j+1)%ring.length],gap=Math.hypot(a.b.x-b.a.x,a.b.z-b.a.z);
-   if(gap>widest&&!d.scarpSegments){widest=gap;widestName=p.name;}
-   if(d.scarpSegments)scarpBacked=true;
-  }
+  assert(d.enclosed,p.name+' left its perimeter open');assert.equal(d.terrainGapSegments,0);assert.equal(d.scarpSegments,0);
+  for(const q of d.quays){assert(Number.isFinite(q.a.y+q.b.y+q.height+q.width));assert(q.height>0&&q.height<d.walls[0].height);}
+  const ring=[...d.walls,...d.quays,...d.gates],starts=new Map();
+  for(const q of ring){assert(!starts.has(key(q.a)),p.name+' branches at a wall joint');starts.set(key(q.a),q);}
+  const visited=new Set();let section=ring[0];
+  while(section&&!visited.has(section)){visited.add(section);section=starts.get(key(section.b));}
+  assert.equal(section,ring[0],p.name+' has a wall joint without a continuation');assert.equal(visited.size,ring.length,p.name+' has disconnected wall fragments');
+  for(const g of d.gates){const width=Math.hypot(g.a.x-g.b.x,g.a.z-g.b.z);assert(width>=2&&width<=12);widest=Math.max(widest,width);}
  }
- assert(walled>=12,'this world should raise walls somewhere');
- assert(quayed>=6,'and some of those towns stand on water');
- // 12 is the gate builder's own span limit, so on a town the ground does not defend
- // nothing wider than a gate may survive. A town WITH a scarp is expected to have a
- // wide opening — that is the cliff — and is measured by the ring it does build
- // instead. Forcing a curtain across a cliff was the opposite error to leaving the
- // waterfront open: Osiercrest carried 26 segments drawn past 100% grade before a
- // scarp was allowed to count as defence.
- assert(widest<=13,`${widestName} still has a ${widest.toFixed(1)} unit breach on ground a wall could stand on`);
- assert(scarpBacked,'no town in this world lets a scarp stand in for a wall');
- records.checks.enceinte={walledTowns:walled,withQuays:quayed,allEnclosed:true,
-  widestOpening:+widest.toFixed(2),widestIsScarp:scarpBacked};
+ assert(walled>=12,'this world should raise walls somewhere');assert(quayed>=6,'and some of those towns stand on water');
+ records.checks.enceinte={walledTowns:walled,withQuays:quayed,allEnclosed:true,widestOpening:+widest.toFixed(2)};
 });
+
 test.after(()=>writeFileSync(resolve(root,'docs/TOWN_MODEL_RESULTS.json'),JSON.stringify(records,null,2)));
