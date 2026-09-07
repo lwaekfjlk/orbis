@@ -504,12 +504,28 @@ header {
   text-transform:uppercase;
   margin-bottom:1px
 }
+/* Country names carry the political layer, so they are set above every other
+   label; their cities sit under them at ordinary town size. */
 .maplabel.capitalLabel em {
-  font-size:13px;
-  font-style:normal
+  font-size:17px;
+  font-style:normal;
+  letter-spacing:1.6px;
+  color:#33403a
 }
 .maplabel.capitalLabel small {
   font-size:6px
+}
+.maplabel.townLabel em {
+  font-size:11px;
+  letter-spacing:0
+}
+.maplabel.townLabel small {
+  font-size:5px;
+  opacity:.75
+}
+.maplabel.townLabel:after {
+  width:2px;
+  height:2px
 }
 .maplabel:after {
   content:'';

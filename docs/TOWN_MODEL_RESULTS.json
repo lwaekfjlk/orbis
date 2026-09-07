@@ -17,6 +17,12 @@
       "rerollChangesLayout": true,
       "JSONReplayExact": true,
       "invalidGeographiesRejected": true
+    },
+    "enceinte": {
+      "walledTowns": 30,
+      "withQuays": 28,
+      "allEnclosed": true,
+      "widestOpening": 11.64
     }
   },
   "styles": [

@@ -1,3 +1,28 @@
+# 13.2.1 — Country names, closed walls, and the continents back
+
+- **Every continent gets its name back.** 13.1.0 listed the seven legends ahead of the
+  continents in the label packer, and three continent names lost the box race — the world
+  read as four continents when it has seven. Continents are placed first again; wonders
+  still outrank towns.
+- **Countries are no longer painted over the land.** The realms and diplomacy layers laid a
+  full-territory wash over every province. They now tint only the couple of cells inside
+  each border, so relief, rivers and coasts read through and the name carries the identity —
+  the way a printed atlas does it. Faiths, peoples, wealth and magic keep their full wash;
+  there the colour is the measurement, not a flag.
+- **A country's name sits over its territory**, at the centre of mass of the land it holds
+  rather than stacked on its capital, and its four largest cities are labelled under it in
+  ordinary town type.
+- **Walled towns close their ring.** Not one of 24 walled towns enclosed itself: every reason
+  the enceinte stopped collapsed into "water" and was left as a silent hole — a harbour front,
+  a lane running alongside the wall, and a hull reaching a few units past the tile margin all
+  read as sea. Waterfront runs now carry the quay section `defenses.quays` was always meant to
+  hold, a run no gateway will span goes back to curtain, and the tile margin is not a reason
+  to stop. 135 walled towns across three seeds: all enclosed, no opening wider than a gate.
+- New checks: ring closure in `tests/towns.test.mjs`; political-layer coverage and continent
+  label priority in `tests/onemap.test.mjs`.
+
+---
+
 # 13.2.0 — Roads, ports and the peoples on them
 
 - Land routes between settlements, derived from one multi-source search over the unchanged

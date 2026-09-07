@@ -60,10 +60,35 @@ const FortressPlan=(()=>{
    nodes.forEach(i=>c.road[i]=1);c.roads.push({kind:'arterial',nodes,points:nodes.map(i=>({...c.xy(i),y:c.height[i]+.14,bridge:false})),role:'gate-approach'});approaches.push(q);if(approaches.length>=3)break;
   }
   const nearRoad=q=>{let r=Infinity;for(const road of c.roads)for(const pt of road.points)r=Math.min(r,Math.hypot(q.x-pt.x,q.z-pt.z));return r};
-  const tags=samples.map((a,j)=>{const b=samples[(j+1)%samples.length],mid={x:(a.x+b.x)/2,z:(a.z+b.z)/2};return!legal(a)||!legal(b)||!legal(mid)?'water':Math.min(nearRoad(a),nearRoad(b))<1.55?'gate':'wall'});
+  // Why the enceinte stops, told apart. Previously every reason collapsed into
+  // "water" and was silently left as a hole, which is why no town on a coast or a
+  // river ever closed its ring: a harbour front, a house in the line and a hull
+  // that merely reached past the tile margin all read as sea.
+  //  - wet: genuine water or standing ice -> a quay section, not a gap.
+  //  - blocked: a building stands in the line -> the one real gap.
+  //  - past the tile margin is NOT a reason. The hull is buffered off real
+  //    buildings and reaches at most a few units beyond it, and the atlas frame
+  //    seats geometry out there on the parent surface exactly as it does inside.
+  const wet=q=>{const i=c.index(q.x,q.z);return !!c.water[i]||c.environment.ice[i]>=25};
+  const blocked=q=>c.buildings.some(b=>inside(q,b,.45));
+  const tags=samples.map((a,j)=>{const b=samples[(j+1)%samples.length],mid={x:(a.x+b.x)/2,z:(a.z+b.z)/2},three=[a,b,mid];
+   if(three.some(blocked))return 'blocked';
+   if(three.some(wet))return 'quay';
+   return Math.min(nearRoad(a),nearRoad(b))<1.55?'gate':'wall'});
   // Widen a road opening instead of quietly blocking its shoulders.
   const expanded=tags.slice();tags.forEach((t,j)=>{if(t==='gate')for(const d of[-1,1]){const k=(j+d+tags.length)%tags.length;if(expanded[k]==='wall')expanded[k]='gate'}});
   const d=c.defenses,n=samples.length;d.perimeter=poly;
+  // A lane that merely runs alongside the enceinte is not a gateway. Only an
+  // opening the gate builder will actually span stays open; every other run goes
+  // back to curtain or quay, matching the ground under it. Without this a road
+  // hugging the wall silently costs a town a whole flank — Valemeadow lost 52
+  // units of ring to one such run.
+  const spannable=(j,end)=>{const a=samples[j],b=samples[end%n],len=Math.hypot(a.x-b.x,a.z-b.z);return len>=2&&len<=12&&legal(a)&&legal(b)};
+  for(let j=0;j<n;j++)if(expanded[j]==='gate'&&expanded[(j-1+n)%n]!=='gate'){
+   let end=j+1;while(end<j+n&&expanded[end%n]==='gate')end++;
+   if(spannable(j,end))continue;
+   for(let k=j;k<end;k++)expanded[k%n]=wet(samples[k%n])?'quay':'wall';
+  }
   for(let j=0;j<n;j++)if(expanded[j]==='wall'){
    const a=samples[j],b=samples[(j+1)%n],ya=c.height[c.index(a.x,a.z)],yb=c.height[c.index(b.x,b.z)];
    d.walls.push({a:{...a,y:ya},b:{...b,y:yb},height:d.kind==='timber'?2.0:3.5,width:d.kind==='timber'?.35:.85});
@@ -75,7 +100,16 @@ const FortressPlan=(()=>{
    const a=samples[j],b=samples[end%n],len=Math.hypot(a.x-b.x,a.z-b.z);
    if(len>=2&&len<=12&&legal(a)&&legal(b))d.gates.push({a:{...a,y:c.height[c.index(a.x,a.z)]},b:{...b,y:c.height[c.index(b.x,b.z)]},name:['The Lower Gate','The Pilgrim Gate','The Crown Gate','The Water Gate'][d.gates.length%4]});
   }
-  d.enclosed=expanded.every(t=>t!=='water');d.terrainGapSegments=expanded.filter(t=>t==='water').length;d.approachCount=approaches.length;
+  // Waterfront runs carry a lower, heavier quay section rather than a hole. A
+  // harbour town closed its enceinte along the water; leaving the run open is
+  // what made half of every coastal town read as breached.
+  for(let j=0;j<n;j++)if(expanded[j]==='quay'){
+   const a=samples[j],b=samples[(j+1)%n],ya=c.height[c.index(a.x,a.z)],yb=c.height[c.index(b.x,b.z)];
+   d.quays.push({a:{...a,y:ya},b:{...b,y:yb},height:d.kind==='timber'?1.5:2.3,width:d.kind==='timber'?.5:1.15});
+  }
+  d.enclosed=expanded.every(t=>t!=='blocked');
+  d.terrainGapSegments=expanded.filter(t=>t==='blocked').length;
+  d.waterfrontSegments=expanded.filter(t=>t==='quay').length;d.approachCount=approaches.length;
   c.walls=[];return d;
  }
  return{reserve,build,hull,inside};
