@@ -143,12 +143,52 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.upload('bridges', decks, true);
         this.upload('ports', ports, true);
         this.upload('seaLanes', lanes, false, .72, .6);
+        this.buildFrontierPosts();
         this.roadStats = { ...net.stats, roadTriangles: roads.data.length / 27, portTriangles: ports.data.length / 27 };
         this.buildNearRoads(true);
     };
     /** The same roads again, seated on the ground rather than above it, for the band
      * where a town's own streets are drawn. Only the stretches beside a loaded town are
      * built, so this stays a few hundred triangles. */
+    /** A watch post where two realms actually meet the ground.
+     * The administration graph already knows the cell pair each province boundary is crossed
+     * at — the pass or ford that carries the traffic — so a post is placed on the CHEAPEST
+     * crossing between each pair of neighbouring realms rather than sprinkled along the whole
+     * frontier. That is one tower per relationship, standing on the way in, which is what a
+     * frontier post is for. It is decoration: nothing in the model reads it.
+     */
+    AtlasRenderer.prototype.buildFrontierPosts = function () {
+        const w = this.world, s = this.sim, g = new Geometry();
+        if (!w || !s || !s.administrationGraph)
+            return;
+        const best = new Map();
+        for (let a = 0; a < s.provinces.length; a++)
+            for (const e of s.administrationGraph[a]) {
+                if (e.to < a)
+                    continue;
+                const oa = s.provinces[a].owner, ob = s.provinces[e.to].owner;
+                if (oa < 0 || ob < 0 || oa === ob)
+                    continue;
+                const key = oa < ob ? oa + ':' + ob : ob + ':' + oa;
+                if (!best.has(key) || e.cost < best.get(key).cost)
+                    best.set(key, { cost: e.cost, at: e.crossing[0] });
+            }
+        const stone = rgb('#a89e8c'), dark = rgb('#6d6555'), roof = rgb('#7a6a58');
+        for (const { at } of best.values()) {
+            const x = at % GW, y = at / GW | 0;
+            if (w.height[at] <= 0)
+                continue;
+            const ground = this.ground(x, y), base = this.coord(x, y, ground);
+            // A shoulder of rubble, a square tower, a dark opening and a cap.
+            g.box(base[0], base[1], base[2], .17, .17, .05, dark);
+            g.box(base[0], base[1] + .04, base[2], .11, .11, .30, stone);
+            g.box(base[0], base[1] + .12, base[2] + .056, .035, .035, .07, dark);
+            g.box(base[0], base[1] + .34, base[2], .155, .155, .045, roof);
+            g.cone(base[0], base[1] + .385, base[2], .085, 0, .10, roof, 4);
+        }
+        this.frontierPosts = best.size;
+        this.upload('frontierPosts', g, true);
+    };
     AtlasRenderer.prototype.buildNearRoads = function (force = false) {
         const net = this.roadNetwork;
         if (!net)
@@ -220,7 +260,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
     };
     const priorVisible = AtlasRenderer.prototype.visible;
     AtlasRenderer.prototype.visible = function (name) {
-        if (['roads', 'roadsNear', 'bridges', 'ports', 'seaLanes', 'folk', 'caravans'].includes(name)) {
+        if (['roads', 'roadsNear', 'bridges', 'ports', 'seaLanes', 'folk', 'caravans', 'frontierPosts'].includes(name)) {
             const civil = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer);
             const everyday = civil || this.layer === 'relief' || this.layer === 'settlements';
             if (!everyday)

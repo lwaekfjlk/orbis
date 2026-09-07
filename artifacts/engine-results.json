@@ -3,7 +3,7 @@
   "seed": "Aereth-47",
   "checks": {
     "geographyFirst": {
-      "realms": 31,
+      "realms": 34,
       "towns": 88,
       "physicalHash": "440ae5d0",
       "continents": [
@@ -14,22 +14,22 @@
           "towns": 20,
           "polities": 10,
           "realmIds": [
-            5,
-            10,
+            6,
+            11,
+            9,
+            16,
             8,
+            19,
+            27,
+            22,
             26,
-            15,
-            7,
-            18,
-            24,
-            23,
-            20
+            29
           ],
           "capitalCount": 10,
-          "largestShare": 0.18270314606267626,
-          "unclaimedShare": 0.06154146462419086,
-          "internalFrontiers": 15,
-          "borderEdges": 61
+          "largestShare": 0.2626916232674357,
+          "unclaimedShare": 0.08739437805496679,
+          "internalFrontiers": 16,
+          "borderEdges": 67
         },
         {
           "id": 2,
@@ -38,37 +38,39 @@
           "towns": 9,
           "polities": 5,
           "realmIds": [
-            30,
+            23,
             21,
-            6,
-            27,
-            19
+            33,
+            30,
+            7
           ],
           "capitalCount": 5,
-          "largestShare": 0.2292218066485147,
-          "unclaimedShare": 0.374735654055524,
-          "internalFrontiers": 3,
-          "borderEdges": 17
+          "largestShare": 0.4425521083514348,
+          "unclaimedShare": 0.11476121059998537,
+          "internalFrontiers": 2,
+          "borderEdges": 20
         },
         {
           "id": 40,
           "name": "Soleran",
           "cell": 30243,
           "towns": 25,
-          "polities": 6,
+          "polities": 8,
           "realmIds": [
-            2,
-            11,
-            3,
             12,
-            14,
-            1
+            2,
+            3,
+            4,
+            1,
+            25,
+            15,
+            13
           ],
-          "capitalCount": 6,
-          "largestShare": 0.2544967547845559,
-          "unclaimedShare": 0.08770194078008799,
-          "internalFrontiers": 9,
-          "borderEdges": 37
+          "capitalCount": 8,
+          "largestShare": 0.25929339081254127,
+          "unclaimedShare": 0.2922770942032169,
+          "internalFrontiers": 10,
+          "borderEdges": 29
         },
         {
           "id": 1,
@@ -77,34 +79,35 @@
           "towns": 16,
           "polities": 4,
           "realmIds": [
-            13,
-            28,
-            17,
-            9
+            14,
+            31,
+            18,
+            10
           ],
           "capitalCount": 4,
-          "largestShare": 0.25692847906017613,
-          "unclaimedShare": 0.17794530607455863,
-          "internalFrontiers": 3,
-          "borderEdges": 15
+          "largestShare": 0.1530562578387247,
+          "unclaimedShare": 0.5862716106234899,
+          "internalFrontiers": 1,
+          "borderEdges": 1
         },
         {
           "id": 51,
           "name": "Kethis",
           "cell": 36772,
           "towns": 14,
-          "polities": 4,
+          "polities": 5,
           "realmIds": [
+            20,
+            24,
             0,
-            22,
-            16,
-            25
+            17,
+            28
           ],
-          "capitalCount": 4,
-          "largestShare": 0.3548520524823772,
-          "unclaimedShare": 0.14694567468025338,
-          "internalFrontiers": 3,
-          "borderEdges": 15
+          "capitalCount": 5,
+          "largestShare": 0.333829436047258,
+          "unclaimedShare": 0.03728959803814927,
+          "internalFrontiers": 6,
+          "borderEdges": 33
         },
         {
           "id": 78,
@@ -850,7 +853,7 @@
     "noAutomaticRuralCities": true,
     "polityIndependentCityPlan": true,
     "project": {
-      "cost": 2.3469142020279326,
+      "cost": 2,
       "completed": 403,
       "supportBefore": 36072.48641200341,
       "supportAfter": 38958.28532496368,
@@ -931,7 +934,7 @@
     },
     "longRun": {
       "year": 520,
-      "livingRealms": 30,
+      "livingRealms": 27,
       "projects": 1,
       "audit": {
         "invalidOwners": 0,
