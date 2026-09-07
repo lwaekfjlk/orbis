@@ -8,3 +8,4 @@
 # back; nothing breaks, it is only noisier.
 dist/telluric-onemap.html            merge=ours linguist-generated=true
 src/continuous/generated-worker.js   merge=ours linguist-generated=true
+previews/wonders/index.html         linguist-generated=true

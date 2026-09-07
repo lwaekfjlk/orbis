@@ -1,0 +1,25 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-basilica",
+  "style": "basilica",
+  "seed": "Architectural-study-47",
+  "name": "Sanctuary of the Dawn",
+  "material": "ivory",
+  "faith": "sun",
+  "culture": "Human courts",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 1,
+  "wings": 3,
+  "roofPitch": 1.0033177769370376,
+  "ornament": "braided",
+  "geography": {
+    "freshwater": 0.7,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell.",
+  "wonder": "sunless-well",
+  "sacred": true
+}

@@ -1,0 +1,332 @@
+[
+  {
+    "wonder": "cathedral",
+    "file": "cathedral.glb",
+    "recipe": "cathedral.recipe.json",
+    "signature": "48e4bd44/great-sanctuary-2",
+    "lod": 2,
+    "triangles": 213692,
+    "parts": 10,
+    "bytes": 23085900,
+    "bounds": {
+      "min": [
+        -18.62,
+        0,
+        -20.62
+      ],
+      "max": [
+        18.62,
+        54.3303,
+        20.6845
+      ]
+    }
+  },
+  {
+    "wonder": "grove-sanctuary",
+    "file": "grove-sanctuary.glb",
+    "recipe": "grove-sanctuary.recipe.json",
+    "signature": "099323af/wonder-detail-1/grove-sanctuary",
+    "lod": 2,
+    "triangles": 24338,
+    "parts": 5,
+    "bytes": 2632560,
+    "bounds": {
+      "min": [
+        -21.712074731643895,
+        0,
+        -20.997385966457752
+      ],
+      "max": [
+        21.57367146487336,
+        32.85,
+        17.175
+      ]
+    }
+  },
+  {
+    "wonder": "reed-throne",
+    "file": "reed-throne.glb",
+    "recipe": "reed-throne.recipe.json",
+    "signature": "943bbbf1/wonder-detail-1/reed-throne",
+    "lod": 2,
+    "triangles": 26214,
+    "parts": 6,
+    "bytes": 2835708,
+    "bounds": {
+      "min": [
+        -17.2,
+        -2.5,
+        -14
+      ],
+      "max": [
+        17.2,
+        26.125878660108896,
+        17.595
+      ]
+    }
+  },
+  {
+    "wonder": "whale-moot",
+    "file": "whale-moot.glb",
+    "recipe": "whale-moot.recipe.json",
+    "signature": "943bbbf1/wonder-detail-1/whale-moot",
+    "lod": 2,
+    "triangles": 12382,
+    "parts": 7,
+    "bytes": 1342488,
+    "bounds": {
+      "min": [
+        -17.175,
+        -2,
+        -15.175
+      ],
+      "max": [
+        17.175,
+        20.92788986013962,
+        22
+      ]
+    }
+  },
+  {
+    "wonder": "water-pagoda",
+    "file": "water-pagoda.glb",
+    "recipe": "water-pagoda.recipe.json",
+    "signature": "099323af/wonder-detail-1/water-pagoda",
+    "lod": 2,
+    "triangles": 32502,
+    "parts": 6,
+    "bytes": 3514888,
+    "bounds": {
+      "min": [
+        -17.175,
+        0,
+        -14.175
+      ],
+      "max": [
+        17.175,
+        41.11471435235819,
+        14.364999999999998
+      ]
+    }
+  },
+  {
+    "wonder": "tide-palace",
+    "file": "tide-palace.glb",
+    "recipe": "tide-palace.recipe.json",
+    "signature": "bdeeabe4/wonder-detail-1/tide-palace",
+    "lod": 2,
+    "triangles": 59640,
+    "parts": 6,
+    "bytes": 6445800,
+    "bounds": {
+      "min": [
+        -17.3,
+        -0.12,
+        -18.18
+      ],
+      "max": [
+        17.3,
+        20.816,
+        21.73839
+      ]
+    }
+  },
+  {
+    "wonder": "dread-keep",
+    "file": "dread-keep.glb",
+    "recipe": "dread-keep.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/dread-keep",
+    "lod": 2,
+    "triangles": 69234,
+    "parts": 5,
+    "bytes": 7481292,
+    "bounds": {
+      "min": [
+        -18.175,
+        0,
+        -17.175
+      ],
+      "max": [
+        18.175,
+        45.599999999999994,
+        18.1
+      ]
+    }
+  },
+  {
+    "wonder": "deep-city",
+    "file": "deep-city.glb",
+    "recipe": "deep-city.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/deep-city",
+    "lod": 2,
+    "triangles": 19290,
+    "parts": 5,
+    "bytes": 2087276,
+    "bounds": {
+      "min": [
+        -18,
+        0,
+        -18
+      ],
+      "max": [
+        18,
+        29.5,
+        19.3
+      ]
+    }
+  },
+  {
+    "wonder": "dragon-court",
+    "file": "dragon-court.glb",
+    "recipe": "dragon-court.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/dragon-court",
+    "lod": 2,
+    "triangles": 37244,
+    "parts": 5,
+    "bytes": 4026400,
+    "bounds": {
+      "min": [
+        -18.175,
+        0,
+        -16.175
+      ],
+      "max": [
+        18.175,
+        19.107142857142858,
+        16.245
+      ]
+    }
+  },
+  {
+    "wonder": "forge-hollow",
+    "file": "forge-hollow.glb",
+    "recipe": "forge-hollow.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/forge-hollow",
+    "lod": 2,
+    "triangles": 17264,
+    "parts": 5,
+    "bytes": 1868552,
+    "bounds": {
+      "min": [
+        -17.400000000000002,
+        -9.8,
+        -17.400000000000002
+      ],
+      "max": [
+        17.400000000000002,
+        12.700000000000001,
+        17.8
+      ]
+    }
+  },
+  {
+    "wonder": "gilded-palace",
+    "file": "gilded-palace.glb",
+    "recipe": "gilded-palace.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/gilded-palace",
+    "lod": 2,
+    "triangles": 97700,
+    "parts": 6,
+    "bytes": 10556248,
+    "bounds": {
+      "min": [
+        -18.175,
+        0,
+        -17.175
+      ],
+      "max": [
+        18.175,
+        23.5,
+        17.175
+      ]
+    }
+  },
+  {
+    "wonder": "sky-crystal",
+    "file": "sky-crystal.glb",
+    "recipe": "sky-crystal.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/sky-crystal",
+    "lod": 2,
+    "triangles": 15248,
+    "parts": 5,
+    "bytes": 1650848,
+    "bounds": {
+      "min": [
+        -20.275000000000002,
+        -0.12,
+        -17.17
+      ],
+      "max": [
+        20.275000000000002,
+        41.7,
+        19.952499999999997
+      ]
+    }
+  },
+  {
+    "wonder": "suspended-tower",
+    "file": "suspended-tower.glb",
+    "recipe": "suspended-tower.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/suspended-tower",
+    "lod": 2,
+    "triangles": 13986,
+    "parts": 5,
+    "bytes": 1514552,
+    "bounds": {
+      "min": [
+        -15.175,
+        0,
+        -15.175
+      ],
+      "max": [
+        15.175,
+        47.75389052560699,
+        16.564999999999998
+      ]
+    }
+  },
+  {
+    "wonder": "sunless-well",
+    "file": "sunless-well.glb",
+    "recipe": "sunless-well.recipe.json",
+    "signature": "11c9cc20/wonder-detail-1/sunless-well",
+    "lod": 2,
+    "triangles": 42704,
+    "parts": 6,
+    "bytes": 4616608,
+    "bounds": {
+      "min": [
+        -18,
+        -25.6,
+        -18
+      ],
+      "max": [
+        18,
+        11.850000000000001,
+        19.175
+      ]
+    }
+  },
+  {
+    "wonder": "sky-court",
+    "file": "sky-court.glb",
+    "recipe": "sky-court.recipe.json",
+    "signature": "48e4bd44/wonder-detail-1/sky-court",
+    "lod": 2,
+    "triangles": 16196,
+    "parts": 6,
+    "bytes": 1753800,
+    "bounds": {
+      "min": [
+        -18.200000000000003,
+        0,
+        -17.2
+      ],
+      "max": [
+        18.200000000000003,
+        26.5,
+        18.075
+      ]
+    }
+  }
+]
