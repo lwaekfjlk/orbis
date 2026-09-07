@@ -68,6 +68,29 @@ test('Every building is seated in its own ground, with a rigid finite transforma
   // bank to cut into in the first place.
   if(!b.precinct)assert(a.y-a.low<=(a.top-a.low)*.5+.0061,b.id+' stands on a plinth instead of cutting into the bank');}
 });
+test('A sea lane holds a bearing, and never holds one across land',()=>{
+ // The flood fill that finds a lane may only step N/S/E/W, so its raw path is a staircase
+ // of single cells. Straightening it is only sound if every surviving leg is genuinely
+ // navigable, so both halves are asserted together: a lane must be a handful of long legs,
+ // AND no leg may cut a corner over land or pack ice.
+ const routes=s.routes||[];assert(routes.length>10,'the world should open sea lanes at all');
+ let crossings=0,worst=0;
+ for(const r of routes){
+  worst=Math.max(worst,r.path.length);
+  for(let k=1;k<r.path.length;k++){
+   const i=r.path[k-1],j=r.path[k],x0=i%E.GW,y0=i/E.GW|0,x1=j%E.GW,y1=j/E.GW|0;
+   const steps=Math.max(Math.abs(x1-x0),Math.abs(y1-y0))*2;
+   for(let t=1;t<steps;t++){
+    const x=Math.round(x0+(x1-x0)*t/steps),y=Math.round(y0+(y1-y0)*t/steps),c=y*E.GW+x;
+    if(w.height[c]>0||w.seaIce[c]>=.88)crossings++;
+   }
+  }
+ }
+ assert.equal(crossings,0,'a straightened leg cut across land or pack ice');
+ const nodes=routes.map(r=>r.path.length).sort((a,b)=>a-b);
+ assert(nodes[nodes.length>>1]<=8,`a lane should be a few long legs, median is ${nodes[nodes.length>>1]} nodes`);
+ assert(worst<=40,`no lane should still be a staircase, longest is ${worst} nodes`);
+});
 test('Mesh collection does not request a second canvas or graphics context',()=>{
  globalThis.window={world:w,sim:s};globalThis.document={createElement(){throw Error('A second canvas was requested');}};
  const h=E.physicalFingerprint(w),pop=E.settlementFingerprint(s),collector=E.createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(city,p,s.realms[p.owner],s.cityState?.[p.id]||{});

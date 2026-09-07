@@ -467,7 +467,10 @@ function generateCity(w, sim, provinceId, design = {}) {
                 jetties.push({ a: s.q, b: tip, y: s.y + .32, width: .55 });
                 const roll = hash2(s.k, city.buildings.length, seed);
                 moorings.push({ x: tip.x + s.nz * (roll < .5 ? 1.1 : -1.1), z: tip.z - s.nx * (roll < .5 ? 1.1 : -1.1),
-                    y: s.y + .06, angle: Math.atan2(-s.nx, s.nz), length: 2.1 + roll * 1.9, beam: .78 + roll * .30,
+                    // A moored fishing boat ran twice the length of a whole house block. It is
+                    // read against the quay it is tied to, so it shrinks with the sea-going
+                    // hull rather than the ratio between them being bent to fit.
+                    y: s.y + .06, angle: Math.atan2(-s.nx, s.nz), length: .85 + roll * .78, beam: .34 + roll * .13,
                     kind: roll < .38 ? 'barge' : 'boat' });
                 bollards.push({ x: s.q.x - s.nx * .5, z: s.q.z - s.nz * .5, y: s.y + .30 });
                 // Landward sheds, on dry road-free ground that no compound already holds.

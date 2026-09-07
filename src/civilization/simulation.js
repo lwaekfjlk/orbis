@@ -20,6 +20,35 @@ const FAITHS = [
 const GOVERNMENTS = ['Feudal monarchy', 'Temple monarchy', 'Magocracy', 'Clan confederacy', 'Merchant republic', 'Mountain federation', 'Civic republic', 'City-state league'];
 const REALM_COLORS = ['#ccaa62', '#89b2c8', '#a989c0', '#72996d', '#b48168', '#8f9ca9', '#58aeb0', '#d39a63', '#819f86', '#91a7c4', '#7daac6', '#c2b271', '#a888a1', '#6b9e97', '#b97d73', '#88a18f', '#b4a3c4', '#bfc184', '#9cbbc2', '#ceae99', '#799397', '#c38b90', '#ad9680', '#97ad68', '#789bb5', '#b799b7', '#b2a469', '#6ca38b'];
 const cPair = (a, b) => a < b ? a + ':' + b : b + ':' + a;
+/** Whether a straight course between two cells stays on navigable water throughout. */
+function cSeaClear(w, i, j) {
+    const x0 = i % GW, y0 = i / GW | 0, x1 = j % GW, y1 = j / GW | 0;
+    const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * 2;
+    for (let k = 1; k < steps; k++) {
+        const x = Math.round(x0 + (x1 - x0) * k / steps), y = Math.round(y0 + (y1 - y0) * k / steps), c = y * GW + x;
+        if (w.height[c] > 0 || w.seaIce[c] >= .88)
+            return false;
+    }
+    return true;
+}
+/** A sea lane is a course, not a staircase. The flood fill that finds it may only step
+ * N/S/E/W, so its path zigzags across open water where a ship would simply hold a bearing.
+ * Keep only the corners a vessel would actually turn at: run forward while the straight
+ * line to the next node still clears land and pack ice. Open ocean collapses to one leg. */
+function cStraightenSea(w, path) {
+    if (path.length < 3)
+        return path;
+    const out = [path[0]];
+    let i = 0;
+    while (i < path.length - 1) {
+        let j = i + 1;
+        while (j + 1 < path.length && cSeaClear(w, path[i], path[j + 1]))
+            j++;
+        out.push(path[j]);
+        i = j;
+    }
+    return out;
+}
 const cDominant = a => a.indexOf(Math.max(...a));
 function cNormalize(a) { const sum = a.reduce((s, v) => s + Math.max(v, 0), 0); return a.map(v => sum ? Math.max(v, 0) / sum : 1 / a.length); }
 /* PLACE NAMES. Two rolls are drawn when a district is created (so the random stream is
@@ -883,7 +912,7 @@ function makeSeaRoutes(w, sim) {
                 i = prev[i];
             }
             path.reverse();
-            sim.routes.push({ a: chosen[a].id, b: chosen[b].id, distance: d, path, kind: 'sea' });
+            sim.routes.push({ a: chosen[a].id, b: chosen[b].id, distance: d, path: cStraightenSea(w, path), kind: 'sea' });
             if (++got >= 3)
                 break;
         }

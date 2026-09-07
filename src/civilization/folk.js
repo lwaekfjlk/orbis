@@ -46,6 +46,10 @@ const Folk = (() => {
      * courtyard in under a second, a carter crossing a province in twenty. These are
      * tuned by what they look like against the scenery, not by any metric speed, and
      * tests/folk.test.mjs pins them that way. */
+    /** Everything moves at a fraction of a body length per second. The figures and hulls are
+ * scenery on a map, not a traffic simulation: read against their own size, the previous
+ * speeds had a walker covering its own height every second and a ship its own hull every
+ * six, which is why they scanned as hurrying rather than inhabiting. */
     function speedOf(agent) { return agent.base * (.82 + agent.gait * .38); }
     function polyline(points) {
         const pts = points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.z)), acc = [0];
@@ -124,7 +128,7 @@ const Folk = (() => {
                 // Stepping out of a compound onto the street it is connected to.
                 const c = city.connectors[Math.floor(roll(k, 29, seed) * city.connectors.length) % city.connectors.length];
                 const ya = city.height[city.index(c.a.x, c.a.z)] + .15, yb = city.height[city.index(c.b.x, c.b.z)] + .15;
-                add({ ...agent, kind: 'walker', base: .22, route: polyline([{ ...c.a, y: ya }, { x: c.b.x, z: c.b.z, y: yb }]), speed: 0 });
+                add({ ...agent, kind: 'walker', base: .036, route: polyline([{ ...c.a, y: ya }, { x: c.b.x, z: c.b.z, y: yb }]), speed: 0 });
             }
             else {
                 const a = roll(k, 31, seed) * 6.2831853, radius = 1.6 + roll(k, 37, seed) * 3.4;
@@ -159,16 +163,16 @@ const Folk = (() => {
                 const kindRoll = roll(k, 53, seed);
                 agents.push({ id: `t${road.from}-${road.to}-${k}`, scope: 'road', road, people, look: l,
                     kind: road.cls === 'highway' && kindRoll < .42 ? 'cart' : kindRoll < .22 ? 'rider' : 'walker',
-                    gait: roll(k, 59, seed), base: .06, tone: roll(k, 61, seed), phase: roll(k, 67, seed),
+                    gait: roll(k, 59, seed), base: .010, tone: roll(k, 61, seed), phase: roll(k, 67, seed),
                     escort: road.cls === 'highway' ? 2 : road.cls === 'road' ? 1 : 0, speed: 0 });
             }
         }
         for (const [k, route] of (sim.routes || []).entries()) {
-            if (agents.length >= cap + 40 || route.path.length < 6 || k % 3)
+            if (agents.length >= cap + 40 || RoadNetwork.length(route) < 6 || k % 3)
                 continue;
             const seed = (route.a * 1301 + route.b * 7717) | 0, home = sim.provinces[route.a];
             agents.push({ id: `s${route.a}-${route.b}`, scope: 'sea', road: route, people: pick(home.people, roll(k, 71, seed)),
-                look: look(0), kind: 'boat', gait: roll(k, 79, seed), base: .08, tone: roll(k, 83, seed),
+                look: look(0), kind: 'boat', gait: roll(k, 79, seed), base: .006, tone: roll(k, 83, seed),
                 phase: roll(k, 89, seed), escort: 0, speed: 0 });
         }
         for (const a of agents)
@@ -177,7 +181,9 @@ const Folk = (() => {
     }
     /** Where a road or sea traveller is, in parent grid coordinates. */
     function travellerAt(agent, t) {
-        const path = agent.road.path, span = Math.max(1, path.length - 1), cycle = 2 * span / agent.speed;
+        // Distance in grid cells, not path nodes: a straightened sea lane has very unequal
+        // legs, and speed has to mean the same thing on all of them.
+        const span = Math.max(1e-3, RoadNetwork.length(agent.road)), cycle = 2 * span / agent.speed;
         let u = (t / cycle + agent.phase) % 1;
         if (u < 0)
             u += 1;
