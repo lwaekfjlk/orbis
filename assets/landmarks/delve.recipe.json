@@ -1,0 +1,28 @@
+{
+  "format": "telluric-landmark-recipe",
+  "version": 1,
+  "id": "library-delve",
+  "style": "delve",
+  "seed": "AERETH / 01",
+  "name": "The Lamplit Warrens",
+  "material": "delve",
+  "faith": "hearth",
+  "culture": "Dwarven craft",
+  "complexity": 2,
+  "crown": "native",
+  "roofLanguage": "native",
+  "variant": 2,
+  "wings": 2,
+  "roofPitch": 0.968799974117428,
+  "ornament": "radial",
+  "geography": {
+    "freshwater": 0.9,
+    "coast": false,
+    "lake": false,
+    "cold": false,
+    "dry": false,
+    "forest": false,
+    "elevation": 350
+  },
+  "provenance": "Template-library specimen; surrounding terrain is an illustrative stage, not a new world cell."
+}

@@ -25,6 +25,7 @@
     "test:cache": "python tests/cache-browser.py",
     "test:sanctuary": "node --test tests/sanctuary.test.mjs",
     "assets:sanctuary": "node scripts/export-sanctuaries.mjs",
+    "preview:architecture": "node scripts/preview-architecture.mjs",
     "test:browser:sanctuary": "python tests/sanctuary_browser.py",
     "test:continuous": "node --test tests/continuous.test.mjs",
     "test:roads": "node --test tests/roads.test.mjs",
