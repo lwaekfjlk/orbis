@@ -1,0 +1,36 @@
+{
+  "htmlSha256": "77ec9d360981941077dec5495294eccfcee1b85bb8993fd83829871529a7f369",
+  "factories": [
+    "function",
+    "function",
+    "function"
+  ],
+  "checks": [
+    {
+      "id": 507,
+      "name": "Glassbeck",
+      "buildings": 552,
+      "gates": 4,
+      "worker": true,
+      "triangles": 256043,
+      "landmarkHeights": 552,
+      "meshCount": 11,
+      "finite": true,
+      "error": null
+    },
+    {
+      "id": 349,
+      "name": "Scorchspire",
+      "buildings": 524,
+      "gates": 1,
+      "worker": true,
+      "triangles": 214895,
+      "landmarkHeights": 524,
+      "meshCount": 11,
+      "finite": true,
+      "error": null
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}
