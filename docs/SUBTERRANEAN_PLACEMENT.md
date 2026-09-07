@@ -32,7 +32,7 @@ npm run dev
 
 默认 `Aereth-47` 世界中的 [Stormbeck 实拍](../previews/excavations/stormbeck-in-world.png) 和 [Pineshore 实拍](../previews/excavations/pineshore-in-world.png) 用于检查完整地图中的接合效果。两个入口相对其所在地表的高度差均为 0。
 
-最终定向回归 99 项通过，覆盖地下放置、坡面封口、井内拾取、LOD/缓存恢复、真实两城、worker 网格哈希一致性、世界指纹、全部 15 座奇观、模型导出、地形和小鼠标圆环。复现命令：
+最终定向回归 100 项通过，覆盖地下放置、坡面封口、井内拾取、LOD/缓存恢复、真实两城、worker 网格哈希一致性、世界指纹、全部 15 座奇观、模型导出、地形和小鼠标圆环。复现命令：
 
 ```sh
 node --test --test-concurrency=1 tests/excavation*.test.mjs tests/labyrinth-excavation.test.mjs tests/subterranean-integration.test.mjs tests/wonders*.test.mjs tests/wonder-assets.test.mjs tests/landmarks.test.mjs tests/selection-marker.test.mjs tests/continuous.test.mjs tests/terrain-mesh.test.mjs tests/terrain-refinement.test.mjs tests/city-terrain.test.mjs

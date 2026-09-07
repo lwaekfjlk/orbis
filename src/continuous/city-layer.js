@@ -56,7 +56,7 @@ const ExcavationTerrain=(()=>{
   }
  }
  function triangle(g,a,b,c,holes){const minX=Math.min(a[0],b[0],c[0]),maxX=Math.max(a[0],b[0],c[0]),minZ=Math.min(a[2],b[2],c[2]),maxZ=Math.max(a[2],b[2],c[2]),near=[];
-  for(const hole of holes){const b=hole.bounds;if(maxX>b.minX+EPS&&minX<b.maxX-EPS&&maxZ>b.minZ+EPS&&minZ<b.maxZ-EPS)near.push(hole);}
+  for(const hole of holes){const b=hole.bounds;if(maxX>=b.minX-EPS&&minX<=b.maxX+EPS&&maxZ>=b.minZ-EPS&&minZ<=b.maxZ+EPS)near.push(hole);}
   if(!near.length){g.smoothTri(a,b,c);return;}let fragments=[[a,b,c]];
   for(const hole of near){const next=[];for(const poly of fragments)next.push(...subtract(poly,hole));fragments=next;if(!fragments.length)return;}
   for(const poly of fragments){skirts(g,poly,near);for(let j=1;j<poly.length-1;j++){const p=poly[0],q=poly[j],r=poly[j+1];if(Math.abs((q[0]-p[0])*(r[2]-p[2])-(q[2]-p[2])*(r[0]-p[0]))>EPS)g.smoothTri(normalise(p),normalise(q),normalise(r));}}

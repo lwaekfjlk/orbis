@@ -17,3 +17,14 @@ test('a level excavation rim seals both uphill and downhill terrain at the exact
  assert(above>0&&below>0,'the join must handle soil above and below the entrance');assert(Math.abs(actualArea-expectedArea)<1e-9,'soil walls must fully cover the height difference without duplicate faces');
  for(let i=0;i<g.data.length;i+=9)assert(Math.abs(Math.hypot(...g.data.slice(i+3,i+6))-1)<1e-9,'nondegenerate unit normals at every seam');
 });
+
+test('an opening aligned exactly with terrain edges still closes the adjacent soil wall',()=>{
+ const hole={...H.prepare([[0,0],[1,0],[1,1],[0,1]],-2,'aligned-pit'),groundY:1},g=new Geometry(),v=(x,z)=>[x,2,z,0,1,0,.4,.5,.3];
+ for(const x of[-1,0]){H.triangle(g,v(x,0),v(x,1),v(x+1,1),[hole]);H.triangle(g,v(x,0),v(x+1,1),v(x+1,0),[hole]);}
+ let seamArea=0,horizontalArea=0;
+ for(let i=0;i<g.data.length;i+=27){const[a,b,c]=[0,9,18].map(j=>g.data.slice(i+j,i+j+3)),u=b.map((x,j)=>x-a[j]),v=c.map((x,j)=>x-a[j]),cross=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  if(Math.abs(cross[1])<1e-9){seamArea+=Math.hypot(...cross)/2;assert([a,b,c].every(p=>Math.abs(p[0])<1e-9),'only the shared cut edge gets a skirt');}
+  else horizontalArea+=Math.abs(cross[1])/2;
+ }
+ assert.equal(horizontalArea,1,'the full inside cell is removed and the outside cell survives');assert.equal(seamArea,1,'the aligned one-unit soil edge is completely sealed');
+});
