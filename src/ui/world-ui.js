@@ -354,17 +354,29 @@ function legend() {
     $('legend').innerHTML = items.map(([c, t]) => `<span>${c ? `<i style="background:${c}"></i>` : ''}${escapeHTML(t)}</span>`).join('') + (['faiths', 'peoples'].includes(currentLayer) ? '<span>Color: local majority, not uniform belief or ancestry.</span>' : '');
     $('mapStamp').textContent = layerTitles[currentLayer] + ' / ' + sim.year;
 }
-// The held province closest to the territory's own centre of mass. A country whose
-// land straddles a strait would otherwise take its name out to sea.
-function realmAnchor(held) {
-    if (!held.length)
-        return null;
-    let sx = 0, sy = 0;
-    for (const p of held) { sx += p.x; sy += p.y; }
-    const cx = sx / held.length, cy = sy / held.length;
-    let best = held[0], distance = Infinity;
-    for (const p of held) { const d = (p.x - cx) ** 2 + (p.y - cy) ** 2; if (d < distance) { distance = d; best = p; } }
-    return best;
+// Candidate positions belong to the realm's land, independently of its towns.
+// Prefer the interior and leave space around settlements; screen-space fitting
+// below chooses a candidate after the actual lettering has been measured.
+function realmLabelAnchors(held) {
+    const cells = held.flatMap(p => p.cells).filter(i => world.height[i] > 0 && world.lake[i] <= 0);
+    if (!cells.length) return [];
+    const owned = new Set(cells), towns = held.filter(p => p.settled);
+    const cx = cells.reduce((s, i) => s + i % GW, 0) / cells.length;
+    const cy = cells.reduce((s, i) => s + Math.floor(i / GW), 0) / cells.length;
+    const candidates = cells.map(i => {
+        const x = i % GW, y = Math.floor(i / GW);
+        const townDistance = Math.min(8, ...towns.map(p => Math.hypot(p.x - x, p.y - y)));
+        let interior = 0;
+        for (const [dx, dy] of [[-3,0],[3,0],[0,-3],[0,3]])
+            if (x+dx >= 0 && x+dx < GW && owned.has(i+dy*GW+dx)) interior++;
+        return { x, y, i, score: interior * 2 + townDistance - Math.hypot(x-cx, y-cy) * .3 };
+    }).sort((a,b) => b.score-a.score || a.i-b.i);
+    const anchors = [];
+    for (const p of candidates) {
+        if (anchors.every(a => Math.hypot(a.x-p.x, a.y-p.y) >= 3)) anchors.push(p);
+        if (anchors.length === 40) break;
+    }
+    return anchors;
 }
 // Named wonders only appear when the legend layer itself is switched on.
 function legendLabels() { return $('legends')?.checked === false ? [] : (world.legends || []); }
@@ -383,15 +395,13 @@ function makeLabels() {
     else if (currentLayer === 'plates')
         list = world.plates.map(p => ({ x: p.x, y: p.y, i: cell(p.x, p.y), name: p.name + ' Plate', kind: '', plate: true }));
     else if (POLITICAL.includes(currentLayer)) {
-        // A country's name belongs over its territory, not stacked on its capital,
-        // and its cities are cities — smaller type, under the country. This is the
-        // ordinary atlas hierarchy, and it needs the realm names placed first so a
-        // dense cluster of towns cannot push a whole country off the map.
+        // Realm lettering has its own land positions and no settlement marker.
+        // Town labels are reserved separately before fitting the realm names.
         const realms = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength);
         list = realms.map(c => {
             const held = sim.provinces.filter(p => p.owner === c.id);
-            const seat = sim.provinces[c.capital], anchor = realmAnchor(held) || seat;
-            return { x: anchor.x, y: anchor.y, i: anchor.i, name: c.name, kind: c.gov === 2 ? 'MAGOCRACY' : c.gov === 1 ? 'HOLY KINGDOM' : GOVERNMENTS[c.gov], capital: true, realm: c.id };
+            const anchors = realmLabelAnchors(held), anchor = anchors[0] || sim.provinces[c.capital];
+            return { x: anchor.x, y: anchor.y, i: anchor.i, name: c.name, realm: c.id, anchors };
         });
         for (const c of realms)
             for (const p of sim.provinces.filter(p => p.owner === c.id && p.settled).sort((a, b) => b.urbanPop - a.urbanPop).slice(0, 4))
@@ -414,9 +424,9 @@ function makeLabels() {
         list = [...world.continents, ...legendLabels(), ...world.features];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.capital ? ' capitalLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel' : '');
-        b.innerHTML = `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
-        b.title = 'Inspect ' + f.name;
+        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel' : '');
+        b.innerHTML = (f.realm != null ? '' : `<small>${escapeHTML(f.kind || '')}</small>`) + `<em>${escapeHTML(f.name)}</em>`;
+        b.title = 'Inspect ' + f.name + (f.kind ? ' · ' + f.kind : '');
         b.onclick = () => { if (f.realm != null) {
             selectRealm(f.realm);
         }
@@ -434,19 +444,36 @@ function positionLabels() {
     if (!$('names').checked)
         return;
     const boxes = [];
-    // Measure the actual font and government caption, including long mythic names.
     // Batch reads before position writes so camera movement causes one layout pass.
     const measured = labelItems.map(item => ({ ...item, width: item.element.offsetWidth + 6, height: item.element.offsetHeight + 4 }));
-    for (const { element: e, feature: f, width, height } of measured) {
-        const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : f.legend ? 1.9 : .6), box = { x: x - width / 2, y: y - height, w: width, h: height };
-        const overlaps = boxes.some(b => box.x < b.x + b.w && box.x + box.w > b.x && box.y < b.y + b.h && box.y + box.h > b.y), edge = box.x < 8 || box.x + box.w > renderer.width - 8 || box.y < 8 || y > renderer.height - 22 || (box.x < 210 && box.y < 75);
-        const show = !edge && !overlaps;
+    const overlaps = (a, b, gap = 0) => a.x < b.x+b.w+gap && a.x+a.w > b.x-gap && a.y < b.y+b.h+gap && a.y+a.h > b.y-gap;
+    const at = (f, width, height, anchor = f) => {
+        const [x,y] = renderer.screen(anchor.x, anchor.y, f.legend ? 1.9 : .6);
+        return { x:x-width/2, y:y-(f.realm != null ? height/2 : height), w:width, h:height, left:x, top:y };
+    };
+    const inside = b => b.x >= 8 && b.x+b.w <= renderer.width-8 && b.y >= 8 && b.y+b.h <= renderer.height-22 && !(b.x < 210 && b.y < 75);
+    // Reserve point labels and the city locations below them. Realm names must
+    // find other land instead of replacing a capital's name or sitting on its dot.
+    const towns = [];
+    for (const v of measured.filter(v => v.feature.town)) {
+        const box = at(v.feature,v.width,v.height);
+        if (inside(box) && !towns.some(b => overlaps(box,b))) towns.push(box);
+    }
+    for (const { element:e, feature:f, width, height } of measured) {
+        const region = f.realm != null;
+        const candidates = region ? (f.anchors?.length ? f.anchors : [f]) : [f];
+        let box = at(f,width,height), show = false;
+        for (const anchor of candidates) {
+            const candidate = at(f,width,height,anchor);
+            if (!inside(candidate) || boxes.some(b => overlaps(candidate,b))) continue;
+            if (region && towns.some(b => overlaps(candidate,b,8))) continue;
+            box = candidate; show = true; break;
+        }
         e.style.opacity = show ? '1' : '0';
         e.style.pointerEvents = show ? 'auto' : 'none';
-        e.style.left = x + 'px';
-        e.style.top = y + 'px';
-        if (show)
-            boxes.push(box);
+        e.style.left = box.left+'px';
+        e.style.top = box.top+'px';
+        if (show) boxes.push(box);
     }
     $('compass').style.transform = `rotate(${-renderer.azimuth * 180 / Math.PI}deg)`;
 }
@@ -643,18 +670,21 @@ async function savePNG() {
         for (const { element: e, feature: f } of labelItems) {
             if (e.style.opacity === '0')
                 continue;
-            const [x, y] = renderer.screen(f.x, f.y, f.capital ? 2.2 : f.legend ? 1.9 : .6);
+            const text = e.querySelector('em'), rect = text.getBoundingClientRect(), mapRect = canvas.getBoundingClientRect();
+            const x = rect.left + rect.width/2 - mapRect.left, y = rect.top + rect.height/2 - mapRect.top;
             ctx.textAlign = 'center';
-            const lettering = getComputedStyle(e.querySelector('em'));
+            ctx.textBaseline = 'middle';
+            const lettering = getComputedStyle(text);
             ctx.font = `${lettering.fontStyle} ${lettering.fontWeight} ${parseFloat(lettering.fontSize) * sx}px ${lettering.fontFamily}`;
             if ('letterSpacing' in ctx) ctx.letterSpacing = `${(parseFloat(lettering.letterSpacing) || 0) * sx}px`;
             ctx.strokeStyle = f.legend ? '#fff8e2' : '#efe9ce';
             ctx.lineWidth = 2.4 * sx;
-            ctx.fillStyle = f.legend ? '#5a3d10' : '#294734';
-            ctx.strokeText(f.name, x * sx, (y - 10) * sy);
-            ctx.fillText(f.name, x * sx, (y - 10) * sy);
+            ctx.fillStyle = lettering.color;
+            ctx.strokeText(f.name, x * sx, y * sy);
+            ctx.fillText(f.name, x * sx, y * sy);
         }
     if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    ctx.textBaseline = 'alphabetic';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#f4f5eb';
     ctx.fillRect(0, canvas.height, out.width, 106);

@@ -1,7 +1,7 @@
 /* Bundled map lettering; the single-file build embeds both font files. */
 @font-face {
-  font-family:"Cinzel Decorative";
-  src:url("../assets/fonts/CinzelDecorative-Regular.ttf") format("truetype");
+  font-family:"Bilbo Swash Caps";
+  src:url("../assets/fonts/BilboSwashCaps-Regular.ttf") format("truetype");
   font-style:normal;
   font-weight:400;
   font-display:swap
@@ -14,7 +14,7 @@
   font-display:swap
 }
 :root {
-  --realm-lettering:"Cinzel Decorative",Palatino,Georgia,serif;
+  --realm-lettering:"Bilbo Swash Caps",Palatino,Georgia,serif;
   --town-lettering:"IM Fell English",Palatino,Georgia,serif
 }
 
@@ -524,24 +524,23 @@ header {
   text-transform:uppercase;
   margin-bottom:1px
 }
-/* Country names carry the political layer, so they are set above every other
-   label; their cities sit under them at ordinary town size. */
-.maplabel.capitalLabel em {
-  font:400 27px/1.2 var(--realm-lettering);
-  letter-spacing:1.3px;
+/* A realm is regional lettering; settlements keep their own point labels. */
+.maplabel.realmLabel {
+  transform:translate(-50%,-50%);
+  padding:3px 8px
+}
+.maplabel.realmLabel:after { content:none }
+.maplabel.realmLabel em {
+  font:400 22px/1.35 var(--realm-lettering);
+  letter-spacing:0;
   color:#33403a
 }
-.maplabel.capitalLabel small {
-  font-size:6px
-}
+.maplabel.townLabel { padding:2px 4px }
 .maplabel.townLabel em {
   font:italic 10.5px/1.3 var(--town-lettering);
   letter-spacing:.1px
 }
-.maplabel.townLabel small {
-  font-size:5px;
-  opacity:.75
-}
+.maplabel.townLabel small { display:none }
 .maplabel.townLabel:after {
   width:2px;
   height:2px
@@ -1149,8 +1148,8 @@ dialog a {
   .worldstat b {
     font-size:24px
   }
-  .maplabel.capitalLabel em {
-    font-size:24px
+  .maplabel.realmLabel em {
+    font-size:20px
   }
   .maphead h3 {
     font-size:21px
@@ -1396,8 +1395,8 @@ dialog a {
   .maplabel em {
     font-size:10px
   }
-  .maplabel.capitalLabel em {
-    font-size:22px
+  .maplabel.realmLabel em {
+    font-size:18px
   }
   .maplabel small {
     font-size:5px

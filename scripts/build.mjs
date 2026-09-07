@@ -33,7 +33,7 @@ if (!shell.includes('<!-- END-APP-SCRIPTS -->'))
 await writeFile(resolve(root, 'index.html'), shell);
 let html = shell;
 // Keep the full copyright and OFL notices with the standalone font binaries.
-const fontLicenses = await Promise.all(['CinzelDecorative-OFL.txt', 'IMFellEnglish-OFL.txt'].map(async file => {
+const fontLicenses = await Promise.all(['BilboSwashCaps-OFL.txt', 'IMFellEnglish-OFL.txt'].map(async file => {
     const license = await readFile(resolve(root, 'assets/fonts', file), 'utf8');
     if (license.includes('-->')) throw Error(`Font license cannot be embedded as an HTML comment: ${file}`);
     return `<!--\nBUNDLED FONT LICENSE: ${file}\n${license}\n-->`;
