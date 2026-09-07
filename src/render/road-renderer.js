@@ -24,7 +24,10 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
     // The existing LOD break: below it a town is silhouettes and map symbols, above it
     // the carved architecture appears. Figures and ground-seated roads follow it exactly
     // so nothing changes representation twice on the way in.
-    AtlasRenderer.FOLK_ZOOM = 18;
+    // The town-detail threshold, restated: AtlasSpace is a `const` declared later in the
+    // concatenated bundle, so it cannot be read at module-eval time. Cross-checked
+    // against AtlasSpace.DETAIL_ZOOM in tests/continuous.test.mjs.
+    AtlasRenderer.FOLK_ZOOM = 60;
     const CLASS_STYLE = {
         highway: { width: .082, color: '#cdba90', casing: '#9c8c6b' },
         road: { width: .055, color: '#c2b089', casing: null },
@@ -269,7 +272,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
             if (name === 'folk' || name === 'caravans') {
                 if (this.options.folk === false)
                     return false;
-                return name === 'folk' ? this.zoom >= AtlasRenderer.FOLK_ZOOM : this.zoom >= 4.8 && this.zoom < AtlasRenderer.FOLK_ZOOM;
+                return name === 'folk' ? this.zoom >= AtlasRenderer.FOLK_ZOOM : this.zoom >= AtlasSpace.TOWN_ZOOM && this.zoom < AtlasRenderer.FOLK_ZOOM;
             }
             if (this.options.roads === false)
                 return false;

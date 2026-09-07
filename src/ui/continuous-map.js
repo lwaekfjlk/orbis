@@ -11,7 +11,7 @@ window.ContinuousMap = (() => {
   */
  const reducedMotion=()=>!!window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
  let clock=0,lastTick=0,walking=false,staticTimer=0;
- const animating=()=>ready()&&renderer.options.folk!==false&&renderer.zoom>=4.8&&!renderer.software&&!reducedMotion()&&document.visibilityState!=='hidden';
+ const animating=()=>ready()&&renderer.options.folk!==false&&renderer.zoom>=AtlasSpace.TOWN_ZOOM&&!renderer.software&&!reducedMotion()&&document.visibilityState!=='hidden';
  function startFolk(){if(walking||!animating())return;walking=true;lastTick=performance.now();requestAnimationFrame(tickFolk);}
  function tickFolk(now){
   if(!animating()){walking=false;return;}
@@ -49,19 +49,19 @@ window.ContinuousMap = (() => {
   makePins();updateTitle();renderer.request();layer.cameraChanged();if(selection&&OneMap.panel==='detail')details(selection.model,selection.building,false);
  }
  function updateTitle(){if(!enabled||!world||!sim)return;const r=renderer,a=AtlasSpace.grid(r.target[0],r.target[2]);
-  const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=5&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
-  const mode=r.zoom<4.8?'WORLD ATLAS':r.zoom<16?'REGION & TOWNS':r.zoom<55?'TOWN & LANDSCAPE':'BUILDING DETAIL';
+  const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=AtlasSpace.TOWN_ZOOM*1.04&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
+  const mode=r.zoom<AtlasSpace.TOWN_ZOOM?'WORLD ATLAS':r.zoom<AtlasSpace.TOWN_ZOOM*3.33?'REGION & TOWNS':r.zoom<AtlasSpace.DETAIL_ZOOM*3.06?'TOWN & LANDSCAPE':'BUILDING DETAIL';
   E('omSceneLabel').textContent=mode+' · ONE CONTINUOUS MAP';E('omPlaceName').textContent=near?nearest.p.name:'The Manyfold World';
-  E('cmContext').style.display=r.zoom>5?'block':'none';
+  E('cmContext').style.display=r.zoom>AtlasSpace.TOWN_ZOOM*1.04?'block':'none';
   E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.city).length} towns · scroll towards a town`;
   E('omHint').textContent='SCROLL TO APPROACH · SHIFT-DRAG TO ORBIT · CLICK A BUILDING';
-  document.body.dataset.detail=r.zoom>=4.8?'local':'atlas';
+  document.body.dataset.detail=r.zoom>=AtlasSpace.TOWN_ZOOM?'local':'atlas';
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
   window.__folk={...(r.folkStats||{}),walking,software:!!r.software,reducedMotion:reducedMotion(),roads:r.roadStats||null};
  }
  function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4)].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
   startFolk();
-  if(renderer.zoom>=8){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
+  if(renderer.zoom>=AtlasSpace.TOWN_ZOOM*1.67){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
   positionPins();updateTitle();
  }
@@ -69,7 +69,7 @@ window.ContinuousMap = (() => {
  function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));moving=true;
   return new Promise(resolve=>{function frame(now){if(token!==animation||busy){moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
  }
- async function focusTown(id,zoom=26){if(!ready())return null;const p=sim.provinces[+id];if(!p?.settled)return null;OneMap.closeDrawer();E('omSearchPanel').classList.add('hidden');E('omMorePanel').classList.add('hidden');OneMap.clearSelection();layer.focusId=p.id;
+ async function focusTown(id,zoom=AtlasSpace.DETAIL_ZOOM*1.44){if(!ready())return null;const p=sim.provinces[+id];if(!p?.settled)return null;OneMap.closeDrawer();E('omSearchPanel').classList.add('hidden');E('omMorePanel').classList.add('hidden');OneMap.clearSelection();layer.focusId=p.id;
   const target=AtlasSpace.point(world,p.x,p.y,renderer.relief);target[1]+=.15;const e=CityEnvironment.profile(world,p),az=e.mountainous?Math.atan2(-(e.peak.x-p.x),-(e.peak.y-p.y)):renderer.azimuth;const flight=animate(target,zoom,.94,1000,az);
   const model=await layer.ensure(p.id);await flight;if(model){window.__cityReady=true;window.__cityError=null;window.__continuousFocus=p.id;updateTitle();}else toast('This location has no buildable detailed layout. The original terrain is unchanged.');return model;
  }
@@ -84,7 +84,7 @@ window.ContinuousMap = (() => {
  // atlas stays skewed with no way to straighten it except reloading.
  const HOME_AZIMUTH=.018,HOME_ELEVATION=1.19;
  function home(){if(!ready())return;OneMap.clearSelection();OneMap.closeDrawer();selection=null;layer.focusId=null;layer.select(null);return animate([0,0,0],1,HOME_ELEVATION,1000,HOME_AZIMUTH);}
- function zoomBy(factor,sx=renderer.width/2,sy=renderer.height/2){if(!ready())return;cancel();const r=renderer,before=AtlasSpace.pickGround(r,sx,sy);r.zoom=clamp(r.zoom*factor,.6,180);r.updateCamera();const after=before?AtlasSpace.pickGround(r,sx,sy):null;if(before&&after){r.target[0]+=before.point[0]-after.point[0];r.target[2]+=before.point[2]-after.point[2];}r.request();}
+ function zoomBy(factor,sx=renderer.width/2,sy=renderer.height/2){if(!ready())return;cancel();const r=renderer,before=AtlasSpace.pickGround(r,sx,sy);r.zoom=clamp(r.zoom*factor,.6,AtlasSpace.MAX_ZOOM);r.updateCamera();const after=before?AtlasSpace.pickGround(r,sx,sy):null;if(before&&after){r.target[0]+=before.point[0]-after.point[0];r.target[2]+=before.point[2]-after.point[2];}r.request();}
  function select(hit){selection=hit;layer.focusId=hit.model.p.id;layer.select(hit);const b=hit.building,m=hit.model;E('omSelection').classList.remove('hidden');E('omSelectionBody').innerHTML=`<small class="om-eyebrow">${escapeHTML(m.p.name)} / ${escapeHTML(m.city.siteEnvironment.label)}</small><h3>${escapeHTML(b.name)}</h3><p>${escapeHTML(CITY_TYPES[b.type]?.description||'An assembled part of this town.')}</p><div class="om-actions"><button id="cmFocusBuilding">Closer</button><button id="cmShowDetails">Details</button><button id="cmShowContext">Wider setting</button></div>`;E('cmFocusBuilding').onclick=()=>focusBuilding(m.p.id,b.id);E('cmShowDetails').onclick=()=>details(m,b);E('cmShowContext').onclick=wider;}
  /* THE SAGA PANEL.
   * Somebody who lives in the town tells you its history: their face, their office, and
@@ -133,8 +133,8 @@ window.ContinuousMap = (() => {
   for(const p of sim.provinces.filter(p=>p.settled)){const button=document.createElement('button');button.className='cm-pin cm-town-pin';button.textContent=p.name;button.onclick=()=>focusTown(p.id);node.appendChild(button);pins.push({button,town:p});}
   for(const m of layer.models.values())for(const b of m.city.buildings.filter(b=>b.landmark)){const a=m.frame.anchors.get(b.id),h=(m.heights[b.id]||b.h)*a.scale,button=document.createElement('button');button.className='cm-pin cm-building-pin';button.textContent=b.name;button.onclick=()=>{select({model:m,building:b,anchor:a});focusBuilding(m.p.id,b.id);};node.appendChild(button);pins.push({button,point:[a.x,a.y+h+.012,a.z],model:m,building:b});}
  }
- function positionPins(){if(!enabled||!world)return;const r=renderer,show=r.zoom>=4.8&&E('names').checked;E('cmLabels').style.display=show?'block':'none';if(!show)return;const boxes=[];
-  for(const v of pins){let point;if(v.town){point=AtlasSpace.point(world,v.town.x,v.town.y,r.relief);point[1]+=.06;}else point=v.point;const q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height,w=Math.min(210,32+v.button.textContent.length*6.2);let valid=x>40&&x<r.width-40&&y>105&&y<r.height-140&&(v.town?r.zoom<38:r.zoom>=20);if(valid&&boxes.some(a=>Math.abs(a.x-x)<(a.w+w)*.5&&Math.abs(a.y-y)<34))valid=false;
+ function positionPins(){if(!enabled||!world)return;const r=renderer,show=r.zoom>=AtlasSpace.TOWN_ZOOM&&E('names').checked;E('cmLabels').style.display=show?'block':'none';if(!show)return;const boxes=[];
+  for(const v of pins){let point;if(v.town){point=AtlasSpace.point(world,v.town.x,v.town.y,r.relief);point[1]+=.06;}else point=v.point;const q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height,w=Math.min(210,32+v.button.textContent.length*6.2);let valid=x>40&&x<r.width-40&&y>105&&y<r.height-140&&(v.town?r.zoom<AtlasSpace.DETAIL_ZOOM*2.11:r.zoom>=AtlasSpace.DETAIL_ZOOM*1.11);if(valid&&boxes.some(a=>Math.abs(a.x-x)<(a.w+w)*.5&&Math.abs(a.y-y)<34))valid=false;
    // Do not put labels through an intervening mountain face.
    if(valid){const floor=AtlasSpace.pickGround(r,x,y);if(floor){const d=dot(sub(floor.point,point),r.dir);if(d<-.035)valid=false;}}
    v.button.style.display=valid?'block':'none';v.button.style.left=x+'px';v.button.style.top=y+'px';if(valid)boxes.push({x,y,w});
@@ -142,7 +142,7 @@ window.ContinuousMap = (() => {
  }
  function bindCamera(){const c=E('map'),pointers=new Map();let drag=null,pinch=null;const rect=()=>c.getBoundingClientRect();
   c.addEventListener('contextmenu',e=>e.preventDefault());c.addEventListener('pointerdown',e=>{if(!ready())return;cancel();renderer.interacting=true;c.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){const[a,b]=[...pointers.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),zoom:renderer.zoom};if(drag)drag.moved=99;return;}drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:0,rotate:e.shiftKey||e.button===2};});
-  c.addEventListener('pointermove',e=>{if(pointers.has(e.pointerId))pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2&&pinch){const[a,b]=[...pointers.values()];renderer.zoom=clamp(pinch.zoom*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,pinch.d),.6,180);renderer.request();return;}if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved=Math.max(drag.moved,Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy));if(drag.rotate){renderer.azimuth-=dx*.006;renderer.elevation=clamp(renderer.elevation+dy*.006,.42,1.555);renderer.request();}else renderer.pan(dx,dy);drag.x=e.clientX;drag.y=e.clientY;});
+  c.addEventListener('pointermove',e=>{if(pointers.has(e.pointerId))pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2&&pinch){const[a,b]=[...pointers.values()];renderer.zoom=clamp(pinch.zoom*Math.hypot(a.x-b.x,a.y-b.y)/Math.max(1,pinch.d),.6,AtlasSpace.MAX_ZOOM);renderer.request();return;}if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved=Math.max(drag.moved,Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy));if(drag.rotate){renderer.azimuth-=dx*.006;renderer.elevation=clamp(renderer.elevation+dy*.006,.42,1.555);renderer.request();}else renderer.pan(dx,dy);drag.x=e.clientX;drag.y=e.clientY;});
   const end=e=>{pointers.delete(e.pointerId);if(drag&&drag.moved<4&&!pinch){const a=rect(),x=e.clientX-a.left,y=e.clientY-a.top,h=layer.pick(x,y);if(h)select(h);else{selection=null;layer.select(null);const at=AtlasSpace.pickGround(renderer,x,y);if(at)inspectCell(at.i);}}if(!pointers.size){drag=null;pinch=null;renderer.interacting=false;renderer.request();}};
   c.addEventListener('pointerup',end);c.addEventListener('pointercancel',()=>{pointers.clear();drag=null;pinch=null;renderer.interacting=false;renderer.request();});E('stage').addEventListener('wheel',e=>{e.preventDefault();const a=rect();zoomBy(Math.exp(-e.deltaY*.0012),e.clientX-a.left,e.clientY-a.top);},{passive:false});
   c.addEventListener('dblclick',e=>{if(!ready())return;e.stopImmediatePropagation();const a=rect(),x=e.clientX-a.left,y=e.clientY-a.top,h=layer.pick(x,y);if(h){focusBuilding(h.model.p.id,h.building.id);return;}const at=AtlasSpace.pickGround(renderer,x,y);if(!at)return;const nearby=sim.provinces.filter(p=>p.settled).map(p=>({p,d:Math.hypot(p.x-at.x,p.y-at.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby?.d<5)focusTown(nearby.p.id);else animate(at.point,Math.min(180,renderer.zoom*2),renderer.elevation);},true);

@@ -104,7 +104,7 @@ class ContinuousCityLayer {
   }
   this.r.upload(`cm:${p.id}:vegetation`,vegetation,true);model.meshNames.push(`cm:${p.id}:vegetation`);
   // Screen-scale LOD: readable roofs at regional zoom; fine carved assemblies close up.
-  // Regional LOD. This is what a whole town looks like from 4.8 to 18, so it is the
+  // Regional LOD. This is what a whole town looks like between TOWN_ZOOM and DETAIL_ZOOM, so it is the
   // view most of the map is seen in — and every building in every town on the world
   // shared one beige wall and one slate roof, with the wall not even asking which
   // town it belonged to. Each silhouette now takes the same paint the detailed mesh
@@ -138,25 +138,25 @@ class ContinuousCityLayer {
   }catch(error){if(epoch!==this.epoch)return null;this.failed.add(key);console.error('Atlas town detail',p.name,error);window.__continuousError=error.message;return null;}
   finally{this.pending.delete(key);this.loading=this.pending.size>0;this.preparing=null;this.onChange();}
  }
- visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>4.2;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=4.8&&this.r.zoom<18;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<18)return false;return this.r.zoom>=4.8&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
+ visible(name){if(name.startsWith('cm:')){if(name==='cm:selection')return this.r.zoom>AtlasSpace.TOWN_ZOOM*.88;const type=name.split(':').at(-1);if(type==='silhouettes')return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&this.r.zoom<AtlasSpace.DETAIL_ZOOM;if(['buildings','roofs','details','cityWalls'].includes(type)&&this.r.zoom<AtlasSpace.DETAIL_ZOOM)return false;return this.r.zoom>=AtlasSpace.TOWN_ZOOM&&(type!=='roofs'||this.r.continuousRoofs!==false)&&(!['trees','vegetation'].includes(type)||this.r.options.trees!==false)&&(type!=='streams'||this.r.options.rivers!==false)&&(type!=='port'||this.r.options.roads!==false);}
   // The cartographic overlay stops where the town itself begins. A quay symbol is drawn
   // to the same scale as the town marker beside it — about forty buildings across — so
   // leaving it on once the architecture resolves puts a giant pier through the streets.
   // Its replacement is the town's own cm:*:port waterfront, which appears at this zoom.
-  if(this.r.zoom>=4.8){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false&&this.r.zoom<14;}
+  if(this.r.zoom>=AtlasSpace.TOWN_ZOOM){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false&&this.r.zoom<AtlasSpace.TOWN_ZOOM*2.9;}
   return null;
  }
- cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=4.8;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.request();}
+ cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.request();}
   // A finer or coarser terrain patch is a remesh, so it waits for the camera to
   // settle rather than running inside a wheel or drag gesture.
   else if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
   if(!close){this.onChange();return;}clearTimeout(this.timer);this.timer=setTimeout(()=>this.stream(),180);this.onChange();
  }
- async stream(){if(this.loading||!this.world||busy||this.r.zoom<4.8)return;const r=this.r,a=AtlasSpace.grid(r.target[0],r.target[2]);
+ async stream(){if(this.loading||!this.world||busy||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;const r=this.r,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const candidates=this.sim.provinces.filter(p=>p.settled&&p.urbanPop>=650).map(p=>({p,d:Math.hypot(p.x-a[0],p.y-a[1])})).filter(q=>q.d<18).sort((a,b)=>a.d-b.d).slice(0,this.maxModels);
   for(const{p}of candidates){const [x,y]=r.screen(p.x,p.y,0);if(x< -120||x>r.width+120||y< -120||y>r.height+120)continue;if(this.models.get(p.id)?.key!==this.key(p)&&!this.failed.has(this.key(p))){await this.ensure(p.id);break;}}
  }
- pick(sx,sy){if(this.r.zoom<4.8)return null;const{origin,dir}=AtlasSpace.ray(this.r,sx,sy),surface=AtlasSpace.pickGround(this.r,sx,sy),floorT=surface?Math.hypot(...sub(surface.point,origin)):Infinity;let best=null,bestT=Infinity;
+ pick(sx,sy){if(this.r.zoom<AtlasSpace.TOWN_ZOOM)return null;const{origin,dir}=AtlasSpace.ray(this.r,sx,sy),surface=AtlasSpace.pickGround(this.r,sx,sy),floorT=surface?Math.hypot(...sub(surface.point,origin)):Infinity;let best=null,bestT=Infinity;
   for(const m of this.models.values())for(const a of m.frame.anchors.values()){const b=a.b,h=(m.heights[b.id]||b.h)*a.scale,t=AtlasSpace.hitBox(origin,dir,[a.x-b.w*m.frame.sx*.55,a.low,a.z-b.d*m.frame.sz*.55],[a.x+b.w*m.frame.sx*.55,a.y+h,a.z+b.d*m.frame.sz*.55]);if(t<bestT&&t<floorT+.012){bestT=t;best={model:m,building:b,anchor:a};}}
   return best;
  }

@@ -75,8 +75,8 @@
       "townWidth": 5.15,
       "portWidth": 0.89,
       "portHeight": 0.4,
-      "shipWidth": 0.13,
-      "shipHeight": 0.09
+      "shipWidth": 0.04,
+      "shipHeight": 0.03
     }
   },
   "stats": {

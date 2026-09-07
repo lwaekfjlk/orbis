@@ -20,11 +20,11 @@
     },
     "gradients": {
       "walls": 3937,
-      "steepWalls": 33,
-      "worstWall": 0.86,
+      "steepWalls": 15,
+      "worstWall": 0.78,
       "streets": 17998,
-      "steepStreets": 734,
-      "worstStreet": 1.05,
+      "steepStreets": 745,
+      "worstStreet": 0.75,
       "townsWithScarp": 11
     },
     "enceinte": {
