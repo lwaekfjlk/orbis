@@ -4,29 +4,29 @@
   "checks": {
     "coverage": {
       "roofs": {
-        "deepeave": 303,
-        "hip": 259,
-        "gable": 930,
+        "deepeave": 306,
+        "hip": 271,
+        "gable": 928,
         "northern": 76,
-        "conic": 569,
-        "vault": 75,
+        "conic": 607,
+        "vault": 69,
+        "parapet": 380,
         "rockcut": 16,
-        "parapet": 414,
-        "upturned": 531,
-        "leaf": 347
+        "upturned": 522,
+        "leaf": 345
       },
       "materials": {
-        "timber": 1227,
+        "timber": 1221,
         "log": 127,
-        "felt": 486,
-        "masonry": 490,
-        "firedbrick": 78,
-        "cutstone": 48,
-        "adobe": 502,
+        "felt": 491,
+        "masonry": 510,
+        "firedbrick": 63,
+        "cutstone": 46,
+        "adobe": 499,
         "rockface": 45,
-        "thatch": 517
+        "thatch": 518
       },
-      "formsPerTown": 2.51
+      "formsPerTown": 2.56
     },
     "weather": {
       "snowy": {
@@ -83,19 +83,19 @@
       ]
     },
     "size": {
-      "ratio": 49.48,
-      "correlation": 0.37,
+      "ratio": 33.19,
+      "correlation": 0.38,
       "smallest": {
-        "name": "Gulldrift",
-        "pop": 5843,
+        "name": "Sandglen",
+        "pop": 5502,
         "span": 8.5,
-        "blocks": 21
+        "blocks": 31
       },
       "largest": {
-        "name": "Wrencombe",
-        "pop": 23280,
-        "span": 10.8,
-        "blocks": 1039
+        "name": "Inner Foamhaven",
+        "pop": 26627,
+        "span": 12,
+        "blocks": 1029
       }
     },
     "separation": {

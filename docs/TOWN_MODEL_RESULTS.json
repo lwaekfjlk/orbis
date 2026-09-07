@@ -19,11 +19,11 @@
       "invalidGeographiesRejected": true
     },
     "gradients": {
-      "walls": 3927,
-      "steepWalls": 33,
+      "walls": 3943,
+      "steepWalls": 27,
       "worstWall": 0.86,
-      "streets": 18082,
-      "steepStreets": 731,
+      "streets": 18410,
+      "steepStreets": 706,
       "worstStreet": 1.05,
       "townsWithScarp": 12
     },
@@ -40,15 +40,15 @@
       "style": "river",
       "provinceId": 415,
       "town": "Bluewell",
-      "modules": 448,
+      "modules": 387,
       "landmarks": 7,
-      "roads": 64,
+      "roads": 63,
       "grammar": "axial",
-      "blocksConnected": 455,
-      "footprints": 455,
+      "blocksConnected": 394,
+      "footprints": 394,
       "terrainHash": "8c178ce30c22489c271354e746ab9e22be8d5f3c41c9594d238f2cdef220b7cb",
       "waterHash": "19946ea690157fbdf68b9804821ba4f565addf4a84ef3209853aa1ae434ee354",
-      "fingerprint": "1b137ac6"
+      "fingerprint": "cfa44e8e"
     },
     {
       "style": "basilica",
@@ -110,15 +110,15 @@
       "style": "desert",
       "provinceId": 398,
       "town": "Stormbeck",
-      "modules": 780,
+      "modules": 655,
       "landmarks": 7,
       "roads": 101,
       "grammar": "labyrinth",
-      "blocksConnected": 787,
-      "footprints": 787,
+      "blocksConnected": 662,
+      "footprints": 662,
       "terrainHash": "22c7730179330aae263d54d2b2c5a9add3d341cedee671a528b171db7fac25a9",
       "waterHash": "c2f0e354ee2d0bb5a591c2f9a8453f1284c07468987a8ed701ae1eedfe5eec1a",
-      "fingerprint": "c25be152"
+      "fingerprint": "dff3132b"
     },
     {
       "style": "delta",
@@ -152,29 +152,29 @@
       "style": "steppe",
       "provinceId": 313,
       "town": "Scorchwell",
-      "modules": 613,
+      "modules": 584,
       "landmarks": 6,
       "roads": 59,
       "grammar": "droveway",
-      "blocksConnected": 619,
-      "footprints": 619,
+      "blocksConnected": 590,
+      "footprints": 590,
       "terrainHash": "3713cd565555c4ed2e5b46f0f3136305f6f18dbefd884708c2d6ed42653f5e91",
       "waterHash": "2b07c97c4b6bb001c23481b2fdf5a519f7b3dd015b061089510a0bb75377a443",
-      "fingerprint": "6147fa60"
+      "fingerprint": "427c8b31"
     },
     {
       "style": "paddy",
       "provinceId": 329,
       "town": "Oakdell",
-      "modules": 510,
+      "modules": 461,
       "landmarks": 6,
       "roads": 73,
       "grammar": "paddies",
-      "blocksConnected": 516,
-      "footprints": 516,
+      "blocksConnected": 467,
+      "footprints": 467,
       "terrainHash": "3d1acddcc782c417613574bbd15e34017fc5212571935767d5ecb26f6ff4c759",
       "waterHash": "61077358197f79b1cb07f548292425d1ad32fcbe313dee0281e76490b32e17cd",
-      "fingerprint": "3c81f99a"
+      "fingerprint": "d2cffc9"
     },
     {
       "style": "delve",
@@ -194,29 +194,29 @@
       "style": "lagoon",
       "provinceId": 297,
       "town": "Great Saltlanding",
-      "modules": 741,
+      "modules": 605,
       "landmarks": 7,
       "roads": 107,
       "grammar": "waterfront",
-      "blocksConnected": 748,
-      "footprints": 748,
+      "blocksConnected": 612,
+      "footprints": 612,
       "terrainHash": "8281bb73bbe1027e49178867dca072d50178e24eab762fc9f071f98f2e784568",
       "waterHash": "5c955fa3e5373fe1d4eb901d8485d6251b6856a24af2dc1fc0ce1de66cc05aeb",
-      "fingerprint": "6430d1df"
+      "fingerprint": "6e4b385"
     },
     {
       "style": "fjord",
       "provinceId": 500,
       "town": "Lower Ashness",
-      "modules": 415,
+      "modules": 320,
       "landmarks": 7,
       "roads": 78,
       "grammar": "ribbon",
-      "blocksConnected": 422,
-      "footprints": 422,
+      "blocksConnected": 327,
+      "footprints": 327,
       "terrainHash": "8e66c3a174490f7708431a544fac97725ed08065cf982d4d7c3246065dd14cf9",
       "waterHash": "d8c050a8d62be877af681c7e743365c707b5fb15e5bc344f315c4d13f2139c6e",
-      "fingerprint": "d3958ac1"
+      "fingerprint": "e06d5473"
     },
     {
       "style": "taiga",

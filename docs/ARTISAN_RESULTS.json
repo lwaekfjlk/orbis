@@ -32,12 +32,12 @@
       {
         "town": "Bluewell",
         "style": "river",
-        "buildings": 460,
+        "buildings": 408,
         "wallColourSpread": 0.194,
-        "roofColourSpread": 0.128,
-        "wallSaturation": 0.083,
-        "wallBrightness": 0.102,
-        "roofSaturation": 0.123
+        "roofColourSpread": 0.132,
+        "wallSaturation": 0.081,
+        "wallBrightness": 0.104,
+        "roofSaturation": 0.124
       },
       {
         "town": "Birchgrove",
@@ -52,12 +52,12 @@
       {
         "town": "Scorchwell",
         "style": "steppe",
-        "buildings": 578,
-        "wallColourSpread": 0.203,
-        "roofColourSpread": 0.167,
-        "wallSaturation": 0.111,
+        "buildings": 649,
+        "wallColourSpread": 0.204,
+        "roofColourSpread": 0.173,
+        "wallSaturation": 0.114,
         "wallBrightness": 0.105,
-        "roofSaturation": 0.134
+        "roofSaturation": 0.135
       }
     ]
   },

@@ -141,8 +141,8 @@
       "towns": 88,
       "allParentArraysUnchanged": true,
       "simulationUnchanged": true,
-      "minBuildings": 156,
-      "maxBuildings": 1039,
+      "minBuildings": 130,
+      "maxBuildings": 1029,
       "scenes": [
         {
           "id": 76,
@@ -195,9 +195,9 @@
         {
           "id": 159,
           "name": "Wrenquay",
-          "buildings": 424,
+          "buildings": 361,
           "landmarks": 7,
-          "fingerprint": "2b4aea0",
+          "fingerprint": "a06c564c",
           "waterPercent": 30.92281470659849
         },
         {
@@ -219,9 +219,9 @@
         {
           "id": 185,
           "name": "Terndale",
-          "buildings": 421,
+          "buildings": 345,
           "landmarks": 7,
-          "fingerprint": "66441320",
+          "fingerprint": "db21042",
           "waterPercent": 25.33073614154695
         },
         {
@@ -235,17 +235,17 @@
         {
           "id": 193,
           "name": "Gullwharf",
-          "buildings": 242,
+          "buildings": 211,
           "landmarks": 7,
-          "fingerprint": "1b1407dd",
+          "fingerprint": "df126b1c",
           "waterPercent": 27.733138543949355
         },
         {
           "id": 194,
           "name": "Terncroft",
-          "buildings": 244,
+          "buildings": 185,
           "landmarks": 7,
-          "fingerprint": "27cd87c4",
+          "fingerprint": "e2b785f0",
           "waterPercent": 32.57852447041636
         },
         {
@@ -267,9 +267,9 @@
         {
           "id": 216,
           "name": "Amberness",
-          "buildings": 438,
-          "landmarks": 7,
-          "fingerprint": "e1c26606",
+          "buildings": 415,
+          "landmarks": 6,
+          "fingerprint": "8964efb6",
           "waterPercent": 41.40897654411168
         },
         {
@@ -283,49 +283,49 @@
         {
           "id": 227,
           "name": "Saltwick",
-          "buildings": 187,
+          "buildings": 130,
           "landmarks": 7,
-          "fingerprint": "21c03eed",
+          "fingerprint": "de918d1b",
           "waterPercent": 45.588832075318564
         },
         {
           "id": 228,
           "name": "Brightstrand",
-          "buildings": 377,
+          "buildings": 299,
           "landmarks": 7,
-          "fingerprint": "34f2f1cb",
+          "fingerprint": "8b04b3eb",
           "waterPercent": 33.958282606931256
         },
         {
           "id": 235,
           "name": "Greencliff",
-          "buildings": 436,
+          "buildings": 431,
           "landmarks": 7,
-          "fingerprint": "3b84488b",
+          "fingerprint": "402834a9",
           "waterPercent": 26.426426426426424
         },
         {
           "id": 240,
           "name": "Foxwaystead",
-          "buildings": 296,
+          "buildings": 252,
           "landmarks": 7,
-          "fingerprint": "f298b831",
+          "fingerprint": "2576c28c",
           "waterPercent": 39.112085058031006
         },
         {
           "id": 242,
           "name": "Anchorcliff",
-          "buildings": 193,
+          "buildings": 135,
           "landmarks": 7,
-          "fingerprint": "594d518b",
+          "fingerprint": "93ee3eeb",
           "waterPercent": 49.81738495252009
         },
         {
           "id": 248,
           "name": "Ravenvigil",
-          "buildings": 377,
+          "buildings": 333,
           "landmarks": 7,
-          "fingerprint": "a09bf4e5",
+          "fingerprint": "14a0afac",
           "waterPercent": 13.229445661878096
         },
         {
@@ -339,25 +339,25 @@
         {
           "id": 254,
           "name": "Sunhaven",
-          "buildings": 287,
-          "landmarks": 6,
-          "fingerprint": "6be81cd0",
+          "buildings": 239,
+          "landmarks": 7,
+          "fingerprint": "dfba6bed",
           "waterPercent": 30.752373995617237
         },
         {
           "id": 256,
           "name": "Whitereach",
-          "buildings": 276,
+          "buildings": 203,
           "landmarks": 7,
-          "fingerprint": "135d92f8",
+          "fingerprint": "ca676ef6",
           "waterPercent": 47.0172875578281
         },
         {
           "id": 258,
           "name": "Terngarth",
-          "buildings": 513,
+          "buildings": 483,
           "landmarks": 7,
-          "fingerprint": "5bfcc08e",
+          "fingerprint": "7055d768",
           "waterPercent": 32.89505721938155
         },
         {
@@ -379,17 +379,17 @@
         {
           "id": 267,
           "name": "Ternspire",
-          "buildings": 387,
+          "buildings": 324,
           "landmarks": 7,
-          "fingerprint": "38cc351d",
+          "fingerprint": "5cf8ec4e",
           "waterPercent": 41.12490869247626
         },
         {
           "id": 268,
           "name": "Ternport",
-          "buildings": 266,
+          "buildings": 207,
           "landmarks": 7,
-          "fingerprint": "271138c6",
+          "fingerprint": "fa4a479b",
           "waterPercent": 41.36839542244948
         },
         {
@@ -403,9 +403,9 @@
         {
           "id": 284,
           "name": "Anchorhollow",
-          "buildings": 485,
+          "buildings": 407,
           "landmarks": 7,
-          "fingerprint": "7ed41d97",
+          "fingerprint": "b7273d81",
           "waterPercent": 24.657089521954386
         },
         {
@@ -435,9 +435,9 @@
         {
           "id": 297,
           "name": "Great Saltlanding",
-          "buildings": 712,
+          "buildings": 606,
           "landmarks": 7,
-          "fingerprint": "be717338",
+          "fingerprint": "7919b402",
           "waterPercent": 22.05989773557341
         },
         {
@@ -467,17 +467,17 @@
         {
           "id": 309,
           "name": "Upper Ashness",
-          "buildings": 512,
+          "buildings": 455,
           "landmarks": 7,
-          "fingerprint": "601e9526",
+          "fingerprint": "e1662161",
           "waterPercent": 40.19154289424559
         },
         {
           "id": 313,
           "name": "Scorchwell",
-          "buildings": 578,
-          "landmarks": 5,
-          "fingerprint": "c3ada573",
+          "buildings": 649,
+          "landmarks": 6,
+          "fingerprint": "6d8455de",
           "waterPercent": 1.2093174255336416
         },
         {
@@ -515,9 +515,9 @@
         {
           "id": 329,
           "name": "Oakdell",
-          "buildings": 543,
-          "landmarks": 6,
-          "fingerprint": "caeb1212",
+          "buildings": 461,
+          "landmarks": 5,
+          "fingerprint": "67351272",
           "waterPercent": 0.8522035549062575
         },
         {
@@ -539,9 +539,9 @@
         {
           "id": 343,
           "name": "Ravenness",
-          "buildings": 485,
+          "buildings": 459,
           "landmarks": 7,
-          "fingerprint": "7ee86c81",
+          "fingerprint": "17a2505c",
           "waterPercent": 32.156480805129455
         },
         {
@@ -587,9 +587,9 @@
         {
           "id": 371,
           "name": "Inner Foamhaven",
-          "buildings": 1009,
+          "buildings": 1029,
           "landmarks": 7,
-          "fingerprint": "bee5e3aa",
+          "fingerprint": "36c48ad1",
           "waterPercent": 19.07312718123529
         },
         {
@@ -603,9 +603,9 @@
         {
           "id": 378,
           "name": "Cleardrift",
-          "buildings": 526,
+          "buildings": 472,
           "landmarks": 7,
-          "fingerprint": "47461ec5",
+          "fingerprint": "2225a7a7",
           "waterPercent": 40.13472932391851
         },
         {
@@ -635,17 +635,17 @@
         {
           "id": 394,
           "name": "Wrencombe",
-          "buildings": 1039,
-          "landmarks": 6,
-          "fingerprint": "bdc6f9af",
+          "buildings": 1003,
+          "landmarks": 7,
+          "fingerprint": "d8c46c75",
           "waterPercent": 7.759110461813165
         },
         {
           "id": 398,
           "name": "Stormbeck",
-          "buildings": 786,
+          "buildings": 710,
           "landmarks": 7,
-          "fingerprint": "856f1461",
+          "fingerprint": "6953fc67",
           "waterPercent": 10.843275708140574
         },
         {
@@ -659,17 +659,17 @@
         {
           "id": 404,
           "name": "Sandwell",
-          "buildings": 324,
+          "buildings": 247,
           "landmarks": 7,
-          "fingerprint": "26c14d51",
+          "fingerprint": "4df0434d",
           "waterPercent": 29.648567486405327
         },
         {
           "id": 405,
           "name": "Ashcliff",
-          "buildings": 330,
+          "buildings": 264,
           "landmarks": 7,
-          "fingerprint": "dbf5442f",
+          "fingerprint": "90839ab6",
           "waterPercent": 33.60116873630387
         },
         {
@@ -683,17 +683,17 @@
         {
           "id": 415,
           "name": "Bluewell",
-          "buildings": 460,
+          "buildings": 408,
           "landmarks": 7,
-          "fingerprint": "9c3d0e2e",
+          "fingerprint": "805148e0",
           "waterPercent": 36.482428374320264
         },
         {
           "id": 438,
           "name": "Valegarth",
-          "buildings": 611,
-          "landmarks": 5,
-          "fingerprint": "6ec32ae8",
+          "buildings": 595,
+          "landmarks": 6,
+          "fingerprint": "c3d5aebf",
           "waterPercent": 1.996591185780375
         },
         {
@@ -707,9 +707,9 @@
         {
           "id": 448,
           "name": "Crowweir",
-          "buildings": 348,
-          "landmarks": 6,
-          "fingerprint": "f683210c",
+          "buildings": 312,
+          "landmarks": 5,
+          "fingerprint": "91cebca3",
           "waterPercent": 1.8099180261342422
         },
         {
@@ -739,9 +739,9 @@
         {
           "id": 463,
           "name": "Ochrehaven",
-          "buildings": 375,
+          "buildings": 333,
           "landmarks": 7,
-          "fingerprint": "2da91877",
+          "fingerprint": "18226477",
           "waterPercent": 28.836945053161266
         },
         {
@@ -771,9 +771,9 @@
         {
           "id": 486,
           "name": "Saltweir",
-          "buildings": 503,
+          "buildings": 479,
           "landmarks": 7,
-          "fingerprint": "2264a1cb",
+          "fingerprint": "9e4cb482",
           "waterPercent": 42.60206152098044
         },
         {
@@ -787,9 +787,9 @@
         {
           "id": 497,
           "name": "Ochrehall",
-          "buildings": 254,
+          "buildings": 208,
           "landmarks": 7,
-          "fingerprint": "16a6c7d7",
+          "fingerprint": "4a56ae97",
           "waterPercent": 37.074912750588425
         },
         {

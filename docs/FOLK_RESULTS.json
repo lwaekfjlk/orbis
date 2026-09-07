@@ -40,11 +40,11 @@
       "bodyLengthsPerSecond": 0.213
     },
     "scale": {
-      "buildingFootprint": 0.0557,
-      "mooredHull": 0.0398,
+      "buildingFootprint": 0.0588,
+      "mooredHull": 0.0453,
       "seaHull": 0.0757,
-      "hullRatio": 1.9,
-      "symbolInBuildings": 1.8
+      "hullRatio": 1.7,
+      "symbolInBuildings": 1.7
     },
     "figure": {
       "trianglesPerAccent": {

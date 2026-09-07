@@ -42,6 +42,28 @@ test('Every native sacred town retains housing, connected roads and collision-fr
  for(const id of sacredIds){const c=E.generateCity(w,s,id),b=c.buildings.find(b=>b.sacred),a=E.auditCity(c);assert(c.buildings.length>=20,c.name);assert(b,c.name);assert(!c.citadelReserve[c.marketIndex]);for(const k of['wetBuildings','overlaps','nonfinite','roadBuildings'])assert.equal(a[k],0,c.name+' '+k);rows.push({id,name:c.name,blocks:c.buildings.length,sanctuary:b.w});}
  assert.deepEqual([E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)],before);results.checks.push({name:'native-sacred-towns',count:rows.length,rows});
 });
+test('every declared wonder is a buildable, distinct model, not just the ones this seed raises',()=>{
+ // A world only raises a wonder where a tradition also has the surplus for it, so a given
+ // seed leaves several kinds unbuilt. They still have to compile, stand within the parcel
+ // they would be given, and be a different building from every other one — otherwise a
+ // family is dead code until some future map happens to call it.
+ const declared=[...new Set(Object.values(E.TOWN_WONDERS).flat().map(v=>v.id))];
+ assert(declared.length>=14,`only ${declared.length} wonders are declared`);
+ const town=s.provinces.find(p=>p.city&&p.urbanPop>=650),city=E.generateCity(w,s,town.id);
+ const base=E.TownCityBinding.resolve(w,s,town,city,'temple'),shapes=new Map();
+ for(const id of declared){
+  const model=E.SacredCityKit.build({...base,sacred:true,wonder:id});
+  assert(model.parts.length>=4,id+' has too few parts to be a monument');
+  for(const part of model.parts)for(const v of part.geometry.data)assert(Number.isFinite(v),id+' emitted a non-finite vertex');
+  const height=model.bounds.max[1]-model.bounds.min[1],width=model.bounds.max[0]-model.bounds.min[0];
+  assert(height>12&&height<70,`${id} stands ${height.toFixed(0)} tall`);
+  assert(width>12&&width<52,`${id} is ${width.toFixed(0)} wide`);
+  assert.equal(digest(model),digest(E.SacredCityKit.build({...base,sacred:true,wonder:id})),id+' is not deterministic');
+  shapes.set(id,digest(model));
+ }
+ assert.equal(new Set(shapes.values()).size,declared.length,'two wonders are the same building');
+ results.checks.push({name:'declared-wonders',count:declared.length,ids:declared});
+});
 test('Every tradition that can raise a wonder raises its own, as real geometry',()=>{
  // Only the pilgrimage towns used to build anything above a citadel, so every skyline in
  // the world resolved to the same cathedral. Each tradition now has its own monument, and
@@ -50,7 +72,7 @@ test('Every tradition that can raise a wonder raises its own, as real geometry',
  // Largest first, and stop once every kind has been seen: generating all ninety-odd towns
  // to find five buildings cost half a minute of the suite for nothing.
  const towns=s.provinces.filter(q=>q.city&&q.urbanPop>=650).sort((a2,b2)=>b2.urbanPop-a2.urbanPop);
- const kinds=new Set(Object.keys(E.TOWN_WONDERS).map(k=>E.TOWN_WONDERS[k].id)),seen=new Map(),shapes=new Set();
+ const kinds=new Set(Object.values(E.TOWN_WONDERS).flat().map(v=>v.id)),seen=new Map(),shapes=new Set();
  for(const q of towns){
   if(seen.size>=kinds.size)break;
   const c=E.generateCity(w,s,q.id),b=c.buildings.find(x=>x.wonder);
@@ -71,7 +93,7 @@ test('Every tradition that can raise a wonder raises its own, as real geometry',
   shapes.add(digest(model));
   seen.set(b.wonder,{town:q.name,triangles:Math.round(model.parts.reduce((n,p2)=>n+p2.geometry.data.length/27,0))});
  }
- assert(seen.size>=4,`only ${seen.size} kinds of wonder exist in this world`);
+ assert(seen.size>=10,`only ${seen.size} kinds of wonder stand in this world`);
  assert.equal(shapes.size,seen.size,'two traditions produced the same building');
  assert(seen.has('cathedral'),'the pilgrimage cathedral must survive the generalisation');
  results.checks.push({name:'wonders-per-tradition',kinds:[...seen].map(([k,v])=>({wonder:k,...v}))});
