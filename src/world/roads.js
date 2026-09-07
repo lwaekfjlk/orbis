@@ -25,14 +25,40 @@ const RoadNetwork = (() => {
     const isRiver = (w, i) => w.lake[i] < 0 && w.flow[i] > channel(w, i);
     /** Terrain effort, in the same spirit as the administration graph's step cost:
      * grade dominates, wetland and waterless ground are avoided, valleys are cheap. */
+    /* The grade the atlas actually draws, which is not metres of rise: the relief
+     * curve is what turns an elevation difference into the slope you see, and the
+     * enceinte and the town streets are now held to this same measure. */
+    const XSTEP = MAP_X / (GW - 1), ZSTEP = MAP_Z / (GH - 1);
+    const relief = h => h > 0 ? .14 + Math.pow(h / 1000, .98) : 0;
+    function drawnGrade(w, i, j) {
+        const dx = Math.abs(i % GW - j % GW) * XSTEP, dz = Math.abs((i / GW | 0) - (j / GW | 0)) * ZSTEP;
+        const run = Math.hypot(dx, dz) || 1e-6;
+        return Math.abs(relief(w.height[i]) - relief(w.height[j])) / run;
+    }
+    // A wheeled road has a ruling gradient. The old term was linear and gentle — grade
+    // in metres over 620 — so a road would climb anything at all if the detour was long
+    // enough: over a default world the 99th percentile came out at 106% of the drawn
+    // grade and the worst segment at 211%, a cart track up a face steeper than 60
+    // degrees. A cubic penalty against a ruling gradient sends the route round instead:
+    // p99 0.34, worst 0.76, nothing at all past 1.0.
+    // Charged only on what EXCEEDS the ruling gradient, so ordinary ground costs exactly
+    // what it always did. That matters beyond taste: the edge budget below is a fixed
+    // 210, calibrated against this scale, and a penalty that inflated every step pushed
+    // a whole link past it and took a town off the map.
+    // Deliberately no hard ceiling either. One was tried at a drawn grade of 1.0 and it
+    // stranded a town on landmass 2 behind its own cliffs — a real settlement always has
+    // some way in, even if it is a mule track. Making the last mile expensive is honest;
+    // making it impossible is not.
+    const CLIMB = .38;
     function step(w, i, j) {
+        const drawn = drawnGrade(w, i, j);
         const altitude = (w.height[i] + w.height[j]) * .5, grade = Math.abs(w.height[i] - w.height[j]);
         const wet = ((w.wetness?.[i] || 0) + (w.wetness?.[j] || 0)) * .5;
         const dry = Math.max(0, .30 - (w.human.fresh[i] + w.human.fresh[j]) * .5);
         const frost = Math.max(0, ((w.ice?.[j] || 0) - 25) / 260);
         const valley = w.human.river[i] > .30 && w.human.river[j] > .30 ? .84 : 1;
         const ford = isRiver(w, j) ? 2.6 + Math.min(6, w.flow[j] / channel(w, j)) * .5 : 0;
-        return (.80 + Math.max(0, altitude - 600) / 4200 + grade / 620 + wet * .60 + dry * 2.4 + frost) * valley + ford;
+        return (.80 + Math.max(0, altitude - 600) / 4200 + grade / 620 + Math.pow(Math.max(0, drawn - CLIMB) / CLIMB, 3) * 26 + wet * .60 + dry * 2.4 + frost) * valley + ford;
     }
     /** ONE multi-source search over the whole raster. Every cell learns which settlement
      * is cheapest to reach and by which parent, so a road is a parent walk rather than

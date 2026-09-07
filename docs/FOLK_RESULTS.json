@@ -27,24 +27,24 @@
       "road": 140,
       "sea": 40,
       "kinds": {
-        "walker": 101,
+        "walker": 100,
         "cart": 27,
-        "rider": 12,
+        "rider": 13,
         "boat": 40
       }
     },
     "pace": {
       "compoundCrossingSeconds": 9.1,
-      "roundTripSeconds": 139,
+      "roundTripSeconds": 145,
       "cellCrossingSeconds": 119.6,
       "bodyLengthsPerSecond": 0.213
     },
     "scale": {
-      "buildingFootprint": 0.0578,
-      "mooredHull": 0.0462,
+      "buildingFootprint": 0.0543,
+      "mooredHull": 0.0444,
       "seaHull": 0.0757,
-      "hullRatio": 1.6,
-      "symbolInBuildings": 1.7
+      "hullRatio": 1.7,
+      "symbolInBuildings": 1.8
     },
     "figure": {
       "trianglesPerAccent": {

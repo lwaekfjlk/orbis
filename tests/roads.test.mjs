@@ -208,6 +208,37 @@ test('every ribbon and quay is seated on the surface it was sampled against',()=
  report.checks.seating={roads:far,near,bridgeDeck:[+deckLow.toFixed(4),+deckHigh.toFixed(4)],bridgeFooting:[+footLow.toFixed(4),+footHigh.toFixed(4)]};
 });
 
+test('A road has a ruling gradient',()=>{
+ // The grade term was linear and gentle — metres of rise over 620 — so a road would
+ // climb anything at all if the detour was long enough. Measured on the drawn grade,
+ // which is what the relief curve turns an elevation difference into: p99 106%, worst
+ // segment 211%, a cart track up a face steeper than 60 degrees.
+ const XSTEP=168/(E.GW-1),ZSTEP=98/(E.GH-1),up=h=>h>0?.14+Math.pow(h/1000,.98):0;
+ const grades=[];
+ for(const r of net.roads)
+  for(let k=1;k<r.path.length;k++){
+   const a=r.path[k-1],b=r.path[k];
+   const dx=Math.abs(a%E.GW-b%E.GW)*XSTEP,dz=Math.abs((a/E.GW|0)-(b/E.GW|0))*ZSTEP;
+   const run=Math.hypot(dx,dz);
+   if(run>1e-9)grades.push(Math.abs(up(w.height[a])-up(w.height[b]))/run);
+  }
+ assert(grades.length>1500,'expected a network to measure');
+ grades.sort((a,b)=>a-b);
+ const q=f=>grades[Math.min(grades.length-1,Math.floor(grades.length*f))];
+ assert(q(.99)<.55,`the 99th percentile road climbs at ${(q(.99)*100).toFixed(0)}%`);
+ assert(grades.filter(g=>g>.55).length/grades.length<.01,'too much of the network is on a cliff');
+ // Not zero above 100%, and the reason is worth recording. The penalty was pushed as
+ // hard as it can go before the connectivity check above starts failing: past this
+ // point the catchments reshape, two towns stop sharing a boundary, and a landmass
+ // splits into two road networks. What survives is the last mile into a cliff-bound
+ // town that would otherwise have no road at all — which is a real thing, and better
+ // modelled as an expensive track than as a town with no way in.
+ const brutal=grades.filter(g=>g>1).length;
+ assert(brutal<=2,`${brutal} road segments still climb past 100%`);
+ assert(grades[grades.length-1]<1.2,`the worst road climbs at ${(grades[grades.length-1]*100).toFixed(0)}%`);
+ report.checks.gradient={pastVertical:brutal,median:+q(.5).toFixed(3),p90:+q(.9).toFixed(3),p99:+q(.99).toFixed(3),
+  worst:+grades[grades.length-1].toFixed(3),segments:grades.length};
+});
 test('A harbour symbol and a ship stay symbols, and give way to the real thing',()=>{
  // Everything on the atlas shares one unit, so the only honest yardstick is a town.
  // The port symbol used to run 41% of a whole town's width with a moored sail 64%
