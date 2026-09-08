@@ -6,7 +6,7 @@ import {scripts} from '../scripts/manifest.mjs';
 import {root} from './engine-loader.mjs';
 
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(file=>readFileSync(resolve(root,file),'utf8')).join('\n');
-const E=Function(source+'\nreturn {ContinuousCityLayer,AtlasRenderer,AtlasSpace,CityEnvironment,GW,GH};')();
+const E=Function(source+'\nreturn {ContinuousCityLayer,AtlasRenderer,AtlasSpace,CityEnvironment,LandscapeColor,GW,GH};')();
 const cellX=150,cellY=90,cell=cellY*E.GW+cellX,count=E.GW*E.GH;
 const world={height:new Float32Array(count).fill(100),lake:new Float32Array(count).fill(-1),ice:new Float32Array(count),biome:new Uint8Array(count).fill(5),temp:new Float32Array(count).fill(20),arid:new Float32Array(count).fill(.8)};
 for(const i of [cell,cell+E.GW+1]){world.height[i]=1000;world.biome[i]=13;}
@@ -87,13 +87,19 @@ test('128-to-8-to-1 transitions have no internal open or nonmanifold edges',()=>
     }
 });
 
-test('natural terrain colours follow the four-corner patch without a coarse diagonal',()=>{
+test('natural terrain material colours preserve the four-corner baseline without a coarse diagonal',()=>{
     const corners=[cell,cell+1,cell+E.GW,cell+E.GW+1].map(i=>E.CityEnvironment.cellColor(world,i));
-    const u=.25,v=.25,weights=[(1-u)*(1-v),u*(1-v),(1-u)*v,u*v];
-    const expected=[0,1,2].map(k=>corners.reduce((n,c,i)=>n+c[k]*weights[i],0));
-    const vertex=findVertex(mixed.r.terrain,cellX+u,cellY+v);
-    for(let k=0;k<3;k++)assert(Math.abs(vertex[6+k]-expected[k])<1e-6,'terrain colour retained a triangular interpolation boundary');
-    assert(Math.hypot(...expected.map((n,k)=>n-corners[0][k]))>.01,'fixture distinguishes the old high-corner diagonal colour');
+    // Check the former diagonal itself and both adjacent fine-grid rows. Small
+    // material patches must enrich the same bilinear baseline, not replace it
+    // with either of the old parent triangle colours.
+    for(const [u,v]of [[.25,.25],[63/128,65/128],[65/128,63/128],[.5,.5]]){
+        const weights=[(1-u)*(1-v),u*(1-v),(1-u)*v,u*v];
+        const base=[0,1,2].map(k=>corners.reduce((n,c,i)=>n+c[k]*weights[i],0));
+        const vertex=findVertex(mixed.r.terrain,cellX+u,cellY+v),slope=Math.hypot(vertex[3],vertex[5])/vertex[4];
+        const expected=E.LandscapeColor.sample(world,cellX+u,cellY+v,base,{slope,relief:mixed.r.relief});
+        for(let k=0;k<3;k++)assert(Math.abs(vertex[6+k]-expected[k])<1e-6,'terrain material retained a triangular interpolation boundary');
+        assert(Math.hypot(...base.map((n,k)=>n-corners[0][k]))>.01,'fixture distinguishes the old high-corner diagonal colour');
+    }
 });
 
 test('deep zoom and low-angle views keep visible cells detailed within the mesh budget',()=>{

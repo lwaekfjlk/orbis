@@ -32,7 +32,7 @@ const RiverDetail=(()=>{
  function key(layer){const r=layer.r,w=r.world||layer.world;if(!w)return'none';if(!worldIds.has(w))worldIds.set(w,++serial);
   if(!layer.natural)return'far/'+worldIds.get(w)+'/'+r.relief;
   r.updateCamera();const pixel=2*r.halfH/r.height,b=layer.viewBox();
-  return[worldIds.get(w),r.relief,Math.round(Math.log2(pixel)*8),r.width,r.height,...[b.x0,b.x1,b.y0,b.y1].map(x=>Math.floor(x*4)),Math.round(r.target[1]*100),Math.round(r.azimuth*50),Math.round(r.elevation*50),...[...layer.models.values()].map(m=>m.key??m.p.id)].join('/');
+  return[worldIds.get(w),r.relief,typeof LandscapeRelief==='undefined'?'none':LandscapeRelief.key(w),Math.round(Math.log2(pixel)*8),r.width,r.height,...[b.x0,b.x1,b.y0,b.y1].map(x=>Math.floor(x*4)),Math.round(r.target[1]*100),Math.round(r.azimuth*50),Math.round(r.elevation*50),...[...layer.models.values()].map(m=>m.key??m.p.id)].join('/');
  }
  function plan(layer,segments=sources(layer)){
   const r=layer.r,w=r.world||layer.world;r.updateCamera();const pixel=2*r.halfH/r.height,box=layer.viewBox(),sample=(x,z)=>{const p=AtlasSpace.grid(x,z);return AtlasSpace.surface(w,p[0],p[1],r.relief);};

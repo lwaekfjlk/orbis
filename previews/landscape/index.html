@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telluric · 城郊地貌修复</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,sans-serif;background:#152321;color:#edece0}*{box-sizing:border-box}body{margin:0}main{max-width:1360px;margin:auto;padding:36px 28px 48px}.eyebrow{font-size:11px;letter-spacing:.23em;color:#b1bc8a}h1{font-size:clamp(26px,4vw,42px);font-weight:550;letter-spacing:-.035em;margin:12px 0}p{color:#bfc8bd;line-height:1.7;max-width:850px;margin:0 0 24px}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:22px 0 14px}.switch{display:flex;gap:4px;padding:4px;background:#223431;border:1px solid #465b4f;border-radius:9px}button,a{font:inherit}button{border:0;border-radius:5px;padding:9px 18px;background:transparent;color:#bfc8bd;cursor:pointer}button[aria-pressed=true]{background:#d3dbaa;color:#1b3028}button:focus-visible,a:focus-visible{outline:2px solid #d3dbaa;outline-offset:4px}.version{margin-left:auto}.frame{margin:0;background:#101b1a;border:1px solid #465b4f;border-radius:10px;overflow:hidden}.frame img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain}figcaption{display:flex;gap:20px;justify-content:space-between;padding:13px 18px;font-size:12px;color:#aebaad}.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:26px 0}.notes strong{font-weight:550;color:#e3e8cc}.notes p{font-size:13px;margin:8px 0}a{color:#d3dbaa;font-size:13px;text-underline-offset:4px}.foot{font-size:11px;color:#95a797;margin-top:20px}@media(max-width:650px){main{padding:24px 14px}.version{margin-left:0}.notes{grid-template-columns:1fr;gap:8px}figcaption{flex-direction:column;gap:6px}}
+</style>
+<main>
+<div class="eyebrow">TELLURIC / LANDSCAPE DETAIL</div>
+<h1>草地、土壤与微微起伏的城郊</h1>
+<p>近景地表增加草土过渡、湿润低地与岩面变化。小幅起伏沿着原有地势展开，让城镇周围的土地有更细的层次。</p>
+<div class="controls">
+<div class="switch" role="group" aria-label="视野"><button data-view="wide" aria-pressed="true">周边地貌</button><button data-view="town" aria-pressed="false">城市近景</button></div>
+<div class="switch version" role="group" aria-label="版本"><button data-version="before" aria-pressed="false">修复前</button><button data-version="after" aria-pressed="true">修复后</button></div>
+</div>
+<figure class="frame"><img id="capture" src="harthurst-after-wide.png" alt="修复后：Harthurst 周边地貌"><figcaption><span id="caption">Harthurst · 周边地貌 · 修复后</span><span>实际地图截图 · 同一城市与视角</span></figcaption></figure>
+<div class="notes"><div><strong>地表层次</strong><p>草地与裸土柔和交错；湿度、气温和坡度共同影响颜色。</p></div><div><strong>细微起伏</strong><p>城郊新增轻微高低变化，树木与道路跟随地面。</p></div><div><strong>保留地基与河道</strong><p>城镇地基、岸线和水道保留原有高度，避免悬空或穿插。</p></div></div>
+<a href="/">打开实际地图 ↗</a><div class="foot">默认世界 · 第 400 年 · 基准包含 PR #37 树木比例与 PR #38 城市布局修复</div>
+</main>
+<script>
+let view='wide',version='after';const names={wide:'周边地貌',town:'城市近景',before:'修复前',after:'修复后'};
+function render(){document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.view===view)));document.querySelectorAll('[data-version]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.version===version)));const img=document.getElementById('capture');img.src=`harthurst-${version}-${view}.png`;img.alt=`${names[version]}：Harthurst ${names[view]}`;document.getElementById('caption').textContent=`Harthurst · ${names[view]} · ${names[version]}`;}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{view=b.dataset.view;render()}));document.querySelectorAll('[data-version]').forEach(b=>b.addEventListener('click',()=>{version=b.dataset.version;render()}));
+</script>
+</html>

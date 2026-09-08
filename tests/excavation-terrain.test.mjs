@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {scripts} from '../scripts/manifest.mjs';
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(new URL('../'+f,import.meta.url),'utf8')).join('\n');
-const E=Function(source+'\nreturn {ExcavationTerrain,ContinuousCityLayer,AtlasSpace,Geometry,GW,GH};')();
+const E=Function(source+'\nreturn {ExcavationTerrain,ContinuousCityLayer,AtlasSpace,Geometry,citySurvey,GW,GH};')();
 const H=E.ExcavationTerrain;
 const vertex=(x,z)=>[x,2+x*.1+z*.2,z,0,1,0,.3+x*.02,.4+z*.02,.5];
 const square=(x,z,r,floor=-2,id=1)=>H.prepare([[x-r,z-r],[x+r,z-r],[x+r,z+r],[x-r,z+r]],floor,id);
@@ -73,8 +73,10 @@ test('worker payload carries excavation outlines and main-thread installation re
  const payload=responses[0].response.payload;assert.deepEqual(payload.excavations,[hole]);assert.equal(typeof payload.city.xy,'undefined');assert.ok(responses[0].buffers.length>0,'geometry keeps its transferable payload');
  const prior=globalThis.window;globalThis.window={Worker:true,TELLURIC_TOWN_WORKER:'test'};
  try{const{layer,r,w}=terrainFixture();layer.key=()=> 'worker-qa';layer.world=w;layer.workerWorld=w;
+  const p={id:1,x:30,y:30,settled:true,urbanPop:1000};layer.sim={realms:[],provinces:[{id:0,settled:false},p]};
+  Object.assign(payload.city,E.citySurvey(layer.sim,p));
   layer.worker={postMessage(request){layer.workerJobs.get(request.id).resolve(payload);}};
-  const m=await layer.workerBuild({id:1,x:30,y:30});assert.deepEqual(m.excavations,[hole]);assert.ok(m.meshNames.includes('cm:1:buildings'));assert.equal(m.frame.anchors.get(2).y,2.75,'hydrated camera/pick anchor exactly matches the worker entry height');
+  const m=await layer.workerBuild(p);assert.deepEqual(m.excavations,[hole]);assert.ok(m.meshNames.includes('cm:1:buildings'));assert.equal(m.frame.anchors.get(2).y,2.75,'hydrated camera/pick anchor exactly matches the worker entry height');
  }finally{globalThis.window=prior;}
 });
 test('selection ground caches invalidate with terrain and roof/road switches do not close visible pits',()=>{
