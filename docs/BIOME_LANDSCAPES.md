@@ -30,3 +30,5 @@ The six samples are unchanged cells in the default `Aereth-47` world: glacier `(
 **154 targeted tests passed**, covering each surface family, height/colour alignment, hemisphere-dependent snow retention, climate and grid continuity, analytical gradients, unchanged source data, deserted worlds, worker equality, town retirement and survey changes, debris grounding, terrain budgets, rivers, tree sizes, selection, subterranean openings and OneMap invariants. Existing landmark-index and people-model checks also passed against the combined main branch.
 
 The interactive preview supports six samples, regional/close/slope views, linked orbit/pan/zoom and separate before/after views.
+
+After merging `main` through `deab85a` (country hover), the combined source passed another **62 terrain, biome, lifecycle, hover and OneMap checks**. The native preview was inspected across all six samples, including low-angle mountain shadows. Both generated bundles and the comparison were rebuilt from the combined source.
