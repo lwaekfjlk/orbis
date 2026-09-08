@@ -1,0 +1,157 @@
+{
+  "territory": {
+    "dry": 23087,
+    "lakes": 538,
+    "wildness": 6258,
+    "oceanClaims": 0,
+    "enclosedSea": 189,
+    "holes": 0,
+    "areaShare": 0.8412659187956234,
+    "wildLabels": [
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": true
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": false
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": true
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": false
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": true
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": false
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": false
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": true
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": true
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": true
+      },
+      {
+        "text": "wildness",
+        "name": "wildness",
+        "visible": false
+      }
+    ]
+  },
+  "inlandSea": {
+    "i": 15995,
+    "height": -9.975212097167969,
+    "inland": 1,
+    "realm": "Annwn",
+    "fullName": "Maritime Republic of Annwn",
+    "colored": [
+      0.591379821362699,
+      0.7829447055608096,
+      0.7461453117425164
+    ],
+    "plain": [
+      0.6616865980242913,
+      0.8226434932739539,
+      0.8072908763775501
+    ]
+  },
+  "desktop": {
+    "towns": 104,
+    "realms": 22,
+    "overlaps": [],
+    "covered": []
+  },
+  "mobile": {
+    "towns": 104,
+    "realms": 22,
+    "overlaps": [],
+    "covered": []
+  },
+  "lettering": {
+    "family": "IM Fell English",
+    "style": "italic",
+    "weight": 400,
+    "desktopTownPx": 10,
+    "narrowTownPx": 9.5,
+    "localTownPx": 10.5
+  },
+  "highCities": [
+    {
+      "id": 419,
+      "name": "Granitewatch · Dragon King's Aerie",
+      "kind": "dragon",
+      "elevation": 4096.625,
+      "buildings": 13,
+      "roles": [
+        "keep",
+        "watch",
+        "watch",
+        "roost",
+        "roost",
+        "lodge",
+        "lodge",
+        "forge",
+        "store",
+        "lodge",
+        "lodge",
+        "store",
+        "gate"
+      ],
+      "zoom": 369.982469982605
+    },
+    {
+      "id": 455,
+      "name": "Blackley · High Sanctuary",
+      "kind": "holy",
+      "elevation": 3938.215576171875,
+      "buildings": 12,
+      "roles": [
+        "sanctuary",
+        "bell",
+        "bell",
+        "chapel",
+        "chapel",
+        "scriptorium",
+        "hospice",
+        "hospice",
+        "scriptorium",
+        "hospice",
+        "hospice",
+        "gate"
+      ],
+      "zoom": 348.8716553573705
+    }
+  ],
+  "localZooms": [
+    16,
+    60,
+    150
+  ]
+}

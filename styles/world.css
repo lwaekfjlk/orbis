@@ -14,8 +14,9 @@
   font-display:swap
 }
 :root {
-  --realm-lettering:"Bilbo Swash Caps",Palatino,Georgia,serif;
-  --town-lettering:"IM Fell English",Palatino,Georgia,serif
+  --map-lettering:"IM Fell English",Palatino,Georgia,serif;
+  --realm-lettering:var(--map-lettering);
+  --town-lettering:var(--map-lettering)
 }
 
 :root {
@@ -543,13 +544,15 @@ header {
 @media(max-width:700px){.maplabel.realmLabel .realmFullName{max-width:clamp(86px,29vw,130px)}.maplabel.realmLabel .realmCompactName{max-width:clamp(76px,26vw,110px)}}
 .maplabel.realmLabel:after { content:none }
 .maplabel.realmLabel em {
-  font:400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);
+  font:italic 400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);
+  font-synthesis:none;
   letter-spacing:0;
   color:#33403a
 }
 .maplabel.townLabel { padding:1px 2px;z-index:1;width:max-content;max-width:min(120px,calc(100vw - 24px));white-space:normal;overflow-wrap:anywhere }
 .maplabel.townLabel em {
-  font:500 9px/1.25 system-ui,sans-serif;
+  font:italic 400 10px/1.3 var(--town-lettering);
+  font-synthesis:none;
   letter-spacing:0;
   color:#233d33;
   text-shadow:0 0 2px #fffbea,0 1px 2px #fffbea,1px 0 1px #fffbea,-1px 0 1px #fffbea

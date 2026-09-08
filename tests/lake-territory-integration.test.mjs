@@ -23,7 +23,19 @@ test('the real default inland lakes receive shore territory while retaining thei
  assert.ok(enclosed.every(i=>territory.owners[i]===13));
  for(const [cells,owners]of [[salt,[8,13]],[fresh,[1,7]]])assert.deepEqual([...new Set(cells.map(i=>territory.owners[i]))].sort((a,b)=>a-b),owners);
  for(const cells of [enclosed,salt,fresh])for(const i of cells){assert.equal(world.provinceId[i],-1);assert.ok(world.lake[i]>world.height[i]);const status=E.PoliticalLand.status(world,sim,i);assert.equal(status.kind,'realm');assert.equal(status.province,null);assert.equal(status.water,true);assert.equal(status.realm.id,territory.owners[i]);assert.match(E.PoliticalLand.description(world,sim,i),/^Territory of /);}
- for(let i=0;i<E.GN;i++)if(world.height[i]<=0)assert.equal(territory.owners[i],-1,'ocean has no political claim');
+ for(let i=0;i<E.GN;i++)if(world.height[i]<=0&&!territory.inlandWater[i])assert.equal(territory.owners[i],-1,'open ocean has no political claim');
+});
+
+test('the real 64-cell below-sea-level Annwn basin belongs to its surrounding country without a hollow border ring',()=>{
+ const territory=E.PoliticalLand.territory(world,sim),cells=[15995],seen=new Set(cells);
+ for(let at=0;at<cells.length;at++)for(const j of neighbours(cells[at])){if(world.height[j]>0||seen.has(j))continue;seen.add(j);cells.push(j);}
+ assert.equal(cells.length,64,'this is the actual closed water basin at atlas (95, 53)');
+ const r=renderer();r.buildCivilization();r.hoveredRealm=13;r.buildRealmHover();const frontiers=lineCenters(r.meshes.frontiers.data),hover=lineCenters(r.meshes.realmHover.data);
+ for(const i of cells){
+  assert.ok(territory.inlandWater[i]);assert.equal(territory.owners[i],13);assert.ok(world.height[i]<=0,'the political repair preserves below-sea-level geography');
+  const status=E.PoliticalLand.status(world,sim,i);assert.equal(status.kind,'realm');assert.equal(status.realm.id,13);assert.equal(status.province,null);assert.equal(status.water,true);
+  for(const j of neighbours(i)){assert.equal(territory.owners[j],13);const position=key((i%E.GW+j%E.GW)/2,(Math.floor(i/E.GW)+Math.floor(j/E.GW))/2);assert.equal(frontiers.has(position),false,'no false national seam crosses a domestic basin');assert.equal(hover.has(position),false,'the country hover must not draw a hollow ring around this basin');}
+ }
 });
 
 test('production frontier geometry crosses both real shared lakes and omits same-country internal lake shores',()=>{
@@ -39,13 +51,15 @@ test('production frontier geometry crosses both real shared lakes and omits same
 });
 
 test('lake selection and hover use the real water palette in every political layer and restore it exactly on leaving',()=>{
- const r=renderer(),i=10285,owner=13,other=8,physical=E.physicalPalette.call(r,i),realm=sim.realms[owner];
+ const r=renderer(),owner=13,other=8,realm=sim.realms[owner];
+ for(const i of [10285,15995]){const physical=E.physicalPalette.call(r,i);
  for(const layer of ['realms','diplomacy','faiths','peoples','wealth','magic']){
   r.layer=layer;r.focusRealm=null;r.hoveredRealm=null;r.prepareTerritory();assert.deepEqual(r.palette(i),physical,layer+' must not invent population, faith or wealth paint on lake water');
   r.focusRealm=owner;const base=r.palette(i),selected=['realms','diplomacy'].includes(layer)?E.colorMix(physical,E.rgb(realm.color),.14):physical;assert.deepEqual(base,selected);
   r.setHoveredRealm(owner);assert.deepEqual(r.palette(i),E.colorMix(physical,E.rgb(realm.color),.34));
   r.setHoveredRealm(other);assert.deepEqual(r.palette(i),physical,'another country hover leaves this water untouched');
   r.setHoveredRealm(null);assert.deepEqual(r.palette(i),base,layer+' must restore the exact pre-hover color');
+ }
  }
 });
 
@@ -56,6 +70,8 @@ test('in-place shore transfer and realm death refresh rendered ownership without
  r.prepareTerritory();assert.notEqual(E.PoliticalLand.territory(world,changed).key,before.key);assert.ok(cells.every(i=>r.territoryOwners[i]===8));
  const i=cells[0];assert.equal(E.PoliticalLand.status(world,changed,i).realm.id,8);assert.equal(E.PoliticalLand.status(world,changed,i).province,null);
  r.focusRealm=8;assert.notDeepEqual(r.palette(i),E.physicalPalette.call(r,i));
+ // This particular lake remains enclosed by living territory after its direct
+ // shore owner dies; it is not a rule that all newly unclaimed water is annexed.
  changed.realms[8].alive=false;r.buildCivilization();
  assert.ok(cells.every(i=>r.territoryOwners[i]>=0&&r.territoryOwners[i]!==8&&changed.realms[r.territoryOwners[i]]?.alive),'the surrounding living countries reclaim water after the former shore owner dies');
  const after=E.PoliticalLand.status(world,changed,i);assert.equal(after.kind,'realm');assert.equal(after.province,null);assert.equal(after.realm.id,r.territoryOwners[i]);assert.equal(after.water,true);

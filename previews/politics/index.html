@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Telluric · 湖泊与领地</title><link rel="stylesheet" href="../../styles/world.css"><style>
 body{margin:0;background:#182b2c;color:#e5e7d8;font:13px/1.5 system-ui,sans-serif;display:block;overflow:auto}header{background:#182b2c;display:flex;align-items:center;justify-content:space-between;gap:30px;padding:18px 25px 15px;border-bottom:1px solid #486062}header h1{font:29px Georgia,serif;margin:4px 0;color:#efead7}header small{font-size:10px;letter-spacing:.23em;color:#b6cdc4}header p{margin:0;color:#c4d4ca;max-width:540px}nav{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 25px}nav label{display:flex;align-items:center;gap:7px}nav select,nav button{font:inherit;background:#2a4446;color:#e5e8d4;border:1px solid #658080;border-radius:5px;padding:7px 10px;cursor:pointer;width:auto;height:auto}nav button[aria-pressed=true]{background:#d8d7b5;color:#243d3f}nav input{accent-color:#d6dbbe}main{position:relative;height:clamp(520px,73vh,1000px);overflow:hidden;background:#79999d}#map{position:absolute;inset:0;width:100%;height:100%;touch-action:none}.labels{inset:0}.factbar{display:flex;gap:20px 30px;flex-wrap:wrap;padding:14px 25px;background:#223f40}.factbar p{margin:0}.factbar small{display:block;color:#a8c5bd;font:10px system-ui,sans-serif;margin-bottom:4px}.factbar b{font-weight:500}.bottom{display:flex;gap:30px;justify-content:space-between;padding:15px 25px;color:#bfd0c6}.bottom p{margin:0 0 5px}.bottom a{color:#eee0aa}.map-note{position:absolute;right:16px;bottom:15px;padding:7px 10px;border-radius:4px;background:#f0efdfe8;color:#365251;font-size:11px;pointer-events:none}.error{color:#ffd19e}#compass{display:none}@media(max-width:700px){header{display:block}header,nav,.factbar,.bottom{padding-left:13px;padding-right:13px}.bottom{display:block}main{height:600px}}</style>
-<header><div><small>TELLURIC / POLITICAL WATERS</small><h1>湖水，也在国境之内。</h1></div><p>沿着真实湖岸延伸的领地，穿过湖面的国界，以及从世界概览就能读到的城镇名字。</p></header>
-<nav aria-label="湖泊领地预览"><label>地点 <select id="scene"><option value="shared-salt">两国咸水湖</option><option value="shared-fresh">两国淡水湖</option><option value="enclosed">单国境内湖</option><option value="complete-shore">大湖与高地</option></select></label><button data-view="world" aria-pressed="false">世界概览</button><button data-view="region" aria-pressed="false">湖区</button><button data-view="lake" aria-pressed="true">湖界近景</button><button id="reset">重置镜头</button><label>高亮 <select id="hover"><option value="">无</option></select></label><label><input id="names" type="checkbox" checked> 名称</label><label><input id="frontiers" type="checkbox" checked> 国界</label><input id="legends" type="checkbox" hidden></nav>
+<header><div><small>TELLURIC / TERRITORY & LETTERING</small><h1>国境、荒野与古典斜体。</h1></div><p>国内水域不留空心国境，外部无主地标为 wildness。城市名与国家名统一使用古典拉丁斜体。</p></header>
+<nav aria-label="湖泊领地预览"><label>地点 <select id="scene"><option value="enclosed-sea">负海拔内海：消除空心国境</option><option value="shared-salt">两国咸水湖</option><option value="shared-fresh">两国淡水湖</option><option value="enclosed">单国境内湖</option><option value="complete-shore">大湖与 wildness</option></select></label><button data-view="world" aria-pressed="false">世界概览</button><button data-view="region" aria-pressed="false">湖区</button><button data-view="lake" aria-pressed="true">湖界近景</button><button id="reset">重置镜头</button><label>高亮 <select id="hover"><option value="">无</option></select></label><label><input id="names" type="checkbox" checked> 名称</label><label><input id="frontiers" type="checkbox" checked> 国界</label><input id="legends" type="checkbox" hidden></nav>
 <main id="stage"><canvas id="map" tabindex="0" aria-label="实际默认地图；拖动平移，Shift拖动旋转，滚轮缩放"></canvas><div id="labels" class="labels"></div><div id="compass"></div><div class="map-note">拖动平移 · Shift + 拖动旋转 · 滚轮缩放<br>选择国家高亮，或悬停国家名称</div></main>
 <div class="factbar" id="facts"></div><div class="bottom"><div><p id="description">正在读取真实默认世界…</p><p id="status" role="status">正在生成地图、湖泊与人口…</p></div><div><a href="../../index.html" target="_blank" rel="noopener">打开完整地图 ↗</a><p>同一地图地形、国界、高亮与名称布局。</p></div></div>
 <script>/* TELLURIC / Deterministic, qualitative world generation.
@@ -6738,8 +6738,10 @@ class AtlasRenderer {
     prepareTerritory() {
         this.territoryWorld = this.world;
         this.territorySim = this.sim;
-        this.territoryOwners = typeof PoliticalLand !== 'undefined' && this.world && this.sim
-            ? PoliticalLand.territory(this.world, this.sim).owners : null;
+        const territory = typeof PoliticalLand !== 'undefined' && this.world && this.sim
+            ? PoliticalLand.territory(this.world, this.sim) : null;
+        this.territoryOwners = territory?.owners || null;
+        this.territoryInlandWater = territory?.inlandWater || null;
         return this.territoryOwners;
     }
     setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.prepareTerritory(); this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
@@ -7040,20 +7042,22 @@ AtlasRenderer.prototype.palette = function (i) {
             return c;
         return colorMix(c, rgb('#d4d2b9'), .55);
     }
-    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0)
+    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer))
         return c;
-    const pid = w.provinceId[i], p = s.provinces[pid];
     if (this.territoryWorld !== w || this.territorySim !== s) this.prepareTerritory();
+    if (w.height[i] <= 0 && !this.territoryInlandWater?.[i] && !(this.territoryOwners?.[i] >= 0)) return c;
+    const water = w.height[i] <= 0 || w.lake[i] > 0;
+    const pid = w.provinceId[i], p = water ? null : s.provinces[pid];
     const direct = s.realms[p?.owner];
-    // Existing administered districts remain authoritative; the surrounding
-    // highlands, icefields and islands share the completed territorial map.
-    const realm = direct && direct.alive !== false && w.lake[i] <= 0 ? direct : s.realms[this.territoryOwners?.[i]];
-    const hovered = realm?.alive !== false && realm?.id === this.hoveredRealm;
+    // Enclosed water and unclaimed pockets inside a country share its territory.
+    // Open wildness and the ocean keep their own natural appearance.
+    const realm = direct && direct.alive !== false ? direct : s.realms[this.territoryOwners?.[i]];
+    const hovered = !!realm && realm.alive !== false && realm.id === this.hoveredRealm;
     const political = this.layer === 'realms' || this.layer === 'diplomacy';
-    if (w.lake[i] > 0 || !p) {
+    if (water || !p) {
         // No demographic measurement is invented for an uninhabited cell.
         // Its natural surface still participates in the full country preview.
-        const base = !p && !political && w.lake[i] <= 0 && w.ice[i] <= 120 ? colorMix(c, rgb('#b5b7a6'), .30) : c;
+        const base = !p && !political && !water && w.ice[i] <= 120 ? colorMix(c, rgb('#b5b7a6'), .30) : c;
         if (!realm || realm.alive === false) return base;
         if (this.hoveredRealm != null)
             return hovered ? colorMix(c, rgb(realm.color), .34) : base;
@@ -7062,7 +7066,7 @@ AtlasRenderer.prototype.palette = function (i) {
     }
     if (w.ice[i] > 120)
         return hovered ? colorMix(c, rgb(realm.color), .34)
-            : political && this.hoveredRealm == null && realm?.id === this.focusRealm ? colorMix(c, rgb(realm.color), .14) : c;
+            : political && this.hoveredRealm == null && realm && realm.id === this.focusRealm ? colorMix(c, rgb(realm.color), .14) : c;
     let paint, strength = .63;
     if (this.layer === 'faiths') {
         paint = rgb(FAITHS[cDominant(p.faith)].color);
@@ -7187,12 +7191,12 @@ AtlasRenderer.prototype.buildCivilization = function () {
     for (let y = 0; y < GH; y++)
         for (let x = 0; x < GW; x++) {
             const i = y * GW + x;
-            if (w.height[i] <= 0) continue;
+            if (w.height[i] <= 0 && !this.territoryInlandWater?.[i]) continue;
             const a = territory ? territory[i] : w.lake[i] > 0 ? -1 : s.provinces[w.provinceId[i]]?.owner ?? -1;
             for (const [dx, dy] of [[1, 0], [0, 1]]) {
                 if (x + dx >= GW || y + dy >= GH) continue;
                 const j = i + dx + dy * GW;
-                if (w.height[j] <= 0) continue;
+                if (w.height[j] <= 0 && !this.territoryInlandWater?.[j]) continue;
                 const b = territory ? territory[j] : w.lake[j] > 0 ? -1 : s.provinces[w.provinceId[j]]?.owner ?? -1;
                 if (a === b || (a < 0 && b < 0)) continue;
                 const cx = x + dx * .5, cy = y + dy * .5, ax = cx - dy * .51, ay = cy - dx * .51, bx = cx + dy * .51, by = cy + dx * .51;
@@ -12948,147 +12952,103 @@ const RealmProfile = (() => {
     return Object.freeze({ landArea, create });
 })();
 
-/* Read-only sovereign geography. Directly administered province cells remain
- * fixed; outer territory is derived separately from population and resources. */
+/* Read-only political geography. Preserve open wildness and existing provinces;
+ * fill domestic holes without changing the physical or demographic ledgers. */
 const PoliticalLand = (() => {
     const dry = (w, i) => Number.isInteger(i) && i >= 0 && w?.height?.[i] > 0 && (w.lake?.[i] ?? -1) <= 0;
-    const cellKind = (w, i) => w.height[i] > 0 ? ((w.lake?.[i] ?? -1) > 0 ? 2 : 1) : 0;
+    const rawKind = (w, i) => w.height[i] > 0 ? ((w.lake?.[i] ?? -1) > 0 ? 2 : 1) : 0;
     const heldBy = (s, province) => {
         const owner = province?.owner, realm = s?.realms?.[owner];
         return Number.isInteger(owner) && owner >= 0 && realm && realm.alive !== false ? owner : -1;
     };
-    const cache = new WeakMap(), empty = Object.freeze({ owners: new Int32Array(0), areas: Object.freeze([]), key: 'territory:none' });
+    const cache = new WeakMap(), empty = Object.freeze({ owners: new Int32Array(0), inlandWater: new Uint8Array(0), areas: Object.freeze([]), key: 'territory:none' });
     const weight = (w, i) => Number.isFinite(w.area?.[i]) ? w.area[i] : 1;
-    function origin(s, realm, width, n) {
-        const p = s?.provinces?.[realm?.capital];
-        if (Number.isInteger(p?.i) && p.i >= 0 && p.i < n) return p.i;
-        if (Number.isFinite(p?.x) && Number.isFinite(p?.y)) {
-            const x = Math.max(0, Math.min(width - 1, Math.round(p.x))), y = Math.max(0, Math.min(Math.ceil(n / width) - 1, Math.round(p.y)));
-            return Math.min(n - 1, y * width + x);
-        }
-        return -1;
-    }
     function neighbours(i, width, n, visit) {
         if (i % width > 0) visit(i - 1);
         if (i % width + 1 < width && i + 1 < n) visit(i + 1);
         if (i >= width) visit(i - width);
         if (i + width < n) visit(i + width);
     }
-    // Sorted sources make equal-length paths independent of traversal order.
-    // Ocean can participate in a distance query without receiving territory.
-    function spread(owners, kinds, width, water = false) {
-        const n = owners.length, seeds = [], queue = new Int32Array(n), distance = new Int32Array(n).fill(-1);
-        for (let i = 0; i < n; i++) if (owners[i] >= 0) seeds.push(i);
-        seeds.sort((a, b) => owners[a] - owners[b] || a - b);
-        let head = 0, tail = 0;
-        for (const i of seeds) { queue[tail++] = i; distance[i] = 0; }
-        while (head < tail) {
-            const i = queue[head++];
-            neighbours(i, width, n, j => {
-                if (distance[j] >= 0 || !water && kinds[j] !== 1) return;
-                distance[j] = distance[i] + 1; owners[j] = owners[i]; queue[tail++] = j;
-            });
+    const edge = (i, width, n) => i % width === 0 || i % width === width - 1 || i < width || i + width >= n;
+    function fillHoles(owners, kinds, width, queue) {
+        const n = owners.length, seen = new Uint8Array(n);
+        for (let start = 0; start < n; start++) {
+            if (!kinds[start] || owners[start] >= 0 || seen[start]) continue;
+            let head = 0, tail = 1, outside = false, boundary = -1, foreign = false;
+            queue[0] = start; seen[start] = 1;
+            while (head < tail) {
+                const i = queue[head++];
+                outside ||= edge(i, width, n);
+                neighbours(i, width, n, j => {
+                    if (!kinds[j]) outside = true;
+                    else if (owners[j] >= 0) {
+                        if (boundary < 0) boundary = owners[j];
+                        else if (boundary !== owners[j]) foreign = true;
+                    } else if (!seen[j]) { seen[j] = 1; queue[tail++] = j; }
+                });
+            }
+            // A foreign enclave is a legitimate inner boundary. A component
+            // touching the sea or raster edge is genuinely open, not a hole.
+            if (!outside && !foreign && boundary >= 0)
+                for (let k = 0; k < tail; k++) owners[queue[k]] = boundary;
         }
-        return distance;
     }
-    /** A read-only display map, separate from province cells and their accounting.
-     * Obtain this once per render/update, then read owners[i] in constant time.
-     * Exact input comparisons also detect in-place conquest, realm death, and
-     * restored/edited water rasters without requiring a simulation revision. */
+    /** Obtain once per render/update, then read owners[i] and inlandWater[i].
+     * Exact comparisons detect conquest, extinction and in-place raster edits.
+     * Arrays are read-only display snapshots; nothing is stored on world/sim. */
     function territory(w, s, width = GW) {
         const n = w?.height?.length || 0;
         if (!n) return empty;
         width = Number.isInteger(width) && width > 0 ? width : GW;
         const provinces = s?.provinces || [], realms = s?.realms || [], previous = cache.get(w);
-        let unchanged = !!previous && previous.sim === s && previous.width === width && previous.kinds.length === n && previous.held.length === provinces.length && previous.origins.length === realms.length;
+        let unchanged = !!previous && previous.sim === s && previous.width === width && previous.raw.length === n && previous.held.length === provinces.length && previous.realmCount === realms.length;
         for (let p = 0; unchanged && p < provinces.length; p++) unchanged = previous.held[p] === heldBy(s, provinces[p]);
-        for (let r = 0; unchanged && r < realms.length; r++) unchanged = previous.living[r] === +(!!realms[r] && realms[r].alive !== false) && previous.origins[r] === origin(s, realms[r], width, n);
         for (let i = 0; unchanged && i < n; i++) {
-            const kind = cellKind(w, i), province = kind === 1 ? (w.provinceId?.[i] ?? -1) : -1;
-            unchanged = previous.kinds[i] === kind && previous.provinces[i] === province && previous.weights[i] === weight(w, i);
+            const kind = rawKind(w, i), province = kind === 1 ? (w.provinceId?.[i] ?? -1) : -1;
+            unchanged = previous.raw[i] === kind && previous.provinces[i] === province && previous.weights[i] === weight(w, i);
         }
         if (unchanged) return previous.result;
 
-        const kinds = new Uint8Array(n), provinceIds = new Int32Array(n), held = Int32Array.from(provinces, p => heldBy(s, p)), weights = Float64Array.from(w.height, (_, i) => weight(w, i));
-        const living = Uint8Array.from(realms, r => !!r && r.alive !== false), origins = Int32Array.from(realms, r => origin(s, r, width, n));
-        const owners = new Int32Array(n).fill(-1), seen = new Uint8Array(n), assigned = new Uint8Array(n), queue = new Int32Array(n);
-        let direct = 0, firstLand = -1;
+        const raw = Uint8Array.from(w.height, (_, i) => rawKind(w, i)), kinds = raw.slice(), provinceIds = new Int32Array(n);
+        const held = Int32Array.from(provinces, p => heldBy(s, p)), weights = Float64Array.from(w.height, (_, i) => weight(w, i));
+        const owners = new Int32Array(n).fill(-1), inlandWater = new Uint8Array(n), ocean = new Uint8Array(n), queue = new Int32Array(n);
+        // A below-sea-level bed is not necessarily open ocean: closed inland
+        // seas otherwise punch artificial holes through a surrounding country.
+        // Only negative/zero beds connected to the raster edge are ocean.
+        let head = 0, tail = 0;
+        for (let i = 0; i < n; i++) if (!raw[i] && edge(i, width, n)) { ocean[i] = 1; queue[tail++] = i; }
+        while (head < tail) {
+            const i = queue[head++];
+            neighbours(i, width, n, j => {
+                if (raw[j] || ocean[j]) return;
+                ocean[j] = 1; queue[tail++] = j;
+            });
+        }
         for (let i = 0; i < n; i++) {
-            const kind = kinds[i] = cellKind(w, i), province = provinceIds[i] = kind === 1 ? (w.provinceId?.[i] ?? -1) : -1;
-            if (kind === 1 && firstLand < 0) firstLand = i;
-            if (province >= 0 && province < held.length) { owners[i] = held[province]; if (owners[i] >= 0) direct++; }
+            if (!raw[i] && !ocean[i]) kinds[i] = 2;
+            inlandWater[i] = kinds[i] === 2 ? 1 : 0;
+            const province = provinceIds[i] = kinds[i] === 1 ? (w.provinceId?.[i] ?? -1) : -1;
+            if (province >= 0 && province < held.length) owners[i] = held[province];
         }
-        // Normally the existing province raster supplies every source. A valid
-        // living country with no direct raster cells can still govern land;
-        // use its capital only when there are no direct sources anywhere.
-        if (!direct && firstLand >= 0) for (let r = 0; r < realms.length; r++) {
-            if (!living[r]) continue;
-            let seed = firstLand, best = Infinity;
-            if (origins[r] >= 0) for (let i = 0; i < n; i++) {
-                if (kinds[i] !== 1) continue;
-                const d = Math.abs(i % width - origins[r] % width) + Math.abs(Math.floor(i / width) - Math.floor(origins[r] / width));
-                if (d < best) { best = d; seed = i; }
-            }
-            if (owners[seed] < 0) owners[seed] = r;
-        }
-        spread(owners, kinds, width);
-        if (owners.some((o, i) => o < 0 && kinds[i] === 1) && owners.some(o => o >= 0)) {
-            const nearest = owners.slice(), distance = spread(nearest, kinds, width, true), visited = new Uint8Array(n);
-            // An uninhabited island stays one coherent territory. Compare its
-            // nearest shore to all established coasts, without filling the sea
-            // or letting arbitrary processing order annex an island chain.
-            for (let start = 0; start < n; start++) {
-                if (kinds[start] !== 1 || owners[start] >= 0 || visited[start]) continue;
-                let head = 0, tail = 1, closest = start;
-                queue[0] = start; visited[start] = 1;
-                while (head < tail) {
-                    const i = queue[head++];
-                    if (distance[i] < distance[closest] || distance[i] === distance[closest] && (nearest[i] < nearest[closest] || nearest[i] === nearest[closest] && i < closest)) closest = i;
-                    neighbours(i, width, n, j => {
-                        if (kinds[j] !== 1 || owners[j] >= 0 || visited[j]) return;
-                        visited[j] = 1; queue[tail++] = j;
-                    });
-                }
-                for (let k = 0; k < tail; k++) owners[queue[k]] = nearest[closest];
-            }
-        }
-        let offshore = null, offshoreDistance = null;
+        fillHoles(owners, kinds, width, queue);
+        const seen = new Uint8Array(n), assigned = new Uint8Array(n);
         for (let start = 0; start < n; start++) {
             if (kinds[start] !== 2 || seen[start]) continue;
-            let head = 0, tail = 1;
+            head = 0; tail = 1;
             const seeds = [];
             queue[0] = start; seen[start] = 1;
             while (head < tail) {
                 const i = queue[head++];
                 let shoreOwner = Infinity;
                 neighbours(i, width, n, j => {
-                    if (kinds[j] === 1 && owners[j] >= 0) shoreOwner = Math.min(shoreOwner, owners[j]);
+                    if (kinds[j] === 1) shoreOwner = Math.min(shoreOwner, owners[j]);
                     else if (kinds[j] === 2 && !seen[j]) { seen[j] = 1; queue[tail++] = j; }
                 });
                 if (shoreOwner !== Infinity) { owners[i] = shoreOwner; seeds.push(i); }
             }
-            if (!seeds.length) {
-                // Positive-height water is inland territory even on a cropped
-                // raster edge. A tiny water-only island uses the nearest coast;
-                // an all-lake world falls back to an existing capital.
-                if (!offshore) {
-                    offshore = Int32Array.from(owners, (owner, i) => kinds[i] === 1 ? owner : -1);
-                    offshoreDistance = spread(offshore, kinds, width, true);
-                }
-                let realm = -1, best = Infinity;
-                for (let k = 0; k < tail; k++) {
-                    const i = queue[k], d = offshoreDistance[i], r = offshore[i];
-                    if (r >= 0 && (d < best || d === best && r < realm)) { realm = r; best = d; }
-                }
-                if (realm < 0) for (let r = 0; r < realms.length; r++) if (living[r]) {
-                    let d = Infinity;
-                    if (origins[r] >= 0) for (let k = 0; k < tail; k++) { const i = queue[k]; d = Math.min(d, Math.abs(i % width - origins[r] % width) + Math.abs(Math.floor(i / width) - Math.floor(origins[r] / width))); }
-                    if (realm < 0 || d < best) { realm = r; best = d; }
-                }
-                for (let k = 0; k < tail; k++) owners[queue[k]] = realm;
-                continue;
-            }
-            // The same completed shore map partitions international lakes.
+            // Shared lakes follow shortest water paths from their actual shores.
+            // Wildness remains a source too. Equal-distance ties favor wildness,
+            // then the lower country id, independently of traversal order.
             seeds.sort((a, b) => owners[a] - owners[b] || a - b);
             head = tail = 0;
             for (const i of seeds) { queue[tail++] = i; assigned[i] = 1; }
@@ -13100,6 +13060,9 @@ const PoliticalLand = (() => {
                 });
             }
         }
+        // Shore partitioning can isolate a small unowned island/water pocket.
+        // Close that domestic hole, while retaining every foreign-owned cell.
+        fillHoles(owners, kinds, width, queue);
         const areas = Array.from(realms, () => ({ land: 0, water: 0, cells: 0 })), bits = new Uint32Array(weights.buffer);
         let hash = 2166136261;
         for (let i = 0; i < n; i++) {
@@ -13107,31 +13070,33 @@ const PoliticalLand = (() => {
             hash = Math.imul(hash ^ bits[i * 2], 16777619); hash = Math.imul(hash ^ bits[i * 2 + 1], 16777619);
             if (owners[i] >= 0) { const a = areas[owners[i]]; a[kinds[i] === 2 ? 'water' : 'land'] += weights[i]; a.cells++; }
         }
-        const result = Object.freeze({ owners, areas: Object.freeze(areas.map(Object.freeze)), key: 'territory:2:' + width + ':' + n + ':' + (hash >>> 0).toString(16) });
-        cache.set(w, { sim: s, width, kinds, provinces: provinceIds, held, living, origins, weights, result });
+        const result = Object.freeze({ owners, inlandWater, areas: Object.freeze(areas.map(Object.freeze)), key: 'territory:3:' + width + ':' + n + ':' + (hash >>> 0).toString(16) });
+        cache.set(w, { sim: s, width, raw, provinces: provinceIds, held, realmCount: realms.length, weights, result });
         return result;
     }
     function owner(w, s, i, width = GW) {
+        if (!Number.isInteger(i) || i < 0 || i >= (w?.height?.length || 0)) return -1;
         if (dry(w, i)) { const direct = heldBy(s, s?.provinces?.[w.provinceId?.[i]]); if (direct >= 0) return direct; }
-        return Number.isInteger(i) && i >= 0 && w?.height?.[i] > 0 ? territory(w, s, width).owners[i] ?? -1 : -1;
+        return territory(w, s, width).owners[i] ?? -1;
     }
     function status(w, s, i, width = GW) {
+        if (!Number.isInteger(i) || i < 0 || i >= (w?.height?.length || 0)) return { kind: 'water', label: 'Water', province: null, realm: null };
         if (!dry(w, i)) {
-            const realm = s?.realms?.[owner(w, s, i, width)];
+            const t = territory(w, s, width), realm = s?.realms?.[t.owners[i]];
+            if (!t.inlandWater[i]) return { kind: 'water', label: 'Water', province: null, realm: null };
             return realm ? { kind: 'realm', label: RealmNames.fullName(realm), province: null, realm, water: true }
-                : { kind: 'water', label: 'Water', province: null, realm: null };
+                : { kind: 'wildness', label: 'wildness', province: null, realm: null, water: true };
         }
         const province = s?.provinces?.[w.provinceId?.[i]], id = owner(w, s, i, width), held = s?.realms?.[id];
         if (held) return { kind: 'realm', label: RealmNames.fullName(held), province, realm: held, derived: heldBy(s, province) !== id };
-        return { kind: 'neutral', label: 'No countries yet', province, realm: null };
+        return { kind: 'wildness', label: 'wildness', province, realm: null };
     }
     function description(w, s, i, width = GW) {
         const place = status(w, s, i, width);
         if (place.kind === 'water') return '';
-        if (place.realm) return 'Territory of ' + place.label + '.';
-        return 'No countries have formed in this world yet.';
+        return place.realm ? 'Territory of ' + place.label + '.' : 'wildness';
     }
-    /** Neutral geography labels only when the world has no living countries. */
+    /** One label per substantial open unowned region, anchored on actual land. */
     function labels(w, s, width = GW) {
         const n = w?.height?.length || 0, height = Math.ceil(n / width), free = new Uint8Array(n), seen = new Uint8Array(n), queue = new Int32Array(n), labels = [], owners = territory(w, s, width).owners;
         for (let i = 0; i < n; i++) free[i] = dry(w, i) && owners[i] < 0 ? 1 : 0;
@@ -13142,11 +13107,7 @@ const PoliticalLand = (() => {
             while (head < tail) {
                 const i = queue[head++], x = i % width, y = Math.floor(i / width), weight = w.area?.[i] ?? 1;
                 sx += x * weight; sy += y * weight; area += weight;
-                for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-                    const xx = x + dx, yy = y + dy, j = yy * width + xx;
-                    if (xx < 0 || xx >= width || yy < 0 || yy >= height || j >= n || !free[j] || seen[j]) continue;
-                    seen[j] = 1; queue[tail++] = j;
-                }
+                neighbours(i, width, n, j => { if (!free[j] || seen[j]) return; seen[j] = 1; queue[tail++] = j; });
             }
             if (tail < 28 || area <= 0) continue;
             const cx = sx / area, cy = sy / area;
@@ -13161,8 +13122,7 @@ const PoliticalLand = (() => {
                 const next = interior * 3 - Math.hypot(x - cx, y - cy);
                 if (next > score) { score = next; anchor = i; }
             }
-            labels.push({ i: anchor, x: anchor % width, y: Math.floor(anchor / width), area,
-                name: 'No countries yet', kind: '', neutral: true });
+            labels.push({ i: anchor, x: anchor % width, y: Math.floor(anchor / width), area, name: 'wildness', kind: '', wildness: true });
         }
         return labels.sort((a, b) => b.area - a.area || a.i - b.i);
     }
@@ -13249,6 +13209,7 @@ function makeLabels() {
                 labelSize: 14 + 10 * Math.sqrt(area / largest) };
         });
         list.push(...towns);
+        if (typeof PoliticalLand !== 'undefined') list.push(...PoliticalLand.labels(world, sim));
     }
     else if (currentLayer === 'relief')
         // Continents claim their names first — they are the coarsest "where am I"
@@ -13268,7 +13229,7 @@ function makeLabels() {
     if (!list.some(f => f.town)) list = [...list, ...towns];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wilderness ? ' wildernessLabel' : '');
+        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wildness || f.wilderness ? ' wildernessLabel' : '');
         b.innerHTML = f.realm != null
             ? `<em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
             : `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
@@ -13508,25 +13469,25 @@ function positionLabels() {
     $('compass').style.transform = `rotate(${-renderer.azimuth * 180 / Math.PI}deg)`;
 }
 
-const Scenes=[{"id":"shared-salt","name":"两国咸水湖","x":54.918,"y":49.082,"first":13254,"expected":85,"description":"Annwn 与 Duat 分处湖岸，国界应穿过湖面并接回两侧陆地。"},{"id":"shared-fresh","name":"两国淡水湖","x":232.385,"y":102.385,"first":30531,"expected":13,"description":"Aaru 与 Tapiola 之间的小湖；附近的 Eaglerise 城镇名称应随地图保持可见。"},{"id":"enclosed","name":"单国境内湖","x":85.816,"y":37.447,"first":10285,"expected":38,"description":"Annwn 包围的湖泊。国家高亮应把它纳入完整领地，内部湖岸不再成为国境。"},{"id":"complete-shore","name":"大湖与高地","x":188.891,"y":39.863,"first":10087,"expected":183,"description":"Mictlan 大湖与周围高地全部纳入国家领地，湖面和原有山势保持不变。"}],Defaults={seed:'Aereth-47',form:'global',plates:24,continents:6,islands:1.2,volcanism:.85,uplift:1.2,sea:0,aridity:.85,current:1,erosion:.7,temperature:0,glaciation:1.2};
+const Scenes=[{"id":"enclosed-sea","name":"负海拔内海：消除空心国境","kind":"sea","x":95,"y":53,"first":15995,"expected":64,"description":"Annwn 国内的封闭内海。水面保持原样，国家高亮应覆盖整片水域，不能沿水岸留下空心国境。"},{"id":"shared-salt","name":"两国咸水湖","x":54.918,"y":49.082,"first":13254,"expected":85,"description":"Annwn 与 Duat 分处湖岸，国界应穿过湖面并接回两侧陆地。"},{"id":"shared-fresh","name":"两国淡水湖","x":232.385,"y":102.385,"first":30531,"expected":13,"description":"Aaru 与 Tapiola 之间的小湖；附近的 Eaglerise 城镇名称应随地图保持可见。"},{"id":"enclosed","name":"单国境内湖","x":85.816,"y":37.447,"first":10285,"expected":38,"description":"Annwn 包围的湖泊。国家高亮应把它纳入完整领地，内部湖岸不再成为国境。"},{"id":"complete-shore","name":"大湖与 wildness","x":188.891,"y":39.863,"first":10087,"expected":183,"description":"Mictlan 大湖与高地交界：国家的岸线归属延伸到水面，外侧无主地保留 wildness。"}],Defaults={seed:'Aereth-47',form:'global',plates:24,continents:6,islands:1.2,volcanism:.85,uplift:1.2,sea:0,aridity:.85,current:1,erosion:.7,temperature:0,glaciation:1.2};
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));let scene=Scenes[0],view='lake',layer=null,lakeCells=[],lakeOwners=[],baseline=null,timer=null,serial=0;
 function fail(error){$('status').textContent=error.message;$('status').className='error';document.body.dataset.ready='error';console.error(error);}
-function component(start){const cells=[start],seen=new Set(cells);if(world.lake[start]<=0)throw Error('原有湖泊样本已经变化，请重新勘选实际水面。');for(let k=0;k<cells.length;k++){const i=cells[k],x=i%GW,y=Math.floor(i/GW);for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy,j=yy*GW+xx;if(xx<0||xx>=GW||yy<0||yy>=GH||world.lake[j]<=0||seen.has(j))continue;seen.add(j);cells.push(j);}}return cells;}
+function component(start){const inland=PoliticalLand.territory(world,sim).inlandWater,water=i=>scene.kind==='sea'?world.height[i]<=0&&inland[i]:world.lake[i]>0,cells=[start],seen=new Set(cells);if(!water(start))throw Error('原有水面样本已经变化，请重新勘选。');for(let k=0;k<cells.length;k++){const i=cells[k],x=i%GW,y=Math.floor(i/GW);for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy,j=yy*GW+xx;if(xx<0||xx>=GW||yy<0||yy>=GH||!water(j)||seen.has(j))continue;seen.add(j);cells.push(j);}}return cells;}
 function facts(){const territory=PoliticalLand.territory(world,sim),counts=new Map();for(const i of lakeCells){const owner=territory.owners[i];counts.set(owner,(counts.get(owner)||0)+1);}lakeOwners=[...counts].sort((a,b)=>b[1]-a[1]);
  const townItems=labelItems.filter(v=>v.feature.town),townVisible=townItems.filter(v=>v.element.style.opacity==='1'),high=sim.provinces.filter(p=>p.highCitadel).map(p=>({id:p.id,name:p.name,present:townItems.some(v=>v.feature.i===p.i)}));
- const rows=[['真实水面',lakeCells.length+' 格'],['湖面归属',lakeOwners.map(([id,n])=>(id<0?'无国家归属':sim.realms[id].name)+' '+n+' 格').join(' / ')],['城镇名称',townVisible.length+' 当前可见 / '+townItems.length+' 已列入'],['世界城镇',sim.provinces.filter(p=>p.settled).length+' 处 · 高山小城 '+high.length+' 处']];$('facts').innerHTML=rows.map(([k,v])=>'<p><small>'+k+'</small><b>'+escapeHTML(v)+'</b></p>').join('');
+ const rows=[['真实水面',lakeCells.length+' 格'],['水面归属',lakeOwners.map(([id,n])=>(id<0?'wildness':sim.realms[id].name)+' '+n+' 格').join(' / ')],['城镇名称',townVisible.length+' 当前可见 / '+townItems.length+' 已列入'],['世界城镇',sim.provinces.filter(p=>p.settled).length+' 处 · 高山小城 '+high.length+' 处']];$('facts').innerHTML=rows.map(([k,v])=>'<p><small>'+k+'</small><b>'+escapeHTML(v)+'</b></p>').join('');
  window.__politicsPreview={ready:document.body.dataset.ready==='true',scene:scene.id,view,seed:Defaults.seed,zoom:renderer.zoom,lake:{first:scene.first,cells:lakeCells.length,owners:lakeOwners},labels:{towns:townItems.length,visible:townVisible.length,high},hover:renderer.hoveredRealm,frontierTriangles:(renderer.meshes.frontiers?.count||0)/3,unchanged:physicalFingerprint(world)===baseline};
 }
 function draw(){if(!renderer||!world)return;positionLabels();if(lakeCells.length)facts();}
 async function remesh(){clearTimeout(timer);if(!layer)return;const ticket=++serial;document.body.dataset.ready='building';await frame();try{if(ticket!==serial)return;layer.natural=false;layer.buildTerrain();renderer.buildCivilization();if(renderer.hoveredRealm!=null)renderer.buildRealmHover();renderer.request();if(physicalFingerprint(world)!==baseline)throw Error('政治预览改变了原有物理地理');document.body.dataset.ready='true';$('status').textContent='Aereth-47 · 原始湖面、人口与地理保持不变。';facts();}catch(error){fail(error);}}
 function schedule(){clearTimeout(timer);timer=setTimeout(remesh,170);}
 function reset(){if(!world)return;renderer.azimuth=.018;renderer.elevation=view==='world'?1.19:1.10;renderer.zoom={world:1,region:3.5,lake:12}[view];renderer.target=view==='world'?[0,0,0]:AtlasSpace.point(world,scene.x,scene.y,1);for(const b of document.querySelectorAll('[data-view]'))b.setAttribute('aria-pressed',String(b.dataset.view===view));renderer.request();remesh();}
-function choose(id){scene=Scenes.find(c=>c.id===id)||Scenes[0];lakeCells=component(scene.first);if(lakeCells.length!==scene.expected)throw Error(scene.name+' 的真实湖泊格数已变化');$('scene').value=scene.id;$('description').textContent=scene.description;makeLabels();facts();
+function choose(id){scene=Scenes.find(c=>c.id===id)||Scenes[0];lakeCells=component(scene.first);if(lakeCells.length!==scene.expected)throw Error(scene.name+' 的真实水面格数已变化');if(scene.kind==='sea'){scene.x=lakeCells.reduce((n,i)=>n+i%GW,0)/lakeCells.length;scene.y=lakeCells.reduce((n,i)=>n+Math.floor(i/GW),0)/lakeCells.length;}$('scene').value=scene.id;$('description').textContent=scene.description;makeLabels();facts();
  $('hover').innerHTML='<option value="">无</option>'+lakeOwners.filter(([id])=>id>=0).map(([id])=>'<option value="'+id+'">'+escapeHTML(RealmNames.fullName(sim.realms[id]))+'</option>').join('');renderer.setHoveredRealm(null);reset();}
 async function start(){try{document.body.dataset.ready='loading';await frame();world=await generateWorld(Defaults);sim=createCivilization(world,{realms:18,historySeed:'First-dawn'});if(typeof PoliticalLand.territory!=='function')throw Error('PoliticalLand.territory 尚未接入，请从最终代码重新生成预览。');baseline=physicalFingerprint(world);
  renderer=new AtlasRenderer($('map'),draw);renderer.world=world;renderer.sim=sim;renderer.layer='realms';renderer.focusRealm=null;renderer.options={trees:false,volcanoes:false,rivers:true,borders:false,wind:false,ice:true,legends:false,settlements:true,frontiers:true,roads:true};renderer.backgroundColor=[.4745,.6,.6157];layer=new ContinuousCityLayer(renderer);renderer.continuousLayer=layer;renderer.ground=(x,y)=>layer.ground(x,y);renderer.buildTerrain=()=>layer.buildTerrain();layer.reset(world,sim);layer.prepareLandscape();renderer.buildCivilization();renderer.buildRivers();
  let drag=null;const canvas=$('map');canvas.addEventListener('pointerdown',event=>{drag=[event.clientX,event.clientY];canvas.setPointerCapture(event.pointerId);});canvas.addEventListener('pointermove',event=>{if(!drag)return;const dx=event.clientX-drag[0],dy=event.clientY-drag[1];drag=[event.clientX,event.clientY];if(event.shiftKey){renderer.azimuth-=dx*.006;renderer.elevation=Math.max(.25,Math.min(1.5,renderer.elevation+dy*.004));}else renderer.pan(dx,dy);renderer.request();schedule();});for(const name of['pointerup','pointercancel'])canvas.addEventListener(name,()=>drag=null);canvas.addEventListener('wheel',event=>{event.preventDefault();renderer.zoom=Math.max(.7,Math.min(15.8,renderer.zoom*Math.exp(-event.deltaY*.001)));renderer.request();schedule();},{passive:false});
- window.__politicsRuntime={world,sim,renderer,layer,labels:()=>labelItems,select:choose,view:value=>{view=value;reset();}};choose('shared-salt');
+ window.__politicsRuntime={world,sim,renderer,layer,labels:()=>labelItems,select:choose,view:value=>{view=value;reset();}};choose('enclosed-sea');
  }catch(error){fail(error);}}
 $('scene').addEventListener('change',()=>choose($('scene').value));for(const b of document.querySelectorAll('[data-view]'))b.addEventListener('click',()=>{view=b.dataset.view;reset();});$('reset').onclick=reset;$('hover').onchange=()=>{if(renderer)renderer.setHoveredRealm($('hover').value===''?null:Number($('hover').value));};$('names').onchange=()=>{positionLabels();draw();};$('frontiers').onchange=()=>{if(renderer){renderer.options.frontiers=$('frontiers').checked;renderer.request();}};window.addEventListener('resize',()=>{renderer?.resize();schedule();});start();
 </script></html>

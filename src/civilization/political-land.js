@@ -1,144 +1,100 @@
-/* Read-only sovereign geography. Directly administered province cells remain
- * fixed; outer territory is derived separately from population and resources. */
+/* Read-only political geography. Preserve open wildness and existing provinces;
+ * fill domestic holes without changing the physical or demographic ledgers. */
 const PoliticalLand = (() => {
     const dry = (w, i) => Number.isInteger(i) && i >= 0 && w?.height?.[i] > 0 && (w.lake?.[i] ?? -1) <= 0;
-    const cellKind = (w, i) => w.height[i] > 0 ? ((w.lake?.[i] ?? -1) > 0 ? 2 : 1) : 0;
+    const rawKind = (w, i) => w.height[i] > 0 ? ((w.lake?.[i] ?? -1) > 0 ? 2 : 1) : 0;
     const heldBy = (s, province) => {
         const owner = province?.owner, realm = s?.realms?.[owner];
         return Number.isInteger(owner) && owner >= 0 && realm && realm.alive !== false ? owner : -1;
     };
-    const cache = new WeakMap(), empty = Object.freeze({ owners: new Int32Array(0), areas: Object.freeze([]), key: 'territory:none' });
+    const cache = new WeakMap(), empty = Object.freeze({ owners: new Int32Array(0), inlandWater: new Uint8Array(0), areas: Object.freeze([]), key: 'territory:none' });
     const weight = (w, i) => Number.isFinite(w.area?.[i]) ? w.area[i] : 1;
-    function origin(s, realm, width, n) {
-        const p = s?.provinces?.[realm?.capital];
-        if (Number.isInteger(p?.i) && p.i >= 0 && p.i < n) return p.i;
-        if (Number.isFinite(p?.x) && Number.isFinite(p?.y)) {
-            const x = Math.max(0, Math.min(width - 1, Math.round(p.x))), y = Math.max(0, Math.min(Math.ceil(n / width) - 1, Math.round(p.y)));
-            return Math.min(n - 1, y * width + x);
-        }
-        return -1;
-    }
     function neighbours(i, width, n, visit) {
         if (i % width > 0) visit(i - 1);
         if (i % width + 1 < width && i + 1 < n) visit(i + 1);
         if (i >= width) visit(i - width);
         if (i + width < n) visit(i + width);
     }
-    // Sorted sources make equal-length paths independent of traversal order.
-    // Ocean can participate in a distance query without receiving territory.
-    function spread(owners, kinds, width, water = false) {
-        const n = owners.length, seeds = [], queue = new Int32Array(n), distance = new Int32Array(n).fill(-1);
-        for (let i = 0; i < n; i++) if (owners[i] >= 0) seeds.push(i);
-        seeds.sort((a, b) => owners[a] - owners[b] || a - b);
-        let head = 0, tail = 0;
-        for (const i of seeds) { queue[tail++] = i; distance[i] = 0; }
-        while (head < tail) {
-            const i = queue[head++];
-            neighbours(i, width, n, j => {
-                if (distance[j] >= 0 || !water && kinds[j] !== 1) return;
-                distance[j] = distance[i] + 1; owners[j] = owners[i]; queue[tail++] = j;
-            });
+    const edge = (i, width, n) => i % width === 0 || i % width === width - 1 || i < width || i + width >= n;
+    function fillHoles(owners, kinds, width, queue) {
+        const n = owners.length, seen = new Uint8Array(n);
+        for (let start = 0; start < n; start++) {
+            if (!kinds[start] || owners[start] >= 0 || seen[start]) continue;
+            let head = 0, tail = 1, outside = false, boundary = -1, foreign = false;
+            queue[0] = start; seen[start] = 1;
+            while (head < tail) {
+                const i = queue[head++];
+                outside ||= edge(i, width, n);
+                neighbours(i, width, n, j => {
+                    if (!kinds[j]) outside = true;
+                    else if (owners[j] >= 0) {
+                        if (boundary < 0) boundary = owners[j];
+                        else if (boundary !== owners[j]) foreign = true;
+                    } else if (!seen[j]) { seen[j] = 1; queue[tail++] = j; }
+                });
+            }
+            // A foreign enclave is a legitimate inner boundary. A component
+            // touching the sea or raster edge is genuinely open, not a hole.
+            if (!outside && !foreign && boundary >= 0)
+                for (let k = 0; k < tail; k++) owners[queue[k]] = boundary;
         }
-        return distance;
     }
-    /** A read-only display map, separate from province cells and their accounting.
-     * Obtain this once per render/update, then read owners[i] in constant time.
-     * Exact input comparisons also detect in-place conquest, realm death, and
-     * restored/edited water rasters without requiring a simulation revision. */
+    /** Obtain once per render/update, then read owners[i] and inlandWater[i].
+     * Exact comparisons detect conquest, extinction and in-place raster edits.
+     * Arrays are read-only display snapshots; nothing is stored on world/sim. */
     function territory(w, s, width = GW) {
         const n = w?.height?.length || 0;
         if (!n) return empty;
         width = Number.isInteger(width) && width > 0 ? width : GW;
         const provinces = s?.provinces || [], realms = s?.realms || [], previous = cache.get(w);
-        let unchanged = !!previous && previous.sim === s && previous.width === width && previous.kinds.length === n && previous.held.length === provinces.length && previous.origins.length === realms.length;
+        let unchanged = !!previous && previous.sim === s && previous.width === width && previous.raw.length === n && previous.held.length === provinces.length && previous.realmCount === realms.length;
         for (let p = 0; unchanged && p < provinces.length; p++) unchanged = previous.held[p] === heldBy(s, provinces[p]);
-        for (let r = 0; unchanged && r < realms.length; r++) unchanged = previous.living[r] === +(!!realms[r] && realms[r].alive !== false) && previous.origins[r] === origin(s, realms[r], width, n);
         for (let i = 0; unchanged && i < n; i++) {
-            const kind = cellKind(w, i), province = kind === 1 ? (w.provinceId?.[i] ?? -1) : -1;
-            unchanged = previous.kinds[i] === kind && previous.provinces[i] === province && previous.weights[i] === weight(w, i);
+            const kind = rawKind(w, i), province = kind === 1 ? (w.provinceId?.[i] ?? -1) : -1;
+            unchanged = previous.raw[i] === kind && previous.provinces[i] === province && previous.weights[i] === weight(w, i);
         }
         if (unchanged) return previous.result;
 
-        const kinds = new Uint8Array(n), provinceIds = new Int32Array(n), held = Int32Array.from(provinces, p => heldBy(s, p)), weights = Float64Array.from(w.height, (_, i) => weight(w, i));
-        const living = Uint8Array.from(realms, r => !!r && r.alive !== false), origins = Int32Array.from(realms, r => origin(s, r, width, n));
-        const owners = new Int32Array(n).fill(-1), seen = new Uint8Array(n), assigned = new Uint8Array(n), queue = new Int32Array(n);
-        let direct = 0, firstLand = -1;
+        const raw = Uint8Array.from(w.height, (_, i) => rawKind(w, i)), kinds = raw.slice(), provinceIds = new Int32Array(n);
+        const held = Int32Array.from(provinces, p => heldBy(s, p)), weights = Float64Array.from(w.height, (_, i) => weight(w, i));
+        const owners = new Int32Array(n).fill(-1), inlandWater = new Uint8Array(n), ocean = new Uint8Array(n), queue = new Int32Array(n);
+        // A below-sea-level bed is not necessarily open ocean: closed inland
+        // seas otherwise punch artificial holes through a surrounding country.
+        // Only negative/zero beds connected to the raster edge are ocean.
+        let head = 0, tail = 0;
+        for (let i = 0; i < n; i++) if (!raw[i] && edge(i, width, n)) { ocean[i] = 1; queue[tail++] = i; }
+        while (head < tail) {
+            const i = queue[head++];
+            neighbours(i, width, n, j => {
+                if (raw[j] || ocean[j]) return;
+                ocean[j] = 1; queue[tail++] = j;
+            });
+        }
         for (let i = 0; i < n; i++) {
-            const kind = kinds[i] = cellKind(w, i), province = provinceIds[i] = kind === 1 ? (w.provinceId?.[i] ?? -1) : -1;
-            if (kind === 1 && firstLand < 0) firstLand = i;
-            if (province >= 0 && province < held.length) { owners[i] = held[province]; if (owners[i] >= 0) direct++; }
+            if (!raw[i] && !ocean[i]) kinds[i] = 2;
+            inlandWater[i] = kinds[i] === 2 ? 1 : 0;
+            const province = provinceIds[i] = kinds[i] === 1 ? (w.provinceId?.[i] ?? -1) : -1;
+            if (province >= 0 && province < held.length) owners[i] = held[province];
         }
-        // Normally the existing province raster supplies every source. A valid
-        // living country with no direct raster cells can still govern land;
-        // use its capital only when there are no direct sources anywhere.
-        if (!direct && firstLand >= 0) for (let r = 0; r < realms.length; r++) {
-            if (!living[r]) continue;
-            let seed = firstLand, best = Infinity;
-            if (origins[r] >= 0) for (let i = 0; i < n; i++) {
-                if (kinds[i] !== 1) continue;
-                const d = Math.abs(i % width - origins[r] % width) + Math.abs(Math.floor(i / width) - Math.floor(origins[r] / width));
-                if (d < best) { best = d; seed = i; }
-            }
-            if (owners[seed] < 0) owners[seed] = r;
-        }
-        spread(owners, kinds, width);
-        if (owners.some((o, i) => o < 0 && kinds[i] === 1) && owners.some(o => o >= 0)) {
-            const nearest = owners.slice(), distance = spread(nearest, kinds, width, true), visited = new Uint8Array(n);
-            // An uninhabited island stays one coherent territory. Compare its
-            // nearest shore to all established coasts, without filling the sea
-            // or letting arbitrary processing order annex an island chain.
-            for (let start = 0; start < n; start++) {
-                if (kinds[start] !== 1 || owners[start] >= 0 || visited[start]) continue;
-                let head = 0, tail = 1, closest = start;
-                queue[0] = start; visited[start] = 1;
-                while (head < tail) {
-                    const i = queue[head++];
-                    if (distance[i] < distance[closest] || distance[i] === distance[closest] && (nearest[i] < nearest[closest] || nearest[i] === nearest[closest] && i < closest)) closest = i;
-                    neighbours(i, width, n, j => {
-                        if (kinds[j] !== 1 || owners[j] >= 0 || visited[j]) return;
-                        visited[j] = 1; queue[tail++] = j;
-                    });
-                }
-                for (let k = 0; k < tail; k++) owners[queue[k]] = nearest[closest];
-            }
-        }
-        let offshore = null, offshoreDistance = null;
+        fillHoles(owners, kinds, width, queue);
+        const seen = new Uint8Array(n), assigned = new Uint8Array(n);
         for (let start = 0; start < n; start++) {
             if (kinds[start] !== 2 || seen[start]) continue;
-            let head = 0, tail = 1;
+            head = 0; tail = 1;
             const seeds = [];
             queue[0] = start; seen[start] = 1;
             while (head < tail) {
                 const i = queue[head++];
                 let shoreOwner = Infinity;
                 neighbours(i, width, n, j => {
-                    if (kinds[j] === 1 && owners[j] >= 0) shoreOwner = Math.min(shoreOwner, owners[j]);
+                    if (kinds[j] === 1) shoreOwner = Math.min(shoreOwner, owners[j]);
                     else if (kinds[j] === 2 && !seen[j]) { seen[j] = 1; queue[tail++] = j; }
                 });
                 if (shoreOwner !== Infinity) { owners[i] = shoreOwner; seeds.push(i); }
             }
-            if (!seeds.length) {
-                // Positive-height water is inland territory even on a cropped
-                // raster edge. A tiny water-only island uses the nearest coast;
-                // an all-lake world falls back to an existing capital.
-                if (!offshore) {
-                    offshore = Int32Array.from(owners, (owner, i) => kinds[i] === 1 ? owner : -1);
-                    offshoreDistance = spread(offshore, kinds, width, true);
-                }
-                let realm = -1, best = Infinity;
-                for (let k = 0; k < tail; k++) {
-                    const i = queue[k], d = offshoreDistance[i], r = offshore[i];
-                    if (r >= 0 && (d < best || d === best && r < realm)) { realm = r; best = d; }
-                }
-                if (realm < 0) for (let r = 0; r < realms.length; r++) if (living[r]) {
-                    let d = Infinity;
-                    if (origins[r] >= 0) for (let k = 0; k < tail; k++) { const i = queue[k]; d = Math.min(d, Math.abs(i % width - origins[r] % width) + Math.abs(Math.floor(i / width) - Math.floor(origins[r] / width))); }
-                    if (realm < 0 || d < best) { realm = r; best = d; }
-                }
-                for (let k = 0; k < tail; k++) owners[queue[k]] = realm;
-                continue;
-            }
-            // The same completed shore map partitions international lakes.
+            // Shared lakes follow shortest water paths from their actual shores.
+            // Wildness remains a source too. Equal-distance ties favor wildness,
+            // then the lower country id, independently of traversal order.
             seeds.sort((a, b) => owners[a] - owners[b] || a - b);
             head = tail = 0;
             for (const i of seeds) { queue[tail++] = i; assigned[i] = 1; }
@@ -150,6 +106,9 @@ const PoliticalLand = (() => {
                 });
             }
         }
+        // Shore partitioning can isolate a small unowned island/water pocket.
+        // Close that domestic hole, while retaining every foreign-owned cell.
+        fillHoles(owners, kinds, width, queue);
         const areas = Array.from(realms, () => ({ land: 0, water: 0, cells: 0 })), bits = new Uint32Array(weights.buffer);
         let hash = 2166136261;
         for (let i = 0; i < n; i++) {
@@ -157,31 +116,33 @@ const PoliticalLand = (() => {
             hash = Math.imul(hash ^ bits[i * 2], 16777619); hash = Math.imul(hash ^ bits[i * 2 + 1], 16777619);
             if (owners[i] >= 0) { const a = areas[owners[i]]; a[kinds[i] === 2 ? 'water' : 'land'] += weights[i]; a.cells++; }
         }
-        const result = Object.freeze({ owners, areas: Object.freeze(areas.map(Object.freeze)), key: 'territory:2:' + width + ':' + n + ':' + (hash >>> 0).toString(16) });
-        cache.set(w, { sim: s, width, kinds, provinces: provinceIds, held, living, origins, weights, result });
+        const result = Object.freeze({ owners, inlandWater, areas: Object.freeze(areas.map(Object.freeze)), key: 'territory:3:' + width + ':' + n + ':' + (hash >>> 0).toString(16) });
+        cache.set(w, { sim: s, width, raw, provinces: provinceIds, held, realmCount: realms.length, weights, result });
         return result;
     }
     function owner(w, s, i, width = GW) {
+        if (!Number.isInteger(i) || i < 0 || i >= (w?.height?.length || 0)) return -1;
         if (dry(w, i)) { const direct = heldBy(s, s?.provinces?.[w.provinceId?.[i]]); if (direct >= 0) return direct; }
-        return Number.isInteger(i) && i >= 0 && w?.height?.[i] > 0 ? territory(w, s, width).owners[i] ?? -1 : -1;
+        return territory(w, s, width).owners[i] ?? -1;
     }
     function status(w, s, i, width = GW) {
+        if (!Number.isInteger(i) || i < 0 || i >= (w?.height?.length || 0)) return { kind: 'water', label: 'Water', province: null, realm: null };
         if (!dry(w, i)) {
-            const realm = s?.realms?.[owner(w, s, i, width)];
+            const t = territory(w, s, width), realm = s?.realms?.[t.owners[i]];
+            if (!t.inlandWater[i]) return { kind: 'water', label: 'Water', province: null, realm: null };
             return realm ? { kind: 'realm', label: RealmNames.fullName(realm), province: null, realm, water: true }
-                : { kind: 'water', label: 'Water', province: null, realm: null };
+                : { kind: 'wildness', label: 'wildness', province: null, realm: null, water: true };
         }
         const province = s?.provinces?.[w.provinceId?.[i]], id = owner(w, s, i, width), held = s?.realms?.[id];
         if (held) return { kind: 'realm', label: RealmNames.fullName(held), province, realm: held, derived: heldBy(s, province) !== id };
-        return { kind: 'neutral', label: 'No countries yet', province, realm: null };
+        return { kind: 'wildness', label: 'wildness', province, realm: null };
     }
     function description(w, s, i, width = GW) {
         const place = status(w, s, i, width);
         if (place.kind === 'water') return '';
-        if (place.realm) return 'Territory of ' + place.label + '.';
-        return 'No countries have formed in this world yet.';
+        return place.realm ? 'Territory of ' + place.label + '.' : 'wildness';
     }
-    /** Neutral geography labels only when the world has no living countries. */
+    /** One label per substantial open unowned region, anchored on actual land. */
     function labels(w, s, width = GW) {
         const n = w?.height?.length || 0, height = Math.ceil(n / width), free = new Uint8Array(n), seen = new Uint8Array(n), queue = new Int32Array(n), labels = [], owners = territory(w, s, width).owners;
         for (let i = 0; i < n; i++) free[i] = dry(w, i) && owners[i] < 0 ? 1 : 0;
@@ -192,11 +153,7 @@ const PoliticalLand = (() => {
             while (head < tail) {
                 const i = queue[head++], x = i % width, y = Math.floor(i / width), weight = w.area?.[i] ?? 1;
                 sx += x * weight; sy += y * weight; area += weight;
-                for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-                    const xx = x + dx, yy = y + dy, j = yy * width + xx;
-                    if (xx < 0 || xx >= width || yy < 0 || yy >= height || j >= n || !free[j] || seen[j]) continue;
-                    seen[j] = 1; queue[tail++] = j;
-                }
+                neighbours(i, width, n, j => { if (!free[j] || seen[j]) return; seen[j] = 1; queue[tail++] = j; });
             }
             if (tail < 28 || area <= 0) continue;
             const cx = sx / area, cy = sy / area;
@@ -211,8 +168,7 @@ const PoliticalLand = (() => {
                 const next = interior * 3 - Math.hypot(x - cx, y - cy);
                 if (next > score) { score = next; anchor = i; }
             }
-            labels.push({ i: anchor, x: anchor % width, y: Math.floor(anchor / width), area,
-                name: 'No countries yet', kind: '', neutral: true });
+            labels.push({ i: anchor, x: anchor % width, y: Math.floor(anchor / width), area, name: 'wildness', kind: '', wildness: true });
         }
         return labels.sort((a, b) => b.area - a.area || a.i - b.i);
     }
