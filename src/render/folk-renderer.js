@@ -104,7 +104,9 @@
         const budget = this.folkBudget ?? (this.software ? 45 : 220);
         let residents = 0, travelling = 0;
         const detail = { full: 0, simple: 0, limit: this.software ? 12 : DETAIL.maxDetailed };
-        if (this.options.folk !== false) {
+        // The overview never draws travellers. Keep both uploads below so returning
+        // from a town also clears its old figures; entering the town band rebuilds them.
+        if (this.options.folk !== false && this.zoom >= AtlasSpace.TOWN_ZOOM) {
             this.updateCamera();
             const centre = AtlasSpace.grid(this.target[0], this.target[2]);
             const radius = Math.max(this.halfW, this.halfH) / AtlasSpace.X + 3;

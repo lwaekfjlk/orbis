@@ -81,6 +81,28 @@ function generationReport(w, s) {
         throw Error('The civilization was generated but its map geometry did not attach.');
     return report;
 }
+// Upload in batches while keeping the last complete frame on screen. Painting
+// the loader between batches must not redraw a partly assembled atlas each time.
+async function attachWorldGeometry(w) {
+    const wasSuspended = renderer.suspendDrawing;
+    renderer.suspendDrawing = true;
+    let sliceStarted = performance.now();
+    const yieldWork = async () => {
+        if (performance.now() - sliceStarted < 8) return;
+        // Let input and painting run without waiting a whole display frame for
+        // every tiny mesh batch. Stage labels still explicitly wait for paint.
+        if (typeof window.scheduler?.yield === 'function') await window.scheduler.yield();
+        else await new Promise(resolve => setTimeout(resolve, 0));
+        sliceStarted = performance.now();
+    };
+    try {
+        await renderer.setWorldAsync(w, yieldWork);
+        await renderer.buildCivilizationAsync(yieldWork);
+    } finally {
+        renderer.suspendDrawing = wasSuspended;
+        renderer.request();
+    }
+}
 async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 1 }, restored = null) {
     if (busy || simAdvancing)
         return;
@@ -108,9 +130,9 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
     let landmarkPreload = null;
     try {
         focusedContinent = null;
-        const start = performance.now(), w = await generateWorld(generationParameters(params, restored), stageProgress);
-        await stageProgress('08 / Founding towns and trade routes');
-        const initial = createCivilization(w, opts);
+        const start = performance.now();
+        const { world: w, sim: initial } = await WorldBuilder.generate(
+            generationParameters(params, restored), opts, stageProgress);
         let next = initial;
         if (restored) {
             await stageProgress('09 / Restoring your realms and their history');
@@ -141,8 +163,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         // Reset the streaming layer before attaching geometry. Resetting it in
         // refreshAll would invalidate the terrain that setWorld just uploaded.
         window.ContinuousMap?.layer?.bind(world, sim);
-        renderer.setWorld(world);
-        renderer.buildCivilization();
+        await attachWorldGeometry(world);
         window.__generationReport = generationReport(world, sim);
         await stageProgress('11 / Discovering wonders and hidden places');
         if (landmarkPreload) await landmarkPreload.promise;
@@ -181,7 +202,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
                 $('names').checked = previous.names;
                 Object.assign(renderer, previous.camera);
                 window.ContinuousMap?.layer?.bind(world, sim);
-                renderer.setWorld(world); renderer.buildCivilization();
+                await attachWorldGeometry(world);
                 refreshAll(false); makeGeoJumps();
                 document.querySelectorAll('[data-layer]').forEach(b => {
                     b.classList.toggle('active', b.dataset.layer === currentLayer);

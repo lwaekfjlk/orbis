@@ -28,6 +28,7 @@ window.ContinuousMap = (() => {
   layer=new ContinuousCityLayer(renderer);ruins=new ContinuousRuinLayer(renderer,layer);renderer.continuousLayer=layer;renderer.continuousModels=layer.models;renderer.continuousRoofs=true;
   renderer.ground=function(x,y){return this.world?layer.ground(x,y):0;};
   renderer.buildTerrain=function(){return layer.buildTerrain();};
+  renderer.buildTerrainAsync=function(yieldFrame){return layer.buildTerrainAsync(yieldFrame);};
   installDepthRasterizer(renderer);renderer.renderQuality=1;renderer.backgroundColor=rgb('#79999d');renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));
   const visible=renderer.visible;renderer.visible=function(name){const site=ruins.visible(name);if(site!==null)return site;const v=layer.visible(name);return v===null?visible.call(this,name):v;};
   const prior=renderer.onChange;renderer.onChange=()=>{onCamera();prior();};
