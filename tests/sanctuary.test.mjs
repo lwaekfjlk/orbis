@@ -17,10 +17,21 @@ test.before(async()=>{w=await E.generateWorld(defaults);s=E.createCivilization(w
  assert(sacredIds.length>=3,'the world must still produce pilgrimage towns');siteId=sacredIds[0];
  city=E.generateCity(w,s,siteId);lot=city.buildings.find(b=>b.sacred);recipe=E.TownCityBinding.resolve(w,s,s.provinces[siteId],city,'temple');model=E.SacredCityKit.build(recipe);});
 test('Grand sanctuary is placed inside an existing pilgrimage town, on a reserved accessible dry parcel',()=>{
- assert(lot);assert(lot.w>=30);assert(lot.streetSocket!=null);assert(city.citadelSite.gateway!=null);assert(city.buildings.length>40);
+ assert(lot);assert(lot.streetSocket!=null);assert(city.citadelSite.gateway!=null);assert(city.buildings.length>40);
+ // A constrained town may use a smaller precinct to retain housing on every
+ // side. Its footprint and actual miniature must still dominate those homes.
+ const homes=city.buildings.filter(b=>!b.landmark&&b.type==='home').sort((a,b)=>a.w*a.d-b.w*b.d);
+ assert(homes.length>20,'the sanctuary needs a real residential setting');
+ const median=homes[Math.floor(homes.length/2)],areaRatio=lot.w*lot.d/(median.w*median.d);
+ assert(areaRatio>=16,`sanctuary occupies only ${areaRatio.toFixed(1)} typical household parcels`);
+ const p=s.provinces[siteId],sample=Array.from({length:12},(_,i)=>homes[Math.round(i*(homes.length-1)/11)]);
+ const heights=sample.map(b=>E.ArtisanCityKit.compound(b,city,p,s.realms[p.owner]).height).sort((a,b)=>a-b);
+ const homeHeight=heights[Math.floor((heights.length-1)*.9)],mini=E.TownCityBinding.miniature(recipe,lot);
+ assert(homeHeight>0);assert(mini.height>=homeHeight*5,`sanctuary is only ${(mini.height/homeHeight).toFixed(1)} times the neighboring roofs`);
+ for(const key of['x','z','w','d'])assert.equal(lot[key],city.citadelSite[key],`the sanctuary no longer fills its reserved ${key}`);
  const audit=E.auditCity(city);for(const k of['iceBuildings','wetBuildings','roadBuildings','overlaps','nonfinite','seaRoads'])assert.equal(audit[k],0,k);
  assert(!city.citadelReserve[city.marketIndex],'the sacred site must never enclose the market seed');
- results.checks.push({name:'existing-city-placement',provinceId:siteId,city:city.name,width:lot.w,audit});
+ results.checks.push({name:'existing-city-placement',provinceId:siteId,city:city.name,width:lot.w,areaRatio,placedHeight:mini.height,homeHeight,audit});
 });
 test('Sanctuary geometry has a monumental silhouette and actual modeled detail, with deterministic replay',()=>{
  assert(model.stats.triangles>150000);assert(model.bounds.max[1]>50);assert(model.parts.length>=10);

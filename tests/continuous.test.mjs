@@ -110,7 +110,7 @@ test('The regional silhouette of a town is painted, not stamped',()=>{
 test('City coordinates refer to the actual Stonefall source and preserve nearby glacial relief',()=>{
  const h=E.physicalFingerprint(w),f=E.AtlasSpace.cityFrame(w,p,city);assert.equal(city.source.parentWorldCell,p.i);assert(city.siteEnvironment.glacialFoothills);assert(city.siteEnvironment.maxElevation>city.siteEnvironment.minElevation+1000);
  const center=E.AtlasSpace.point(w,p.x,p.y);assert.deepEqual(f.origin,center);
- for(const[x,z]of[[0,0],[city.width/2,city.depth/2],[-city.width/2,-city.depth/2]]){const a=f.at(x,z),v=f.vertex(x,f.localGround(x,z),z);assert(Math.abs(v[1]-E.AtlasSpace.surface(w,...a)-.003)<1e-9);assert.deepEqual(E.AtlasSpace.grid(v[0],v[2]).map(x=>+x.toFixed(6)),a.map(x=>+x.toFixed(6)));}
+ for(const[x,z]of[[0,0],[city.width/2,city.depth/2],[-city.width/2,-city.depth/2]]){const a=f.at(x,z),v=f.vertex(x,f.localGround(x,z),z);assert(Math.abs(v[1]-E.AtlasSpace.surface(w,...a)-E.AtlasSpace.BUILDING_LIFT*f.scale)<1e-9);assert.deepEqual(E.AtlasSpace.grid(v[0],v[2]).map(x=>+x.toFixed(6)),a.map(x=>+x.toFixed(6)));}
  assert.equal(E.physicalFingerprint(w),h);
 });
 test('Every building is seated in its own ground, with a rigid finite transformation',()=>{
@@ -118,8 +118,7 @@ test('Every building is seated in its own ground, with a rigid finite transforma
  // Parcel generation limits the required footing; rigid architecture stays
  // above the complete footprint instead of burying its uphill roofs in the bank.
  for(const b of city.buildings){const a=f.anchors.get(b.id);
-  // .006 is the seating lift that keeps the slab off the terrain it stands on.
-  assert(a&&a.y>=a.low-1e-9&&a.y<=a.top+.0061,b.id+' is anchored outside its own ground range');
+  assert(a&&a.y>=a.low-1e-9&&a.y<=a.top+E.AtlasSpace.BUILDING_LIFT*f.scale+1e-9,b.id+' is anchored outside its own ground range');
   let seated=0;
   for(const dx of[-.5,0,.5])for(const dz of[-.5,0,.5]){const x=b.x+dx*b.w,z=b.z+dz*b.d;
    if(f.ground(x,z)<=a.y+1e-9)seated++;

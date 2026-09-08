@@ -36,10 +36,15 @@ function shape(form, unit = 1, coarse = false) {
     return {...bounds(g.data), triangles: g.data.length / 27};
 }
 const baseline = [
-    // Captured from the parent commit's generator, before treeHeight extraction.
-    {id: 299, name: 'Harthurst', fingerprint: 'f7cfee1f', trees: 'd1525a681ab16d0c2732093195531d65724e1662ac0d679ecff026ea61361424', layout: '185e94692799506bf1c85b44fd642ee01b8fed0b85065e8110469746e2efc51e'},
-    {id: 127, name: 'Longshaw', fingerprint: '4566e221', trees: '4f7f03ff6f81c57c438c5bffed20b6f471918210bba7b5aacb01be9bff92062d', layout: '33ad87be8a6ab5a5c3dc04b60ddcbf2597013e3d605b446622a71b9e0885c847'}
+    {id: 299, name: 'Harthurst'},
+    {id: 127, name: 'Longshaw'}
 ];
+// Compare the height refactor with its original inline formula under the SAME
+// street plan. Legitimate civic layout changes must not require new magic hashes.
+const heightCall='CityEnvironment.treeHeight(kind,rng())';
+assert.equal(source.split(heightCall).length,2,'locate the production tree-height draw');
+const inlineSource=source.replace(heightCall,"(2 + rng() * 2.1) * (kind === 'cushion' ? .30 : kind === 'scrub' ? .55 : kind === 'rainforest' ? 1.35 : kind === 'acacia' || kind === 'palm' ? 1.12 : 1)");
+const inlineCity=Function('window',inlineSource+'\nreturn generateCity;')(browser);
 let world, sim, originalState;
 const rows = [];
 function state() {
@@ -147,11 +152,12 @@ test('actual unloaded landscape scatter uses the same tree scale through zoom an
     }
 });
 
-test('extracting tree height keeps tree randomness and the following city layout byte-identical to the parent commit', () => {
+test('extracting tree height preserves the original random draws and the following city layout', () => {
     for (const {model: {city}, expected} of rows) {
-        assert.equal(city.fingerprint, expected.fingerprint, expected.name + ' layout fingerprint');
-        assert.equal(hash(city.trees), expected.trees, expected.name + ' changed tree RNG order or positions');
-        assert.equal(hash({buildings: city.buildings, roads: city.roads, farms: city.farms, districts: city.districts, piers: city.piers}), expected.layout, expected.name + ' changed the post-tree random sequence');
+        const original=inlineCity(world,sim,expected.id),layout=c=>({buildings:c.buildings,roads:c.roads,farms:c.farms,districts:c.districts,piers:c.piers});
+        assert.equal(city.fingerprint, original.fingerprint, expected.name + ' layout fingerprint');
+        assert.equal(hash(city.trees), hash(original.trees), expected.name + ' changed tree RNG order or positions');
+        assert.equal(hash(layout(city)), hash(layout(original)), expected.name + ' changed the post-tree random sequence');
     }
 });
 

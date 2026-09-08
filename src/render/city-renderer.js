@@ -73,6 +73,42 @@ function cityStreetMesh(c, ground, roads, details) {
     }
     return {edges:edges.size,junctions:nodes.size};
 }
+// Keep the support under the model's ground contact, leaving its eaves free.
+// Low banks use retaining steps. A tall bank gets an open frame of piers instead
+// of a solid wall that would compete with the house. Neither changes the terrain.
+function cityFootingMesh(g,b,model,color){
+    const depth=Math.max(.08,b.y-(b.foundationBed??b.y)+.05,(b.terrainFall||0)+.04),data=model.body.data;
+    const outer=[b.x-b.w*.4975,b.z-b.d*.4975,b.x+b.w*.4975,b.z+b.d*.4975],contact=[Infinity,Infinity,-Infinity,-Infinity];
+    for(let i=0;i<data.length;i+=9)if(data[i+1]<=b.y+.01){
+        contact[0]=Math.min(contact[0],data[i]);contact[1]=Math.min(contact[1],data[i+2]);
+        contact[2]=Math.max(contact[2],data[i]);contact[3]=Math.max(contact[3],data[i+2]);
+    }
+    if(!contact.every(Number.isFinite))contact.splice(0,4,...outer);
+    const pad=Math.min(b.w,b.d)*.012,top=contact.map((v,i)=>clamp(v+(i<2?-pad:pad),outer[i%2],outer[i%2+2]));
+    const fall=b.terrainFall??Math.max(0,b.y-(b.foundationBed??b.y));
+    if(fall>model.height*.6){
+        const w=top[2]-top[0],d=top[3]-top[1],short=Math.min(w,d),cx=(top[0]+top[2])/2,cz=(top[1]+top[3])/2;
+        const deck=Math.max(.025,Math.min(.16,short*.08,model.height*.06)),beam=Math.max(.04,Math.min(.4,short*.10,model.height*.10));
+        const pier=Math.min(short*.14,Math.max(.07,Math.min(.6,short*.07))),spacing=Math.max(1.5,short*.4);
+        const nx=Math.min(5,Math.max(2,Math.ceil(w/spacing)+1)),nz=Math.min(5,Math.max(2,Math.ceil(d/spacing)+1));
+        const xs=Array.from({length:nx},(_,i)=>lerp(top[0]+pier*.65,top[2]-pier*.65,i/(nx-1))),zs=Array.from({length:nz},(_,i)=>lerp(top[1]+pier*.65,top[3]-pier*.65,i/(nz-1)));
+        const cap=b.y-.008,bottom=cap-depth,posts=colorScale(color,.83),ties=colorScale(color,.72);
+        cityBox(g,cx,cap-deck,cz,w,deck,d,color);
+        for(const x of xs)for(const z of zs)cityBox(g,x,bottom,z,pier,depth-deck,pier,posts);
+        for(const x of xs)cityBox(g,x,cap-deck-beam,cz,pier,beam,d-pier*.3,ties);
+        for(const z of zs)cityBox(g,cx,cap-deck-beam,z,w-pier*.3,beam,pier,ties);
+        return{mode:'piers',depth:depth+.008,contact:top,piers:nx*nz,pierWidth:pier,deckDepth:deck,beamDepth:beam};
+    }
+    const rise=Math.max(.16,Math.min(model.height*.28,Math.min(b.w,b.d)*.20,1.2)),tiers=Math.min(16,Math.max(1,Math.ceil(depth/rise)));
+    const ring=(t,y)=>{const q=top.map((v,i)=>lerp(v,outer[i],t));return[[q[0],y,q[1]],[q[2],y,q[1]],[q[2],y,q[3]],[q[0],y,q[3]]];};
+    const lid=ring(0,b.y-.008);g.quad(lid[0],lid[3],lid[2],lid[1],color);
+    for(let j=0;j<tiers;j++){
+        const t=j/tiers,u=(j+1)/tiers,A=ring(t,b.y-.008-t*depth),B=ring(t,b.y-.008-u*depth),C=ring(u,b.y-.008-u*depth);
+        for(let k=0;k<4;k++){const n=(k+1)%4;g.quad(A[k],A[n],B[n],B[k],colorScale(color,j%2?.95:1));g.quad(B[k],B[n],C[n],C[k],colorScale(color,1.08));}
+    }
+    const base=ring(1,b.y-.008-depth);g.quad(base[0],base[1],base[2],base[3],color);
+    return{mode:'terraced',depth:depth+.008,tiers,contact:top};
+}
 function createCityRenderer(canvas, onChange, config = {}) {
     // Mesh-only collection does not allocate a canvas or a rendering context.
     const r = config.collectOnly ? {
@@ -160,8 +196,8 @@ function createCityRenderer(canvas, onChange, config = {}) {
         this.buildingRanges = {buildings: [], roofs: [], details: []};
         const ownedMeshes = {buildings, roofs, details};
         const starts = () => Object.fromEntries(Object.entries(ownedMeshes).map(([name,g]) => [name,g.data.length]));
-        const own = (b, start) => { for (const [name,g] of Object.entries(ownedMeshes))
-            if (g.data.length > start[name]) this.buildingRanges[name].push({id:b.id,start:start[name],end:g.data.length}); };
+        const own = (b, start, metadata={}) => { for (const [name,g] of Object.entries(ownedMeshes))
+            if (g.data.length > start[name]) this.buildingRanges[name].push({id:b.id,start:start[name],end:g.data.length,...metadata}); };
         const dry = c.siteEnvironment.aridity<.6&&c.siteEnvironment.temperature>=16;
         // Seasonal snow lies on the town's ground as well as on its roofs, from the
         // same cold-season field. Town scene only: the atlas keeps its annual-mean
@@ -212,15 +248,14 @@ function createCityRenderer(canvas, onChange, config = {}) {
         }
         const body = rgb(dry ? '#d9c6a3' : '#e4dacc'), roofColors = dry ? ['#ab8167', '#bd9974', '#baa383'] : ['#995f49', '#ab7558', '#ad8867', '#777f77'];
         for (const b0 of c.buildings) {
-            const start = starts();
+            let start = starts();
             const b = { ...b0 };
             if (b.type === 'granary' && state.levels?.granary)
                 b.h += state.levels.granary * .7;
             if (b.type === 'academy' && state.levels?.academy)
                 b.h += state.levels.academy;
-            const foundation=Math.max(.08,b.y-(b.foundationBed??b.y)+.05);
             const fcol=rgb(ArtisanCityKit.palettes[c.townProfile.id].wall);
-            const layFoundation=()=>cityBox(buildings,b.x,b.y-foundation,b.z,b.w*.98,foundation,b.d*.98,colorScale(fcol,.82));
+            const layFoundation=model=>{const begin=starts(),footing=cityFootingMesh(buildings,b,model,colorScale(fcol,.82));own(b,begin,{footing});start=starts();};
             const district = c.districts[b.district], tint = this.mode === 'districts' ? rgb(CITY_TYPES[district.type].color) : b.type === 'academy' ? rgb('#c9c9d4') : body;
             const color = colorScale(tint, .93 + hash2(b.x, b.z, c.seed + 1) * .12), roof = rgb(roofColors[Math.floor(hash2(b.x, b.z, c.seed) * roofColors.length)]);
             if (b.landmark && ['civic','temple','academy'].includes(b.type) && typeof LandmarkBinding !== 'undefined' && window.world && window.sim) {
@@ -229,15 +264,15 @@ function createCityRenderer(canvas, onChange, config = {}) {
                 // The wonder already supplies its retaining structure; a complete
                 // parcel slab here would seal its authored opening at ground level.
                 if(monument.excavation)this.excavations.push({buildingId:b.id,...monument.excavation});
-                else layFoundation();
+                else layFoundation(monument);
                 for (const value of monument.body.data) details.data.push(value);
                 for (const value of monument.roof.data) roofs.data.push(value);
                 this.landmarkHeights[b.id]=monument.height;
                 own(b,start);
                 continue;
             }
-            layFoundation();
             const compound = ArtisanCityKit.compound(b,c,p,realm);
+            layFoundation(compound);
             if(this.mode==='districts') { const tint=rgb(CITY_TYPES[district.type].color);for(const mesh of [compound.body,compound.roof])for(let i=0;i<mesh.data.length;i+=9)for(let k=0;k<3;k++)mesh.data[i+6+k]=mesh.data[i+6+k]*.45+tint[k]*.55; }
             if(this.mode==='blocks') {
                 const col=rgb(CITY_TYPES[district.type].color),yy=b.y+.15;

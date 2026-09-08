@@ -326,14 +326,14 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
             for (const run of nearSlice(road.path, areas, view)) {
                 let runs=[run.map(i=>({x:i%GW,y:Math.floor(i/GW)}))];
                 for(const town of towns)runs=runs.flatMap(path=>townRoadRuns(path,town,accesses,road));
-                for(const path of runs)ribbon(this,g,path,width,rgb('#d8c6a2'),.003+.14*scale,true);
+                for(const path of runs)ribbon(this,g,path,width,rgb('#d8c6a2'),(AtlasSpace.BUILDING_LIFT+.14)*scale,true);
             }
         }
         const joined=new Set();
         for(const a of accesses){
             const id=a.model.p.id+'/'+a.points[0].x.toFixed(7)+','+a.points[0].y.toFixed(7);if(joined.has(id))continue;joined.add(id);
             const scale=a.model.frame.scale,width=.67*(a.model.city.townProfile?.width||1)*scale;
-            ribbon(this,g,a.points,width,rgb('#d8c6a2'),.003+.14*scale,true);
+            ribbon(this,g,a.points,width,rgb('#d8c6a2'),(AtlasSpace.BUILDING_LIFT+.14)*scale,true);
         }
         this.nearRoadAccess=accesses;
         const wasDirty = this.dirtyShadow;

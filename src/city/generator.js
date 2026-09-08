@@ -117,7 +117,7 @@ function generateCity(w, sim, provinceId, design = {}) {
     // Survey the exact parent-world footprint that the atlas displays. Sampling the
     // wider contextual span moved local shores, cliffs and rivers under the city.
     const terrainSpan = span * CityEnvironment.cityFootprint;
-    const city = { version: 3, seed, townRecipe: recipe, townProfile: profile, provinceId, name: p.name, n, width, depth, span, terrainSpan, center: [p.x, p.y],
+    const city = { version: 3, seed, townRecipe: recipe, townProfile: profile, provinceId, name: p.name, n, width, depth, span, terrainSpan, urbanRadius:width*.375*settled, center: [p.x, p.y],
         height: new Float32Array(nn), water: new Uint8Array(nn), waterKind: new Uint8Array(nn),
         slope: new Float32Array(nn), wet: new Float32Array(nn), road: new Uint8Array(nn),
         roads: [], buildings: [], districts: [], trees: [], farms: [], piers: [], walls: [], landmarks: [],
@@ -229,7 +229,11 @@ function generateCity(w, sim, provinceId, design = {}) {
     const CITADEL_SLOPE = 1.9;
     if(typeof FortressPlan!=='undefined'){
         FortressPlan.reserve(city,candidates,p,CITADEL_SLOPE,{scale:atlasScale,bounds:parcelBounds});
-        if(city.citadelSite)for(let j=candidates.length-1;j>=0;j--)if(city.citadelReserve[candidates[j].k])candidates.splice(j,1);
+        for(const type of ['civic','temple',...(profile.id==='arcane'||p.mana>.52?['academy']:[])]){
+            if(type===(city.citadelSite?.sacred?'temple':city.citadelSite?'civic':null))continue;
+            FortressPlan.reserveCivic(city,candidates,type,{scale:atlasScale,bounds:parcelBounds});
+        }
+        if(city.citadelReserve)for(let j=candidates.length-1;j>=0;j--)if(city.citadelReserve[candidates[j].k])candidates.splice(j,1);
     }
     function route(start, goal) {
         const dist = new Float64Array(nn).fill(Infinity), parent = new Int32Array(nn).fill(-1), heap = new MinHeap();
@@ -270,13 +274,15 @@ function generateCity(w, sim, provinceId, design = {}) {
         return nodes.reverse();
     }
     const hubs = TownGrammar.plan(city, profile, rng, candidates, route);
-    if(city.citadelSite){
-        const a=city.citadelSite,goals=[];
+    for(const a of [...(city.citadelSite?[city.citadelSite]:[]),...(city.civicSites||[])]){
+        const goals=[];
         for(const [x,z]of[[a.x,a.z+a.d/2+3],[a.x-a.w/2-3,a.z],[a.x+a.w/2+3,a.z],[a.x,a.z-a.d/2-3]]){
             const i=city.index(x,z);if(passable(i))goals.push(i);
         }
         goals.sort((a,b)=>Math.hypot(city.xy(a).x-city.market.x,city.xy(a).z-city.market.z)-Math.hypot(city.xy(b).x-city.market.x,city.xy(b).z-city.market.z));
-        for(const goal of goals){const nodes=route(center,goal);if(nodes.length<2)continue;nodes.forEach(i=>city.road[i]=1);city.roads.push({kind:'arterial',nodes,points:nodes.map(i=>({...city.xy(i),y:city.height[i]+.13,bridge:!!city.water[i]}))});a.gateway=goal;break;}
+        // Every usable side needs frontage; a single approach left the rear of
+        // the precinct without any street on which a neighborhood could form.
+        for(const goal of goals){const nodes=route(center,goal);if(nodes.length<2)continue;nodes.forEach(i=>city.road[i]=1);city.roads.push({kind:'street',role:'civic-approach',nodes,points:nodes.map(i=>({...city.xy(i),y:city.height[i]+.13,bridge:!!city.water[i]}))});a.gateway??=goal;}
     }
     // Gate roads. FortressPlan grows its wall approaches outward from the street network,
     // and a fully built-out town leaves no gap to do that after the fact. Four radials to
@@ -353,8 +359,8 @@ function generateCity(w, sim, provinceId, design = {}) {
     const target = cityClamp(Math.round(260 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 2.3), 260, 1500);
     const used = [], usedGrid = cityGrid(8), MIN_PARCEL_SIDE = 1.1, MAX_PARCEL_ASPECT = 4.4;
     let infill=false;
-    // A citadel is cut into its hill rather than set on a pad, so it may take ground far
-    // steeper than a house will; `steep` is what the caller is willing to build across.
+    // Large precincts allow more local relief than small houses. Exact projected
+    // parcel bounds below still limit the footing required by the whole block.
     const blocked = (j, steep = .9) => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.road[j] || city.gateReserve[j] || city.slope[j] > steep;
     // `plot` is an explicitly surveyed parcel: position and both dimensions decided by the
     // caller. Without it the old behaviour stands, a near-square footprint on a lot cell.
@@ -392,11 +398,11 @@ function generateCity(w, sim, provinceId, design = {}) {
         const h = landmark ? (actual === 'academy' ? 10 : actual === 'temple' ? 7 : actual === 'civic' ? 7 : 3.2) : 1.5 + rng() * 2.3;
         const ground=parcelBounds(q.x,q.z,ww,dd),fall=(ground.top-ground.low)/atlasScale;
         const citadel=landmark&&steep===CITADEL_SLOPE&&city.citadelSite&&Math.hypot(q.x-city.citadelSite.x,q.z-city.citadelSite.z)<.01;
-        const supportedHeight=citadel?(city.citadelSite.sacred?44:13):h;
+        const footingLimit=citadel?(city.citadelSite.footingLimit??(city.citadelSite.sacred?44:13)*.65):h*.65;
         // A house needs a modest footing, not a downhill tower as tall as itself.
         // Smaller alternatives remain available to the frontage and infill passes.
-        if(fall>supportedHeight*.65)return null;
-        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill, terrainFall:fall, footingLimit:supportedHeight*.65 };
+        if(fall>footingLimit)return null;
+        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill, terrainFall:fall, footingLimit };
         used.push(b);
         usedGrid.add(b, b.x - b.w / 2, b.z - b.d / 2, b.x + b.w / 2, b.z + b.d / 2);
         TownGrammar.moduleFor(city, b, rng);
@@ -410,8 +416,14 @@ function generateCity(w, sim, provinceId, design = {}) {
         const a=city.citadelSite,b=buildingAt(a.k,a.sacred?'temple':'civic',true,a.w,1,null,CITADEL_SLOPE);
         if(b){b.y=a.deck;b.foundationBed=a.bed;b.precinct=true;b.sacred=!!a.sacred;b.wonder=a.wonder?.id||null;b.name=a.wonder?p.name+' · '+a.wonder.name:'The High Citadel';b.h=a.sacred?44:13;city.primaryMonumentId=b.id;}
     }
-    for (const d of city.districts.filter(d => d.type !== 'home' && d.type !== 'garden' && !city.buildings.some(b=>b.precinct&&b.type===d.type))) {
-        const sorted = lots.slice().sort((a, b) => Math.hypot(city.xy(a.k).x - d.x, city.xy(a.k).z - d.z) - Math.hypot(city.xy(b.k).x - d.x, city.xy(b.k).z - d.z));
+    for(const site of city.civicSites||[]){
+        if(site.gateway==null)continue;
+        const b=buildingAt(site.k,site.type,true,site.w);
+        if(b)b.neighborhoodSides=site.neighborhoodSides;
+    }
+    for (const d of city.districts.filter(d => d.type !== 'home' && d.type !== 'garden' && !city.buildings.some(b=>b.landmark&&b.type===d.type))) {
+        const civic=['civic','temple','academy'].includes(d.type),target=civic?{x:lerp(city.market.x,d.x,.35),z:lerp(city.market.z,d.z,.35)}:d;
+        const sorted = lots.slice().sort((a, b) => Math.hypot(city.xy(a.k).x - target.x, city.xy(a.k).z - target.z) - Math.hypot(city.xy(b.k).x - target.x, city.xy(b.k).z - target.z));
         // Reserve a real civic precinct before allocating household plots.
         // The natural terrain and existing road network remain untouched.
         const major = profile.id === 'basilica' ? 'temple' : profile.id === 'arcane' ? 'academy' : 'civic';
@@ -419,6 +431,10 @@ function generateCity(w, sim, provinceId, design = {}) {
         let placed = false;
         for (const size of sizes) {
             for (const lot of sorted) {
+                if(civic&&typeof FortressPlan!=='undefined'){
+                    const site={...city.xy(lot.k),w:size,d:size},room=FortressPlan.civicRoom(city,site);
+                    if(!room.fits||room.sides<2||FortressPlan.inside(city.market,site,4.5))continue;
+                }
                 if (buildingAt(lot.k, d.type, true, size)) { placed = true; break; }
             }
             if (placed) break;

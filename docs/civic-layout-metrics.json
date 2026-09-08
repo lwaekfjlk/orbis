@@ -1,0 +1,2376 @@
+{
+  "top12": {
+    "before": {
+      "cities": 12,
+      "homes": 4825,
+      "civics": 12,
+      "primaries": 10,
+      "allMajors": 27,
+      "civicWallBuffer": 8,
+      "civicOutsideR80": 6,
+      "civicMeanOffset": 0.912,
+      "civicEmptyArcOver150": 8,
+      "eligibleCivics": 10,
+      "eligibleCivicEmptyArcOver150": 6,
+      "eligibleCivicOutwardBelow15": 5,
+      "primaryEmptyArcOver150": 0,
+      "primaryMeanOffset": 0.621,
+      "podiumOver65": 6,
+      "podiumOver100": 4
+    },
+    "after": {
+      "cities": 12,
+      "homes": 4545,
+      "civics": 12,
+      "primaries": 10,
+      "allMajors": 27,
+      "civicWallBuffer": 0,
+      "civicOutsideR80": 0,
+      "civicMeanOffset": 0.438,
+      "civicEmptyArcOver150": 0,
+      "eligibleCivics": 11,
+      "eligibleCivicEmptyArcOver150": 0,
+      "eligibleCivicOutwardBelow15": 0,
+      "primaryEmptyArcOver150": 0,
+      "primaryMeanOffset": 0.449,
+      "podiumOver65": 6,
+      "podiumOver100": 2
+    }
+  },
+  "representative": {
+    "before": {
+      "cities": 18,
+      "homes": 6743,
+      "civics": 18,
+      "primaries": 16,
+      "allMajors": 40,
+      "civicWallBuffer": 13,
+      "civicOutsideR80": 8,
+      "civicMeanOffset": 0.962,
+      "civicEmptyArcOver150": 13,
+      "eligibleCivics": 15,
+      "eligibleCivicEmptyArcOver150": 10,
+      "eligibleCivicOutwardBelow15": 8,
+      "primaryEmptyArcOver150": 1,
+      "primaryMeanOffset": 0.7,
+      "podiumOver65": 6,
+      "podiumOver100": 4
+    },
+    "after": {
+      "cities": 18,
+      "homes": 6604,
+      "civics": 18,
+      "primaries": 16,
+      "allMajors": 40,
+      "civicWallBuffer": 0,
+      "civicOutsideR80": 0,
+      "civicMeanOffset": 0.419,
+      "civicEmptyArcOver150": 0,
+      "eligibleCivics": 17,
+      "eligibleCivicEmptyArcOver150": 0,
+      "eligibleCivicOutwardBelow15": 0,
+      "primaryEmptyArcOver150": 0,
+      "primaryMeanOffset": 0.498,
+      "podiumOver65": 6,
+      "podiumOver100": 2
+    }
+  },
+  "details": [
+    {
+      "town": "Scorchspire",
+      "homes": [
+        467,
+        435
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Bluewell",
+      "homes": [
+        431,
+        395
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": [
+        {
+          "type": "temple",
+          "primary": true,
+          "offset": 0.726,
+          "gap": 126.357,
+          "outward": 0.127,
+          "wall": 10.382,
+          "fullLand": true
+        }
+      ]
+    },
+    {
+      "town": "Birchgrove",
+      "homes": [
+        436,
+        428
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Scorchwell",
+      "homes": [
+        475,
+        432
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Pineshore",
+      "homes": [
+        251,
+        192
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Whitebeck",
+      "homes": [
+        237,
+        232
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Great Saltlanding",
+      "homes": [
+        749,
+        743
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": [
+        {
+          "type": "civic",
+          "primary": false,
+          "offset": 0.735,
+          "gap": 18.638,
+          "outward": 0.145,
+          "wall": 7.135,
+          "fullLand": false
+        }
+      ]
+    },
+    {
+      "town": "Dustshaw",
+      "homes": [
+        300,
+        275
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Terngarth",
+      "homes": [
+        441,
+        448
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Mossgrove",
+      "homes": [
+        327,
+        324
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Oakdell",
+      "homes": [
+        371,
+        364
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Millwell",
+      "homes": [
+        340,
+        277
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Stormbeck",
+      "homes": [
+        420,
+        492
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Foamcliff",
+      "homes": [
+        174,
+        194
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": [
+        {
+          "type": "temple",
+          "primary": true,
+          "offset": 0.805,
+          "gap": 141.371,
+          "outward": 0.146,
+          "wall": 12.49,
+          "fullLand": true
+        }
+      ]
+    },
+    {
+      "town": "Herringburgh",
+      "homes": [
+        255,
+        275
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Wildcombe",
+      "homes": [
+        449,
+        440
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Crowstead",
+      "homes": [
+        207,
+        223
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    },
+    {
+      "town": "Glassbeck",
+      "homes": [
+        413,
+        435
+      ],
+      "gone": [],
+      "shrinking": [],
+      "concerns": []
+    }
+  ],
+  "baseline": "bc2f0ca7d540a83cda6dbec482ba341c62da9de4",
+  "seed": "Aereth-47 / First-dawn",
+  "allTowns": {
+    "towns": 102,
+    "total": 36848,
+    "corr": 0.3645666256531241,
+    "min": 40,
+    "max": 1034,
+    "ratio": 25.85,
+    "failures": [],
+    "smallest": [
+      {
+        "id": 145,
+        "name": "Sandglen",
+        "pop": 5501.961955102411,
+        "buildings": 40,
+        "civic": 0,
+        "temple": 1,
+        "gates": 2,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 40
+        }
+      },
+      {
+        "id": 281,
+        "name": "Foammeadow",
+        "pop": 1683.1727387439585,
+        "buildings": 101,
+        "civic": 0,
+        "temple": 0,
+        "gates": 7,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 101
+        }
+      },
+      {
+        "id": 293,
+        "name": "Cairnshore",
+        "pop": 8493.99502943468,
+        "buildings": 138,
+        "civic": 0,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 138
+        }
+      },
+      {
+        "id": 461,
+        "name": "Crowcroft",
+        "pop": 8391.150664510082,
+        "buildings": 190,
+        "civic": 1,
+        "temple": 1,
+        "gates": 8,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 190
+        }
+      },
+      {
+        "id": 295,
+        "name": "Thornwharf",
+        "pop": 6921.538910473315,
+        "buildings": 197,
+        "civic": 1,
+        "temple": 1,
+        "gates": 11,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 197
+        }
+      },
+      {
+        "id": 128,
+        "name": "Birchchase",
+        "pop": 6793.84808193443,
+        "buildings": 200,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 200
+        }
+      },
+      {
+        "id": 45,
+        "name": "Bluelanding",
+        "pop": 7593.850949199717,
+        "buildings": 206,
+        "civic": 1,
+        "temple": 1,
+        "gates": 12,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 206
+        }
+      },
+      {
+        "id": 194,
+        "name": "Terncroft",
+        "pop": 13971.809283283417,
+        "buildings": 215,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 215
+        }
+      },
+      {
+        "id": 193,
+        "name": "Gullwharf",
+        "pop": 20361.924594254597,
+        "buildings": 217,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 217
+        }
+      },
+      {
+        "id": 242,
+        "name": "Anchorcliff",
+        "pop": 10810.37528093898,
+        "buildings": 219,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 219
+        }
+      },
+      {
+        "id": 76,
+        "name": "Foamchase",
+        "pop": 29480.055367551293,
+        "buildings": 221,
+        "civic": 1,
+        "temple": 1,
+        "gates": 2,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 221
+        }
+      },
+      {
+        "id": 197,
+        "name": "Gulldrift",
+        "pop": 5843.011956184166,
+        "buildings": 222,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 222
+        }
+      }
+    ],
+    "rows": [
+      {
+        "id": 45,
+        "name": "Bluelanding",
+        "pop": 7593.850949199717,
+        "buildings": 206,
+        "civic": 1,
+        "temple": 1,
+        "gates": 12,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 206
+        }
+      },
+      {
+        "id": 61,
+        "name": "Rowanwaystead",
+        "pop": 3151.020624167322,
+        "buildings": 235,
+        "civic": 1,
+        "temple": 1,
+        "gates": 12,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 235
+        }
+      },
+      {
+        "id": 76,
+        "name": "Foamchase",
+        "pop": 29480.055367551293,
+        "buildings": 221,
+        "civic": 1,
+        "temple": 1,
+        "gates": 2,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 221
+        }
+      },
+      {
+        "id": 96,
+        "name": "Scorchstrand",
+        "pop": 5434.3604127812305,
+        "buildings": 245,
+        "civic": 1,
+        "temple": 1,
+        "gates": 12,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 245
+        }
+      },
+      {
+        "id": 111,
+        "name": "Spruceshore",
+        "pop": 24875.45545360706,
+        "buildings": 324,
+        "civic": 1,
+        "temple": 1,
+        "gates": 14,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 324
+        }
+      },
+      {
+        "id": 113,
+        "name": "Crowstead",
+        "pop": 26787.939457122506,
+        "buildings": 247,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 247
+        }
+      },
+      {
+        "id": 118,
+        "name": "Dawnmount",
+        "pop": 8991.4085533743,
+        "buildings": 369,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 369
+        }
+      },
+      {
+        "id": 127,
+        "name": "Longshaw",
+        "pop": 9039.959221655296,
+        "buildings": 264,
+        "civic": 0,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 264
+        }
+      },
+      {
+        "id": 128,
+        "name": "Birchchase",
+        "pop": 6793.84808193443,
+        "buildings": 200,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 200
+        }
+      },
+      {
+        "id": 145,
+        "name": "Sandglen",
+        "pop": 5501.961955102411,
+        "buildings": 40,
+        "civic": 0,
+        "temple": 1,
+        "gates": 2,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 40
+        }
+      },
+      {
+        "id": 150,
+        "name": "Pinebourne",
+        "pop": 51068.284954633695,
+        "buildings": 405,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 405
+        }
+      },
+      {
+        "id": 152,
+        "name": "Graniteforge",
+        "pop": 21257.6520579457,
+        "buildings": 459,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 459
+        }
+      },
+      {
+        "id": 159,
+        "name": "Wrenquay",
+        "pop": 20574.89090837771,
+        "buildings": 333,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 333
+        }
+      },
+      {
+        "id": 166,
+        "name": "Foamcliff",
+        "pop": 52718.588317156435,
+        "buildings": 248,
+        "civic": 1,
+        "temple": 1,
+        "gates": 2,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 248
+        }
+      },
+      {
+        "id": 168,
+        "name": "Oakwaystead",
+        "pop": 13890.029842834785,
+        "buildings": 279,
+        "civic": 1,
+        "temple": 1,
+        "gates": 6,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 279
+        }
+      },
+      {
+        "id": 185,
+        "name": "Terndale",
+        "pop": 34535.9665912304,
+        "buildings": 340,
+        "civic": 1,
+        "temple": 1,
+        "gates": 10,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 340
+        }
+      },
+      {
+        "id": 190,
+        "name": "Stormley",
+        "pop": 28894.589416057206,
+        "buildings": 391,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 391
+        }
+      },
+      {
+        "id": 193,
+        "name": "Gullwharf",
+        "pop": 20361.924594254597,
+        "buildings": 217,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 217
+        }
+      },
+      {
+        "id": 194,
+        "name": "Terncroft",
+        "pop": 13971.809283283417,
+        "buildings": 215,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 215
+        }
+      },
+      {
+        "id": 197,
+        "name": "Gulldrift",
+        "pop": 5843.011956184166,
+        "buildings": 222,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 222
+        }
+      },
+      {
+        "id": 201,
+        "name": "Sailwick",
+        "pop": 9023.868687475802,
+        "buildings": 379,
+        "civic": 1,
+        "temple": 1,
+        "gates": 16,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 379
+        }
+      },
+      {
+        "id": 213,
+        "name": "Wildcombe",
+        "pop": 28878.26297673622,
+        "buildings": 602,
+        "civic": 1,
+        "temple": 1,
+        "gates": 16,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 602
+        }
+      },
+      {
+        "id": 216,
+        "name": "Amberness",
+        "pop": 15901.582131391955,
+        "buildings": 414,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 414
+        }
+      },
+      {
+        "id": 223,
+        "name": "Ivorycombe",
+        "pop": 25113.416736664265,
+        "buildings": 288,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 288
+        }
+      },
+      {
+        "id": 227,
+        "name": "Saltwick",
+        "pop": 37007.69218328395,
+        "buildings": 284,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 284
+        }
+      },
+      {
+        "id": 228,
+        "name": "Brightstrand",
+        "pop": 18873.226002828596,
+        "buildings": 240,
+        "civic": 1,
+        "temple": 1,
+        "gates": 8,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 240
+        }
+      },
+      {
+        "id": 235,
+        "name": "Greencliff",
+        "pop": 29141.198291199355,
+        "buildings": 566,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 566
+        }
+      },
+      {
+        "id": 240,
+        "name": "Foxwaystead",
+        "pop": 19751.278582541217,
+        "buildings": 295,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 295
+        }
+      },
+      {
+        "id": 242,
+        "name": "Anchorcliff",
+        "pop": 10810.37528093898,
+        "buildings": 219,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 219
+        }
+      },
+      {
+        "id": 248,
+        "name": "Ravenvigil",
+        "pop": 47804.26055377583,
+        "buildings": 299,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 299
+        }
+      },
+      {
+        "id": 251,
+        "name": "Sharpvigil",
+        "pop": 8806.51924633855,
+        "buildings": 244,
+        "civic": 1,
+        "temple": 1,
+        "gates": 8,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 244
+        }
+      },
+      {
+        "id": 252,
+        "name": "Boneshore",
+        "pop": 16050.176311997253,
+        "buildings": 358,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 358
+        }
+      },
+      {
+        "id": 254,
+        "name": "Sunhaven",
+        "pop": 28896.370349907033,
+        "buildings": 237,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 237
+        }
+      },
+      {
+        "id": 256,
+        "name": "Whitereach",
+        "pop": 41210.19697524267,
+        "buildings": 342,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 342
+        }
+      },
+      {
+        "id": 258,
+        "name": "Terngarth",
+        "pop": 69853.58626963415,
+        "buildings": 496,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 496
+        }
+      },
+      {
+        "id": 259,
+        "name": "Scorchquay",
+        "pop": 29351.663872121208,
+        "buildings": 284,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 284
+        }
+      },
+      {
+        "id": 261,
+        "name": "Sandhollow",
+        "pop": 42204.364535954635,
+        "buildings": 288,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 288
+        }
+      },
+      {
+        "id": 267,
+        "name": "Ternspire",
+        "pop": 17561.473961377094,
+        "buildings": 295,
+        "civic": 1,
+        "temple": 1,
+        "gates": 7,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 295
+        }
+      },
+      {
+        "id": 268,
+        "name": "Ternport",
+        "pop": 21465.82505195251,
+        "buildings": 282,
+        "civic": 1,
+        "temple": 1,
+        "gates": 16,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 282
+        }
+      },
+      {
+        "id": 276,
+        "name": "Mossgrove",
+        "pop": 60996.03723288221,
+        "buildings": 331,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 331
+        }
+      },
+      {
+        "id": 281,
+        "name": "Foammeadow",
+        "pop": 1683.1727387439585,
+        "buildings": 101,
+        "civic": 0,
+        "temple": 0,
+        "gates": 7,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 101
+        }
+      },
+      {
+        "id": 284,
+        "name": "Anchorhollow",
+        "pop": 38178.13731917123,
+        "buildings": 369,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 369
+        }
+      },
+      {
+        "id": 288,
+        "name": "Whitebeck",
+        "pop": 72258.93062415802,
+        "buildings": 327,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 327
+        }
+      },
+      {
+        "id": 289,
+        "name": "Whitecombe",
+        "pop": 54254.30422247687,
+        "buildings": 346,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 346
+        }
+      },
+      {
+        "id": 291,
+        "name": "Gullgrove",
+        "pop": 46052.10847221212,
+        "buildings": 356,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 356
+        }
+      },
+      {
+        "id": 293,
+        "name": "Cairnshore",
+        "pop": 8493.99502943468,
+        "buildings": 138,
+        "civic": 0,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 138
+        }
+      },
+      {
+        "id": 295,
+        "name": "Thornwharf",
+        "pop": 6921.538910473315,
+        "buildings": 197,
+        "civic": 1,
+        "temple": 1,
+        "gates": 11,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 197
+        }
+      },
+      {
+        "id": 297,
+        "name": "Great Saltlanding",
+        "pop": 72131.88013901823,
+        "buildings": 748,
+        "civic": 1,
+        "temple": 1,
+        "gates": 8,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 748
+        }
+      },
+      {
+        "id": 299,
+        "name": "Harthurst",
+        "pop": 40941.75637485112,
+        "buildings": 341,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 341
+        }
+      },
+      {
+        "id": 300,
+        "name": "Vespershore",
+        "pop": 40777.82456438339,
+        "buildings": 343,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 343
+        }
+      },
+      {
+        "id": 304,
+        "name": "Thorndell",
+        "pop": 16348.834028749468,
+        "buildings": 568,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 568
+        }
+      },
+      {
+        "id": 309,
+        "name": "Upper Ashness",
+        "pop": 26669.516444290843,
+        "buildings": 518,
+        "civic": 1,
+        "temple": 1,
+        "gates": 15,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 518
+        }
+      },
+      {
+        "id": 313,
+        "name": "Scorchwell",
+        "pop": 80502.94272706097,
+        "buildings": 631,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 631
+        }
+      },
+      {
+        "id": 316,
+        "name": "Birchgrove",
+        "pop": 82936.60551301479,
+        "buildings": 562,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 562
+        }
+      },
+      {
+        "id": 317,
+        "name": "Pineshore",
+        "pop": 72929.4142043266,
+        "buildings": 274,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 274
+        }
+      },
+      {
+        "id": 319,
+        "name": "Dustshaw",
+        "pop": 71379.00426368238,
+        "buildings": 370,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 370
+        }
+      },
+      {
+        "id": 320,
+        "name": "Old Foamchase",
+        "pop": 30461.991643118163,
+        "buildings": 543,
+        "civic": 1,
+        "temple": 1,
+        "gates": 9,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 543
+        }
+      },
+      {
+        "id": 329,
+        "name": "Oakdell",
+        "pop": 60902.899467970004,
+        "buildings": 370,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 370
+        }
+      },
+      {
+        "id": 332,
+        "name": "Millport",
+        "pop": 57065.80610499016,
+        "buildings": 348,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 348
+        }
+      },
+      {
+        "id": 341,
+        "name": "Silthollow",
+        "pop": 38078.02874696414,
+        "buildings": 354,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 354
+        }
+      },
+      {
+        "id": 343,
+        "name": "Ravenness",
+        "pop": 49315.237755445196,
+        "buildings": 484,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 484
+        }
+      },
+      {
+        "id": 349,
+        "name": "Scorchspire",
+        "pop": 95459.81241288772,
+        "buildings": 499,
+        "civic": 1,
+        "temple": 1,
+        "gates": 1,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 499
+        }
+      },
+      {
+        "id": 351,
+        "name": "New Foamcliff",
+        "pop": 43061.31713935919,
+        "buildings": 386,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 386
+        }
+      },
+      {
+        "id": 354,
+        "name": "Greenwaystead",
+        "pop": 26450.04974464445,
+        "buildings": 534,
+        "civic": 1,
+        "temple": 1,
+        "gates": 14,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 534
+        }
+      },
+      {
+        "id": 365,
+        "name": "Goldwell",
+        "pop": 57164.160392925456,
+        "buildings": 425,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 425
+        }
+      },
+      {
+        "id": 366,
+        "name": "Salthollow",
+        "pop": 37035.12804664003,
+        "buildings": 367,
+        "civic": 1,
+        "temple": 1,
+        "gates": 9,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 367
+        }
+      },
+      {
+        "id": 371,
+        "name": "Inner Foamhaven",
+        "pop": 26627.062241736763,
+        "buildings": 1034,
+        "civic": 1,
+        "temple": 1,
+        "gates": 9,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 1034
+        }
+      },
+      {
+        "id": 376,
+        "name": "Osiercrest",
+        "pop": 44981.977119508774,
+        "buildings": 288,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 288
+        }
+      },
+      {
+        "id": 378,
+        "name": "Cleardrift",
+        "pop": 49132.548277796195,
+        "buildings": 500,
+        "civic": 1,
+        "temple": 1,
+        "gates": 4,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 500
+        }
+      },
+      {
+        "id": 381,
+        "name": "Redweir",
+        "pop": 46030.32682734597,
+        "buildings": 261,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 261
+        }
+      },
+      {
+        "id": 382,
+        "name": "Eaglerise",
+        "pop": 46514.78891897377,
+        "buildings": 306,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 306
+        }
+      },
+      {
+        "id": 389,
+        "name": "Quillwell",
+        "pop": 33850.43765663673,
+        "buildings": 424,
+        "civic": 1,
+        "temple": 1,
+        "gates": 2,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 424
+        }
+      },
+      {
+        "id": 394,
+        "name": "Wrencombe",
+        "pop": 23280.110915019563,
+        "buildings": 816,
+        "civic": 1,
+        "temple": 1,
+        "gates": 11,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 816
+        }
+      },
+      {
+        "id": 398,
+        "name": "Stormbeck",
+        "pop": 53161.889324252945,
+        "buildings": 597,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 597
+        }
+      },
+      {
+        "id": 399,
+        "name": "Tinminster",
+        "pop": 23832.376598597803,
+        "buildings": 382,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 382
+        }
+      },
+      {
+        "id": 404,
+        "name": "Sandwell",
+        "pop": 24706.06089764971,
+        "buildings": 277,
+        "civic": 1,
+        "temple": 1,
+        "gates": 16,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 277
+        }
+      },
+      {
+        "id": 405,
+        "name": "Ashcliff",
+        "pop": 42663.26614504779,
+        "buildings": 305,
+        "civic": 1,
+        "temple": 1,
+        "gates": 9,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 305
+        }
+      },
+      {
+        "id": 414,
+        "name": "Millwell",
+        "pop": 59621.836481264996,
+        "buildings": 384,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 384
+        }
+      },
+      {
+        "id": 415,
+        "name": "Bluewell",
+        "pop": 87440.4447075842,
+        "buildings": 489,
+        "civic": 1,
+        "temple": 1,
+        "gates": 1,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 489
+        }
+      },
+      {
+        "id": 438,
+        "name": "Valegarth",
+        "pop": 28945.559939659077,
+        "buildings": 396,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 396
+        }
+      },
+      {
+        "id": 442,
+        "name": "Foxmeadow",
+        "pop": 38421.99469101073,
+        "buildings": 332,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 332
+        }
+      },
+      {
+        "id": 448,
+        "name": "Crowweir",
+        "pop": 28675.61890540676,
+        "buildings": 278,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 278
+        }
+      },
+      {
+        "id": 452,
+        "name": "Kelplanding",
+        "pop": 12864.06612225124,
+        "buildings": 356,
+        "civic": 1,
+        "temple": 1,
+        "gates": 6,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 356
+        }
+      },
+      {
+        "id": 458,
+        "name": "Kelpweir",
+        "pop": 55914.11010375923,
+        "buildings": 285,
+        "civic": 1,
+        "temple": 1,
+        "gates": 7,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 285
+        }
+      },
+      {
+        "id": 459,
+        "name": "Herringburgh",
+        "pop": 31681.191420316027,
+        "buildings": 282,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 282
+        }
+      },
+      {
+        "id": 461,
+        "name": "Crowcroft",
+        "pop": 8391.150664510082,
+        "buildings": 190,
+        "civic": 1,
+        "temple": 1,
+        "gates": 8,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 190
+        }
+      },
+      {
+        "id": 463,
+        "name": "Ochrehaven",
+        "pop": 25206.311223624492,
+        "buildings": 303,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 303
+        }
+      },
+      {
+        "id": 464,
+        "name": "Shellford",
+        "pop": 34576.64513237358,
+        "buildings": 441,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 441
+        }
+      },
+      {
+        "id": 472,
+        "name": "Weirmill",
+        "pop": 32282.744291993193,
+        "buildings": 561,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 561
+        }
+      },
+      {
+        "id": 480,
+        "name": "Sedgecombe",
+        "pop": 35451.818370979556,
+        "buildings": 432,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 432
+        }
+      },
+      {
+        "id": 486,
+        "name": "Saltweir",
+        "pop": 26710.17769448411,
+        "buildings": 472,
+        "civic": 1,
+        "temple": 1,
+        "gates": 5,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 472
+        }
+      },
+      {
+        "id": 494,
+        "name": "Lower Foxlanding",
+        "pop": 33135.55947971394,
+        "buildings": 323,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 323
+        }
+      },
+      {
+        "id": 497,
+        "name": "Ochrehall",
+        "pop": 27537.405286927107,
+        "buildings": 253,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 253
+        }
+      },
+      {
+        "id": 500,
+        "name": "Lower Ashness",
+        "pop": 33129.14234965796,
+        "buildings": 320,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 320
+        }
+      },
+      {
+        "id": 502,
+        "name": "Tamariskthorpe",
+        "pop": 23259.51847561978,
+        "buildings": 265,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 265
+        }
+      },
+      {
+        "id": 507,
+        "name": "Glassbeck",
+        "pop": 19711.620447252015,
+        "buildings": 515,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 515
+        }
+      },
+      {
+        "id": 512,
+        "name": "Ashwell",
+        "pop": 20494.603144646262,
+        "buildings": 228,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 228
+        }
+      },
+      {
+        "id": 515,
+        "name": "East Rowanwaystead",
+        "pop": 23885.211388466636,
+        "buildings": 574,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 574
+        }
+      },
+      {
+        "id": 545,
+        "name": "Pinelanding",
+        "pop": 21199.221424900537,
+        "buildings": 320,
+        "civic": 1,
+        "temple": 1,
+        "gates": 14,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 320
+        }
+      },
+      {
+        "id": 570,
+        "name": "Gullfold",
+        "pop": 7067.830423764662,
+        "buildings": 336,
+        "civic": 1,
+        "temple": 1,
+        "gates": 12,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 336
+        }
+      },
+      {
+        "id": 573,
+        "name": "Hoarcistern",
+        "pop": 8823.591424825838,
+        "buildings": 222,
+        "civic": 1,
+        "temple": 1,
+        "gates": 9,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 222
+        }
+      },
+      {
+        "id": 575,
+        "name": "Elmwell",
+        "pop": 11748.284724659723,
+        "buildings": 399,
+        "civic": 1,
+        "temple": 1,
+        "gates": 3,
+        "audit": {
+          "iceBuildings": 0,
+          "wetBuildings": 0,
+          "roadBuildings": 0,
+          "overlaps": 0,
+          "nonfinite": 0,
+          "seaRoads": 0,
+          "buildings": 399
+        }
+      }
+    ],
+    "logPopulationCorrelation": 0.4269436909324379
+  },
+  "sanctuaryPlacement": {
+    "name": "existing-city-placement",
+    "provinceId": 259,
+    "city": "Scorchquay",
+    "width": 22,
+    "areaRatio": 83.22733357265912,
+    "placedHeight": 29.01299830141406,
+    "homeHeight": 1.9284310390478376,
+    "audit": {
+      "iceBuildings": 0,
+      "wetBuildings": 0,
+      "roadBuildings": 0,
+      "overlaps": 0,
+      "nonfinite": 0,
+      "seaRoads": 0,
+      "buildings": 284
+    }
+  }
+}
