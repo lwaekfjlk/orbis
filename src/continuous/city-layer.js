@@ -309,7 +309,7 @@ class ContinuousCityLayer {
    cells:(x1-x0+1)*(y1-y0+1),triangles:(flora.data.length+rock.data.length+reeds.data.length+ice.data.length+falls.data.length)/27};
   this.lastEnvironmentKey=this.environmentKey();
  }
- build(p){this.prepareLandscape();const w=this.world,s=this.sim,c=generateCity(w,s,p.id),collector=createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(c,p,s.realms[p.owner],s.cityState?.[p.id]||{});
+ build(p){this.prepareLandscape();const w=this.world,s=this.sim,c=generateCity(w,s,p.id),collector=createCityRenderer(null,()=>{},{collectOnly:true,includeTerrain:false});collector.setCity(c,p,s.realms[p.owner],s.cityState?.[p.id]||{});
   const frame=AtlasSpace.cityFrame(w,p,c,this.r.relief);ExcavationTerrain.seat(collector.excavations,frame);
   const model={p,city:c,frame,key:this.key(p),meshNames:[],last:++this.sequence,heights:collector.landmarkHeights,excavations:ExcavationTerrain.map(collector.excavations,frame),triangles:0};
   const excavatedBuildings=new Set(model.excavations.map(h=>h.buildingId));

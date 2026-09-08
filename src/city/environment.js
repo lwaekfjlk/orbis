@@ -155,7 +155,19 @@ const CityEnvironment = (() => {
   }
   cached.set(w,a);return a;
  }
+ // A detailed town samples the same handful of parent cells thousands of times.
+ // Cache their finished color, retaining every physical input so edits to a world
+ // object invalidate the affected cell. Returned arrays remain caller-owned.
+ const cellColors=new WeakMap();
  function cellColor(w,i){
+  let cells=cellColors.get(w);if(!cells){cells=new Array(GN);cellColors.set(w,cells);}
+  const biome=w.biome[i],height=w.height[i],lake=w.lake[i],ice=w.ice[i],temperature=w.temp[i],aridity=w.arid[i],old=cells[i];
+  if(old&&old.biome===biome&&old.height===height&&old.lake===lake&&old.ice===ice&&old.temperature===temperature&&old.aridity===aridity)return old.color.slice();
+  const color=resolveCellColor(w,i);
+  cells[i]={biome,height,lake,ice,temperature,aridity,color:color.slice()};
+  return color;
+ }
+ function resolveCellColor(w,i){
   const b=w.biome[i],h=w.height[i];
   if(w.lake[i]>0)return waterColor(2);
   if(h<=0)return waterColor(1);
@@ -189,6 +201,23 @@ const CityEnvironment = (() => {
   // snow: show it as faint frost rather than discarding it entirely.
   if(w.ice[i]>0&&w.ice[i]<=25)blend(frozen,clamp(w.ice[i]/25)*.30);
   return c;
+ }
+ // Site queries need only the fields that decide dry, ice-free foundations.
+ // Keep the same corner order and water/snow normalization as the full sample.
+ function sampleSite(w,x,y){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=prepare(w),xx=Math.floor(x),yy=Math.floor(y),u=x-xx,v=y-yy;
+  const ids=[yy*GW+xx,yy*GW+Math.min(GW-1,xx+1),Math.min(GH-1,yy+1)*GW+xx,Math.min(GH-1,yy+1)*GW+Math.min(GW-1,xx+1)],weights=[(1-u)*(1-v),u*(1-v),(1-u)*v,u*v];
+  let surface=0,wetness=0,ice=0,snow=0,waterWeight=0,lakeWeight=0,landWeight=0;
+  for(let k=0;k<4;k++){
+   const i=ids[k],t=weights[k],b=w.biome[i];
+   surface+=t*a.surface[i];wetness+=t*(w.wetness?.[i]||0);ice+=t*(w.ice?.[i]||0);
+   waterWeight+=t*a.water[i];if(a.kind[i]===2)lakeWeight+=t;
+   if(!a.water[i]){landWeight+=t;snow+=t*(b===16||b===1?1:0);}
+  }
+  const water=waterWeight>.5?1:0,waterKind=water?(lakeWeight>waterWeight*.5?2:1):0;
+  if(water)snow=0;else if(landWeight>0)snow/=landWeight;
+  return{surface,waterKind,water,wetness,ice,snow};
  }
  function sample(w,x,y){
   x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
@@ -285,5 +314,5 @@ const CityEnvironment = (() => {
   return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
  }
  function roofSnow(g,k){return snowCover(g,k)>.3;}
- return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
+ return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,sampleSite,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();
