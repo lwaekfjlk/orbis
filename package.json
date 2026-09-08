@@ -17,6 +17,7 @@
     "test:civic-browser": "node tests/civic-layout.browser.mjs",
     "test:loading-browser": "node tests/loading.browser.mjs",
     "test:polities-browser": "node tests/polities.browser.mjs",
+    "test:landforms-browser": "node tests/fantasy-landforms.browser.mjs",
     "test:lake-labels-browser": "node tests/lake-labels.browser.mjs",
     "test:menus-browser": "node tests/menu.browser.mjs",
     "test:terrain-browser": "node tests/terrain-refinement.browser.mjs",

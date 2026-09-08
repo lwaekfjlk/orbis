@@ -216,9 +216,10 @@ window.OneMap = (() => {
         const enclosedWater=status?.water&&status.kind!=='water'&&world.height[i]<=0;
         if(world.height[i]<=0&&!f&&!b&&!enclosedWater){clearSelection();return;}
         selection={kind:'world',i};
+        const landform=typeof landformRegionAt==='function'?landformRegionAt(world,i):null;
         const surface=enclosedWater?'Inland sea':BIOME[world.biome[i]][0];
-        const title=p?.settled?p.name:f?.name||b?.name||surface;
-        const geography=f?.legend?f.text:[surface,world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
+        const title=p?.settled?p.name:f?.name||b?.name||landform?.name||surface;
+        const geography=f?.legend?f.text:[landform?.kind?.replaceAll('-', ' '),surface,world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const subtitle=status&&!status.realm&&status.kind!=='water'?PoliticalLand.description(world,sim,i)+' '+geography:geography;
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});

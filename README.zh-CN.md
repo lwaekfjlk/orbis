@@ -7,9 +7,9 @@
 
 **[在线体验](https://haofeiyu.me/telluric/)** · [English](README.md)
 
-![世界全景：国家名称、聚落和明确标示的无主荒野](previews/politics/overview-desktop.png)
+![世界全景：国家名称、聚落和标示清晰的荒野](previews/fantasy-landforms/after/world.png)
 
-*默认世界 Aereth-47。点击国名可查看疆域、人口与历史；没有国家归属的荒野会单独标示。*
+*默认世界 Aereth-47。点击国名可查看疆域、人口与历史；国内湖泊纳入周边国家，开放荒野保留明确标示。*
 
 ## 开始探索
 
@@ -23,11 +23,21 @@
 
 底部 **Play** 和年份按钮用于推进历史。**Regenerate** 可按种子与设置生成新世界。**⋯** 菜单提供保存、读取、编年史和导出；生成新世界前，先保存想保留的世界。
 
+## 地貌各有性格
+
+![赭红砂岩台地被深峡谷切开](previews/fantasy-landforms/after/diagnostic-0-red-plateau.png)
+
+*红土台地与峡谷崖壁。此图关闭了树木、城镇和国界图层，便于观察地形本身。*
+
+世界中会出现红层台地、玄武岩火山口、成带的平行山岭和石灰岩峰林。它们的起伏会改变河流、气候与聚落选址。平缓高地保留土壤和植被，陡壁露出对应岩色，寒冷地区才覆盖雪冰。
+
+可以搜索地貌名称来定位。重新生成世界即可体验新地形；旧存档保留原来的地理和历史。[查看地貌说明与对比](docs/FANTASY_LANDFORMS.md)。
+
 ## 城市生长在原有地形上
 
-![斜视角下的 Glassbeck：住宅、街道、城墙与水岸](previews/readme/city.png)
+![斜视角下的 Bramblequay：住宅、街道、城墙与水岸](previews/fantasy-landforms/after/city.png)
 
-*Glassbeck：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
+*Bramblequay：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
 
 逐步放大，就能看到同一片土地上的房屋、城墙、神殿、王宫与港口。近处地形会变得更细致，气候也会影响地表、植被和建筑外观。点击建筑可查看说明，**Details** 面板还可导出 GLB 格式的城镇三维模型，模型不含周围地形。
 
@@ -64,7 +74,7 @@ npm test
 
 ## 深入了解
 
-- [国家与人口](docs/POLITIES.md) · [神话国名](docs/REALM_NAMES.md)
+- [国家与人口](docs/POLITIES.md) · [国界与荒野](docs/LAKE_TERRITORY_AND_LABELS.md) · [神话国名](docs/REALM_NAMES.md)
 - [城市与地形](docs/CITY_COHERENCE.md) · [气候与景观](docs/BIOME_LANDSCAPES.md)
 - [居民故事](docs/CITY_SAGAS.md) · [建筑图集与 GLB 导出](docs/WONDER_REFINEMENT.md)
 - [加载性能](docs/MAP_LOADING.md) · [地图架构](docs/CONTINUOUS_ARCHITECTURE.md)

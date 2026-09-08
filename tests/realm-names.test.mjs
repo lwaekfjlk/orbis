@@ -247,6 +247,37 @@ test('the actual narrow-screen world retains all 22 countries on their own land 
     }
 });
 
+test('the actual fantasy mobile map keeps all 25 countries accessible through a dense western cluster',()=>{
+    const fixture=JSON.parse(readFileSync(new URL('./fixtures/realm-label-fantasy-mobile.json',import.meta.url),'utf8'));
+    const items=fixture.countries.map(c=>{
+        const anchors=c.anchors.map(([i,x,y])=>({i,x,y})),first=anchors[0];
+        const item=measuredRealm(c.id,first.x,first.y,{anchors});
+        const probes=Object.fromEntries(['.realmFullName','.realmCompactName','.realmMarker'].map((key,i)=>[key,{offsetWidth:c.probes[i][0],offsetHeight:c.probes[i][1]}]));
+        probes['.realmLeader']={style:{}};
+        item.feature.name=c.name;item.element.querySelector=selector=>probes[selector];return item;
+    });
+    positionMapLabels(items,1,fixture);
+    assert.equal(items.filter(v=>v.element.style.opacity==='1').length,25,'the constrained marker search must not discard four western countries');
+    let callouts=0;
+    for(let j=0;j<items.length;j++){
+        const item=items[j],box=labelBox(item);
+        const anchor=item.feature.anchors.find(a=>String(a.i)===item.element.dataset.anchorCell);
+        assert(anchor,'country callouts must retain an anchor on their own real land');
+        const dx=anchor.x-parseFloat(item.element.style.left),dy=anchor.y-parseFloat(item.element.style.top),distance=Math.hypot(dx,dy);
+        assert(distance<=6.00001,'a minimum marker must remain within six pixels of its land');
+        if(distance>1e-5){
+            callouts++;assert.equal(item.element.dataset.labelVariant,'marker');
+            const leader=item.element.querySelector('.realmLeader');assert.equal(leader.style.display,'block');
+            assert(Math.abs(parseFloat(leader.style.width)-distance)<1e-5,'the connector must end at the real land anchor');
+        }
+        assert(box.x>=8&&box.x+box.w<=fixture.width-8&&box.y>=8&&box.y+box.h<=fixture.height-22);
+        assert.equal(item.element.tabIndex,0);assert.equal(item.element.style.pointerEvents,'auto');
+        assert(item.element.title.includes(item.feature.name));
+        for(let k=0;k<j;k++)assert(separated(box,labelBox(items[k])),'country hit targets overlap in the measured mobile projection');
+    }
+    assert(callouts>0,'this measured terrain requires a bounded callout');
+});
+
 test('country anchor coverage includes the opposite edge and a separate island',()=>{
     const src=readFileSync(`${root}/src/ui/world-ui.js`,'utf8'),helper=src.slice(src.indexOf('function realmLabelAnchors('),src.indexOf('function legendLabels('));
     const width=140,world={height:Array(width*60).fill(1),lake:Array(width*60).fill(-1)},cells=[];

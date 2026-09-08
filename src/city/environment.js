@@ -24,6 +24,27 @@ const CityEnvironment = (() => {
  const rgbHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255);
  const colors=BIOME.map(b=>rgbHex(b[1]));
  const frozen=rgbHex('#d9eff0');
+ // Lithology is shared by the atlas and close materials. These are exposed
+ // earth, fresh rock and the vegetation that can establish between outcrops.
+ const landformPalettes=[null,
+  ['#ca7849','#ad5038','#89924f'],
+  ['#4e5551','#303b3e','#79874d'],
+  ['#a39370','#7d8078','#748b59'],
+  ['#ad9c74','#d0c8ad','#62854f']
+ ].map(p=>p&&Object.freeze({earth:Object.freeze(rgbHex(p[0])),mineral:Object.freeze(rgbHex(p[1])),green:Object.freeze(rgbHex(p[2]))}));
+ const landformPalette=id=>landformPalettes[id]||null;
+ // Use the same vertical projection as the rendered terrain. Height alone does
+ // not expose rock: the middle of a high plateau can still carry meadow or soil.
+ const materialHeight=(w,i,fallback)=>w.height[i]>0&&!(w.lake[i]>0)?w.height[i]:fallback;
+ function materialSlope(w,i,old){
+  const x=i%GW,y=Math.floor(i/GW),h=w.height[i],left=x>0?materialHeight(w,i-1,h):h,right=x<GW-1?materialHeight(w,i+1,h):h,
+   up=y>0?materialHeight(w,i-GW,h):h,down=y<GH-1?materialHeight(w,i+GW,h):h;
+  if(old&&old.h===h&&old.left===left&&old.right===right&&old.up===up&&old.down===down)return old;
+  const here=Math.pow(Math.max(0,h)/1000,.98),X=MAP_X/(GW-1),Z=MAP_Z/(GH-1),
+   slope=Math.max(Math.abs(Math.pow(Math.max(0,left)/1000,.98)-here)/X,Math.abs(Math.pow(Math.max(0,right)/1000,.98)-here)/X,
+    Math.abs(Math.pow(Math.max(0,up)/1000,.98)-here)/Z,Math.abs(Math.pow(Math.max(0,down)/1000,.98)-here)/Z);
+  return{h,left,right,up,down,slope};
+ }
  /* Break points are the measured spread of a generated world, not guesses. Over
   * land: temperature p10 -15.0, p25 -6.7, p50 6.2, p75 18.7, p90 24.4 C;
   * aridity p10 .08, p25 .19, p50 .55, p75 1.35, p90 2.36; bedrock p75 1200 m,
@@ -162,12 +183,14 @@ const CityEnvironment = (() => {
  function cellColor(w,i){
   let cells=cellColors.get(w);if(!cells){cells=new Array(GN);cellColors.set(w,cells);}
   const biome=w.biome[i],height=w.height[i],lake=w.lake[i],ice=w.ice[i],temperature=w.temp[i],aridity=w.arid[i],old=cells[i];
-  if(old&&old.biome===biome&&old.height===height&&old.lake===lake&&old.ice===ice&&old.temperature===temperature&&old.aridity===aridity)return old.color.slice();
-  const color=resolveCellColor(w,i);
-  cells[i]={biome,height,lake,ice,temperature,aridity,color:color.slice()};
+  const materialVersion=w.params?.landformVersion>=1?1:0,landform=materialVersion?w.landform?.[i]||0:0,
+   landformStrength=landform?clamp(w.landformStrength?.[i]||0):0,slopeState=materialVersion?materialSlope(w,i,old?.slopeState):null;
+  if(old&&old.biome===biome&&old.height===height&&old.lake===lake&&old.ice===ice&&old.temperature===temperature&&old.aridity===aridity&&old.materialVersion===materialVersion&&old.landform===landform&&old.landformStrength===landformStrength&&old.slopeState===slopeState)return old.color.slice();
+  const color=resolveCellColor(w,i,materialVersion,landform,landformStrength,slopeState?.slope||0);
+  cells[i]={biome,height,lake,ice,temperature,aridity,materialVersion,landform,landformStrength,slopeState,color:color.slice()};
   return color;
  }
- function resolveCellColor(w,i){
+ function resolveCellColor(w,i,materialVersion,landform,landformStrength,slope){
   const b=w.biome[i],h=w.height[i];
   if(w.lake[i]>0)return waterColor(2);
   if(h<=0)return waterColor(1);
@@ -196,7 +219,16 @@ const CityEnvironment = (() => {
   // cold: a cold LOW plain is tundra and keeps its own colour, while a cold HIGH
   // slope loses its cover. Temperature already carries the lapse rate, so this
   // zones by real elevation without a fixed metre constant.
-  if(b!==1&&b!==16)blend(rgbHex(b===13||cl.dry>.5?'#b59e86':'#939589'),cl.alpine*(.30+.45*clamp((cl.frost-.45)*1.8)));
+  const steep=clamp((slope-.13)/.70);
+  if(b!==1&&b!==16)blend(rgbHex(b===13||cl.dry>.5?'#b59e86':'#939589'),cl.alpine*(.30+.45*clamp((cl.frost-.45)*1.8))*(materialVersion?.04+.96*steep:1));
+  const material=landformPalette(landform);
+  if(material&&landformStrength&&b!==1&&b!==16){
+   const bare=b===13||b===3?1:b===4?.8:b===12?.2:0,vegetated=clamp((w.arid[i]-.45)/1.25)*(1-steep),
+    cover=landform===1?vegetated*.34:landform===2?vegetated*.46:vegetated*.70;
+   const target=material.earth.map((v,k)=>lerp(lerp(v,material.green[k],cover),material.mineral[k],steep*(.7+.3*bare)));
+   const amount=landform===1?(.52+cl.dry*.29+bare*.16):landform===2?(.83+bare*.12-vegetated*.18):(.32+steep*.49+bare*.16);
+   blend(target,landformStrength*clamp(amount));
+  }
   // Stored ice below the glacier threshold is real world data, not invented
   // snow: show it as faint frost rather than discarding it entirely.
   if(w.ice[i]>0&&w.ice[i]<=25)blend(frozen,clamp(w.ice[i]/25)*.30);
@@ -314,5 +346,5 @@ const CityEnvironment = (() => {
   return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
  }
  function roofSnow(g,k){return snowCover(g,k)>.3;}
- return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,sampleSite,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
+ return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,landformPalette,refineContextRivers,sample,sampleSite,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();
