@@ -1,0 +1,163 @@
+{
+  "sourceSha256": "e720532111ba2816ad502885821ecce5f37acfe4d285992c08ee649e08933fe6",
+  "units": {
+    "temperature": "Model degrees Celsius; uncalibrated",
+    "rain": "Relative model index",
+    "vapor": "Relative model index"
+  },
+  "limitations": [
+    "Wind is prescribed from latitude and season; it does not explicitly turn around mountains.",
+    "Ocean circulation is a two-dimensional approximation without dynamic salinity, pressure or deep-ocean layers."
+  ],
+  "controlledMountain": {
+    "parameters": {
+      "seed": "Aereth-47",
+      "form": "global",
+      "plates": 24,
+      "continents": 6,
+      "islands": 1.2,
+      "volcanism": 0.85,
+      "uplift": 1.2,
+      "sea": 0,
+      "aridity": 0.85,
+      "current": 1,
+      "erosion": 0.7,
+      "temperature": 0,
+      "glaciation": 1.2
+    },
+    "intervention": "Add a 4,000 m dry mountain ridge; keep coast, latitude and all forcing unchanged",
+    "order": [
+      "flat",
+      "mountain"
+    ],
+    "crestTemperature": [
+      4.517775588565403,
+      -18.36977767944336
+    ],
+    "windwardRain": [
+      0.4863864349631163,
+      1.4329007545915933
+    ],
+    "leewardRain": [
+      0.2964545851736738,
+      0.06078687677846143
+    ],
+    "leewardVapor": [
+      0.49097953449215803,
+      0.10872789580178888
+    ],
+    "crestIce": [
+      0,
+      81.37395715713501
+    ],
+    "windwardSnowAccumulation": [
+      5.325249245724617,
+      16.116610564482517
+    ]
+  },
+  "oceanTransport": {
+    "parameters": {
+      "seed": "Aereth-47",
+      "form": "global",
+      "plates": 24,
+      "continents": 6,
+      "islands": 1.2,
+      "volcanism": 0.85,
+      "uplift": 1.2,
+      "sea": 0,
+      "aridity": 0.85,
+      "current": 1,
+      "erosion": 0.7,
+      "temperature": 0,
+      "glaciation": 1.2
+    },
+    "intervention": "Change current from 0 to 1 on byte-identical terrain",
+    "measurements": "Mean absolute change on identical cells",
+    "seaTemperatureChange": 0.35034128030210093,
+    "coastalTemperatureChange": 0.4826108488760539,
+    "coastalRainChange": 0.05085154148850015,
+    "inlandTemperatureChange": 0.014036833436252772
+  },
+  "generatedMountains": {
+    "parameters": {
+      "continents": 6,
+      "islands": 1.2,
+      "temperature": 0,
+      "glaciation": 1.2,
+      "seed": "Aereth-47",
+      "form": "global",
+      "plates": 24,
+      "volcanism": 0.85,
+      "uplift": 1.2,
+      "sea": 0,
+      "aridity": 0.85,
+      "current": 1,
+      "erosion": 0.7,
+      "landformVersion": 2
+    },
+    "terrainHeightSha256": "a6e132dfa6d2a11d65e5b731e6e1a014f022e59b38d1707f50b9a9e73b061284",
+    "intervention": "Compare the real version 2 ranges with only their dry cells above 500 m lowered to 500 m",
+    "unchangedCoastAndOcean": true,
+    "generationClimateMatchesFinalTerrain": true,
+    "ranges": [
+      {
+        "range": 3,
+        "order": [
+          "foothills",
+          "mountains"
+        ],
+        "crestTemperature": [
+          20.401196066477123,
+          8.150303368402724
+        ],
+        "windwardRain": [
+          0.6189084292661088,
+          1.3762455128404933
+        ],
+        "leewardRain": [
+          0.25035933021164675,
+          0.1694344340756957
+        ],
+        "leewardVapor": [
+          0.2870707709261661,
+          0.19822960638266038
+        ],
+        "name": "The Thousandfold Ranges",
+        "samples": {
+          "crest": 518,
+          "windward": 192,
+          "leeward": 601
+        }
+      },
+      {
+        "range": 4,
+        "order": [
+          "foothills",
+          "mountains"
+        ],
+        "crestTemperature": [
+          6.342053688936314,
+          -6.413880519190077
+        ],
+        "windwardRain": [
+          0.055472352058932,
+          0.1440512168364159
+        ],
+        "leewardRain": [
+          0.42988307705020595,
+          0.4166226574091305
+        ],
+        "leewardVapor": [
+          0.3064478286702571,
+          0.2906653519462922
+        ],
+        "name": "The Dragonback Marches",
+        "samples": {
+          "crest": 472,
+          "windward": 241,
+          "leeward": 116
+        }
+      }
+    ]
+  }
+}

@@ -105,11 +105,11 @@
       "rx": 25.62426113305247,
       "ry": 12.338475926043111,
       "area": 842,
-      "detail": "A long belt of compressed crust rises in parallel, bending ridges. Several high crests run together above deep longitudinal valleys, with lower passes between the folds.",
+      "detail": "Compressed crust rises in unequal mountain blocks. Branching ridges connect staggered summits above broad valleys, narrow gorges and lower mountain passes; older drainage cuts into the uplifted terrain.",
       "camera": {
         "target": [
           51.973244147157196,
-          2.4754869002434274,
+          2.294436727903811,
           -23.81564245810056
         ],
         "zoom": 7.024592789831503,
@@ -117,14 +117,14 @@
         "elevation": 0.88
       },
       "ground": {
-        "x": 242.00000000932457,
-        "y": 45.999999978571026,
+        "x": 241.99999999462426,
+        "y": 46.00000001235408,
         "point": [
-          51.97324415239642,
-          2.4754868847007288,
-          -23.815642469832625
+          51.97324414413672,
+          2.2944367368643555,
+          -23.81564245133687
         ],
-        "surface": 2.4754868905240213,
+        "surface": 2.294436727303139,
         "type": 3,
         "strength": 1,
         "refinement": 4,
@@ -170,7 +170,7 @@
         "type": 4,
         "strength": 1,
         "refinement": 8,
-        "triangles": 175370
+        "triangles": 176746
       }
     }
   ],
@@ -257,7 +257,7 @@
       "camera": {
         "target": [
           19.38461538461539,
-          2.791067648095606,
+          2.695369328516984,
           11.22346368715084
         ],
         "zoom": 4.025904273987047,
@@ -282,7 +282,7 @@
       "camera": {
         "target": [
           51.973244147157196,
-          2.4754869002434274,
+          2.294436727903811,
           -23.81564245810056
         ],
         "zoom": 4.09767912740171,
@@ -376,276 +376,286 @@
       ]
     }
   ],
-  "bundleSha256": "bde74a575c456318a71b23f37855c850a92b8a74564df8c83082f1912759c887",
+  "bundleSha256": "ca01db9f59ce0645177a45cd8d72be189378493d7d9b5a306cd8350544a164ff",
   "fantasy": {
-    "physical": "cc113c81",
-    "settlements": "790ae3c1",
-    "politics": "90fd7fea"
+    "physical": "2377e4fa",
+    "settlements": "1d618deb",
+    "politics": "24a862f0"
   },
   "desktop": {
-    "realms": 25,
+    "realms": 26,
     "labels": [
       {
         "id": 0,
         "visible": true,
-        "text": "Read about Free State of Ra"
-      },
-      {
-        "id": 2,
-        "visible": true,
-        "text": "Read about Tribal Federation of Ereshkigal"
-      },
-      {
-        "id": 1,
-        "visible": true,
-        "text": "Read about League of Tir na nOg"
-      },
-      {
-        "id": 8,
-        "visible": true,
-        "text": "Read about Arcane Dominion of Emain Ablach"
-      },
-      {
-        "id": 9,
-        "visible": true,
-        "text": "Read about Merchant Republic of Osiris"
-      },
-      {
-        "id": 11,
-        "visible": true,
-        "text": "Read about City League of Avalon"
-      },
-      {
-        "id": 15,
-        "visible": true,
-        "text": "Read about Free State of Duat"
-      },
-      {
-        "id": 3,
-        "visible": true,
-        "text": "Read about Maritime Republic of Caer Sidi"
-      },
-      {
-        "id": 10,
-        "visible": true,
-        "text": "Read about League of Vainola"
+        "text": "Read about Empire of Duat"
       },
       {
         "id": 5,
         "visible": true,
-        "text": "Read about Sacred Empire of Inanna"
+        "text": "Read about Kingdom of Dilmun"
       },
       {
-        "id": 24,
+        "id": 1,
         "visible": true,
-        "text": "Read about Arcane Empire of Enki"
+        "text": "Read about City League of Ereshkigal"
       },
       {
         "id": 7,
         "visible": true,
-        "text": "Read about League of Tamoanchan"
-      },
-      {
-        "id": 14,
-        "visible": true,
-        "text": "Read about Sacred Empire of Tapiola"
-      },
-      {
-        "id": 6,
-        "visible": true,
-        "text": "Read about Free State of Guixu"
+        "text": "Read about League of Inanna"
       },
       {
         "id": 12,
         "visible": true,
-        "text": "Read about League of Annwn"
+        "text": "Read about Maritime Republic of Annwn"
       },
       {
-        "id": 17,
+        "id": 11,
         "visible": true,
-        "text": "Read about Kingdom of Tlalocan"
+        "text": "Read about Confederacy of Mag Mell"
       },
       {
-        "id": 4,
+        "id": 9,
         "visible": true,
-        "text": "Read about Tribal Federation of Alaka"
+        "text": "Read about Trade League of Aaru"
+      },
+      {
+        "id": 6,
+        "visible": true,
+        "text": "Read about League of Horus"
+      },
+      {
+        "id": 8,
+        "visible": true,
+        "text": "Read about Principality of Osiris"
+      },
+      {
+        "id": 3,
+        "visible": true,
+        "text": "Read about Highland Principality of Amaravati"
       },
       {
         "id": 18,
         "visible": true,
-        "text": "Read about Trade League of Ryugu"
+        "text": "Read about Empire of Asgard"
       },
       {
-        "id": 13,
+        "id": 15,
         "visible": true,
-        "text": "Read about Republic of Aztlan"
+        "text": "Read about Empire of Vainola"
       },
       {
-        "id": 19,
+        "id": 4,
         "visible": true,
-        "text": "Read about Tribal Federation of Kunlun"
+        "text": "Read about Empire of Tlalocan"
       },
       {
         "id": 22,
         "visible": true,
-        "text": "Read about Clan Confederation of Dilmun"
+        "text": "Read about Sacred Empire of Fangzhang"
       },
       {
-        "id": 16,
+        "id": 2,
         "visible": true,
-        "text": "Read about Merchant Republic of Ninhursag"
+        "text": "Read about Merchant Republic of Enki"
       },
       {
-        "id": 20,
+        "id": 19,
         "visible": true,
-        "text": "Read about Highland Principality of Midgard"
+        "text": "Read about Theocracy of Chicomoztoc"
       },
       {
-        "id": 21,
+        "id": 10,
         "visible": true,
-        "text": "Read about Clan Confederation of Mag Mell"
+        "text": "Read about Arcane Dominion of Guixu"
+      },
+      {
+        "id": 17,
+        "visible": true,
+        "text": "Read about Mountain Kingdom of Ryugu"
+      },
+      {
+        "id": 14,
+        "visible": true,
+        "text": "Read about League of Aztlan"
+      },
+      {
+        "id": 13,
+        "visible": true,
+        "text": "Read about Sacred Empire of Tapiola"
       },
       {
         "id": 23,
         "visible": true,
-        "text": "Read about Federation of Abzu"
+        "text": "Read about Confederacy of Ninhursag"
+      },
+      {
+        "id": 16,
+        "visible": true,
+        "text": "Read about Maritime Republic of Abzu"
+      },
+      {
+        "id": 20,
+        "visible": true,
+        "text": "Read about Sacred Empire of Nidavellir"
+      },
+      {
+        "id": 21,
+        "visible": true,
+        "text": "Read about Arcane Dominion of Emain Ablach"
+      },
+      {
+        "id": 25,
+        "visible": true,
+        "text": "Read about Republic of Svarga"
+      },
+      {
+        "id": 24,
+        "visible": true,
+        "text": "Read about Merchant Republic of Midgard"
       }
     ]
   },
   "mobile": {
-    "realms": 25,
+    "realms": 26,
     "labels": [
       {
         "id": 0,
         "visible": true,
-        "text": "Read about Free State of Ra"
-      },
-      {
-        "id": 2,
-        "visible": true,
-        "text": "Read about Tribal Federation of Ereshkigal"
-      },
-      {
-        "id": 1,
-        "visible": true,
-        "text": "Read about League of Tir na nOg"
-      },
-      {
-        "id": 8,
-        "visible": true,
-        "text": "Read about Arcane Dominion of Emain Ablach"
-      },
-      {
-        "id": 9,
-        "visible": true,
-        "text": "Read about Merchant Republic of Osiris"
-      },
-      {
-        "id": 11,
-        "visible": true,
-        "text": "Read about City League of Avalon"
-      },
-      {
-        "id": 15,
-        "visible": true,
-        "text": "Read about Free State of Duat"
-      },
-      {
-        "id": 3,
-        "visible": true,
-        "text": "Read about Maritime Republic of Caer Sidi"
-      },
-      {
-        "id": 10,
-        "visible": true,
-        "text": "Read about League of Vainola"
+        "text": "Read about Empire of Duat"
       },
       {
         "id": 5,
         "visible": true,
-        "text": "Read about Sacred Empire of Inanna"
+        "text": "Read about Kingdom of Dilmun"
       },
       {
-        "id": 24,
+        "id": 1,
         "visible": true,
-        "text": "Read about Arcane Empire of Enki"
+        "text": "Read about City League of Ereshkigal"
       },
       {
         "id": 7,
         "visible": true,
-        "text": "Read about League of Tamoanchan"
-      },
-      {
-        "id": 14,
-        "visible": true,
-        "text": "Read about Sacred Empire of Tapiola"
-      },
-      {
-        "id": 6,
-        "visible": true,
-        "text": "Read about Free State of Guixu"
+        "text": "Read about League of Inanna"
       },
       {
         "id": 12,
         "visible": true,
-        "text": "Read about League of Annwn"
+        "text": "Read about Maritime Republic of Annwn"
       },
       {
-        "id": 17,
+        "id": 11,
         "visible": true,
-        "text": "Read about Kingdom of Tlalocan"
+        "text": "Read about Confederacy of Mag Mell"
       },
       {
-        "id": 4,
+        "id": 9,
         "visible": true,
-        "text": "Read about Tribal Federation of Alaka"
+        "text": "Read about Trade League of Aaru"
+      },
+      {
+        "id": 6,
+        "visible": true,
+        "text": "Read about League of Horus"
+      },
+      {
+        "id": 8,
+        "visible": true,
+        "text": "Read about Principality of Osiris"
+      },
+      {
+        "id": 3,
+        "visible": true,
+        "text": "Read about Highland Principality of Amaravati"
       },
       {
         "id": 18,
         "visible": true,
-        "text": "Read about Trade League of Ryugu"
+        "text": "Read about Empire of Asgard"
       },
       {
-        "id": 13,
+        "id": 15,
         "visible": true,
-        "text": "Read about Republic of Aztlan"
+        "text": "Read about Empire of Vainola"
       },
       {
-        "id": 19,
+        "id": 4,
         "visible": true,
-        "text": "Read about Tribal Federation of Kunlun"
+        "text": "Read about Empire of Tlalocan"
       },
       {
         "id": 22,
         "visible": true,
-        "text": "Read about Clan Confederation of Dilmun"
+        "text": "Read about Sacred Empire of Fangzhang"
       },
       {
-        "id": 16,
+        "id": 2,
         "visible": true,
-        "text": "Read about Merchant Republic of Ninhursag"
+        "text": "Read about Merchant Republic of Enki"
       },
       {
-        "id": 20,
+        "id": 19,
         "visible": true,
-        "text": "Read about Highland Principality of Midgard"
+        "text": "Read about Theocracy of Chicomoztoc"
       },
       {
-        "id": 21,
+        "id": 10,
         "visible": true,
-        "text": "Read about Clan Confederation of Mag Mell"
+        "text": "Read about Arcane Dominion of Guixu"
+      },
+      {
+        "id": 17,
+        "visible": true,
+        "text": "Read about Mountain Kingdom of Ryugu"
+      },
+      {
+        "id": 14,
+        "visible": true,
+        "text": "Read about League of Aztlan"
+      },
+      {
+        "id": 13,
+        "visible": true,
+        "text": "Read about Sacred Empire of Tapiola"
       },
       {
         "id": 23,
         "visible": true,
-        "text": "Read about Federation of Abzu"
+        "text": "Read about Confederacy of Ninhursag"
+      },
+      {
+        "id": 16,
+        "visible": true,
+        "text": "Read about Maritime Republic of Abzu"
+      },
+      {
+        "id": 20,
+        "visible": true,
+        "text": "Read about Sacred Empire of Nidavellir"
+      },
+      {
+        "id": 21,
+        "visible": true,
+        "text": "Read about Arcane Dominion of Emain Ablach"
+      },
+      {
+        "id": 25,
+        "visible": true,
+        "text": "Read about Republic of Svarga"
+      },
+      {
+        "id": 24,
+        "visible": true,
+        "text": "Read about Merchant Republic of Midgard"
       }
     ]
   },
   "city": {
-    "id": 287,
-    "name": "Bramblequay",
-    "buildings": 475,
+    "id": 288,
+    "name": "Whitebeck",
+    "buildings": 417,
     "audit": {
       "iceBuildings": 0,
       "wetBuildings": 0,
@@ -653,12 +663,12 @@
       "overlaps": 0,
       "nonfinite": 0,
       "seaRoads": 0,
-      "buildings": 475
+      "buildings": 417
     },
     "worker": true,
     "sameCanvas": true,
-    "fingerprint": "183d8e7f",
-    "localFingerprint": "183d8e7f",
+    "fingerprint": "ba686660",
+    "localFingerprint": "ba686660",
     "buffersIntact": true
   },
   "legacy": {
@@ -667,7 +677,7 @@
     "politics": "d8ba763d"
   },
   "saves": {
-    "newVersion": 1,
+    "newVersion": 2,
     "versionlessRestoredAs": 0,
     "savedHistoryPreserved": true
   },

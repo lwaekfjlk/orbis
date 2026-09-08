@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id), escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtPop = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'k' : Math.round(v).toString();
 const fmt = v => Number.isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
-const GEN_DEFAULTS = { seed: 'Aereth-47', form: 'global', plates: 24, continents: 6, islands: 1.2, volcanism: .85, uplift: 1.2, sea: 0, aridity: .85, current: 1, erosion: .7, temperature: 0, glaciation: 1.2, landformVersion: 1 };
+const GEN_DEFAULTS = { seed: 'Aereth-47', form: 'global', plates: 24, continents: 6, islands: 1.2, volcanism: .85, uplift: 1.2, sea: 0, aridity: .85, current: 1, erosion: .7, temperature: 0, glaciation: 1.2, landformVersion: 2 };
 const DEFAULT_WORLD_LAYER = 'realms';
 let world = null, sim = null, renderer = null, busy = false, playing = false, timer = null, currentLayer = DEFAULT_WORLD_LAYER, selectedRealm = 0, selectedCell = -1, labelItems = [], diplomacyTarget = -1, lastError = null, simAdvancing = false;
 const POLITICAL = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'];
@@ -22,7 +22,7 @@ function generationParameters(params, restored = null) {
     // A save without a terrain version predates the new landforms. Resolve it
     // before merging defaults, including calls through the public build API.
     const landformVersion = params?.landformVersion ?? (restored ? 0 : GEN_DEFAULTS.landformVersion);
-    if (![0, 1].includes(landformVersion))
+    if (![0, 1, 2].includes(landformVersion))
         throw Error('This world uses an unsupported landform generation version.');
     return { ...GEN_DEFAULTS, ...params, landformVersion };
 }
