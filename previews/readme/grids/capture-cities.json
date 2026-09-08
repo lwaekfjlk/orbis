@@ -1,6 +1,6 @@
 {
-  "bundleSHA": "c676aa4960be84cfed7a36fb00b3d150948d15410f8b2e2a12f751a052f624ed",
-  "sourceCommit": "93d5d72",
+  "bundleSHA": "614601c3829fcf9d009daa1642831588d3bde630c7566a6b4de7ceeca0a69740",
+  "sourceCommit": "4f0405c",
   "selection": "Generated building count, descending",
   "bundlePath": "dist/orbis-onemap.html",
   "viewport": {
@@ -75,14 +75,14 @@
         "maxX": 1098.7356481698953,
         "maxY": 969.999417161405
       },
-      "triangles": 723243,
+      "triangles": 841833,
       "camera": {
         "target": [
-          65.99050797047752,
+          65.9905065208265,
           0.38337531493832094,
-          -16.643175830167777
+          -16.64317596063236
         ],
-        "zoom": 103.59380091611453,
+        "zoom": 103.5938008475093,
         "azimuth": 1.2441258666746502,
         "elevation": 0.74
       },
@@ -152,7 +152,7 @@
         "maxX": 1147.775186525996,
         "maxY": 969.9997782162714
       },
-      "triangles": 578205,
+      "triangles": 654995,
       "camera": {
         "target": [
           -51.999000719335534,
@@ -229,7 +229,7 @@
         "maxX": 1127.9020239272938,
         "maxY": 969.9989385314414
       },
-      "triangles": 916154,
+      "triangles": 1002872,
       "camera": {
         "target": [
           -78.7343431039217,
@@ -311,7 +311,7 @@
         "maxX": 1149.999729044314,
         "maxY": 889.6496611724174
       },
-      "triangles": 561420,
+      "triangles": 644152,
       "camera": {
         "target": [
           0.22108875212631823,

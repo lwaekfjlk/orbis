@@ -6,11 +6,11 @@
       "panels": 4,
       "rows": 2,
       "columns": 2,
-      "sourceCommit": "93d5d72",
-      "bundleSha256": "c676aa4960be84cfed7a36fb00b3d150948d15410f8b2e2a12f751a052f624ed",
+      "sourceCommit": "4f0405c",
+      "bundleSha256": "614601c3829fcf9d009daa1642831588d3bde630c7566a6b4de7ceeca0a69740",
       "width": 1600,
       "height": 1512,
-      "sha256": "45a365c7a415996c55f0858da66f513a02c741448612306b6f22b9b2c5f696ca"
+      "sha256": "dd074f46eecf039482de6f2e2127fe7a92efc07ad429a525f6d478b50e0d3b50"
     },
     {
       "id": "sites",
