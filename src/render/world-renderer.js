@@ -223,10 +223,13 @@ class AtlasRenderer {
     upload(name, geometry, shadow = true, unlit = 0, alpha = 1) { const gl = this.gl; if (this.meshes[name]) {
         gl.deleteBuffer(this.meshes[name].buffer);
         gl.deleteVertexArray(this.meshes[name].vao);
-    } const buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.data), gl.STATIC_DRAW); for (let i = 0; i < 3; i++) {
+    } const vertices = geometry.data instanceof Float32Array ? geometry.data : new Float32Array(geometry.data);
+    // Transferred worker buffers already have the GPU format. Keep that same
+    // array for picking and export instead of copying the entire mesh twice.
+    const buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); for (let i = 0; i < 3; i++) {
         gl.enableVertexAttribArray(i);
         gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 36, i * 12);
-    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices: new Float32Array(geometry.data), count: geometry.data.length / 9, shadow, unlit, alpha }; this.dirtyShadow = true; }
+    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha }; this.dirtyShadow = true; }
     clear() { const gl = this.gl; for (const m of Object.values(this.meshes)) {
         gl.deleteBuffer(m.buffer);
         gl.deleteVertexArray(m.vao);

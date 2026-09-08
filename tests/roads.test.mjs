@@ -174,6 +174,11 @@ test('every ribbon and quay is seated on the surface it was sampled against',()=
  r.ground=function(x,y){return E.AtlasSpace.surface(this.world,x,y,this.relief);};
  r.coord=function(x,y,h=null){const p=E.AtlasSpace.point(this.world,x,y,this.relief);return h==null?p:[p[0],h,p[2]];};
  r.buildRoads();
+ assert(!meshes.roadsNear,'world view eagerly built the invisible detailed road band');
+ const roadCounts=Object.fromEntries(Object.entries(meshes).map(([name,g])=>[name,g.data.length]));
+ for(const name of Object.keys(meshes))delete meshes[name];
+ r.buildRoads();
+ assert.deepEqual(Object.fromEntries(Object.entries(meshes).map(([name,g])=>[name,g.data.length])),roadCounts,'a retained network cache key lost meshes after clearing the renderer');
  // Sinking below the hillside is the one failure a static screenshot would miss and a
  // reader would see instantly: the road disappears into the slope halfway up a pass.
  // Every ribbon vertex sits exactly its own lift above the ground beneath it. A trunk

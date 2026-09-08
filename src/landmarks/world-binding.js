@@ -30,7 +30,7 @@ const LandmarkBinding = (()=>{
  }
  function inventory(w,s){if(!w||!s)return[];const cap=new Set(s.realms.filter(c=>c.alive).map(c=>c.capital)),out=[];
   for(const p of s.provinces.filter(p=>p.city).sort((a,b)=>b.urbanPop-a.urbanPop)){
-   if(cap.has(p.id))out.push({id:resolve(w,s,p).id,name:resolve(w,s,p).name,recipe:resolve(w,s,p),i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop*2,kind:'Civic palace'});
+   if(cap.has(p.id)){const r=resolve(w,s,p);out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop*2,kind:'Civic palace'})}
    if(p.harbor>.28&&p.urbanPop>8000){const r=resolve(w,s,p,'harbor');out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop*.6,kind:'Harbor landmark'})}
    if(s.realms[p.owner]?.gov===2){const r=resolve(w,s,p,'academy');out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop,kind:'Arcane college'})}
    const sacred=typeof SacredCityKit!=='undefined'?SacredCityKit.site(w,s,p):null;if(sacred)out.push(sacred);

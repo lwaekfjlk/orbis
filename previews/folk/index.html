@@ -3161,7 +3161,19 @@ const CityEnvironment = (() => {
   }
   cached.set(w,a);return a;
  }
+ // A detailed town samples the same handful of parent cells thousands of times.
+ // Cache their finished color, retaining every physical input so edits to a world
+ // object invalidate the affected cell. Returned arrays remain caller-owned.
+ const cellColors=new WeakMap();
  function cellColor(w,i){
+  let cells=cellColors.get(w);if(!cells){cells=new Array(GN);cellColors.set(w,cells);}
+  const biome=w.biome[i],height=w.height[i],lake=w.lake[i],ice=w.ice[i],temperature=w.temp[i],aridity=w.arid[i],old=cells[i];
+  if(old&&old.biome===biome&&old.height===height&&old.lake===lake&&old.ice===ice&&old.temperature===temperature&&old.aridity===aridity)return old.color.slice();
+  const color=resolveCellColor(w,i);
+  cells[i]={biome,height,lake,ice,temperature,aridity,color:color.slice()};
+  return color;
+ }
+ function resolveCellColor(w,i){
   const b=w.biome[i],h=w.height[i];
   if(w.lake[i]>0)return waterColor(2);
   if(h<=0)return waterColor(1);
@@ -3195,6 +3207,23 @@ const CityEnvironment = (() => {
   // snow: show it as faint frost rather than discarding it entirely.
   if(w.ice[i]>0&&w.ice[i]<=25)blend(frozen,clamp(w.ice[i]/25)*.30);
   return c;
+ }
+ // Site queries need only the fields that decide dry, ice-free foundations.
+ // Keep the same corner order and water/snow normalization as the full sample.
+ function sampleSite(w,x,y){
+  x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
+  const a=prepare(w),xx=Math.floor(x),yy=Math.floor(y),u=x-xx,v=y-yy;
+  const ids=[yy*GW+xx,yy*GW+Math.min(GW-1,xx+1),Math.min(GH-1,yy+1)*GW+xx,Math.min(GH-1,yy+1)*GW+Math.min(GW-1,xx+1)],weights=[(1-u)*(1-v),u*(1-v),(1-u)*v,u*v];
+  let surface=0,wetness=0,ice=0,snow=0,waterWeight=0,lakeWeight=0,landWeight=0;
+  for(let k=0;k<4;k++){
+   const i=ids[k],t=weights[k],b=w.biome[i];
+   surface+=t*a.surface[i];wetness+=t*(w.wetness?.[i]||0);ice+=t*(w.ice?.[i]||0);
+   waterWeight+=t*a.water[i];if(a.kind[i]===2)lakeWeight+=t;
+   if(!a.water[i]){landWeight+=t;snow+=t*(b===16||b===1?1:0);}
+  }
+  const water=waterWeight>.5?1:0,waterKind=water?(lakeWeight>waterWeight*.5?2:1):0;
+  if(water)snow=0;else if(landWeight>0)snow/=landWeight;
+  return{surface,waterKind,water,wetness,ice,snow};
  }
  function sample(w,x,y){
   x=clamp(x,0,GW-1);y=clamp(y,0,GH-1);
@@ -3291,7 +3320,7 @@ const CityEnvironment = (() => {
   return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
  }
  function roofSnow(g,k){return snowCover(g,k)>.3;}
- return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
+ return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,refineContextRivers,sample,sampleSite,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();
 
 /* A small dependency-free WebGL2 orthographic cartography renderer.
@@ -3519,10 +3548,13 @@ class AtlasRenderer {
     upload(name, geometry, shadow = true, unlit = 0, alpha = 1) { const gl = this.gl; if (this.meshes[name]) {
         gl.deleteBuffer(this.meshes[name].buffer);
         gl.deleteVertexArray(this.meshes[name].vao);
-    } const buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(geometry.data), gl.STATIC_DRAW); for (let i = 0; i < 3; i++) {
+    } const vertices = geometry.data instanceof Float32Array ? geometry.data : new Float32Array(geometry.data);
+    // Transferred worker buffers already have the GPU format. Keep that same
+    // array for picking and export instead of copying the entire mesh twice.
+    const buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); for (let i = 0; i < 3; i++) {
         gl.enableVertexAttribArray(i);
         gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 36, i * 12);
-    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices: new Float32Array(geometry.data), count: geometry.data.length / 9, shadow, unlit, alpha }; this.dirtyShadow = true; }
+    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha }; this.dirtyShadow = true; }
     clear() { const gl = this.gl; for (const m of Object.values(this.meshes)) {
         gl.deleteBuffer(m.buffer);
         gl.deleteVertexArray(m.vao);
@@ -4362,7 +4394,9 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         if (!net)
             return;
         const key = `${net.signature}/${this.relief}/${this.continuousLayer ? 1 : 0}`;
-        if (this.roadKey === key)
+        // setWorld clears GPU/software meshes even when the replacement seed
+        // reproduces the same network. A matching key alone cannot restore it.
+        if (this.roadKey === key && ['roads','bridges','ports','seaLanes','frontierPosts'].every(name => this.meshes?.[name]))
             return;
         this.roadKey = key;
         this.roadNetwork = net;
@@ -4398,7 +4432,10 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.upload('seaLanes', lanes, false, .72, .6);
         this.buildFrontierPosts();
         this.roadStats = { ...net.stats, roadTriangles: roads.data.length / 27, portTriangles: ports.data.length / 27 };
-        this.buildNearRoads(true);
+        // The atlas uses the cartographic ribbons above. Build the detailed band
+        // when the camera reaches it, and invalidate it when the network changes.
+        this.nearRoadKey = null;
+        if (this.zoom >= AtlasSpace.TOWN_ZOOM) this.buildNearRoads(true);
     };
     /** The same roads again, seated on the ground rather than above it, for the band
      * where a town's own streets are drawn. Only the stretches the camera can see are
@@ -4523,6 +4560,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         }return runs;
     }
     AtlasRenderer.prototype.buildNearRoads = function (force = false) {
+        if (!force && this.zoom < AtlasSpace.TOWN_ZOOM) return;
         const net = this.roadNetwork;
         if (!net)
             return;
