@@ -96,7 +96,7 @@ test('natural terrain material colours preserve the four-corner baseline without
         const weights=[(1-u)*(1-v),u*(1-v),(1-u)*v,u*v];
         const base=[0,1,2].map(k=>corners.reduce((n,c,i)=>n+c[k]*weights[i],0));
         const vertex=findVertex(mixed.r.terrain,cellX+u,cellY+v),slope=Math.hypot(vertex[3],vertex[5])/vertex[4];
-        const expected=E.LandscapeColor.sample(world,cellX+u,cellY+v,base,{slope,relief:mixed.r.relief});
+        const expected=E.LandscapeColor.sample(world,cellX+u,cellY+v,base,{slope,normal:vertex.slice(3,6),relief:mixed.r.relief});
         for(let k=0;k<3;k++)assert(Math.abs(vertex[6+k]-expected[k])<1e-6,'terrain material retained a triangular interpolation boundary');
         assert(Math.hypot(...base.map((n,k)=>n-corners[0][k]))>.01,'fixture distinguishes the old high-corner diagonal colour');
     }

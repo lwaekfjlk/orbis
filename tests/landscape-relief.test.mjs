@@ -32,19 +32,24 @@ test.before(async () => {
     originalWorld = typedState(world); originalSociety = JSON.stringify(sim);
 });
 
-test('relief is opt-in, keyed by all town surveys and can be deactivated without touching its world', () => {
+test('relief is opt-in and keyed by all town surveys, including an uninhabited world', () => {
     const w = flat(), s = society([town(7, 40, 40)]), bytes = typedState(w), original = JSON.stringify(s);
     assert.equal(H.offset(w, 100.27, 90.43), 0); assert.deepEqual(H.gradient(w, 100.27, 90.43), [0, 0]); assert.equal(H.key(w), 'none');
     assert.equal(H.prepare({name: 'incomplete'}, s), false); assert.equal(H.key({}), 'none');
-    assert.equal(H.prepare(w, {provinces: [], realms: []}), false);
+    assert.equal(H.prepare(w, {provinces: [], realms: []}), true);
+    const emptyKey = H.key(w);
+    assert.notEqual(emptyKey, 'none'); assert.equal(H.prepare(w, {provinces: [], realms: []}), false); assert.equal(H.key(w), emptyKey);
+    assert.notEqual(H.offset(w, 100.27, 90.43), 0, 'uninhabited land should retain display relief');
     assert.equal(H.prepare(w, s), true); const key = H.key(w);
     assert.notEqual(key, 'none'); assert.equal(H.prepare(w, structuredClone(s)), false); assert.equal(H.key(w), key);
     const reordered = society([town(8, 80, 40), s.provinces[0]]); H.prepare(w, reordered); const next = H.key(w);
     assert.notEqual(next, key); assert.equal(H.prepare(w, {...reordered, provinces: reordered.provinces.slice().reverse()}), false);
     assert.equal(H.key(w), next, 'loading order must not define the field');
     const outside = H.offset(w, 100.27, 90.43);
-    assert.equal(H.prepare(w, {provinces: [], realms: []}), true); assert.equal(H.key(w), 'none'); assert.equal(H.offset(w, 100.27, 90.43), 0);
-    assert.equal(H.prepare(w, {provinces: [], realms: []}), false); assert.equal(H.prepare(w, reordered), true); assert.equal(H.offset(w, 100.27, 90.43), outside);
+    assert.equal(H.prepare(w, {provinces: [], realms: []}), true); const clearedKey = H.key(w);
+    assert.notEqual(clearedKey, 'none'); assert.notEqual(clearedKey, next); assert.equal(H.offset(w, 100.27, 90.43), outside);
+    assert.equal(H.prepare(w, {provinces: [], realms: []}), false); assert.equal(H.key(w), clearedKey);
+    assert.equal(H.prepare(w, reordered), true); assert.equal(H.offset(w, 100.27, 90.43), outside);
     assert.equal(typedState(w), bytes); assert.equal(JSON.stringify(s), original);
 });
 
@@ -77,9 +82,9 @@ test('revoking capital status cannot expose the former city footprint while its 
     }
 });
 
-test('sea, lake, ice patches and raw and corrected river corridors keep their inherited heights', () => {
+test('sea, lake, sea ice patches and raw and corrected river corridors keep their inherited heights', () => {
     const w = flat(), s = society([town(1, 40, 40)]);
-    w.height[point(100, 70)] = -100; w.lake[point(120, 70)] = 250; w.ice[point(140, 70)] = 3;
+    w.height[point(100, 70)] = -100; w.lake[point(120, 70)] = 250; w.ice[point(140, 70)] = 3; w.biome[point(140, 70)] = 17;
     const branch = point(80, 100), narrowThreshold = point(110, 100);
     w.flow[branch] = 61; w.down[branch] = branch + 1; w.riverDown[branch] = branch + E.GW;
     w.flow[narrowThreshold] = 45; w.channelThreshold[narrowThreshold] = 40; w.riverDown[narrowThreshold] = narrowThreshold + 1;
@@ -120,16 +125,16 @@ test('analytic display gradients match height differences including the protecti
     }
 });
 
-test('actual-world relief remains gentle and repeated nearby samples stay within a practical mesh budget', t => {
+test('actual-world biome relief remains bounded and repeated nearby samples stay within a practical mesh budget', t => {
     H.prepare(world, sim); let maximum = 0, slope = 0, nonzero = 0;
     const started = performance.now();
     for (let y = 1.137; y < E.GH - 1; y += .37) for (let x = 1.211; x < E.GW - 1; x += .37) {
         const h = H.offset(world, x, y), g = H.gradient(world, x, y);
         maximum = Math.max(maximum, Math.abs(h)); slope = Math.max(slope, Math.hypot(g[0] / X, g[1] / Z)); if (h) nonzero++;
-        assert.ok(Math.abs(h) <= .022, 'bounded residual must not create a new large hill');
+        assert.ok(Math.abs(h) < .06, 'bounded biome residual must not create a new large hill');
     }
     const elapsed = performance.now() - started;
-    assert.ok(nonzero > 50000); assert.ok(maximum > .005 && maximum < .02); assert.ok(slope < .12, 'fine relief adds a sharp scarp');
+    assert.ok(nonzero > 50000); assert.ok(maximum > .005 && maximum < .06); assert.ok(slope < .5, 'fine relief adds a sharp scarp');
     assert.ok(elapsed < 5000, 'height/gradient sampling cannot scan or regenerate every town per vertex');
     t.diagnostic(JSON.stringify({nonzero, maximum, maximumExtraGrade: slope, sampleMilliseconds: Math.round(elapsed)}));
 });

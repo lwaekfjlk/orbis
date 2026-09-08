@@ -178,7 +178,7 @@ class ContinuousCityLayer {
    // A triangle-based colour interpolation kept the original giant diagonal
    // visible even after its geometry was refined. Colour follows the same patch.
    const channel=k=>lerp(lerp(colors[i0+k],colors[i1+k],u),lerp(colors[i2+k],colors[i3+k],u),v);
-   const base=[channel(0),channel(1),channel(2)],color=near&&typeof LandscapeColor!=='undefined'?LandscapeColor.sample(w,x,y,base,{slope:Math.hypot(normalX,normalZ)/Math.max(.05,ny),relief:r.relief}):base;
+   const base=[channel(0),channel(1),channel(2)],color=near&&typeof LandscapeColor!=='undefined'?LandscapeColor.sample(w,x,y,base,{slope:Math.hypot(normalX,normalZ)/Math.max(.05,ny),normal:[normalX/l,ny/l,normalZ/l],relief:r.relief}):base;
    a=[p[0],p[1],p[2],normalX/l,ny/l,normalZ/l,...color];vertices.set(k,a);return a;
   };
   for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){
@@ -225,6 +225,20 @@ class ContinuousCityLayer {
   const perCell=r.width/Math.max(1e-6,2*r.halfW)*AtlasSpace.X;
   return clamp(Math.max(9/perCell,Math.sqrt(cells/13000)),.13,.62);
  }
+ // Small fractured pieces belong to the same scale as nearby trees and houses.
+ // Their bases sample the slope at every corner, avoiding hovering cone symbols.
+ surfaceFragment(g,gx,gy,width,height,angle,paint,ice=false){
+  const w=this.r.world||this.world,n=ice?5:6,base=[],top=[],c=Math.cos(angle),s=Math.sin(angle);
+  for(let j=0;j<n;j++){const a=j/n*Math.PI*2,shape=.78+hash2(j,Math.round(gx*97+gy*61),w.seed+919)*.22;
+   const x=Math.cos(a)*width*shape,z=Math.sin(a)*width*(ice?1.5:.8)*shape;
+   const qx=gx+(x*c-z*s)/AtlasSpace.X,qy=gy+(x*s+z*c)/AtlasSpace.Z,b=AtlasSpace.point(w,qx,qy,this.r.relief);
+   base.push(b);const tx=gx+(qx-gx)*.72,ty=gy+(qy-gy)*.72,t=AtlasSpace.point(w,tx,ty,this.r.relief);
+   t[1]+=height*(.60+hash2(j,Math.round(gx*53+gy*71),w.seed+929)*.4);top.push(t);
+  }
+  const peak=AtlasSpace.point(w,gx,gy,this.r.relief);peak[1]+=height;
+  for(let j=0;j<n;j++){const next=(j+1)%n,side=colorScale(paint,.78+.16*j/n);
+   g.tri(base[next],base[j],top[j],side);g.tri(base[next],top[j],top[next],side);g.tri(top[next],top[j],peak,colorScale(paint,1.02));}
+ }
  buildEnvironment(){
   const r=this.r,w=r.world;
   if(!w||!this.natural){for(const name of ['cm:env:flora','cm:env:rock','cm:env:reeds','cm:env:ice','cm:env:falls'])this.drop(name);this.lastEnvironmentKey='none';return;}
@@ -249,8 +263,9 @@ class ContinuousCityLayer {
    if(e.water)continue;
    const v=AtlasSpace.point(w,jx,jy,relief),roll=rnd(gx,gy,43);
    if(e.ice>25){
-    if(roll<.30){const sz=.05+rnd(gx,gy,47)*.05;
-     ice.cone(v[0],v[1],v[2],sz*1.6,sz*.7,sz*1.3,rgb('#dcefef'),5,rnd(gx,gy,53)*6);}
+    const pattern=LandscapePatterns.sample(w,jx,jy);
+    if(roll<.23&&pattern.ridge>.52&&pattern.crevasse<.25){const unit=AtlasSpace.TOWN_UNIT;
+     this.surfaceFragment(ice,jx,jy,(.6+rnd(gx,gy,47)*.5)*unit,(1.4+rnd(gx,gy,49)*1.3)*unit,rnd(gx,gy,53)*6,rgb('#c2e1e9'),true);}
     continue;
    }
    if([18,19,20].includes(e.biome)&&roll<.5){
@@ -260,8 +275,8 @@ class ContinuousCityLayer {
    }
    const steep=grade(jx,jy);
    if(steep>.62&&roll<.34){
-    const sz=.045+rnd(gx,gy,59)*.055;
-    rock.cone(v[0],v[1],v[2],sz,sz*.45,sz*.9,colorScale(rgb('#8d8878'),.86+rnd(gx,gy,61)*.3),5,rnd(gx,gy,67)*6);
+    const unit=AtlasSpace.TOWN_UNIT,sz=(.9+rnd(gx,gy,59)*1.2)*unit;
+    this.surfaceFragment(rock,jx,jy,sz,(1+rnd(gx,gy,61))*unit,rnd(gx,gy,67)*6,colorScale(rgb('#919497'),.86+rnd(gx,gy,61)*.2));
     stones++;continue;
    }
    const can=CityEnvironment.canopy(e.biome,e.temperature,e.aridity);

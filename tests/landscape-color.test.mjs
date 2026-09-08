@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {defaults} from './engine-loader.mjs';
 
-const files = ['src/world/geography.js', 'src/city/environment.js', 'src/render/world-renderer.js', 'src/continuous/landscape-color.js'];
+const files = ['src/world/geography.js', 'src/city/environment.js', 'src/render/world-renderer.js', 'src/continuous/landscape-patterns.js', 'src/continuous/landscape-color.js'];
 const E = Function(files.map(f => readFileSync(new URL('../' + f, import.meta.url), 'utf8')).join('\n') + '\nreturn {generateWorld,CityEnvironment,LandscapeColor,GW,GH,GN};')();
 const chroma = c => Math.max(...c) - Math.min(...c), mean = values => values.reduce((n, v) => n + v, 0) / values.length;
 const delta = (a, b) => Math.max(...a.map((v, i) => Math.abs(v - b[i])));
@@ -63,10 +63,10 @@ test('steep faces expose more neutral stone than the adjacent low-gradient fores
     assert.ok(mean(steep.map(s => s.after[2])) > mean(low.map(s => s.after[2])) + .03, 'stone should have a neutral mineral tone rather than brown soil');
 });
 
-test('water, permanent snow, cold terrain and desert retain their own palette identities', () => {
-    for (const config of [{height: -10, biome: 0}, {lake: 500, biome: 15}, {biome: 16, temp: -18, ice: 90}]) {
+test('water, sea ice, cold terrain and desert retain their own palette identities', () => {
+    for (const config of [{height: -10, biome: 0}, {lake: 500, biome: 15}, {biome: 17, temp: -18, ice: 90}]) {
         const samples = patch(fixture(config));
-        for (const s of samples) assert.deepEqual(s.after, s.before, 'water and permanent snow must not receive invented soil');
+        for (const s of samples) assert.deepEqual(s.after, s.before, 'water and sea ice keep their water rendering palette');
     }
     const desert = patch(fixture({biome: 4, temp: 29, arid: .1}));
     for (const s of desert) {
@@ -75,7 +75,8 @@ test('water, permanent snow, cold terrain and desert retain their own palette id
         assert.ok(Math.abs(s.after[2] / s.after[1] - s.before[2] / s.before[1]) < 1e-10);
     }
     const cold = patch(fixture({biome: 8, temp: -5, arid: .8})), warm = patch(fixture());
-    assert.ok(mean(cold.map(s => delta(s.after, s.before))) < mean(warm.map(s => delta(s.after, s.before))) * .4, 'cold/snow cover should suppress the warm exposed-soil treatment');
+    assert.ok(mean(cold.map(s => chroma(s.after))) < mean(warm.map(s => chroma(s.after))) * .7, 'cold/snow cover should suppress the warm exposed-soil palette');
+    assert.ok(mean(cold.map(s => s.after[2] - s.after[0])) > 0, 'cold snow detail should remain cool rather than expose warm ochre');
 });
 
 test('material and climate interpolation remain continuous across parent cells and fine patch boundaries', () => {

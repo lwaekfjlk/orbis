@@ -556,6 +556,10 @@ class AtlasRenderer {
             gl.uniformMatrix4fv(this.depthLoc, false, this.lightVP);
             for (const [name, m] of Object.entries(this.meshes))
                 if (m.shadow && this.visible(name)) {
+                    // Terrain's smoothed normal does not describe each light-
+                    // space face. Cover the full PCF footprint on steep slopes
+                    // without separating building shadows from their footings.
+                    gl.polygonOffset(name === 'terrain' ? 4 : 2, name === 'terrain' ? 8 : 4);
                     gl.bindVertexArray(m.vao);
                     gl.drawArrays(gl.TRIANGLES, 0, m.count);
                 }
