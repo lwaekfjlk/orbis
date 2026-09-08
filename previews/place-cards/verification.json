@@ -1,0 +1,669 @@
+{
+  "product": "ORBIS",
+  "cities": [
+    {
+      "id": 260,
+      "kind": "city",
+      "name": "Sarrnavhaven",
+      "mixtures": {
+        "peoples": [
+          {
+            "id": 0,
+            "name": "Humans",
+            "share": 0.05767656586230645
+          },
+          {
+            "id": 1,
+            "name": "Sylvans",
+            "share": 0.01165911616132249
+          },
+          {
+            "id": 2,
+            "name": "Stonekin",
+            "share": 0.017844040864386165
+          },
+          {
+            "id": 3,
+            "name": "Beastfolk",
+            "share": 0.03612550027333555
+          },
+          {
+            "id": 4,
+            "name": "Hornkin",
+            "share": 0.8275151606999149
+          },
+          {
+            "id": 5,
+            "name": "Tideborn",
+            "share": 0.03924008120943346
+          },
+          {
+            "id": 6,
+            "name": "Drakekin",
+            "share": 0.009939534929301155
+          }
+        ],
+        "faiths": [
+          {
+            "id": 0,
+            "name": "Dawn Communion",
+            "share": 0.06553482221971445
+          },
+          {
+            "id": 1,
+            "name": "Veil of Stars",
+            "share": 0.2682562863144762
+          },
+          {
+            "id": 2,
+            "name": "Rootbound Covenant",
+            "share": 0.08770964057112188
+          },
+          {
+            "id": 3,
+            "name": "Ancestral Forge",
+            "share": 0.10909906136271774
+          },
+          {
+            "id": 4,
+            "name": "Tideway",
+            "share": 0.2867120141296768
+          },
+          {
+            "id": 5,
+            "name": "Manyfold Tradition",
+            "share": 0.1826881754022929
+          }
+        ]
+      },
+      "values": {
+        "townPopulation": 60898.695331998475,
+        "districtPopulation": 103790.22690423568
+      }
+    },
+    {
+      "id": 421,
+      "kind": "city",
+      "name": "Ath Annaber",
+      "mixtures": {
+        "peoples": [
+          {
+            "id": 0,
+            "name": "Humans",
+            "share": 0.8965890110190488
+          },
+          {
+            "id": 1,
+            "name": "Sylvans",
+            "share": 0.005656594153301534
+          },
+          {
+            "id": 2,
+            "name": "Stonekin",
+            "share": 0.008432561936843483
+          },
+          {
+            "id": 3,
+            "name": "Beastfolk",
+            "share": 0.014600174316720744
+          },
+          {
+            "id": 4,
+            "name": "Hornkin",
+            "share": 0.03521463515905214
+          },
+          {
+            "id": 5,
+            "name": "Tideborn",
+            "share": 0.029760235162621426
+          },
+          {
+            "id": 6,
+            "name": "Drakekin",
+            "share": 0.009746788252411808
+          }
+        ],
+        "faiths": [
+          {
+            "id": 0,
+            "name": "Dawn Communion",
+            "share": 0.05563557240211121
+          },
+          {
+            "id": 1,
+            "name": "Veil of Stars",
+            "share": 0.21883056943151039
+          },
+          {
+            "id": 2,
+            "name": "Rootbound Covenant",
+            "share": 0.0789274580626054
+          },
+          {
+            "id": 3,
+            "name": "Ancestral Forge",
+            "share": 0.09070569144094745
+          },
+          {
+            "id": 4,
+            "name": "Tideway",
+            "share": 0.34571285515860667
+          },
+          {
+            "id": 5,
+            "name": "Manyfold Tradition",
+            "share": 0.21018785350421895
+          }
+        ]
+      },
+      "values": {
+        "townPopulation": 73124.34246895454,
+        "districtPopulation": 157440.93495453498
+      }
+    },
+    {
+      "id": 413,
+      "kind": "city",
+      "name": "Tapiokylinkoski",
+      "mixtures": {
+        "peoples": [
+          {
+            "id": 0,
+            "name": "Humans",
+            "share": 0.03224804780934682
+          },
+          {
+            "id": 1,
+            "name": "Sylvans",
+            "share": 0.011108886623686217
+          },
+          {
+            "id": 2,
+            "name": "Stonekin",
+            "share": 0.021057357657663586
+          },
+          {
+            "id": 3,
+            "name": "Beastfolk",
+            "share": 0.030175362879312523
+          },
+          {
+            "id": 4,
+            "name": "Hornkin",
+            "share": 0.06334073787704633
+          },
+          {
+            "id": 5,
+            "name": "Tideborn",
+            "share": 0.8326060835568722
+          },
+          {
+            "id": 6,
+            "name": "Drakekin",
+            "share": 0.009463523596072339
+          }
+        ],
+        "faiths": [
+          {
+            "id": 0,
+            "name": "Dawn Communion",
+            "share": 0.06492642292728541
+          },
+          {
+            "id": 1,
+            "name": "Veil of Stars",
+            "share": 0.22622770822442595
+          },
+          {
+            "id": 2,
+            "name": "Rootbound Covenant",
+            "share": 0.09888144458014468
+          },
+          {
+            "id": 3,
+            "name": "Ancestral Forge",
+            "share": 0.10821828760710646
+          },
+          {
+            "id": 4,
+            "name": "Tideway",
+            "share": 0.13086116121154587
+          },
+          {
+            "id": 5,
+            "name": "Manyfold Tradition",
+            "share": 0.37088497544949156
+          }
+        ]
+      },
+      "values": {
+        "townPopulation": 69376.75395204214,
+        "districtPopulation": 119005.29133506215
+      }
+    }
+  ],
+  "realms": [
+    {
+      "id": 0,
+      "kind": "realm",
+      "name": "Maritime Republic of Sarras",
+      "mixtures": {
+        "peoples": [
+          {
+            "id": 0,
+            "name": "Humans",
+            "share": 0.12402723273894943
+          },
+          {
+            "id": 1,
+            "name": "Sylvans",
+            "share": 0.013300259674426199
+          },
+          {
+            "id": 2,
+            "name": "Stonekin",
+            "share": 0.01800495437877566
+          },
+          {
+            "id": 3,
+            "name": "Beastfolk",
+            "share": 0.03135933741037954
+          },
+          {
+            "id": 4,
+            "name": "Hornkin",
+            "share": 0.7655506305093274
+          },
+          {
+            "id": 5,
+            "name": "Tideborn",
+            "share": 0.037763434334074156
+          },
+          {
+            "id": 6,
+            "name": "Drakekin",
+            "share": 0.009994150954067547
+          }
+        ],
+        "faiths": [
+          {
+            "id": 0,
+            "name": "Dawn Communion",
+            "share": 0.06618381345016619
+          },
+          {
+            "id": 1,
+            "name": "Veil of Stars",
+            "share": 0.26942597627569764
+          },
+          {
+            "id": 2,
+            "name": "Rootbound Covenant",
+            "share": 0.09397837115498868
+          },
+          {
+            "id": 3,
+            "name": "Ancestral Forge",
+            "share": 0.10925345767064111
+          },
+          {
+            "id": 4,
+            "name": "Tideway",
+            "share": 0.27668912449068117
+          },
+          {
+            "id": 5,
+            "name": "Manyfold Tradition",
+            "share": 0.18446925695782518
+          }
+        ]
+      },
+      "values": {
+        "population": 677771.4894877472,
+        "towns": 5,
+        "districts": 10
+      }
+    },
+    {
+      "id": 1,
+      "kind": "realm",
+      "name": "Mountain Kingdom of Annwn",
+      "mixtures": {
+        "peoples": [
+          {
+            "id": 0,
+            "name": "Humans",
+            "share": 0.8555357750337408
+          },
+          {
+            "id": 1,
+            "name": "Sylvans",
+            "share": 0.009352936847306795
+          },
+          {
+            "id": 2,
+            "name": "Stonekin",
+            "share": 0.013310637723510496
+          },
+          {
+            "id": 3,
+            "name": "Beastfolk",
+            "share": 0.02268307377407286
+          },
+          {
+            "id": 4,
+            "name": "Hornkin",
+            "share": 0.05540082902293338
+          },
+          {
+            "id": 5,
+            "name": "Tideborn",
+            "share": 0.03480014893568371
+          },
+          {
+            "id": 6,
+            "name": "Drakekin",
+            "share": 0.00891659866275259
+          }
+        ],
+        "faiths": [
+          {
+            "id": 0,
+            "name": "Dawn Communion",
+            "share": 0.06109306280750056
+          },
+          {
+            "id": 1,
+            "name": "Veil of Stars",
+            "share": 0.23472200918034464
+          },
+          {
+            "id": 2,
+            "name": "Rootbound Covenant",
+            "share": 0.08430179691496713
+          },
+          {
+            "id": 3,
+            "name": "Ancestral Forge",
+            "share": 0.0968544637573463
+          },
+          {
+            "id": 4,
+            "name": "Tideway",
+            "share": 0.33268103599819315
+          },
+          {
+            "id": 5,
+            "name": "Manyfold Tradition",
+            "share": 0.19034763134164864
+          }
+        ]
+      },
+      "values": {
+        "population": 2236421.692770251,
+        "towns": 14,
+        "districts": 42
+      }
+    }
+  ],
+  "actions": [
+    "desktop Zoom focuses the selected real town",
+    "desktop Story opens that town’s saga and visual summary",
+    "Government & diplomacy clears town context and retains the country dossier after refresh",
+    "desktop Details retains the selected town",
+    "430×900: Zoom, Story and Details remain visible and clickable",
+    "360×800: Zoom, Story and Details remain visible and clickable"
+  ],
+  "layouts": [
+    {
+      "selector": "#omSelection",
+      "viewport": [
+        430,
+        900
+      ],
+      "rect": {
+        "left": 12,
+        "right": 366,
+        "top": 308.65625,
+        "bottom": 809
+      },
+      "documentWidth": 430,
+      "clientWidth": 352,
+      "contentWidth": 352,
+      "contentHeight": 498,
+      "clientHeight": 498,
+      "scrolls": []
+    },
+    {
+      "selector": "#omDrawer",
+      "viewport": [
+        430,
+        900
+      ],
+      "rect": {
+        "left": 12,
+        "right": 418,
+        "top": 77,
+        "bottom": 814
+      },
+      "documentWidth": 430,
+      "clientWidth": 404,
+      "contentWidth": 404,
+      "contentHeight": 735,
+      "clientHeight": 735,
+      "scrolls": [
+        true
+      ]
+    },
+    {
+      "selector": "#omDrawer",
+      "viewport": [
+        430,
+        900
+      ],
+      "rect": {
+        "left": 12,
+        "right": 418,
+        "top": 77,
+        "bottom": 814
+      },
+      "documentWidth": 430,
+      "clientWidth": 404,
+      "contentWidth": 404,
+      "contentHeight": 735,
+      "clientHeight": 735,
+      "scrolls": [
+        true
+      ]
+    },
+    {
+      "selector": "#omSelection",
+      "viewport": [
+        360,
+        800
+      ],
+      "rect": {
+        "left": 12,
+        "right": 296,
+        "top": 112.609375,
+        "bottom": 663
+      },
+      "documentWidth": 360,
+      "clientWidth": 282,
+      "contentWidth": 282,
+      "contentHeight": 548,
+      "clientHeight": 548,
+      "scrolls": []
+    },
+    {
+      "selector": "#omDrawer",
+      "viewport": [
+        360,
+        800
+      ],
+      "rect": {
+        "left": 12,
+        "right": 348,
+        "top": 77,
+        "bottom": 670
+      },
+      "documentWidth": 360,
+      "clientWidth": 334,
+      "contentWidth": 334,
+      "contentHeight": 591,
+      "clientHeight": 591,
+      "scrolls": [
+        true
+      ]
+    },
+    {
+      "selector": "#omDrawer",
+      "viewport": [
+        360,
+        800
+      ],
+      "rect": {
+        "left": 12,
+        "right": 348,
+        "top": 77,
+        "bottom": 670
+      },
+      "documentWidth": 360,
+      "clientWidth": 334,
+      "contentWidth": 334,
+      "contentHeight": 591,
+      "clientHeight": 591,
+      "scrolls": [
+        true
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "kind": "city",
+      "viewport": {
+        "width": 1480,
+        "height": 980
+      },
+      "file": "city-desktop.png"
+    },
+    {
+      "kind": "country",
+      "viewport": {
+        "width": 1480,
+        "height": 980
+      },
+      "file": "country-desktop.png"
+    },
+    {
+      "kind": "city",
+      "viewport": {
+        "width": 430,
+        "height": 900
+      },
+      "file": "city-430.png"
+    },
+    {
+      "kind": "country",
+      "viewport": {
+        "width": 430,
+        "height": 900
+      },
+      "file": "country-430.png"
+    },
+    {
+      "kind": "city",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "file": "city-360.png"
+    },
+    {
+      "kind": "country",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "file": "country-360.png"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "externalRequests": [],
+  "fixture": {
+    "realmId": 0,
+    "townIds": [
+      260,
+      421,
+      413
+    ],
+    "donorId": 413,
+    "otherRealmId": 1,
+    "seed": "Aereth-47",
+    "year": 400,
+    "landformVersion": 3
+  },
+  "ownerRefresh": {
+    "before": {
+      "population": 677771.4894877472,
+      "towns": 5,
+      "districts": 10
+    },
+    "after": {
+      "population": 798011.2808228093,
+      "towns": 6,
+      "districts": 11
+    }
+  },
+  "storyRefresh": {
+    "before": {
+      "townPopulation": 60898.695331998475,
+      "districtPopulation": 103790.22690423568
+    },
+    "after": {
+      "townPopulation": 61010.195331998475,
+      "districtPopulation": 104567.47690423568
+    }
+  },
+  "storyStreaming": {
+    "missing": {
+      "cityOverview": true,
+      "cityVitals": true,
+      "saga": false,
+      "title": "Sarrnavhaven",
+      "panel": "detail",
+      "context": {
+        "kind": "town",
+        "id": 260
+      },
+      "values": {
+        "townPopulation": 60898.695331998475,
+        "districtPopulation": 103790.22690423568
+      }
+    },
+    "restored": {
+      "cityOverview": false,
+      "cityVitals": true,
+      "saga": true,
+      "title": "Sarrnavhaven",
+      "panel": "detail",
+      "context": {
+        "kind": "town",
+        "id": 260
+      },
+      "values": {
+        "townPopulation": 60898.695331998475,
+        "districtPopulation": 103790.22690423568
+      }
+    }
+  },
+  "offline": true,
+  "actionBrowserBase": "e7bf5e6",
+  "latestUiSmokeBase": "7001d90",
+  "latestUiSmokePassed": true,
+  "unitChecks": {
+    "cards": 25,
+    "worldAndCountryProfile": 17
+  }
+}

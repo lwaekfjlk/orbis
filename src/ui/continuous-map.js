@@ -34,8 +34,8 @@ window.ContinuousMap = (() => {
   const el=document.createElement('div');el.id='cmLabels';E('stage').appendChild(el);
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
   const btn=document.createElement('button');btn.id='cmContext';btn.type='button';btn.className='cm-context';btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5L7 12L14 19M7 12H21"/></svg><span>Back to world</span>';btn.title='Return to the whole world (H)';btn.onclick=async()=>{if(ready()&&await home())renderer.canvas.focus({preventScroll:true});};E('omChrome').appendChild(btn);
-  layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();};
-  ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();};
+  layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();refreshPlaceDetails();};
+  ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();refreshPlaceDetails();};
   bindCamera();
   E('omHome').onclick=()=>ready()&&home();
   E('camera').onchange=()=>{if(!ready())return;cancel();renderer.elevation={relief:1.19,overhead:1.555,diorama:.65}[E('camera').value];renderer.request();};
@@ -47,12 +47,28 @@ window.ContinuousMap = (() => {
  }
  function beforeWorldBuild(){cancel();ruins?.reset();window.__ruinReady=false;window.__ruinFocus=null;if(layer)layer.reset(null,null);lastWorld=null;lastCamera='';selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
  function onWorldUpdate(){if(!enabled||!world||!sim)return;layer.bind(world,sim);ruins.bind(world,sim,LandmarkUI.registry.filter(s=>s.dragonRuins));if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
-  makePins();updateTitle();renderer.request();layer.cameraChanged();ruins.cameraChanged();if(selection&&OneMap.panel==='detail'){if(selection.ruin)ruinDetails(selection.model,selection.part,false);else details(selection.model,selection.building,false);}
+  makePins();updateTitle();renderer.request();layer.cameraChanged();ruins.cameraChanged();
+  refreshPlaceDetails();
+ }
+ function refreshPlaceDetails(){
+  // The open dossier owns its identity independently of the last picked mesh.
+  // This also keeps a story opened directly from a city card live across years.
+  const context=OneMap.detailContext;
+  if(OneMap.panel==='detail'&&context?.kind==='town'){
+   const p=sim?.provinces[context.id];
+   if(!p?.settled){OneMap.closeDrawer();return;}
+   const m=layer.models.get(context.id);
+   if(m)details(m,m.city.buildings.find(b=>b.id===context.buildingId)||null,false);
+   else{renderCityOverview(p.id);E('omDrawerTitle').textContent=p.name;}
+  }else if(OneMap.panel==='detail'&&context?.kind==='ruin'){
+   const m=ruins.models.get(context.id)||(selection?.ruin&&selection.model.id===context.id?selection.model:null);
+   if(!LandmarkUI.registry.some(site=>site.id===context.id)){OneMap.closeDrawer();return;}
+   if(m)ruinDetails(m,m.parts.find(p=>p.id===context.partId)||null,false);
+  }
  }
  function refreshRuinSelection(){
   if(!selection?.ruin)return;const current=ruins.models.get(selection.model.id);
   if(current&&current!==selection.model){const part=selection.part?current.parts.find(p=>p.id===selection.part.id)||null:null;if(E('omSelection').classList.contains('hidden'))selection={ruin:true,model:current,part};else selectRuin({model:current,part});}
-  if(OneMap.panel==='detail')ruinDetails(selection.model,selection.part,false);
  }
  function updateTitle(){if(!enabled||!world||!sim)return;const r=renderer,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=AtlasSpace.TOWN_ZOOM*1.04&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
@@ -156,7 +172,7 @@ window.ContinuousMap = (() => {
   E('cmFocusRuin').onclick=()=>focusRuinPart(m,part);E('cmRuinDetails').onclick=()=>ruinDetails(m,part);E('cmRuinContext').onclick=wider;
  }
  function ruinDetails(m,part=null,open=true){
-  if(!m)return;m=ruins.models.get(m.id)||m;if(part)part=m.parts.find(p=>p.id===part.id)||null;if(open)OneMap.openDrawer('detail');const site=m.site,status=PoliticalLand.status(world,sim,site.i);
+  if(!m)return;m=ruins.models.get(m.id)||m;if(part)part=m.parts.find(p=>p.id===part.id)||null;if(open)OneMap.openDrawer('detail',{kind:'ruin',id:m.id,partId:part?.id});const site=m.site,status=PoliticalLand.status(world,sim,site.i);
   E('omDrawerTitle').textContent=part?.name||site.name;
   E('inspector').innerHTML=`<div class="overline">ANCIENT DRAGON RUINS</div><h2>${escapeHTML(site.name)}</h2><p class="identity">${escapeHTML(m.recipe.provenance||'Weathered traces of an older dragon realm.')}</p><div class="metrics"><div><b>${Math.round(world.height[site.i]).toLocaleString()} m</b><small>ELEVATION</small></div><div><b>${m.parts.filter(p=>p.role!=='foundation').length}</b><small>SURVIVING FRAGMENTS</small></div></div><p>${escapeHTML(status.label)}</p>${part?`<h3>${escapeHTML(part.name)}</h3><p>${escapeHTML(part.note||'An ancient surviving structure.')}</p>`:''}<div class="inspectbuttons"><button id="cmRuinWhole">View the whole ruin</button><button id="cmRuinGLB">Export ruin GLB</button></div><h3>Explore the remains</h3><div class="cm-ruin-part-list">${m.parts.filter(p=>p.role!=='foundation').map(p=>`<button data-ruin-part="${escapeHTML(p.id)}">${escapeHTML(p.name)} ↗</button>`).join('')}</div>`;
   E('cmRuinWhole').onclick=()=>focusRuinPart(m,null);
@@ -212,7 +228,7 @@ window.ContinuousMap = (() => {
    animate(AtlasSpace.point(world,x,y,renderer.relief),12,1.02,1100);
   });
  }
- function details(m,b=null,open=true){if(!m)return;if(open)OneMap.openDrawer('detail');const p=sim.provinces[m.p.id],e=m.city.siteEnvironment;E('omDrawerTitle').textContent=b?.name||p.name;  E('inspector').innerHTML=`<div class="overline">SAME MAP · WORLD CELL ${p.i}</div><h2>${escapeHTML(p.name)}</h2>${placeNameOriginHTML(p)}<p class="identity">${escapeHTML(LandmarkBinding.highCitadelLabel(p)||e.label)}${p.highCitadel?' · '+Math.round(p.highCitadel.elevation).toLocaleString()+' m':''}. These slopes, lake shores, glaciers and river valleys are the parent world's own geography. No replacement scenery is loaded.</p><div class="metrics"><div><b>${fmtPop(p.urbanPop)}</b><small>TOWN POPULATION</small></div><div><b>${e.temperature.toFixed(1)}°</b><small>SITE TEMPERATURE</small></div><div><b>${Math.round(e.minElevation)}–${Math.round(e.maxElevation)}</b><small>SURROUNDING ELEVATION</small></div><div><b>${m.city.stats.modules}</b><small>BUILDING COMPOUNDS</small></div></div><div class="inspectbuttons"><button id="cmPullBack">Wider setting</button><button id="cmTownGLB">Export town GLB</button></div>${sagaHTML(p)}<h3>Landmarks in this city</h3><div class="cm-building-list">${m.city.buildings.filter(b=>b.landmark).map(b=>`<button data-cm-building="${b.id}">${escapeHTML(b.name)} ↗</button>`).join('')}</div><h3>Public works</h3><div class="cm-building-list">${Object.entries(CITY_PROJECTS).map(([k,d])=>{const q=cityProjectQuote(sim,p.id,k);return `<button data-cm-project="${k}" ${q.ok?'':'disabled'} title="${escapeHTML(q.reason)}">${d.name}${q.ok?' · '+q.cost.toFixed(1):''}</button>`;}).join('')}</div><p class="smallnote">The camera stays in the atlas. Architecture is synthetic, relief and building scales are exaggerated; detailed residents and interiors are not simulated.</p>`;
+ function details(m,b=null,open=true){if(!m)return;if(open)OneMap.openDrawer('detail',{kind:'town',id:m.p.id,buildingId:b?.id});const p=sim.provinces[m.p.id],e=m.city.siteEnvironment;E('omDrawerTitle').textContent=b?.name||p.name;  E('inspector').innerHTML=`<div class="overline">SAME MAP · WORLD CELL ${p.i}</div><h2>${escapeHTML(p.name)}</h2>${placeVitalsHTML(PlaceVitals.city(sim,p))}${placeNameOriginHTML(p)}<p class="identity">${escapeHTML(LandmarkBinding.highCitadelLabel(p)||e.label)}${p.highCitadel?' · '+Math.round(p.highCitadel.elevation).toLocaleString()+' m':''}. These slopes, lake shores, glaciers and river valleys are the parent world's own geography. No replacement scenery is loaded.</p><div class="metrics"><div><b>${fmtPop(p.urbanPop)}</b><small>TOWN POPULATION</small></div><div><b>${e.temperature.toFixed(1)}°</b><small>SITE TEMPERATURE</small></div><div><b>${Math.round(e.minElevation)}–${Math.round(e.maxElevation)}</b><small>SURROUNDING ELEVATION</small></div><div><b>${m.city.stats.modules}</b><small>BUILDING COMPOUNDS</small></div></div><div class="inspectbuttons"><button id="cmPullBack">Wider setting</button><button id="cmTownGLB">Export town GLB</button></div>${sagaHTML(p)}<h3>Landmarks in this city</h3><div class="cm-building-list">${m.city.buildings.filter(b=>b.landmark).map(b=>`<button data-cm-building="${b.id}">${escapeHTML(b.name)} ↗</button>`).join('')}</div><h3>Public works</h3><div class="cm-building-list">${Object.entries(CITY_PROJECTS).map(([k,d])=>{const q=cityProjectQuote(sim,p.id,k);return `<button data-cm-project="${k}" ${q.ok?'':'disabled'} title="${escapeHTML(q.reason)}">${d.name}${q.ok?' · '+q.cost.toFixed(1):''}</button>`;}).join('')}</div><p class="smallnote">The camera stays in the atlas. Architecture is synthetic, relief and building scales are exaggerated; detailed residents and interiors are not simulated.</p>`;
   E('cmPullBack').onclick=wider;E('cmTownGLB').onclick=()=>{const meshes={};for(const name of m.meshNames)if(renderer.meshes[name]&&!name.endsWith(':silhouettes'))meshes[name]=renderer.meshes[name];meshes.rivers=RiverDetail.townMesh(layer,m);saveBlob(new Blob([exportGeometryGLB(meshes,{city:p.name,crs:'TELLURIC_RECTANGULAR_ATLAS',note:'Town structures in original atlas coordinates; surrounding world terrain is not included in this town-only export.'})],{type:'model/gltf-binary'}),'orbis-'+p.name+'-atlas-town.glb');};
   E('inspector').querySelectorAll('[data-cm-building]').forEach(el=>el.onclick=()=>focusBuilding(p.id,el.dataset.cmBuilding));bindSaga(E('inspector'),p);E('inspector').querySelectorAll('[data-cm-project]').forEach(el=>el.onclick=async()=>{pause();const result=startCityProject(sim,world,p.id,el.dataset.cmProject);toast(result.message);refreshAll();await layer.ensure(p.id);details(layer.models.get(p.id));});
  }

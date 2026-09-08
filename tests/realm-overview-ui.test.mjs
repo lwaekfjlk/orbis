@@ -48,6 +48,8 @@ function harness() {
         TownCatalog: { native: () => 'town' }, BIOME: [['Temperate forest']],
         CityEnvironment: { band: () => 'Mild upland' }, fmtPop: String,
         escapeHTML: value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
+        PlaceVitals: {city: (s,p) => ({year:s.year,pop:p.urbanPop})},
+        placeVitalsHTML: v => `<div class="place-vitals">${v.year}/${v.pop}</div>`,
         placeNameOriginHTML(p) { calls.placeOrigins.push(p); return p?.originMarkup || ''; },
         realmNameOriginHTML(c) { calls.realmOrigins.push(c); return c?.originMarkup || ''; },
         pause() { calls.pauses++; context.playing = false; },

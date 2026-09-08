@@ -153,13 +153,20 @@ body.onemap #omDrawer .rankrow{color:var(--ui-muted)}
 body.onemap #omDrawer .geolock,body.onemap #omDrawer .geographyintro,body.onemap #omDrawer .navnote,body.onemap #omDrawer #rerollPolitics,body.onemap #omDrawer #rerollSocieties,body.onemap #omDrawer .lm-metrics{display:none}
 body.onemap #omHistory #eventFilter{margin-bottom:14px}
 body.onemap #omHistory .events{max-height:none}
-body.onemap #omSelection{position:absolute;left:22px;bottom:112px;max-width:302px;min-width:236px;pointer-events:auto;border-radius:11px;padding:17px 20px 15px}
+body.onemap #omSelection{position:absolute;left:22px;bottom:112px;width:344px;max-width:344px;min-width:236px;pointer-events:auto;border-radius:11px;padding:17px 20px 15px}
+body.onemap #omSelectionBody{max-height:calc(100dvh - 236px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#647f71 transparent;padding-right:3px}
 body.onemap #omSelection h3{font:21px/1.2 Georgia,serif;margin:6px 15px 7px 0;color:var(--ui-text);font-weight:400}
 body.onemap #omSelection p{margin:0;font-size:10px;line-height:1.7;color:var(--ui-muted)}
 body.onemap #omSelection .om-eyebrow{font-size:7px;margin:0;max-width:240px}
 body.onemap #omSelection .om-actions{display:flex;gap:6px;margin-top:12px}
 body.onemap #omSelection .om-actions button{border:1px solid #ffffff25;padding:6px 10px;font-size:10px}
 body.onemap #omSelection .om-actions .main{background:var(--ui-accent);color:#284535;border:0;min-width:0;margin:0}
+body.onemap #omSelection .realm-name-origin{padding:10px 0;border-top:1px solid #ffffff15}
+body.onemap #omSelection .om-teller{margin:12px 0 0;padding-top:12px;border-top:1px solid #ffffff15}
+body.onemap #omSelection .om-teller-face{width:48px;height:48px;border-radius:8px}
+body.onemap #omSelection .om-teller-said b{font-size:13px}
+body.onemap #omSelection .om-teller-said small{font-size:8px;letter-spacing:.035em}
+body.onemap #omSelection .om-teller-said p{font-size:10px}
 body.onemap #omSelectionClose{position:absolute;top:7px;right:6px;width:25px;height:25px;padding:0;font-size:18px}
 body.onemap .om-forge{position:fixed;left:auto;top:88px;right:22px;bottom:auto;width:346px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 198px);margin:0;padding:22px;border-radius:13px;z-index:45;overflow:auto;overscroll-behavior:contain;font-size:12px;backdrop-filter:blur(20px)}
 body.onemap .om-forge::backdrop{display:none}
@@ -223,4 +230,33 @@ body.onemap #omDrawer .realm-overview section p{font:13px/1.8 Georgia,serif;colo
 body.onemap #omDrawer .realm-overview .realm-history{list-style:none;padding:0;margin:0}
 body.onemap #omDrawer .realm-overview .realm-history li{border-left:1px solid #ae956866;padding:0 0 14px 13px;font:12px/1.7 Georgia,serif;color:#c8d0bf}
 body.onemap #omDrawer .realm-overview .realm-history time{display:block;color:#dbc692;font:10px/1.4 system-ui,sans-serif;margin-bottom:3px}
+
+/* The same census graphics fit a quick card or a full country introduction. */
+body.onemap .place-vitals{margin:15px 0;color:#dce7d4;font-variant-numeric:tabular-nums}
+body.onemap .vital-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:15px}
+body.onemap .vital-metric{min-width:0;background:#e1ecc708;border:1px solid #e1ecc716;border-radius:7px;padding:10px 11px}
+body.onemap .vital-metric>b{display:block;font:23px/1.15 Georgia,serif;letter-spacing:-.4px;color:#edf0d9;overflow-wrap:anywhere}
+body.onemap .vital-metric>small{display:block;margin-top:5px;font:9px/1.4 system-ui,sans-serif;color:#b7c7b5;letter-spacing:.03em}
+body.onemap .vital-mix+.vital-mix{margin-top:13px}
+body.onemap .vital-caption{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;font:11px/1.4 system-ui,sans-serif}
+body.onemap .vital-caption strong{font-weight:600;color:#dce7d4}
+body.onemap .vital-caption small{font-size:8px;color:#a8bba8}
+body.onemap .vital-caption b{font-weight:500;color:#edf0d9}
+body.onemap .vital-stack{display:flex;height:9px;border-radius:4px;overflow:hidden;background:#c8d4c21a;box-shadow:inset 0 0 0 1px #ffffff0a}
+body.onemap .vital-segment{display:block;flex-shrink:0;height:100%;background:var(--vital-color)}
+body.onemap .vital-segment+.vital-segment{box-shadow:inset 1px 0 #20363265}
+body.onemap .vital-legend{display:flex;flex-wrap:wrap;gap:3px 9px;margin-top:7px;font:9px/1.45 system-ui,sans-serif;color:#bfcdbb}
+body.onemap .vital-legend>span{display:inline-flex;align-items:baseline;gap:4px;min-width:0}
+body.onemap .vital-legend i{width:6px;height:6px;flex-shrink:0;border-radius:2px;background:var(--vital-color);align-self:center}
+body.onemap .vital-legend b{font:inherit!important;color:#e2e8d6!important}
+body.onemap .vital-legend .vital-other{color:#a2b39f}
+body.onemap .vital-indicators{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:17px;padding-top:13px;border-top:1px solid #ffffff15}
+body.onemap .vital-indicator{min-width:0}
+body.onemap .vital-gauge{position:relative;height:5px;border-radius:3px;background:#c8d4c21a}
+body.onemap .vital-gauge span{display:block;height:100%;border-radius:3px;background:var(--vital-color)}
+body.onemap .vital-gauge i{position:absolute;top:-3px;width:1px;height:11px;background:#f2edd3b0}
+body.onemap .vital-target{display:block;margin-top:5px;font:8px/1.4 system-ui,sans-serif;color:#a8bba8}
+body.onemap #omDrawer .realm-overview .realm-capital{display:flex;justify-content:space-between;gap:15px;margin:14px 0;font:11px/1.5 system-ui,sans-serif}
+body.onemap #omDrawer .realm-capital strong{text-align:right}
+@media(max-width:700px){body.onemap #omSelectionBody{max-height:calc(100dvh - 233px)}body.onemap .vital-metric>b{font-size:21px}body.onemap .vital-metric{padding:8px 9px}body.onemap .vital-legend{font-size:9px}}
 @media(max-width:700px){body.onemap .maplabel.realmLabel em{font-size:calc(var(--realm-label-size,18px) * .85)}}
