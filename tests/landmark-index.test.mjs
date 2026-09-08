@@ -17,7 +17,7 @@ return {generateWorld,createCivilization,generateCity,generateCityLandmark,Landm
 LandmarkCatalog,SacredCityKit,TownCityBinding,TownCatalog,wonderFor,physicalFingerprint,
 settlementFingerprint,politicalFingerprint,calls,
 withoutDryConnections(fn){const prior=cityDrySegment;cityDrySegment=()=>false;try{return fn()}finally{cityDrySegment=prior}}};`)();
-let w,s,inventory,before;
+let w,s,baseline,inventory,before;
 const fingerprints=(w,s)=>[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)];
 // Public directory baseline from complete eager town generation under the current
 // sovereignty rules. The optimized query must preserve that independent result.
@@ -26,16 +26,26 @@ const metadata=entries=>entries.map(({id,name,recipe,provinceId,i,x,y,priority,k
 
 test.before(async()=>{
  w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
+ baseline=E.createCivilization(w,{realms:18,historySeed:'First-dawn',highCitadelsVersion:0});
+ // Candidate founding performs its own placement preflight. Directory counts
+ // begin after both simulations are initialized on exactly the same geography.
+ Object.assign(E.calls,{full:0,query:0,context:0});
  before=fingerprints(w,s);inventory=E.LandmarkBinding.inventory(w,s);
 });
 
-test('the first directory preserves all 152 eager-baseline entries under the new founding rules',()=>{
+test('the directory preserves the 152 current founding entries and adds two exact high cities',()=>{
  assert.equal(E.calls.full,0);assert.equal(E.calls.context,0);
- assert.equal(E.calls.query,78,'every eligible site still receives an exact placement query');
- assert.equal(inventory.length,152);
+ assert.equal(E.calls.query,80,'78 ordinary candidates and two compact high cities receive exact placement queries');
+ const ordinary=inventory.filter(site=>!site.highCitadel),high=inventory.filter(site=>site.highCitadel);
+ assert.equal(inventory.length,154);assert.equal(ordinary.length,152);assert.equal(high.length,2);
+ assert.deepEqual(high.map(site=>site.highCitadel.kind).sort(),['dragon','holy']);
+ assert(high.every(site=>site.buildingId&&site.recipe.buildingId===site.buildingId&&!site.recipe.sacred));
  assert.equal(inventory.filter(site=>site.recipe.sacred).length,69);
- const digest=createHash('sha256').update(JSON.stringify(metadata(inventory))).digest('hex');
+ const original=E.LandmarkBinding.inventory(w,baseline);
+ assert.equal(original.length,152);assert(original.every(site=>!site.highCitadel));
+ const digest=createHash('sha256').update(JSON.stringify(metadata(original))).digest('hex');
  assert.equal(digest,'21acd52dc3052aca20b261d8adbfc3beb613e5ceffe3fde15fbafd72d543ca23');
+ assert.deepEqual(metadata(ordinary),metadata(original),'founding the high cities must preserve every ordinary directory entry from the same world');
  for(const id of [414,365,458,150,291,366,320,354,111])
   assert(!inventory.some(site=>site.provinceId===id&&site.recipe.sacred),'unplaceable wonder in province '+id);
  assert.deepEqual(fingerprints(w,s),before);
@@ -43,10 +53,10 @@ test('the first directory preserves all 152 eager-baseline entries under the new
 
 test('cloning or searching the index does not invoke the local-building getter',()=>{
  const calls={...E.calls};
- assert.equal(JSON.parse(JSON.stringify(inventory)).length,152);
- assert.equal(structuredClone(inventory).length,152);
+ assert.equal(JSON.parse(JSON.stringify(inventory)).length,154);
+ assert.equal(structuredClone(inventory).length,154);
  const search=inventory.map(site=>({...site,type:'site'}));
- assert.equal(search.length,152);assert.deepEqual(E.calls,calls);
+ assert.equal(search.length,154);assert.deepEqual(E.calls,calls);
  const site=inventory.find(site=>site.recipe.sacred);
  assert.equal(Object.getOwnPropertyDescriptor(site,'building').enumerable,false);
 });

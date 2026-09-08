@@ -290,7 +290,7 @@ function buildMarketGraph(sim, w) {
 }
 function initializeSettlements(w, options = {}) {
     const physical = physicalFingerprint(w), historySeed = String(options.historySeed ?? 'First-dawn'), seed = seedHash(w.params.seed + ' / ' + historySeed), rng = random32(seed + 851), g = deriveHumanGeography(w);
-    const sim = { version: 6, year: 400, seed, physicalSeed: w.seed, physicalHash: physical, options: { realms: options.realms || 18, conflict: options.conflict ?? 1, historySeed, politySeed: String(options.politySeed ?? 'First-councils') }, provinces: [], realms: [], relations: {}, wars: [], routes: [], events: [], history: [], nextWar: 1, totalBattles: 0, totalConquests: 0, totalSplits: 0 };
+    const sim = { version: 6, year: 400, seed, physicalSeed: w.seed, physicalHash: physical, options: { realms: options.realms || 18, conflict: options.conflict ?? 1, historySeed, politySeed: String(options.politySeed ?? 'First-councils'), highCitadelsVersion: options.highCitadelsVersion ?? 1 }, provinces: [], realms: [], relations: {}, wars: [], routes: [], events: [], history: [], nextWar: 1, totalBattles: 0, totalConquests: 0, totalSplits: 0 };
     const grid = new Int32Array(GN).fill(-1), cost = new Float64Array(GN).fill(Infinity), heap = new MinHeap();
     // Tessellation is solely for accounting. An empty district does NOT receive a settlement.
     for (let by = 2; by < GH - 2; by += 7)
@@ -450,6 +450,7 @@ function initializeSettlements(w, options = {}) {
         p.siteReason = p.settled ? `Supported by ${traits.join(', ') || 'rain-fed farms and local paths'}. ${Math.round(p.urbanSupport).toLocaleString('en-US')} model people of shared surplus; no capital bonus.` : p.fresh < .3 ? 'No reliable modeled freshwater at the best site. No town was created.' : p.sitePotential < .15 ? 'Low food/water support or difficult terrain. Dispersed population, not an automatic city.' : 'Local population remains dispersed, or a nearby market captures the limited surplus.';
     }
     sim.settlementBudget = { available: budget, allocated, retained: sim.provinces.reduce((s, p) => s + p.urbanSupport, 0) };
+    if (sim.options.highCitadelsVersion === 1) HighCitadels.found(sim, w);
     initializeCulturalOrigins(sim);
     sim.settlementSignature = settlementFingerprint(sim);
     sim.initialDistribution = settlementDistribution(sim, w);
@@ -1234,12 +1235,12 @@ function stepCivilization(sim, w) {
     }
     for (const p of sim.provinces) {
         const prev = p.city;
-        const target = Math.min(p.pop * .58, p.urbanSupport * (.70 + .22 * p.dev));
-        p.urbanPop = Math.min(p.pop, Math.max(0, p.urbanPop + (target - p.urbanPop) * .08));
+        const target = HighCitadels.cap(p, Math.min(p.pop * .58, p.urbanSupport * (.70 + .22 * p.dev)));
+        p.urbanPop = HighCitadels.cap(p, Math.min(p.pop, Math.max(0, p.urbanPop + (target - p.urbanPop) * .08)));
         p.ruralPop = p.pop - p.urbanPop;
         p.city = p.urbanPop >= 9000;
         p.settled = p.urbanPop >= 650;
-        p.settlementType = p.city ? (p.urbanPop > 30000 ? 'City' : 'Town') : p.settled ? 'Village' : p.pop > 1000 ? 'Dispersed households' : 'Sparse / uninhabited';
+        p.settlementType = p.highCitadel && p.settled ? HighCitadels.type(p) : p.city ? (p.urbanPop > 30000 ? 'City' : 'Town') : p.settled ? 'Village' : p.pop > 1000 ? 'Dispersed households' : 'Sparse / uninhabited';
         if (prev !== p.city)
             logEvent(sim, 'prosperity', `${p.name} ${p.city ? 'grows into a town' : 'contracts below town size'} as its population changes.`, p.owner >= 0 ? [p.owner] : []);
     }

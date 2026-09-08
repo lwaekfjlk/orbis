@@ -5,7 +5,8 @@ import { readFileSync } from 'node:fs';
 import { loadEngine, defaults, root } from './engine-loader.mjs';
 
 const E = loadEngine();
-const options = { realms: 18, historySeed: 'First-dawn' };
+const options = { realms: 18, historySeed: 'First-dawn', highCitadelsVersion: 0 };
+const currentOptions = { realms: 18, historySeed: 'First-dawn' };
 // Captured before the sovereignty change. These include full precision people
 // counts and every province's cells, rather than just rounded fingerprint inputs.
 const baselines = [
@@ -14,6 +15,7 @@ const baselines = [
     { seed: 'Meridian-21', form: 'rift', physical: '02a4a06d', settlement: '395254c3', records: '1b696840804b3d8340880644e4bef9724afcc70d132701bea5b547f38a2c95e7', population: 9114658.009405773, urbanPopulation: 2644871.553258386, provinces: 501, towns: 68, settled: 81, gridSignature: 2348767987 }
 ];
 const snapshots = [];
+const scenarios = () => snapshots.flatMap(snapshot => [snapshot, { ...snapshot, s: snapshot.current }]);
 const faithBaselines = [
     '0fee3ccbb66bb69d32f91ba57bdcb06127852322e72db097b86e7305561f9dd4',
     'f6d1d243acbd4e6246f6fdf5f67ca4053c86200ea89b18b5da4f4a59465aa2da',
@@ -30,7 +32,7 @@ function assertAudit(s, w) {
 test.before(async () => {
     for (const baseline of baselines) {
         const w = await E.generateWorld({ ...defaults, seed: baseline.seed, form: baseline.form });
-        snapshots.push({ baseline, w, s: E.createCivilization(w, options) });
+        snapshots.push({ baseline, w, s: E.createCivilization(w, options), current: E.createCivilization(w, currentOptions) });
     }
 });
 
@@ -50,8 +52,35 @@ test('sovereignty changes preserve geography, every settlement and the exact pop
     }
 });
 
+test('rare high citadels preserve the three worlds population, ordinary provinces and majority countries', t => {
+    for (const { s, current, w, baseline } of snapshots) {
+        const high = current.provinces.filter(p => p.highCitadel), added = new Set(high.map(p => p.id));
+        assert.equal(current.options.highCitadelsVersion, 1); assert(high.length <= 2);
+        assert.equal(current.provinces.reduce((sum, p) => sum + p.pop, 0), baseline.population);
+        assert.equal(current.provinces.filter(p => p.city).length, baseline.towns);
+        assert.equal(current.provinces.filter(p => p.settled).length, baseline.settled + high.length);
+        for (const p of current.provinces) {
+            const before = s.provinces[p.id];
+            assert.equal(p.pop, before.pop); assert.deepEqual(p.people, before.people); assert.deepEqual(p.faith, before.faith);
+            if (!added.has(p.id)) assert.deepEqual(p, before, baseline.seed + ': ordinary province changed');
+            else {
+                assert.equal(p.i, before.i); assert.equal(before.settled, false);
+                assert.equal(p.capacity, before.capacity); assert.equal(p.ruralCapacity, before.ruralCapacity);
+                assert(p.urbanPop >= 650 && p.urbanPop <= 1100); assert(p.highCitadel.elevation >= 3500);
+                assert.equal(p.ruralPop, p.pop - p.urbanPop);
+            }
+        }
+        assert.deepEqual(current.culturalOrigins, s.culturalOrigins);
+        assert.deepEqual(current.realms, s.realms); assert.deepEqual(current.relations, s.relations);
+        assert.equal(E.politicalFingerprint(current), E.politicalFingerprint(s));
+        assert.equal(E.physicalFingerprint(w), baseline.physical); assert.equal(current.gridSignature, baseline.gridSignature);
+        assertAudit(current, w);
+        t.diagnostic(JSON.stringify({ seed: baseline.seed, highCitadels: high.map(p => p.id), settlement: E.settlementFingerprint(current), political: E.politicalFingerprint(current) }));
+    }
+});
+
 test('each founding country has a visible majority and still contains minority populations', () => {
-    for (const { s, baseline } of snapshots) {
+    for (const { s, baseline } of scenarios()) {
         const countries = s.realms.filter(c => c.alive);
         if (baseline.seed === defaults.seed) assert(countries.length >= 20 && countries.length <= 26, 'the default world should contain twenty-something countries, got ' + countries.length);
         assert(countries.length > 1 && countries.length < s.provinces.filter(p => p.city).length, baseline.seed + ': settlement geography should produce multiple consolidated countries');
@@ -72,7 +101,7 @@ test('each founding country has a visible majority and still contains minority p
 });
 
 test('all existing towns belong to connected land territories with bounded direct administration', () => {
-    for (const { s, w, baseline } of snapshots) {
+    for (const { s, w, baseline } of scenarios()) {
         for (const p of s.provinces.filter(p => p.settled)) assert(s.realms[p.owner]?.alive, baseline.seed + ': unclaimed settlement ' + p.name);
         for (const c of s.realms.filter(c => c.alive)) {
             assert.equal(s.provinces[c.capital].owner, c.id, c.name + ' owns its capital');
@@ -93,7 +122,7 @@ test('all existing towns belong to connected land territories with bounded direc
 });
 
 test('remaining unclaimed residents have real connected communities and wilderness stays a small remainder', () => {
-    for (const { s, w, baseline } of snapshots) {
+    for (const { s, w, baseline } of scenarios()) {
         let unclaimedPopulation = 0, totalArea = 0, claimedArea = 0;
         for (const p of s.provinces) {
             const area = p.cells.reduce((n, i) => n + w.area[i], 0);
@@ -135,13 +164,19 @@ test('founding and political rerolls are deterministic without moving settlement
     assert.equal(digest(records(rerolled)), baseline.records);
     assert.equal(E.physicalFingerprint(w), baseline.physical);
     assertAudit(rerolled, w);
+    for (const { w, current, baseline } of snapshots) {
+        assert.deepEqual(E.createCivilization(w, currentOptions), current);
+        const next = E.createCivilization(w, E.HighCitadels.historyOptions(current, { politySeed: 'First-councils*' }));
+        assert.equal(digest(records(next)), digest(records(current)), baseline.seed + ': current reroll moved or changed a settlement');
+        assert.equal(E.physicalFingerprint(w), baseline.physical); assertAudit(next, w);
+    }
 });
 
 test('the actual save validator preserves stored populations and histories and JSON saves continue identically', () => {
     const ui = readFileSync(root + '/src/ui/world-ui.js', 'utf8');
     const body = ui.slice(ui.indexOf('function validateSimulation('), ui.indexOf('function refreshAll('));
     const validate = Function(...Object.keys(E), body + ';return validateSimulation;')(...Object.values(E));
-    for (const { w, s, baseline } of snapshots) {
+    for (const { w, s, baseline } of scenarios()) {
         const original = structuredClone(s);
         for (let year = 0; year < 3; year++) E.stepCivilization(original, w);
         const restored = JSON.parse(JSON.stringify(original));

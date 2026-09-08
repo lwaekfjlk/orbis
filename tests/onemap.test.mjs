@@ -185,7 +185,7 @@ test('The climate work changed how the world is DRAWN, not what the world IS',as
  const {loadEngine,defaults}=await import('./engine-loader.mjs');
  const E=loadEngine(),w=await E.generateWorld(defaults);
  assert.equal(E.physicalFingerprint(w),'440ae5d0','height, biome, rain, temp, lake, flow, ice and plate must be untouched');
- assert.equal(E.settlementFingerprint(E.createCivilization(w,{realms:18,historySeed:'First-dawn'})),'6b6c5ea8');
+ assert.equal(E.settlementFingerprint(E.createCivilization(w,{realms:18,historySeed:'First-dawn'})),'e6aee7b8');
  // BIOME is append-only. An index is written into saves and read by every biome test
  // here, so the ones that exist may not be renamed or reordered; adding a class at the
  // end — the subtropics, in 13.5.0 — is how the vocabulary grows.
@@ -199,7 +199,7 @@ test('Geography-driven district names leave the society itself untouched, and ne
  const E=loadEngine(),w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
  // The naming rewrite draws its two rolls where the old cName(rng) drew two, so the
  // random stream — and therefore every population and polity — is bit-identical.
- assert.equal(E.settlementFingerprint(s),'6b6c5ea8');
+ assert.equal(E.settlementFingerprint(s),'e6aee7b8');
  const names=s.provinces.map(p=>p.name);
  assert.equal(new Set(names).size,names.length,'district names must be unique');
  const numbered=names.filter(n=>/\d/.test(n));

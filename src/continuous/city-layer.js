@@ -80,7 +80,7 @@ const ExcavationTerrain=(()=>{
 const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
  constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.terrainColorCache=null;this.lastLandscapeKey='none';this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
- key(p){const survey=citySurvey(this.sim,p);return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}/${survey.terrainSpan}/${survey.width}/${survey.depth}`;}
+ key(p){const survey=citySurvey(this.sim,p);return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}/${survey.terrainSpan}/${survey.width}/${survey.depth}${p.highCitadel?'/high/'+JSON.stringify(p.highCitadel):''}`;}
  remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);this.lastRiverKey=null;if(this.world&&this.r.world===this.world)this.r.buildRivers?.();
   if(a.excavations?.length){this.lastTerrainKey=null;if(this.world&&this.r.world===this.world){this.r.buildTerrain?.();this.r.request?.();}}
  }
@@ -95,7 +95,7 @@ class ContinuousCityLayer {
   let retired=false;for(const [id,model] of [...this.models]){const p=s.provinces[id],eligible=p?.settled&&p.urbanPop>=650;
    // A new neighbouring town can shrink the survey as well as a capital change.
    // Release obsolete buildings before releasing their ground protection.
-   if(!eligible||model.city.terrainSpan!==citySurvey(s,p).terrainSpan){this.remove(id);if(!eligible&&this.focusId===id)this.focusId=null;retired=true;}}
+   if(!eligible||model.city.terrainSpan!==citySurvey(s,p).terrainSpan||((p.highCitadel||model.city.highCitadel)&&model.key!==this.key(p))){this.remove(id);if(!eligible&&this.focusId===id)this.focusId=null;retired=true;}}
   if(retired)this.drop('cm:selection');
   const changed=this.prepareLandscape();
   if((changed||retired)&&this.natural){this.r.buildTerrain?.();this.r.buildRivers?.();this.r.buildNearRoads?.();this.buildEnvironment();this.r.request();}
@@ -402,7 +402,13 @@ class ContinuousCityLayer {
   // shared one beige wall and one slate roof, with the wall not even asking which
   // town it belonged to. Each silhouette now takes the same paint the detailed mesh
   // will give that same building, so closing in changes the geometry, not the colour.
-  const low=new Geometry();for(const b of c.buildings){const a=frame.anchors.get(b.id),h=(model.heights[b.id]||b.h)*frame.scale,paint=ArtisanCityKit.blockPaint(c,b),wall=rgb(paint.wall),roof=rgb(paint.roof);
+  const low=new Geometry();for(const b of c.buildings){const a=frame.anchors.get(b.id);
+   if(c.highCitadel&&b.highRole&&typeof HighlandCityKit!=='undefined'){
+    const compound=HighlandCityKit.compound(b,c,p,s.realms[p.owner],{lod:0});
+    for(const mesh of[compound.body,compound.roof]){const data=mesh.data;for(let k=0;k<data.length;k+=27){const pts=[];for(let j=0;j<3;j++){const at=k+j*9;pts.push(frame.vertex(data[at],data[at+1],data[at+2],a));}low.tri(pts[0],pts[1],pts[2],data.slice(k+6,k+9));}}
+    continue;
+   }
+   const h=(model.heights[b.id]||b.h)*frame.scale,paint=ArtisanCityKit.blockPaint(c,b),wall=rgb(paint.wall),roof=rgb(paint.roof);
    low.box(a.x,a.y,a.z,b.w*frame.sx*.48,b.d*frame.sz*.48,h*.58,wall);const A=[a.x-b.w*frame.sx*.55,a.y+h*.58,a.z-b.d*frame.sz*.55],B=[a.x+b.w*frame.sx*.55,a.y+h*.58,a.z-b.d*frame.sz*.55],C=[a.x+b.w*frame.sx*.55,a.y+h*.58,a.z+b.d*frame.sz*.55],D=[a.x-b.w*frame.sx*.55,a.y+h*.58,a.z+b.d*frame.sz*.55],P=[a.x,a.y+h,a.z];low.tri(A,B,P,roof);low.tri(B,C,P,roof);low.tri(C,D,P,roof);low.tri(D,A,P,roof);}
   this.r.upload(`cm:${p.id}:silhouettes`,low,true);model.meshNames.push(`cm:${p.id}:silhouettes`);
   return model;
@@ -415,10 +421,10 @@ class ContinuousCityLayer {
   }
   const requestKey=this.key(p),requestEpoch=this.epoch;const id=++this.workerId,data={id,pid:p.id,sim:this.sim,relief:this.r.relief};if(this.workerWorld!==this.world){data.world=this.world;this.workerWorld=this.world;}
   return new Promise((resolve,reject)=>{this.workerJobs.set(id,{resolve,reject});this.worker.postMessage(data);}).then(data=>{
-   if(requestEpoch!==this.epoch)throw Error('World replaced');const current=this.sim.provinces[p.id];if(!current?.settled||current.urbanPop<650||data.city.terrainSpan!==citySurvey(this.sim,current).terrainSpan)return null;
+   if(requestEpoch!==this.epoch)throw Error('World replaced');const current=this.sim.provinces[p.id];if(!current?.settled||current.urbanPop<650||this.key(current)!==requestKey||data.city.terrainSpan!==citySurvey(this.sim,current).terrainSpan)return null;
    const c=data.city;c.xy=k=>({x:(k%c.n/(c.n-1)-.5)*c.width,z:(Math.floor(k/c.n)/(c.n-1)-.5)*c.depth});c.index=(x,z)=>clamp(Math.round((z/c.depth+.5)*(c.n-1)),0,c.n-1)*c.n+clamp(Math.round((x/c.width+.5)*(c.n-1)),0,c.n-1);
    c.context.xy=k=>({x:(k%c.context.n/(c.context.n-1)-.5)*c.context.width,z:(Math.floor(k/c.context.n)/(c.context.n-1)-.5)*c.context.depth});
-   const model={p,city:c,frame:AtlasSpace.cityFrame(this.world,p,c,this.r.relief),key:requestKey,heights:data.heights,excavations:data.excavations||[],triangles:data.triangles,last:++this.sequence,meshNames:[]};
+   const model={p:current,city:c,frame:AtlasSpace.cityFrame(this.world,current,c,this.r.relief),key:requestKey,heights:data.heights,excavations:data.excavations||[],triangles:data.triangles,last:++this.sequence,meshNames:[]};
    ExcavationTerrain.restore(model.excavations,model.frame);
    for(const[name,m]of Object.entries(data.meshes)){this.r.upload(name,{data:m.vertices},m.shadow,m.unlit,m.alpha);model.meshNames.push(name);}return model;
   });
@@ -430,7 +436,7 @@ class ContinuousCityLayer {
   if(epoch!==this.epoch){this.pending.delete(key);return null;}
   try{const current=this.sim.provinces[id];if(!current?.settled||current.urbanPop<650)return null;
    this.remove(id);while(this.models.size>=this.maxModels){const entries=[...this.models.values()].sort((a,b)=>a.last-b.last),victim=entries.find(m=>m.p.id!==this.focusId)||entries[0];this.remove(victim.p.id);}
-   const model=await this.workerBuild(p);if(epoch!==this.epoch||!model)return null;this.models.set(id,model);while(this.models.size>this.maxModels){const victims=[...this.models.values()].filter(m=>m.p.id!==id).sort((a,b)=>a.last-b.last);this.remove((victims.find(m=>m.p.id!==this.focusId)||victims[0]).p.id);}this.r.continuousModels=this.models;this.r.buildTerrain();this.r.buildRivers?.();this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();return model;
+   const model=await this.workerBuild(current);if(epoch!==this.epoch||!model)return null;this.models.set(id,model);while(this.models.size>this.maxModels){const victims=[...this.models.values()].filter(m=>m.p.id!==id).sort((a,b)=>a.last-b.last);this.remove((victims.find(m=>m.p.id!==this.focusId)||victims[0]).p.id);}this.r.continuousModels=this.models;this.r.buildTerrain();this.r.buildRivers?.();this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();return model;
   }catch(error){if(epoch!==this.epoch)return null;this.failed.add(key);console.error('Atlas town detail',p.name,error);window.__continuousError=error.message;return null;}
   finally{this.pending.delete(key);this.loading=this.pending.size>0;this.preparing=null;this.onChange();}
  }
@@ -474,6 +480,25 @@ class ContinuousCityLayer {
  async stream(){if(this.loading||!this.world||busy||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;const r=this.r,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const candidates=this.sim.provinces.filter(p=>p.settled&&p.urbanPop>=650).map(p=>({p,d:Math.hypot(p.x-a[0],p.y-a[1])})).filter(q=>q.d<18).sort((a,b)=>a.d-b.d).slice(0,this.maxModels);
   for(const{p}of candidates){const [x,y]=r.screen(p.x,p.y,0);if(x< -120||x>r.width+120||y< -120||y>r.height+120)continue;if(this.models.get(p.id)?.key!==this.key(p)&&!this.failed.has(this.key(p))){await this.ensure(p.id);break;}}
+ }
+ townView(m,elevation=.82){
+  const corners=[],lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
+  for(const b of m.city.buildings){const a=m.frame.anchors.get(b.id),height=(m.heights[b.id]||b.h)*a.scale;
+   for(const x of[-1,1])for(const z of[-1,1])for(const y of[a.low,a.y+height]){const q=[a.x+x*b.w*m.frame.sx*.55,y,a.z+z*b.d*m.frame.sz*.55];corners.push(q);for(let j=0;j<3;j++){lo[j]=Math.min(lo[j],q[j]);hi[j]=Math.max(hi[j],q[j]);}}
+  }
+  if(!corners.length)return null;
+  const target=lo.map((v,j)=>(v+hi[j])*.5),[gx,gy]=AtlasSpace.grid(target[0],target[2]),d=.08;
+  const dx=(AtlasSpace.surface(this.world,gx+d,gy,this.r.relief)-AtlasSpace.surface(this.world,gx-d,gy,this.r.relief))/AtlasSpace.X;
+  const dz=(AtlasSpace.surface(this.world,gx,gy+d,this.r.relief)-AtlasSpace.surface(this.world,gx,gy-d,this.r.relief))/AtlasSpace.Z;
+  // Look back up the local shoulder from its descending side. A distant peak
+  // direction need not describe the small ledge the settlement actually uses.
+  const main=m.city.buildings.find(b=>['keep','sanctuary'].includes(b.highRole));
+  const azimuth=Math.hypot(dx,dz)>.002?Math.atan2(-dx,-dz):-(main?.angle||0)-.4;
+  const right=[Math.cos(azimuth),0,-Math.sin(azimuth)],up=[-Math.sin(azimuth)*Math.sin(elevation),Math.cos(elevation),-Math.cos(azimuth)*Math.sin(elevation)];
+  let halfW=0,halfH=0;for(const q of corners){const v=q.map((n,j)=>n-target[j]);halfW=Math.max(halfW,Math.abs(dot(v,right)));halfH=Math.max(halfH,Math.abs(dot(v,up)));}
+  const aspect=this.r.width/Math.max(1,this.r.height),base=Math.max(49,94/aspect),heightShare=clamp((this.r.height-250)/this.r.height,.35,.72);
+  const zoom=clamp(Math.min(base*aspect*.76/Math.max(.02,halfW),base*heightShare/Math.max(.02,halfH)),AtlasSpace.DETAIL_ZOOM,AtlasSpace.MAX_ZOOM);
+  return{target,zoom,azimuth,elevation,bounds:{min:lo,max:hi},corners};
  }
  pick(sx,sy){if(this.r.zoom<AtlasSpace.TOWN_ZOOM)return null;const{origin,dir}=AtlasSpace.ray(this.r,sx,sy),surface=AtlasSpace.pickGround(this.r,sx,sy),floorT=surface?Math.hypot(...sub(surface.point,origin)):Infinity;let best=null,bestT=Infinity;
   for(const m of this.models.values())for(const a of m.frame.anchors.values()){const b=a.b,h=(m.heights[b.id]||b.h)*a.scale,excavation=this.r.zoom>=AtlasSpace.DETAIL_ZOOM?m.excavations?.find(h=>h.buildingId===b.id):null,low=Math.min(a.low,excavation?.floorY??a.low),t=AtlasSpace.hitBox(origin,dir,[a.x-b.w*m.frame.sx*.55,low,a.z-b.d*m.frame.sz*.55],[a.x+b.w*m.frame.sx*.55,a.y+h,a.z+b.d*m.frame.sz*.55]);if(t<bestT&&t<floorT+.012){bestT=t;best={model:m,building:b,anchor:a};}}

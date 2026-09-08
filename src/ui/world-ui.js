@@ -169,6 +169,7 @@ function validateSimulation(s, w) {
             throw Error('Invalid realm in saved simulation.');
     }
     validateCityState(s);
+    HighCitadels.validate(s, w);
     if(s.townRecipes){
         if(typeof s.townRecipes!=='object'||Array.isArray(s.townRecipes)||Object.keys(s.townRecipes).length>4096)throw Error('Invalid town recipes.');
         for(const [id,r] of Object.entries(s.townRecipes)){TownCatalog.validate(r);const p=s.provinces[+id];if(!p?.settled||+id!==r.provinceId||!TownCatalog.allowed(p,w,r.style))throw Error('Town recipe does not match a valid existing settlement.');}
@@ -699,9 +700,9 @@ else {
     playLoop();
 } }
 function resetHistory() { if (!world || busy)
-    return; pause(); sim = createCivilization(world, sim.options); window.sim = sim; selectedRealm = 0; diplomacyTarget = -1; refreshAll(); toast('History reset to year 400. The natural world is unchanged.'); }
+    return; pause(); sim = createCivilization(world, HighCitadels.historyOptions(sim)); window.sim = sim; selectedRealm = 0; diplomacyTarget = -1; refreshAll(); toast('History reset to year 400. The natural world is unchanged.'); }
 function rerollSocieties() { if (!world || busy)
-    return; pause(); const before = physicalFingerprint(world); sim = createCivilization(world, { ...sim.options, historySeed: sim.options.historySeed + '*' }); window.sim = sim; selectedRealm = 0; selectedCell = sim.provinces[sim.realms[0]?.capital ?? 0].i; diplomacyTarget = -1; refreshAll(); setLayer('settlements'); toast('New settlement history; physical hash ' + before + ' → ' + physicalFingerprint(world) + '.'); }
+    return; pause(); const before = physicalFingerprint(world); sim = createCivilization(world, HighCitadels.historyOptions(sim, {historySeed: sim.options.historySeed + '*'})); window.sim = sim; selectedRealm = 0; selectedCell = sim.provinces[sim.realms[0]?.capital ?? 0].i; diplomacyTarget = -1; refreshAll(); setLayer('settlements'); toast('New settlement history; physical hash ' + before + ' → ' + physicalFingerprint(world) + '.'); }
 function renderSettlementReport() {
     if (!sim || !world)
         return;
@@ -772,10 +773,11 @@ function rerollPolitics() {
         return;
     pause();
     const before = physicalFingerprint(world), towns = sim.settlementSignature;
-    sim = createCivilization(world, { ...sim.options, politySeed: (sim.options.politySeed || 'First-councils') + '*' });
-    window.sim = sim;
-    if (physicalFingerprint(world) !== before || sim.settlementSignature !== towns)
+    const next = createCivilization(world, HighCitadels.historyOptions(sim, {politySeed: (sim.options.politySeed || 'First-councils') + '*'}));
+    if (physicalFingerprint(world) !== before || next.settlementSignature !== towns)
         throw Error('Political reroll altered terrain or initial towns.');
+    sim = next;
+    window.sim = sim;
     selectedRealm = sim.realms[0]?.id ?? 0;
     selectedCell = sim.provinces[sim.realms[0]?.capital ?? 0]?.i ?? 0;
     diplomacyTarget = -1;

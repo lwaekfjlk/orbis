@@ -250,7 +250,7 @@ window.OneMap = (() => {
     function inspectBuilding(b){
         if(scene!=='city'||!b)return;selection={kind:'building',id:b.id};
         const buttons=[{label:'Details',run:()=>openDrawer('detail')}];
-        if(['civic','temple','academy','harbor'].includes(b.type))buttons.unshift({label:'Explore landmark ↗',primary:true,run:()=>enterBuilding(b)});
+        if(['civic','temple','academy','harbor'].includes(b.type))buttons.unshift({label:b.highRole?'Focus building ↗':'Explore landmark ↗',primary:true,run:()=>enterBuilding(b)});
         selectionCard(CityUI.layout?.name||'TOWN',b.name,CITY_TYPES[b.type]?.description||'A module in this town.',buttons);
     }
     function inspectPart(p){
@@ -284,16 +284,16 @@ window.OneMap = (() => {
     function onWorldUpdate(){
         if(!sim||!world)return;
         if(lastWorld!==world){lastWorld=world;clearSelection();closeMenus();closeDrawer();lastEvent=null;}
-        const towns=sim.provinces.filter(p=>p.settled).sort((a,b)=>b.urbanPop-a.urbanPop);
+        const towns=sim.provinces.filter(p=>p.settled).sort((a,b)=>Number(!!b.highCitadel)-Number(!!a.highCitadel)||b.urbanPop-a.urbanPop);
         searchIndex=[...towns.map(p=>{
             // A town is findable by what it remembers as well as by its name: type a
             // hero, a conqueror or a burning mountain and the town that tells it comes up.
             const g=typeof Saga!=='undefined'?Saga.of(world,sim,p):null;
             return {type:'town',id:p.id,i:p.i,x:p.x,y:p.y,name:p.name,
-                saga:g?`${g.title} ${g.hero.name} ${g.hero.rank} ${PEOPLES[g.hero.people].name} ${g.adversary.name}`:'',
-                subtitle:g?`${g.hero.name} against ${g.adversary.name} · ${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`
+                saga:(p.highCitadel?(p.highCitadel.kind==='dragon'?'dragon king citadel 龙王 龙城 ':'holy sacred city 圣城 '):'')+(g?`${g.title} ${g.hero.name} ${g.hero.rank} ${PEOPLES[g.hero.people].name} ${g.adversary.name}`:''),
+                subtitle:p.highCitadel?`${LandmarkBinding.highCitadelLabel(p)} · ${Math.round(p.highCitadel.elevation).toLocaleString()} m · ${fmtPop(p.urbanPop)} residents`:g?`${g.hero.name} against ${g.adversary.name} · ${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`
                     :`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`};
-        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:RealmNames.fullName(c),subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
+        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:RealmNames.fullName(c),subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:s.highCitadel?s.kind:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
         const latest=sim.events.slice().reverse().find(e=>e.type!=='founding'&&e.year>400);
         show('omEvent',!!latest&&sim.year>400);
         if(latest){E('omEventText').textContent=`${latest.year} · ${latest.text}`;if(latest!==lastEvent)lastEvent=latest;}

@@ -88,13 +88,19 @@ function cityFootingMesh(g,b,model,color){
     const fall=b.terrainFall??Math.max(0,b.y-(b.foundationBed??b.y));
     if(fall>model.height*.6){
         const w=top[2]-top[0],d=top[3]-top[1],short=Math.min(w,d),cx=(top[0]+top[2])/2,cz=(top[1]+top[3])/2;
-        const deck=Math.max(.025,Math.min(.16,short*.08,model.height*.06)),beam=Math.max(.04,Math.min(.4,short*.10,model.height*.10));
-        const pier=Math.min(short*.14,Math.max(.07,Math.min(.6,short*.07))),spacing=Math.max(1.5,short*.4);
+        const stone=!!b.highRole;
+        const deck=Math.max(.025,Math.min(.16,short*.08,model.height*.06)),beam=Math.max(.04,Math.min(stone?.55:.4,short*(stone?.15:.10),model.height*(stone?.13:.10)));
+        // Summit masonry needs broad piers and lintels, not the thin dark frame
+        // used by lightweight lowland houses. The gaps remain open to the rock.
+        const pier=stone?short*.18:Math.min(short*.14,Math.max(.07,Math.min(.6,short*.07))),spacing=Math.max(1.5,short*.4);
         const nx=Math.min(5,Math.max(2,Math.ceil(w/spacing)+1)),nz=Math.min(5,Math.max(2,Math.ceil(d/spacing)+1));
         const xs=Array.from({length:nx},(_,i)=>lerp(top[0]+pier*.65,top[2]-pier*.65,i/(nx-1))),zs=Array.from({length:nz},(_,i)=>lerp(top[1]+pier*.65,top[3]-pier*.65,i/(nz-1)));
-        const cap=b.y-.008,bottom=cap-depth,posts=colorScale(color,.83),ties=colorScale(color,.72);
+        const cap=b.y-.008,bottom=cap-depth,posts=colorScale(color,stone?.98:.83),ties=colorScale(color,stone?1.04:.72);
         cityBox(g,cx,cap-deck,cz,w,deck,d,color);
-        for(const x of xs)for(const z of zs)cityBox(g,x,bottom,z,pier,depth-deck,pier,posts);
+        for(const x of xs)for(const z of zs){
+            cityBox(g,x,bottom,z,pier,depth-deck,pier,posts);
+            if(stone)cityBox(g,x,cap-deck-beam-.10,z,pier*1.22,.14,pier*1.22,ties);
+        }
         for(const x of xs)cityBox(g,x,cap-deck-beam,cz,pier,beam,d-pier*.3,ties);
         for(const z of zs)cityBox(g,cx,cap-deck-beam,z,w-pier*.3,beam,pier,ties);
         return{mode:'piers',depth:depth+.008,contact:top,piers:nx*nz,pierWidth:pier,deckDepth:deck,beamDepth:beam};
@@ -244,6 +250,26 @@ function createCityRenderer(canvas, onChange, config = {}) {
         this.upload('contextTerrain',contextTerrain,true);this.upload('contextWater',contextWater,false,.4);this.upload('contextSides',contextSides,true);this.upload('townSlab',townSlab,true);
         }
         this.streetStats = cityStreetMesh(c, elevation, roads, details);
+        if(c.highCitadel&&typeof HighlandCityKit!=='undefined'){
+            // Short stone treads follow the surveyed ascent. They add neither a
+            // level town platform nor a tall continuous retaining frame.
+            const seen=new Set(),stone=rgb(HighlandCityKit.palettes[c.highCitadel.kind].trim),half=.37*(c.townProfile.width||1)*.86;
+            for(const route of c.roads.filter(r=>r.role==='ridge-stair'))for(let i=1;i<route.points.length;i++){
+                const a=route.points[i-1],b=route.points[i],key=[a,b].map(p=>p.x.toFixed(5)+','+p.z.toFixed(5)).sort().join('/');
+                if(seen.has(key))continue;seen.add(key);
+                const dx=b.x-a.x,dz=b.z-a.z,length=Math.hypot(dx,dz);
+                if(length<.05||Math.abs(elevation(a.x,a.z)-elevation(b.x,b.z))<.015)continue;
+                const ox=-dz/length*half,oz=dx/length*half,count=Math.max(1,Math.ceil(length/.48));
+                for(let step=0;step<count;step++){
+                    const start=step/count,end=(step+.82)/count;
+                    const A=[lerp(a.x,b.x,start),lerp(a.z,b.z,start)],B=[lerp(a.x,b.x,end),lerp(a.z,b.z,end)];
+                    const top=[[A[0]-ox,A[1]-oz],[B[0]-ox,B[1]-oz],[B[0]+ox,B[1]+oz],[A[0]+ox,A[1]+oz]].map(([x,z])=>[x,elevation(x,z)+.205,z]);
+                    const bottom=top.map(p=>[p[0],p[1]-.055,p[2]]);
+                    details.quad(top[0],top[3],top[2],top[1],stone);
+                    for(let q=0;q<4;q++){const next=(q+1)%4;details.quad(top[q],top[next],bottom[next],bottom[q],colorScale(stone,.85));}
+                }
+            }
+        }
         for (const f of c.farms) {
             const colors = ['#b8b87d', '#bfb789', '#9ca678'];
             const at=(x,z,lift)=>[x,elevation(x,z)+lift,z];
@@ -259,10 +285,18 @@ function createCityRenderer(canvas, onChange, config = {}) {
                 b.h += state.levels.granary * .7;
             if (b.type === 'academy' && state.levels?.academy)
                 b.h += state.levels.academy;
-            const fcol=rgb(ArtisanCityKit.palettes[c.townProfile.id].wall);
+            const high=!!c.highCitadel&&typeof HighlandCityKit!=='undefined';
+            const fcol=rgb(high?HighlandCityKit.paint(c,b).wall:ArtisanCityKit.palettes[c.townProfile.id].wall);
             const layFoundation=model=>{const begin=starts(),footing=cityFootingMesh(buildings,b,model,colorScale(fcol,.82));own(b,begin,{footing});start=starts();};
             const district = c.districts[b.district], tint = this.mode === 'districts' ? rgb(CITY_TYPES[district.type].color) : b.type === 'academy' ? rgb('#c9c9d4') : body;
             const color = colorScale(tint, .93 + hash2(b.x, b.z, c.seed + 1) * .12), roof = rgb(roofColors[Math.floor(hash2(b.x, b.z, c.seed) * roofColors.length)]);
+            if(high){
+                const compound=HighlandCityKit.compound(b,c,p,realm);
+                layFoundation(compound);
+                for(const value of compound.body.data)buildings.data.push(value);
+                for(const value of compound.roof.data)roofs.data.push(value);
+                this.landmarkHeights[b.id]=compound.height;own(b,start);continue;
+            }
             if (b.landmark && ['civic','temple','academy'].includes(b.type) && typeof LandmarkBinding !== 'undefined' && window.world && window.sim) {
                 const recipe=TownCityBinding.resolve(window.world, window.sim, p, c, b.type);
                 const monument=TownCityBinding.miniature(recipe,b);
@@ -293,7 +327,7 @@ function createCityRenderer(canvas, onChange, config = {}) {
         }
         // Public squares, tents and market stalls belong to the market neighborhood.
         const m = c.market;
-        for (let k = 0; k < 10; k++) {
+        for (let k = 0; k < (c.highCitadel?0:10); k++) {
             const a = k / 10 * 6.283, x = m.x + Math.cos(a) * 3.4, z = m.z + Math.sin(a) * 3.4;
             if (c.water[c.index(x, z)])
                 continue;
