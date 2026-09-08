@@ -38,6 +38,7 @@
     "test:sanctuary": "node --test tests/sanctuary.test.mjs",
     "assets:sanctuary": "node scripts/export-sanctuaries.mjs",
     "preview:architecture": "node scripts/preview-architecture.mjs",
+    "preview:streets": "node scripts/preview-streets.mjs",
     "preview:wonders": "node scripts/preview-architecture.mjs --output previews/wonders",
     "preview:politics": "node scripts/preview-politics.mjs",
     "assets:wonders": "node scripts/export-wonders.mjs",

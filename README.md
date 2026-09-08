@@ -95,4 +95,5 @@ New generation rules apply when you regenerate; loading an old save preserves it
 - [Countries and population](docs/POLITIES.md) · [Borders and wildness](docs/LAKE_TERRITORY_AND_LABELS.md) · [Mythological names](docs/REALM_NAMES.md)
 - [Cities and terrain](docs/CITY_COHERENCE.md) · [Climate and landscapes](docs/BIOME_LANDSCAPES.md)
 - [Resident stories](docs/CITY_SAGAS.md) · [Architecture gallery and GLB exports](docs/WONDER_REFINEMENT.md)
+- [Houses and street fronts](docs/DOMESTIC_STREETS.md)
 - [Loading performance](docs/MAP_LOADING.md) · [Map architecture](docs/CONTINUOUS_ARCHITECTURE.md)
