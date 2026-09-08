@@ -161,6 +161,15 @@ body.onemap #omSelection .om-eyebrow{font-size:7px;margin:0;max-width:240px}
 body.onemap #omSelection .om-actions{display:flex;gap:6px;margin-top:12px}
 body.onemap #omSelection .om-actions button{border:1px solid #ffffff25;padding:6px 10px;font-size:10px}
 body.onemap #omSelection .om-actions .main{background:var(--ui-accent);color:#284535;border:0;min-width:0;margin:0}
+body.onemap #omSelectionBody:has(>.om-city-card){overflow:hidden;padding-right:0}
+body.onemap .om-city-card{display:flex;flex-direction:column;max-height:inherit}
+body.onemap .om-selection-content{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#647f71 transparent;padding:0 3px 3px}
+body.onemap #omSelection .om-city-actions{flex-shrink:0;gap:10px;margin-top:14px;padding:14px 3px 3px;border-top:1px solid #d5e7ae40}
+body.onemap #omSelection .om-city-actions button{flex:1;min-width:0;min-height:48px;padding:11px 14px;font-size:15px;line-height:1.4;font-weight:650;letter-spacing:.2px;color:#e6edcf;background:#d5e7ae14;border:1px solid #d5e7ae88;box-shadow:0 2px 7px #081c2026}
+body.onemap #omSelection .om-city-actions button:hover{background:#d5e7ae26;border-color:var(--ui-accent)}
+body.onemap #omSelection .om-city-actions .main{background:var(--ui-accent);color:#284535;border:1px solid #e5f1c9}
+body.onemap #omSelection .om-city-actions .main:hover{background:#e6f4c8;border-color:#f3fadf}
+body.onemap #omSelection .om-city-actions button:focus-visible{outline-offset:1px}
 body.onemap #omSelection .realm-name-origin{padding:10px 0;border-top:1px solid #ffffff15}
 body.onemap #omSelection .om-teller{margin:12px 0 0;padding-top:12px;border-top:1px solid #ffffff15}
 body.onemap #omSelection .om-teller-face{width:48px;height:48px;border-radius:8px}
