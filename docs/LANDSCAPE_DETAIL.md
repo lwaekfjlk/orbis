@@ -1,5 +1,7 @@
 # Nearby landscape materials and gentle relief
 
+This documents the original grass/soil update. The subsequent [biome landscape update](BIOME_LANDSCAPES.md) extends surface geometry and materials to land ice, snow, mountains and dry ground, including worlds without settlements.
+
 Approaching a town used to reveal a smooth, uniformly green surface. The refined mesh interpolated the parent heights and colours, but it had no smaller soil patches or terrain variation between those samples.
 
 Close terrain now mixes grass, exposed earth, damp ground and mineral colours through continuous, seeded fields. Temperature, moisture, snow cover and slope control the mixture. Sandy ground retains its existing hue, while water and full snow cover retain their original colours. The far world map still uses its existing palette.

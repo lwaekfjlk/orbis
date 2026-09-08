@@ -1,29 +1,13 @@
 /** Bounded display relief outside every existing town survey and water corridor.
  * Parent heights, water, city routing and parcel bounds remain model inputs. */
 const LandscapeRelief = (() => {
-    const version = 1, AMPLITUDE = .011, FADE = .4, cache = new WeakMap();
+    const version = 2, FADE = .4, cache = new WeakMap();
     const ZERO = {offset: 0, dx: 0, dy: 0};
     let serial = 0;
-    // Analytic derivatives avoid four more complete field evaluations for each
-    // fine terrain vertex. Both bands and their parent-corner residual are C0.
-    function band(x, y, seed, frequency, ox, oy) {
-        x = x * frequency + ox; y = y * frequency + oy;
-        const a = Math.floor(x), b = Math.floor(y), u = x - a, v = y - b;
-        const sx = u * u * (3 - 2 * u), sy = v * v * (3 - 2 * v);
-        const A = hash2(a, b, seed), B = hash2(a + 1, b, seed), C = hash2(a, b + 1, seed), D = hash2(a + 1, b + 1, seed);
-        return [lerp(lerp(A, B, sx), lerp(C, D, sx), sy) * 2 - 1,
-            lerp(B - A, D - C, sy) * 12 * u * (1 - u) * frequency,
-            lerp(C - A, D - B, sx) * 12 * v * (1 - v) * frequency];
-    }
-    function noiseField(x, y, seed) {
-        const a = band(x, y, seed + 101, 1.3, 12.7, -8.3), b = band(x, y, seed + 307, 2.6, -5.1, 9.6);
-        return [a[0] * .78 + b[0] * .22, a[1] * .78 + b[1] * .22, a[2] * .78 + b[2] * .22];
-    }
     function prepare(w, sim) {
         if (!w?.height || w.height.length < GN || !w.lake || w.lake.length < GN || !w.ice || w.ice.length < GN ||
             !w.flow || w.flow.length < GN || !(w.down || w.riverDown) || !Array.isArray(sim?.provinces) || !Array.isArray(sim.realms)) return false;
         const towns = sim.provinces.filter(p => p.settled && p.urbanPop >= 650).slice().sort((a, b) => a.id - b.id);
-        if (!towns.length) return cache.delete(w);
         const signature = towns.map(p => [p.id, p.x, p.y, p.detailSupport ?? p.urbanSupport ?? p.urbanPop].join(',')).join(';') + '/' +
             sim.realms.filter(r => r.alive).map(r => r.capital).sort((a, b) => a - b).join(',');
         const old = cache.get(w); if (old?.signature === signature) return false;
@@ -37,12 +21,17 @@ const LandscapeRelief = (() => {
             {x0: -1, x1: GW, y0: -1, y1: 0}, {x0: -1, x1: GW, y0: GH - 1, y1: GH}]) add(g, g.x0, g.y0, g.x1, g.y1);
         for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
             const i = y * GW + x;
-            wet[i] = w.height[i] <= 0 || w.lake[i] > 0 || w.ice[i] > 0 || [1, 16, 17].includes(w.biome?.[i]) ? 1 : 0;
-            corners[i] = noiseField(x, y, w.seed)[0];
-            const slope = CityEnvironment.atlasGrade(w, x, y);
-            factors[i] = 1 / (1 + slope * slope * 4);
+            // Ice on land is a surface to refine. Sea ice retains the same
+            // shoreline protection as open water, even at a raised ice surface.
+            wet[i] = w.height[i] <= 0 || w.lake[i] > 0 || w.biome?.[i] === 17 ? 1 : 0;
+            const pattern = LandscapePatterns.sample(w, x, y);
+            corners[i] = pattern.height;
+            const slope = CityEnvironment.atlasGrade(w, x, y), rugged = clamp(Math.max(pattern.glacier, pattern.snow, pattern.alpine, pattern.rock));
+            // Keep lowland grading intact, but retain fine ice and rock texture
+            // on steep terrain. Bilinear factors preserve boundary continuity.
+            factors[i] = lerp(1 / (1 + slope * slope * 4), .45 + .55 / (1 + slope * slope * 1.25), rugged);
         }
-        // Every mixed coast/ice patch is kept exactly intact. Only boundary wet
+        // Every mixed water/land patch is kept exactly intact. Only boundary wet
         // vertices need guard records; fully wet interiors are rejected below.
         for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
             const i = y * GW + x; if (!wet[i]) continue;
@@ -74,7 +63,7 @@ const LandscapeRelief = (() => {
                 const g = {x, y, dx, dy, length2, radius}; add(g, Math.min(x, x + dx) - radius, Math.min(y, y + dy) - radius, Math.max(x, x + dx) + radius, Math.max(y, y + dy) + radius); rivers++;
             }
         }
-        cache.set(w, {signature, key: version + '/' + (++serial), cells, wet, corners, factors, seed: w.seed, towns: towns.length, rivers, last: null});
+        cache.set(w, {signature, key: version + '/' + (++serial), cells, wet, corners, factors, towns: towns.length, rivers, last: null});
         return true;
     }
     function sample(w, x, y, relief = 1) {
@@ -104,10 +93,13 @@ const LandscapeRelief = (() => {
             if (fade < mask) { mask = fade; const derivative = 6 * t * (1 - t) / FADE; mx = derivative * dx; my = derivative * dy; }
         }
         const A = state.corners[i], B = state.corners[i + 1], C = state.corners[i + GW], D = state.corners[i + GW + 1];
-        const n = noiseField(x, y, state.seed), residual = u === 0 && v === 0 ? 0 : n[0] - lerp(lerp(A, B, u), lerp(C, D, u), v);
-        const dx = n[1] - lerp(B - A, D - C, v), dy = n[2] - lerp(C - A, D - B, u);
+        // The shared pattern field and its analytic derivatives use atlas height
+        // units. Removing its parent interpolation keeps every original vertex
+        // exact and joins adjacent parent patches without a height seam.
+        const n = LandscapePatterns.sample(w, x, y), residual = u === 0 && v === 0 ? 0 : n.height - lerp(lerp(A, B, u), lerp(C, D, u), v);
+        const dx = n.dx - lerp(B - A, D - C, v), dy = n.dy - lerp(C - A, D - B, u);
         const F = state.factors[i], G = state.factors[i + 1], H = state.factors[i + GW], I = state.factors[i + GW + 1];
-        const factor = lerp(lerp(F, G, u), lerp(H, I, u), v), fx = lerp(G - F, I - H, v), fy = lerp(H - F, I - G, u), amp = AMPLITUDE * relief;
+        const factor = lerp(lerp(F, G, u), lerp(H, I, u), v), fx = lerp(G - F, I - H, v), fy = lerp(H - F, I - G, u), amp = relief;
         const value = {offset: residual * factor * mask * amp,
             dx: (dx * factor * mask + residual * (fx * mask + factor * mx)) * amp,
             dy: (dy * factor * mask + residual * (fy * mask + factor * my)) * amp};
