@@ -236,7 +236,7 @@ test('a worker response for a town that retired in flight cannot upload or resto
 
 test('a newly settled neighbour removes an oversized city survey and rejects its in-flight old mesh', async () => {
     const changedSim = structuredClone(sim), p = changedSim.provinces[371], neighbour = changedSim.provinces[372];
-    assert.equal(p.name, 'Inner Foamhaven'); assert.equal(neighbour.name, 'Greenhaven'); assert.equal(neighbour.settled, false);
+    assert.equal(p.settled, true); assert.equal(neighbour.settled, false);
     const oldSurvey = E.citySurvey(changedSim, p), name = `cm:${p.id}:buildings`, {r, layer, meshes} = renderer(world, changedSim, p.x, p.y);
     layer.prepareLandscape(); layer.models.set(p.id, {p, city: oldSurvey, key: layer.key(p), meshNames: [name]});
     layer.focusId = p.id; meshes[name] = {data: []};

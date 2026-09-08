@@ -50,6 +50,22 @@ function meshesEqual(a, b) {
         if (x.styles) assert.deepEqual(x.styles, y.styles, `${name} software lighting`);
     }
 }
+function frontierScale(r) {
+    const groups = new Map(), data = r.meshes.frontierPosts.vertices, unit = E.AtlasSpace.TOWN_UNIT;
+    for (let i = 0; i < data.length; i += 9) {
+        const [x, y] = E.AtlasSpace.grid(data[i], data[i + 2]), key = `${Math.round(x)},${Math.round(y)}`;
+        if (!groups.has(key)) groups.set(key, { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] });
+        const b = groups.get(key);
+        for (let j = 0; j < 3; j++) { b.min[j] = Math.min(b.min[j], data[i + j]); b.max[j] = Math.max(b.max[j], data[i + j]); }
+    }
+    assert(groups.size > 0, 'the real world has supported frontier towers');
+    for (const [crossing, b] of groups) {
+        const size = b.max.map((n, j) => n - b.min[j]), tolerance = 1e-5; // Uploaded Float32 positions.
+        for (const axis of [0, 2]) assert(Math.abs(size[axis] - 4.08 * unit) < tolerance, `${crossing}: physical tower footprint`);
+        assert(size[1] >= 5.82 * unit - tolerance && size[1] <= 7.82 * unit + tolerance,
+            `${crossing}: town-scale tower with at most two units of terrain support`);
+    }
+}
 for (const software of [false, true]) {
     test(`${software ? 'software' : 'GPU'} staged attachment keeps every visible mesh byte and restores nearby traffic`, async () => {
         const baseline = previous[software ? 'software' : 'gpu'];
@@ -64,8 +80,13 @@ for (const software of [false, true]) {
         assert(phases.size >= 15, 'individual overlay uploads must give the browser a chance to respond');
         meshesEqual(sync.r, async.r);
         assert.deepEqual(sync.uploads, async.uploads, 'actual WebGL bufferData payloads and order');
+        frontierScale(async.r);
         for (const [name, expected] of Object.entries(baseline.overview)) {
             if (name === 'caravans') continue; // Previously allocated but invisible at zoom 1.
+            // Frontier posts intentionally became physical buildings with dry, supported
+            // sites. Their new bytes still match sync attachment above; all other
+            // visible meshes retain the original pre-optimization baseline below.
+            if (name === 'frontierPosts') continue;
             const mesh = async.r.meshes[name];
             assert.equal(mesh.count, expected.count, `${name}: unchanged pre-optimization count`);
             assert.equal(hash(mesh.vertices), expected.vertices, `${name}: unchanged pre-optimization bytes`);
