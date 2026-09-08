@@ -10,42 +10,39 @@ function fixture(width = 16, height = 10) {
     const sim = {realms: [{id: 0, name: 'Asgard', title: 'Kingdom of Asgard', alive: true}], provinces: [{owner: 0, pop: 20000}, {owner: -1, pop: 14000, settled: true}]};
     return {world, sim, width};
 }
-test('Land status includes outer territory and local residents under live countries without rewriting provinces', () => {
+test('Open unowned land and its residents are wildness without rewriting province records', () => {
     const {world: w, sim: s, width} = fixture();
     w.provinceId[0] = 0; w.provinceId[1] = 1; w.height[3] = -10; w.lake[4] = 150;
     const before = JSON.stringify(s);
     assert.equal(P.status(w,s,0).label, 'Kingdom of Asgard');
-    assert.equal(P.status(w,s,1,width).kind, 'realm');
-    assert.equal(P.status(w,s,1,width).derived, true);
+    assert.equal(P.status(w,s,1,width).kind, 'wildness');
+    assert.equal(P.status(w,s,1,width).label, 'wildness');
     assert.equal(P.status(w,s,0,width).derived, false);
     s.provinces[1].pop = 200;
     assert.equal(P.status(w,s,1,width).province,s.provinces[1],'small communities retain their original province record');
     s.provinces[1].pop = 14000;
-    assert.equal(P.status(w,s,2,width).realm,s.realms[0]);
+    assert.equal(P.status(w,s,2,width).realm,null);
     for (const i of [3,-1,w.height.length]) assert.equal(P.status(w,s,i,width).kind, 'water');
     assert.equal(P.status(w,s,4,width).water,true);
-    assert.match(P.description(w,s,1,width), /Territory of/);
-    assert.match(P.description(w,s,2,width), /Territory of/);
+    assert.equal(P.description(w,s,1,width), 'wildness');
+    assert.equal(P.description(w,s,2,width), 'wildness');
     assert.equal(JSON.stringify(s), before);
     s.provinces[1].owner = 0;
     assert.equal(P.status(w,s,1).realm.id, 0, 'a conquest immediately changes the description');
     s.realms[0].alive = false;
     assert.equal(P.status(w,s,0).realm, null, 'a dead realm cannot keep a political claim');
-    assert.equal(P.status(w,s,0,width).label,'No countries yet');
+    assert.equal(P.status(w,s,0,width).label,'wildness');
 });
-test('No extra absence labels remain while countries exist; a countryless world has neutral land labels', () => {
+test('Open regions receive exactly lowercase wildness labels anchored on unowned land', () => {
     const {world: w, sim: s, width} = fixture();
     // A strip of owned land separates two connected free regions. Their centroids
     // need not themselves lie on the free cells once the regions curve around it.
     for (let y=0;y<10;y++) for (let x=6;x<10;x++) w.provinceId[y*width+x]=0;
     w.provinceId[0]=1;
-    assert.deepEqual(P.labels(w,s,width),[]);
-    s.realms=[];
-    for(let y=0;y<10;y++)for(let x=6;x<10;x++)w.height[y*width+x]=-5;
     const labels=P.labels(w,s,width);
     assert.equal(labels.length,2);
-    for(const l of labels){assert.equal(P.status(w,s,l.i,width).realm,null);assert(l.neutral);assert.equal(l.name,'No countries yet');assert(w.height[l.i]>0);}
-    assert.doesNotMatch(JSON.stringify(labels),/wilderness|unclaimed wilds/i);
+    for(const l of labels){assert.equal(P.status(w,s,l.i,width).realm,null);assert(l.wildness);assert.equal(l.name,'wildness');assert(w.height[l.i]>0);}
+    assert.doesNotMatch(JSON.stringify(labels),/wilderness|unclaimed wilds|independent communities/i);
     const unchanged = P.labels(w,s,width);
     assert.deepEqual(labels,unchanged);
     for(let i=0;i<w.height.length;i++)if(w.provinceId[i]!==0)w.height[i]=-5;
@@ -87,17 +84,18 @@ test('A shared lake is partitioned by shore distance with deterministic national
     const copy={...w,height:w.height.slice(),lake:w.lake.slice(),provinceId:w.provinceId.slice()};
     assert.deepEqual(P.territory(copy,structuredClone(s),width),t,'the partition and key are independent of cache/build order');
 });
-test('Previously unclaimed shores join their neighboring country before lake ownership is derived', () => {
+test('Shoreline connected to open wildness retains its share of an international or partly claimed lake', () => {
     const {world:w,sim:s,width,cell,lake}=lakeFixture();
-    w.provinceId[cell(4,1)]=-1;
+    w.provinceId[cell(4,0)]=w.provinceId[cell(4,1)]=-1;
     const t=P.territory(w,s,width);
-    for(const y of [2,3,4])assert.equal(t.owners[cell(4,y)],0);
+    for(const y of [2,3,4])assert.equal(t.owners[cell(4,y)],-1);
     assert.equal(t.owners[cell(3,2)],0,'another shore still holds its own adjacent water');
     assert.equal(t.owners[cell(4,6)],0);
-    assert.equal(P.status(w,s,cell(4,4),width).kind,'realm');
+    assert.equal(P.status(w,s,cell(4,4),width).kind,'wildness');
+    assert.equal(P.status(w,s,cell(4,4),width).water,true);
     w.provinceId.fill(-1);
     const noDirect=P.territory(w,s,width);
-    for(const i of lake)assert.equal(noDirect.owners[i],0,'existing countries cover the lake even without direct province seeds');
+    for(const i of lake)assert.equal(noDirect.owners[i],-1,'countries without a shore do not acquire the lake');
 });
 test('Actual connected lake surfaces are independent of basin identifiers', () => {
     const {world:w,sim:s,width}=fixture(11,7),cell=(x,y)=>y*width+x;
@@ -108,14 +106,14 @@ test('Actual connected lake surfaces are independent of basin identifiers', () =
     const t=P.territory(w,s,width);
     assert.equal(t.owners[cell(2,3)],0);assert.equal(t.owners[cell(8,3)],1);
 });
-test('Ocean remains unowned while all positive-height lakes receive territory, including raster edges', () => {
+test('Open ocean remains unowned while actual lake shores determine edge-lake territory', () => {
     const {world:w,sim:s,width,cell,lake}=lakeFixture();
-    w.height[cell(4,1)]=-10;
+    w.height[cell(4,0)]=w.height[cell(4,1)]=-10;
     w.lake[cell(4,1)]=150;
     let t=P.territory(w,s,width);
     assert.equal(t.owners[cell(4,1)],-1,'a lake bit cannot convert ocean into national territory');
     for(const i of lake)assert.equal(t.owners[i],0,'a positive lake bed remains inland territory beside ocean');
-    w.height[cell(4,1)]=100;
+    w.height[cell(4,0)]=w.height[cell(4,1)]=100;
     w.lake[cell(4,0)]=150;
     t=P.territory(w,s,width);
     for(const i of lake)assert.equal(t.owners[i],0,'cropping a raster cannot strip its inland lake territory');
@@ -133,7 +131,7 @@ test('Derived ownership invalidates after conquest, death, restoration and in-pl
     for(const i of lake){assert.equal(first.owners[i],0,'previous snapshots remain stable');assert.equal(conquered.owners[i],1);}
     s.realms[1].alive=false;
     const dead=P.territory(w,s,width);
-    for(const i of lake)assert.equal(dead.owners[i],0,'a remaining living country inherits uncovered territory');
+    for(const i of lake)assert.equal(dead.owners[i],-1,'an unrelated country cannot acquire open land after another realm dies');
     s.realms[1].alive=true;
     assert.equal(P.status(w,s,cell(4,4),width).realm,s.realms[1],'single-cell queries see live political restoration');
     const restored=P.territory(w,s,width);
@@ -150,12 +148,12 @@ test('Derived ownership invalidates after conquest, death, restoration and in-pl
     assert(P.territory(w,missingRealm,width).owners.every(i=>i===-1),'missing realms cannot retain territory');
     assert.equal(P.territory({},s,width).owners.length,0);assert.equal(P.territory(null,null,width).key,'territory:none');
 });
-test('Only international borders remain after surrounding land and lakes receive territory', () => {
+test('Borders separate genuine wildness and foreign countries while domestic lakes have no false seam', () => {
     const w={height:new Float32Array(E.GN).fill(-100),lake:new Float32Array(E.GN).fill(-1),provinceId:new Int32Array(E.GN).fill(-1),biome:new Uint8Array(E.GN)};
     const r=Object.create(E.AtlasRenderer.prototype), meshes={};
     Object.assign(r,{world:w,sim:{provinces:[{owner:0},{owner:-1},{owner:1}],realms:[{id:0,alive:true},{id:1,alive:true}],routes:[],relations:{},wars:[]},layer:'realms',coord:(x,y,h=0)=>[x,h,y],ground:()=>0,upload:(name,g)=>{meshes[name]=g.data},request(){}});
     const land=(x,y,p)=>{const i=y*E.GW+x;w.height[i]=100;w.provinceId[i]=p;return i};
-    // Each previously unowned pair now joins its directly owned neighbor.
+    // Each open unowned pair retains its country/wildness boundary.
     land(10,10,0);land(11,10,-1);
     land(20,10,-1);land(21,10,0);
     land(30,10,1);land(31,10,0);
@@ -168,6 +166,6 @@ test('Only international borders remain after surrounding land and lakes receive
     land(50,10,0);land(51,10,0);
     land(60,10,0);w.lake[land(61,10,-1)]=110;
     r.buildCivilization();
-    assert.equal(meshes.frontiers.length/27,4);
+    assert.equal(meshes.frontiers.length/27,5*2+4);
     assert(meshes.frontiers.every(Number.isFinite));
 });

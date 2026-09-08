@@ -485,8 +485,10 @@ class AtlasRenderer {
     prepareTerritory() {
         this.territoryWorld = this.world;
         this.territorySim = this.sim;
-        this.territoryOwners = typeof PoliticalLand !== 'undefined' && this.world && this.sim
-            ? PoliticalLand.territory(this.world, this.sim).owners : null;
+        const territory = typeof PoliticalLand !== 'undefined' && this.world && this.sim
+            ? PoliticalLand.territory(this.world, this.sim) : null;
+        this.territoryOwners = territory?.owners || null;
+        this.territoryInlandWater = territory?.inlandWater || null;
         return this.territoryOwners;
     }
     setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.prepareTerritory(); this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
@@ -787,20 +789,22 @@ AtlasRenderer.prototype.palette = function (i) {
             return c;
         return colorMix(c, rgb('#d4d2b9'), .55);
     }
-    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0)
+    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer))
         return c;
-    const pid = w.provinceId[i], p = s.provinces[pid];
     if (this.territoryWorld !== w || this.territorySim !== s) this.prepareTerritory();
+    if (w.height[i] <= 0 && !this.territoryInlandWater?.[i] && !(this.territoryOwners?.[i] >= 0)) return c;
+    const water = w.height[i] <= 0 || w.lake[i] > 0;
+    const pid = w.provinceId[i], p = water ? null : s.provinces[pid];
     const direct = s.realms[p?.owner];
-    // Existing administered districts remain authoritative; the surrounding
-    // highlands, icefields and islands share the completed territorial map.
-    const realm = direct && direct.alive !== false && w.lake[i] <= 0 ? direct : s.realms[this.territoryOwners?.[i]];
-    const hovered = realm?.alive !== false && realm?.id === this.hoveredRealm;
+    // Enclosed water and unclaimed pockets inside a country share its territory.
+    // Open wildness and the ocean keep their own natural appearance.
+    const realm = direct && direct.alive !== false ? direct : s.realms[this.territoryOwners?.[i]];
+    const hovered = !!realm && realm.alive !== false && realm.id === this.hoveredRealm;
     const political = this.layer === 'realms' || this.layer === 'diplomacy';
-    if (w.lake[i] > 0 || !p) {
+    if (water || !p) {
         // No demographic measurement is invented for an uninhabited cell.
         // Its natural surface still participates in the full country preview.
-        const base = !p && !political && w.lake[i] <= 0 && w.ice[i] <= 120 ? colorMix(c, rgb('#b5b7a6'), .30) : c;
+        const base = !p && !political && !water && w.ice[i] <= 120 ? colorMix(c, rgb('#b5b7a6'), .30) : c;
         if (!realm || realm.alive === false) return base;
         if (this.hoveredRealm != null)
             return hovered ? colorMix(c, rgb(realm.color), .34) : base;
@@ -809,7 +813,7 @@ AtlasRenderer.prototype.palette = function (i) {
     }
     if (w.ice[i] > 120)
         return hovered ? colorMix(c, rgb(realm.color), .34)
-            : political && this.hoveredRealm == null && realm?.id === this.focusRealm ? colorMix(c, rgb(realm.color), .14) : c;
+            : political && this.hoveredRealm == null && realm && realm.id === this.focusRealm ? colorMix(c, rgb(realm.color), .14) : c;
     let paint, strength = .63;
     if (this.layer === 'faiths') {
         paint = rgb(FAITHS[cDominant(p.faith)].color);
@@ -934,12 +938,12 @@ AtlasRenderer.prototype.buildCivilization = function () {
     for (let y = 0; y < GH; y++)
         for (let x = 0; x < GW; x++) {
             const i = y * GW + x;
-            if (w.height[i] <= 0) continue;
+            if (w.height[i] <= 0 && !this.territoryInlandWater?.[i]) continue;
             const a = territory ? territory[i] : w.lake[i] > 0 ? -1 : s.provinces[w.provinceId[i]]?.owner ?? -1;
             for (const [dx, dy] of [[1, 0], [0, 1]]) {
                 if (x + dx >= GW || y + dy >= GH) continue;
                 const j = i + dx + dy * GW;
-                if (w.height[j] <= 0) continue;
+                if (w.height[j] <= 0 && !this.territoryInlandWater?.[j]) continue;
                 const b = territory ? territory[j] : w.lake[j] > 0 ? -1 : s.provinces[w.provinceId[j]]?.owner ?? -1;
                 if (a === b || (a < 0 && b < 0)) continue;
                 const cx = x + dx * .5, cy = y + dy * .5, ax = cx - dy * .51, ay = cy - dx * .51, bx = cx + dy * .51, by = cy + dx * .51;
