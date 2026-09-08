@@ -17,7 +17,7 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 | --- | --- |
 | Zoom from the world into a town | Scroll, pinch, or use **+ / −** |
 | Move or rotate the view | Drag to pan; **Shift + drag** or right-drag to orbit |
-| Turn around the current place | Click the lower-right **90° cube** to orbit one quarter turn; zoom, tilt and the selected place stay the same |
+| Turn around the current place | Click the lower-right **rotation arrow** to orbit one quarter turn; zoom, tilt and the selected place stay the same |
 | Find a place | Open **Search** or press **/**; choose **Zoom ↗** to approach a town |
 | Inspect a country or building | Click its name, marker or building; hover a country name to highlight its borders |
 | Return to the world | Use **← Back to world** after zooming in, click the **ORBIS** logo, or press **H**; **Wider setting** pulls back from a town |
