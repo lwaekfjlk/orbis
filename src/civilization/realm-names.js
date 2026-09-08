@@ -94,15 +94,24 @@ const RealmNames = (() => {
         ])
     ]);
     const forms = [
-        ['Kingdom of $', 'Crown of $', 'the $ Throne'],
-        ['Sanctuary of $', 'the $ Covenant', 'See of $'],
-        ['the $ Collegium', 'the $ Athenaeum', 'Scholars of $'],
-        ['the $ Confederacy', 'the Clans of $', 'the $ Accord'],
-        ['the $ Merchant League', 'the $ Concession', 'Factors of $'],
-        ['the $ Holds', 'the $ Marches', 'Wardens of $'],
-        ['Republic of $', 'the $ Commonwealth', 'the Free State of $'],
-        ['the $ City League', 'the $ Compact', 'the $ Assembly']
+        ['Kingdom of $', 'Empire of $', 'Principality of $'],
+        ['Holy Kingdom of $', 'Sacred Empire of $', 'Theocracy of $'],
+        ['Magocracy of $', 'Arcane Dominion of $', 'Arcane Empire of $'],
+        ['Confederacy of $', 'Tribal Federation of $', 'Clan Confederation of $'],
+        ['Merchant Republic of $', 'Trade League of $', 'Maritime Republic of $'],
+        ['Mountain Kingdom of $', 'Federation of $', 'Highland Principality of $'],
+        ['Republic of $', 'Commonwealth of $', 'Free State of $'],
+        ['League of $', 'City League of $', 'League of $']
     ];
+    function fullName(c) {
+        if (!c) return '';
+        // Custom names remain exactly as written. Old saves receive a clear state
+        // form for display without changing their stored names or histories.
+        if (c.namedFor === 'custom') return c.title || c.name || '';
+        const title = String(c.title || '');
+        if (/\b(empire|kingdom|principality|theocracy|magocracy|dominion|confederacy|confederation|federation|republic|league|commonwealth|state)\b/i.test(title)) return title.replace(/^the /i, '');
+        return (forms[c.gov] || forms[0])[0].replace('$', () => c.name || 'Unnamed Realm');
+    }
     const qualifiers = ['', 'New', 'Old', 'Upper', 'Lower', 'Greater', 'Lesser', 'North', 'South', 'East', 'West'];
     const key = name => String(name || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
     const seed = sim => `${sim.seed} / realm names / ${sim.options?.politySeed || 'First-councils'}`;
@@ -159,5 +168,5 @@ const RealmNames = (() => {
         if (!origin?.tradition || !origin.source || !origin.meaning) return '';
         return `${origin.tradition}: ${origin.source}, ${origin.meaning}.${origin.qualifier ? ` “${origin.qualifier}” distinguishes this realm from another namesake.` : ''}`;
     }
-    return Object.freeze({ bases, assign, generate, describe });
+    return Object.freeze({ bases, assign, generate, describe, fullName });
 })();
