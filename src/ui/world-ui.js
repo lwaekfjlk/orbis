@@ -612,7 +612,7 @@ function positionLabels() {
     }
     // Complete names can extend beyond the land on a narrow screen. Keep the
     // permanent map controls and status clear, just like the special site pins.
-    if(labelRect&&typeof document!=='undefined')for(const control of document.querySelectorAll('#omChrome .om-brandbar, #omChrome .om-tools, #omChrome .om-dock, #omChrome .om-camera, #cmStatus')){
+    if(labelRect&&typeof document!=='undefined')for(const control of document.querySelectorAll('#omChrome .om-brandbar, #omChrome .om-tools, #omChrome .om-dock, #omChrome .om-camera, #cmStatus, #cmContext')){
         if(control.checkVisibility&&!control.checkVisibility({checkVisibilityCSS:true}))continue;
         const b=control.getBoundingClientRect();
         if(b.width&&b.height)obstacles.push({x:b.left-labelRect.left-2,y:b.top-labelRect.top-2,w:b.width+4,h:b.height+4,pin:control,fixed:true});
