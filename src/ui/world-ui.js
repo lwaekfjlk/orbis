@@ -76,7 +76,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
             aggregateRealms(next);
         }
         else {
-            await stageProgress('09 / Independent local centers and bounded administration');
+            await stageProgress('09 / Connected realms and local administrations');
         }
         validateSimulation(next, w);
         // Independent site queries can run while the atlas attaches its meshes.
@@ -263,7 +263,7 @@ function renderInspector(forceRealm = false) {
         const conn = realmConnections(sim);
         diplomacyTarget = rivals.find(n => conn.has(cPair(c.id, n.id)))?.id ?? rivals[0]?.id ?? -1;
     }
-    $('inspector').innerHTML = `<div class="overline">REALM DOSSIER / YEAR ${sim.year}</div><div class="inspecttop"><span class="shield bigshield" style="background:${c.color}">${c.gov === 2 ? '✦' : c.gov === 1 ? '✧' : '♜'}</span><div><h2>${escapeHTML(RealmNames.fullName(c))}</h2><div class="government">${escapeHTML(GOVERNMENTS[c.gov])} · ${c.provinces.length} provinces</div></div></div>${realmNameOriginHTML(c)}<p class="identity">${escapeHTML(c.identity)}</p><div class="metrics"><div><b>${fmtPop(c.population)}</b><small>POPULATION</small></div><div><b>${fmt(c.strength)}</b><small>POWER INDEX</small></div><div><b>${c.army.toFixed(1)}k</b><small>FIELD ARMY</small></div><div><b>${c.income.toFixed(1)}</b><small>ANNUAL REVENUE</small></div><div><b>${c.arcana.toFixed(2)}</b><small>ARCANE LEVEL</small></div><div><b>${c.treasury.toFixed(0)}</b><small>TREASURY</small></div></div><div class="captionrow"><span>Stability</span><span>${Math.round(c.stability)} / 100</span></div><div class="meter"><div style="width:${c.stability}%;background:${c.stability < 45 ? '#bd9474' : '#91a581'}"></div></div><div class="captionrow"><span>Food availability / demand</span><span>${Math.round(c.foodRatio * 100)}%</span></div><div class="meter"><div style="width:${Math.min(100, c.foodRatio * 65)}%;background:${c.foodRatio < 1 ? '#c19b72' : '#8aab94'}"></div></div><div class="breakdown"><div class="overline">PEOPLES / POPULATION MIX</div>${mixtureHTML(c.people, PEOPLES)}</div><div class="breakdown"><div class="overline">FAITHS / NOT THE STATE RELIGION</div>${mixtureHTML(c.faithMix, FAITHS)}</div><div class="diplotext"><strong>Capital</strong> ${escapeHTML(cap.name)}<br><strong>Allies</strong> ${escapeHTML(allies.join(', ') || 'No defensive pact')}<br><strong>At war</strong> ${escapeHTML(foes.join(', ') || 'At peace')}<br><strong>Trade agreements</strong> ${tradePartners}</div><div class="inspectbuttons"><button id="focusCapital">Go to capital</button><button id="viewDiplomacy">See diplomacy</button></div><div class="field"><label for="policy">GOVERNING PRIORITY</label><select id="policy">${['Prosperity', 'Scholarship', 'Expansion', 'Concord'].map(v => `<option ${v === c.policy ? 'selected' : ''}>${v}</option>`).join('')}</select></div><div class="field"><label for="stateFaith">STATE TRADITION</label><select id="stateFaith">${FAITHS.map((f, k) => `<option value="${k}" ${c.faith === k ? 'selected' : ''}>${escapeHTML(f.name)}</option>`).join('')}</select></div><div class="diplomacybox"><div class="overline">DIPLOMATIC ACTIONS</div><div class="field"><select id="diplomacyTarget" aria-label="Diplomatic target">${rivals.map(n => `<option value="${n.id}" ${n.id === diplomacyTarget ? 'selected' : ''}>${escapeHTML(n.name)}</option>`).join('')}</select></div><div class="relationNote" id="relationNote"></div><div class="diplobuttons"><button data-action="rapprochement">Send delegation</button><button data-action="alliance">Offer alliance</button><button data-action="war" class="danger">Declare war</button><button data-action="peace">Broker peace</button></div></div><details><summary>Founding geography & territorial limits</summary><p class="identity">Initial expansion used land travel through the existing terrain, not sea-trade shortcuts. Claims had to touch a held district; other capitals could not be absorbed during this founding pass.</p><table class="detailTable"><tr><td>Founding districts</td><td>${c.foundingProvinces ?? "—"}</td></tr><tr><td>Founding command range / model units</td><td>${Number.isFinite(c.commandRange) ? c.commandRange.toFixed(1) : "—"}</td></tr><tr><td>Founding administration / budget</td><td>${Number.isFinite(c.adminBudget) ? c.adminUsed.toFixed(1) + " / " + c.adminBudget.toFixed(1) : "—"}</td></tr></table><p class="identity">Later conquest and secession may change these initial holdings; the founding budget is not an annual fiscal account.</p></details><details><summary>Economy, forces & realm name</summary><table class="detailTable"><tr><td>Technology level</td><td>${c.tech.toFixed(2)}</td></tr><tr><td>Trade revenue</td><td>${c.tradeIncome.toFixed(1)}</td></tr><tr><td>Imported food / people-equivalent</td><td>${fmtPop(c.imports)}</td></tr><tr><td>Navy / flotillas</td><td>${c.navy.toFixed(1)}</td></tr><tr><td>Magic power index</td><td>${c.magicPower.toFixed(1)}</td></tr><tr><td>War weariness</td><td>${Math.round(c.warWeariness)}</td></tr><tr><td>Local tolerance parameter</td><td>${Math.round(c.tolerance * 100)}%</td></tr></table><div class="field"><label for="realmNameEdit">Rename this realm</label><input id="realmNameEdit" value="${escapeHTML(c.name)}" maxlength="65"></div><button id="renameRealm" style="font-size:9px">Apply name</button></details><p class="smallnote">Revenue and reserves use abstract treasury units. Military and arcane indices are game rules, not real-world measurements.</p>`;
+    $('inspector').innerHTML = `<div class="overline">REALM DOSSIER / YEAR ${sim.year}</div><div class="inspecttop"><span class="shield bigshield" style="background:${c.color}">${c.gov === 2 ? '✦' : c.gov === 1 ? '✧' : '♜'}</span><div><h2>${escapeHTML(RealmNames.fullName(c))}</h2><div class="government">${escapeHTML(GOVERNMENTS[c.gov])} · ${c.provinces.length} provinces</div></div></div>${realmNameOriginHTML(c)}<p class="identity">${escapeHTML(c.identity)}</p><div class="metrics"><div><b>${fmtPop(c.population)}</b><small>POPULATION</small></div><div><b>${fmt(c.strength)}</b><small>POWER INDEX</small></div><div><b>${c.army.toFixed(1)}k</b><small>FIELD ARMY</small></div><div><b>${c.income.toFixed(1)}</b><small>ANNUAL REVENUE</small></div><div><b>${c.arcana.toFixed(2)}</b><small>ARCANE LEVEL</small></div><div><b>${c.treasury.toFixed(0)}</b><small>TREASURY</small></div></div><div class="captionrow"><span>Stability</span><span>${Math.round(c.stability)} / 100</span></div><div class="meter"><div style="width:${c.stability}%;background:${c.stability < 45 ? '#bd9474' : '#91a581'}"></div></div><div class="captionrow"><span>Food availability / demand</span><span>${Math.round(c.foodRatio * 100)}%</span></div><div class="meter"><div style="width:${Math.min(100, c.foodRatio * 65)}%;background:${c.foodRatio < 1 ? '#c19b72' : '#8aab94'}"></div></div><div class="breakdown"><div class="overline">PEOPLES / POPULATION MIX</div>${mixtureHTML(c.people, PEOPLES)}</div><div class="breakdown"><div class="overline">FAITHS / NOT THE STATE RELIGION</div>${mixtureHTML(c.faithMix, FAITHS)}</div><div class="diplotext"><strong>Capital</strong> ${escapeHTML(cap.name)}<br><strong>Allies</strong> ${escapeHTML(allies.join(', ') || 'No defensive pact')}<br><strong>At war</strong> ${escapeHTML(foes.join(', ') || 'At peace')}<br><strong>Trade agreements</strong> ${tradePartners}</div><div class="inspectbuttons"><button id="focusCapital">Go to capital</button><button id="viewDiplomacy">See diplomacy</button></div><div class="field"><label for="policy">GOVERNING PRIORITY</label><select id="policy">${['Prosperity', 'Scholarship', 'Expansion', 'Concord'].map(v => `<option ${v === c.policy ? 'selected' : ''}>${v}</option>`).join('')}</select></div><div class="field"><label for="stateFaith">STATE TRADITION</label><select id="stateFaith">${FAITHS.map((f, k) => `<option value="${k}" ${c.faith === k ? 'selected' : ''}>${escapeHTML(f.name)}</option>`).join('')}</select></div><div class="diplomacybox"><div class="overline">DIPLOMATIC ACTIONS</div><div class="field"><select id="diplomacyTarget" aria-label="Diplomatic target">${rivals.map(n => `<option value="${n.id}" ${n.id === diplomacyTarget ? 'selected' : ''}>${escapeHTML(n.name)}</option>`).join('')}</select></div><div class="relationNote" id="relationNote"></div><div class="diplobuttons"><button data-action="rapprochement">Send delegation</button><button data-action="alliance">Offer alliance</button><button data-action="war" class="danger">Declare war</button><button data-action="peace">Broker peace</button></div></div><details><summary>Founding geography & territorial limits</summary><p class="identity">Territory grows through connected land from existing local centers. Districts beyond the central command range or administration budget retain local administration within their realm. Sea trade does not annex land, and isolated communities can remain independent.</p><table class="detailTable"><tr><td>Founding districts</td><td>${c.foundingProvinces ?? "—"}</td></tr><tr><td>Founding command range / model units</td><td>${Number.isFinite(c.commandRange) ? c.commandRange.toFixed(1) : "—"}</td></tr><tr><td>Founding administration / budget</td><td>${Number.isFinite(c.adminBudget) ? c.adminUsed.toFixed(1) + " / " + c.adminBudget.toFixed(1) : "—"}</td></tr></table><p class="identity">Later conquest and secession may change these initial holdings; the founding budget is not an annual fiscal account.</p></details><details><summary>Economy, forces & realm name</summary><table class="detailTable"><tr><td>Technology level</td><td>${c.tech.toFixed(2)}</td></tr><tr><td>Trade revenue</td><td>${c.tradeIncome.toFixed(1)}</td></tr><tr><td>Imported food / people-equivalent</td><td>${fmtPop(c.imports)}</td></tr><tr><td>Navy / flotillas</td><td>${c.navy.toFixed(1)}</td></tr><tr><td>Magic power index</td><td>${c.magicPower.toFixed(1)}</td></tr><tr><td>War weariness</td><td>${Math.round(c.warWeariness)}</td></tr><tr><td>Local tolerance parameter</td><td>${Math.round(c.tolerance * 100)}%</td></tr></table><div class="field"><label for="realmNameEdit">Rename this realm</label><input id="realmNameEdit" value="${escapeHTML(c.name)}" maxlength="65"></div><button id="renameRealm" style="font-size:9px">Apply name</button></details><p class="smallnote">Revenue and reserves use abstract treasury units. Military and arcane indices are game rules, not real-world measurements.</p>`;
     $('focusCapital').onclick = () => selectRealm(c.id, true);
     $('viewDiplomacy').onclick = () => setLayer('diplomacy');
     $('policy').onchange = () => applyAction('policy', -1, $('policy').value);
@@ -286,6 +286,7 @@ function renderRealmOverview(id) {
             <div><b>${facts.provinceCount}</b><small>Provinces · ${facts.townCount} towns</small></div>
             <div><b>${escapeHTML(facts.capital || 'No capital')}</b><small>Capital</small></div>
         </div>
+        ${facts.primaryPeople ? `<p class="realm-community"><strong>${escapeHTML(facts.primaryPeople)}</strong> · ${(facts.primaryPeopleShare * 100).toFixed(1)}% of residents · ${facts.primaryPeopleShare > .5 ? 'majority community' : 'largest community'}</p>` : ''}
         <div class="inspectbuttons"><button id="realmVisitCapital">Visit capital</button><button id="realmGovernment">Government & diplomacy</button></div>
         ${profile.sections.map(section => `<section><h3>${escapeHTML(section.title)}</h3><p>${escapeHTML(section.text)}</p></section>`).join('')}
         <section><h3>From the chronicle</h3>${profile.events.length ? `<ol class="realm-history">${profile.events.map(event => `<li><time>Year ${event.year}</time>${escapeHTML(event.text)}</li>`).join('')}</ol>` : '<p>No events have yet been recorded for this realm.</p>'}</section>
@@ -302,7 +303,8 @@ function showLocation(i) {
     if (!world || i < 0)
         return;
     const pid = world.provinceId[i], p = sim?.provinces[pid], b = world.basins[world.basinTarget[i]], extra = world.lake[i] > 0 ? `${world.basins[world.lakeId[i]]?.kind || 'Inland lake'} · water surface ${fmt(world.lake[i])} m` : b?.closed ? 'Inland drainage → ' + b.name : 'Drainage toward an ocean or an overflowing basin';
-    $('locationNote').textContent = `${p ? `${p.name} · ${sim.realms[p.owner]?.name || 'Unaligned communities'} · ` : ''}${BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i], world.height[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
+    const sovereignty = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(world, sim, i) : null;
+    $('locationNote').textContent = `${p ? p.name + ' · ' : ''}${sovereignty && sovereignty.kind !== 'water' ? sovereignty.label + ' · ' : ''}${BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i], world.height[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
 }
 function inspectCell(i) { selectedCell = i; const p = sim?.provinces[world.provinceId[i]]; renderer.select(i); showLocation(i); if (POLITICAL.includes(currentLayer) && p?.owner >= 0) {
     selectedRealm = p.owner;
@@ -332,6 +334,12 @@ function renderGeography(i, p = null) {
             cause = 'Temperature, transported rainfall, elevation and evaporative demand determine this biome. Civilizations inherit these constraints rather than placing the biome themselves.';
     }
     $('inspector').innerHTML = `<div class="overline">LANDSCAPE DOSSIER</div><h2 class="geoTitle">${escapeHTML(title)}</h2><p class="identity">${escapeHTML(cause)}</p><div class="metrics"><div><b>${fmt(w.height[i])}</b><small>BED / MODEL M</small></div><div><b>${w.temp[i].toFixed(1)}°</b><small>TEMPERATURE</small></div><div><b>${w.rain[i].toFixed(2)}</b><small>RAINFALL INDEX</small></div><div><b>${w.arid[i].toFixed(2)}</b><small>WATER / DEMAND</small></div><div><b>${fmt(w.ice[i])}</b><small>ICE / MODEL M</small></div><div><b>${w.flow[i].toFixed(1)}</b><small>RUNOFF INDEX</small></div></div><p class="geoStat">${escapeHTML(plate.name)} Plate<br>${escapeHTML(BOUNDARY[w.boundaryType[i]] || 'Plate interior')}<br>${target ? 'Catchment: ' + escapeHTML(target.name) : 'No significant closed basin downstream'}</p>${b ? `<table class="detailTable"><tr><td>Water surface / model m</td><td>${fmt(b.level)}</td></tr><tr><td>Water area / grid cells</td><td>${b.area}</td></tr><tr><td>Catchment / grid cells</td><td>${b.catchment}</td></tr><tr><td>Stored volume / model units</td><td>${b.volume.toFixed(2)}</td></tr><tr><td>Annual overflow index</td><td>${b.overflow.toFixed(3)}</td></tr><tr><td>Storage budget residual</td><td>${b.budget.residual.toExponential(1)}</td></tr></table>` : ''}${p ? `<div class="breakdown"><div class="overline">${escapeHTML(p.name)} / ${escapeHTML(country?.name || 'UNALIGNED COMMUNITIES')}</div><div class="miniheading">PEOPLES</div>${mixtureHTML(p.people, PEOPLES)}<div class="miniheading">FAITHS</div>${mixtureHTML(p.faith, FAITHS)}<p class="geoStat" style="margin-top:10px">Population ${fmtPop(p.pop)}<br>Unrest ${Math.round(p.unrest)} / 100</p></div>` : ''}<div class="inspectbuttons"><button id="backRealm">Realm dossier</button><button id="waterLayer">Water layer</button></div><p class="smallnote">Lake surfaces are separate from bedrock. Basins and fjords are explicit design-conditioned landforms; measurements use an uncalibrated rectangular grid.</p>`;
+    if (typeof PoliticalLand !== 'undefined' && PoliticalLand.status(w, sim, i).kind !== 'water') {
+        const note = document.createElement('p');
+        note.className = 'identity';
+        note.textContent = PoliticalLand.description(w, sim, i);
+        $('inspector').querySelector('.geoTitle').after(note);
+    }
     if (w.human && habitable(w, i)) {
         const g = w.human, source = g.lake[i] > .25 ? 'Freshwater lakeshore' : g.river[i] > .35 ? 'Stream / river access' : g.rainwater[i] > .28 ? 'Rain collection / rain-fed land' : g.salt[i] > .25 ? 'Salt lake nearby, but no freshwater bonus' : 'No reliable local freshwater';
         const div = document.createElement('div');
@@ -359,7 +367,7 @@ function legend() {
     else if (currentLayer === 'settlements')
         items = [['#d3c3a7', 'Sparse hinterland'], ['#388c79', 'Productive hinterland'], ['#e4d7b5', 'Sized villages & towns — no state symbols']];
     else if (currentLayer === 'realms')
-        items = [['#b8a17a', 'Political tint = ruling realm'], ['#465457', 'Internal state frontier'], ['#b7b5a3', 'Unincorporated communities'], ['#74b4c1', 'Inland lake']];
+        items = [['#b8a17a', 'Hover a country name to see its territory'], ['#465457', 'Solid line: national border'], ['#766750', 'Dashed line: unclaimed wilderness boundary'], ['#74b4c1', 'Inland lake']];
     else if (currentLayer === 'faiths')
         items = FAITHS.map(f => [f.color, f.name]);
     else if (currentLayer === 'peoples')
@@ -409,6 +417,14 @@ function realmLabelAnchors(held) {
         if (anchors.every(a => Math.hypot(a.x-p.x, a.y-p.y) >= 3)) anchors.push(p);
         if (anchors.length === 40) break;
     }
+    // The highest-scoring forty positions can all occupy the same interior.
+    // Keep a candidate in each part of the territory, including separate islands,
+    // so approaching a peripheral district does not erase its country's name.
+    const xs=cells.map(i=>i%GW),ys=cells.map(i=>Math.floor(i/GW));
+    const x0=Math.min(...xs),y0=Math.min(...ys),dx=Math.max(1,(Math.max(...xs)-x0+1)/8),dy=Math.max(1,(Math.max(...ys)-y0+1)/8);
+    const coverage=new Map(),seen=new Set(anchors.map(a=>a.i));
+    for(const p of candidates){const key=Math.floor((p.x-x0)/dx)+','+Math.floor((p.y-y0)/dy);if(!coverage.has(key))coverage.set(key,p);}
+    for(const p of coverage.values())if(!seen.has(p.i)){anchors.push(p);seen.add(p.i);}
     return anchors;
 }
 // Named wonders only appear when the legend layer itself is switched on.
@@ -431,7 +447,7 @@ function makeLabels() {
         list = world.plates.map(p => ({ x: p.x, y: p.y, i: cell(p.x, p.y), name: p.name + ' Plate', kind: '', plate: true }));
     else if (POLITICAL.includes(currentLayer)) {
         // Realm lettering has its own land positions and no settlement marker.
-        // Town labels are reserved separately before fitting the realm names.
+        // Country names have priority; town lettering fills the remaining space.
         const realms = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength);
         const territories = realms.map(c => {
             const held = sim.provinces.filter(p => p.owner === c.id);
@@ -440,12 +456,13 @@ function makeLabels() {
         const largest = Math.max(1, ...territories.map(t => t.area));
         list = territories.map(({ c, held, area }) => {
             const anchors = realmLabelAnchors(held), anchor = anchors[0] || sim.provinces[c.capital];
-            return { x: anchor.x, y: anchor.y, i: anchor.i, name: RealmNames.fullName(c), realm: c.id, anchors, area,
+            return { x: anchor.x, y: anchor.y, i: anchor.i, name: RealmNames.fullName(c), shortName:c.name, realm: c.id, anchors, area,
                 labelSize: 14 + 10 * Math.sqrt(area / largest) };
         });
         for (const c of realms)
             for (const p of sim.provinces.filter(p => p.owner === c.id && p.settled).sort((a, b) => b.urbanPop - a.urbanPop).slice(0, 4))
                 list.push({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.id === c.capital ? 'CAPITAL' : '', town: true, minZoom: p.id === c.capital ? 0 : 2 });
+        if(typeof PoliticalLand!=='undefined')list.push(...PoliticalLand.labels(world,sim));
     }
     else if (currentLayer === 'relief')
         // Continents claim their names first — they are the coarsest "where am I"
@@ -464,11 +481,14 @@ function makeLabels() {
         list = [...world.continents, ...legendLabels(), ...world.features];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel' : '');
-        b.innerHTML = (f.realm != null ? '' : `<small>${escapeHTML(f.kind || '')}</small>`) + `<em>${escapeHTML(f.name)}</em>`;
+        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel' : '') + (f.wilderness ? ' wildernessLabel' : '');
+        b.innerHTML = f.realm != null
+            ? `<em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
+            : `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
         if (f.realm != null) {
             b.dataset.realmId = f.realm;
             b.style.setProperty('--realm-label-size', f.labelSize.toFixed(2) + 'px');
+            b.style.setProperty('--realm-mark', sim.realms[f.realm].color || '#786c50');
             b.setAttribute('aria-label', 'Read about ' + f.name);
             b.onpointerenter = e => {
                 if (!busy && e.pointerType !== 'touch' && $('names').checked && b.style.opacity === '1')
@@ -498,38 +518,80 @@ function positionLabels() {
         return;
     }
     const boxes = [];
-    // Batch reads before position writes so camera movement causes one layout pass.
-    const measured = labelItems.map(item => ({ ...item, width: item.element.offsetWidth + 6, height: item.element.offsetHeight + 4 }));
+    // All three country forms remain measurable. Batch these reads before any
+    // placement writes; a camera frame must not relayout once per candidate.
+    const measured = labelItems.map(item => {
+        const {element:e,feature:f}=item,region=f.realm!=null,full=e.querySelector?.('.realmFullName');
+        const variants=[];
+        if(region&&full){
+            const font=typeof getComputedStyle==='function'?parseFloat(getComputedStyle(full).fontSize):f.labelSize||18;
+            for(const scale of [1,.9,Math.max(.78,10.5/font)].filter((v,i,a)=>v<=1&&a.indexOf(v)===i))
+                variants.push({kind:'full',scale,width:full.offsetWidth+22,height:full.offsetHeight+10});
+            const compact=e.querySelector('.realmCompactName'),marker=e.querySelector('.realmMarker');
+            if(compact)variants.push({kind:'compact',scale:1,width:compact.offsetWidth+22,height:compact.offsetHeight+10});
+            if(marker)variants.push({kind:'marker',scale:1,width:marker.offsetWidth+4,height:marker.offsetHeight+4});
+        }else variants.push({kind:'full',scale:1,width:e.offsetWidth+6,height:e.offsetHeight+4});
+        return {...item,region,variants};
+    });
     const overlaps = (a, b, gap = 0) => a.x < b.x+b.w+gap && a.x+a.w > b.x-gap && a.y < b.y+b.h+gap && a.y+a.h > b.y-gap;
+    const screenPositions=new Map();
     const at = (f, width, height, anchor = f) => {
-        const [x,y] = renderer.screen(anchor.x, anchor.y, f.legend ? 1.9 : .6);
-        return { x:x-width/2, y:y-(f.realm != null ? height/2 : height), w:width, h:height, left:x, top:y };
+        if(!screenPositions.has(anchor))screenPositions.set(anchor,renderer.screen(anchor.x,anchor.y,f.legend?1.9:.6));
+        const [x,y] = screenPositions.get(anchor);
+        return { x:x-width/2, y:y-(f.realm != null ? height/2 : height), w:width, h:height, left:x, top:y, anchor:anchor.i };
     };
     const inside = b => b.x >= 8 && b.x+b.w <= renderer.width-8 && b.y >= 8 && b.y+b.h <= renderer.height-22 && !(b.x < 210 && b.y < 75);
-    // Reserve point labels and the city locations below them. Realm names must
-    // find other land instead of replacing a capital's name or sitting on its dot.
-    const towns = [];
-    for (const v of measured.filter(v => v.feature.town && (!v.feature.minZoom || renderer.zoom >= v.feature.minZoom))) {
-        const box = at(v.feature,v.width,v.height);
-        if (inside(box) && !towns.some(b => overlaps(box,b))) towns.push(box);
-    }
-    for (const { element:e, feature:f, width, height } of measured) {
-        const region = f.realm != null;
-        const candidates = region ? (f.anchors?.length ? f.anchors : [f]) : [f];
-        let box = at(f,width,height), show = false;
-        for (const anchor of candidates) {
-            if (f.minZoom && renderer.zoom < f.minZoom) break;
-            const candidate = at(f,width,height,anchor);
-            if (!inside(candidate) || boxes.some(b => overlaps(candidate,b))) continue;
-            if (region && towns.some(b => overlaps(candidate,b,8))) continue;
-            box = candidate; show = true; break;
+    // Countries answer the primary political question. Town names use the space
+    // left over, rather than reserving a capital-sized hole in every small realm.
+    // A constrained island gets its turn before a large country with many anchors.
+    for(const v of measured){const f=v.feature;v.anchors=v.region?(f.anchors?.length?f.anchors:[f]):[f];
+        v.visibleAnchors=v.region?v.anchors.filter(a=>inside(at(f,18,18,a))).length:0;}
+    measured.sort((a,b)=>Number(b.region)-Number(a.region)||(a.region&&b.region?a.visibleAnchors-b.visibleAnchors:0));
+    const townBoxes=measured.filter(v=>v.feature.town&&(!v.feature.minZoom||renderer.zoom>=v.feature.minZoom)).map(v=>at(v.feature,v.variants[0].width,v.variants[0].height)).filter(inside);
+    const fit=(v,occupied,limit=1)=>{
+        const {feature:f,variants,anchors}=v;
+        let fitted=variants[0],box=at(f,fitted.width,fitted.height),show=false;
+        const allowed=variants.filter(a=>a.kind!=='full'||a.scale<=limit);
+        if(!f.minZoom||renderer.zoom>=f.minZoom)for(const variant of allowed.length?allowed:[variants.at(-1)]){
+            // Prefer keeping both names when an alternative is available. This
+            // is a preference, never a town's veto over the country's only place.
+            for(const leaveTownRoom of v.region?[true,false]:[false]){
+                for(const anchor of anchors){
+                    const candidate=at(f,variant.width*variant.scale,variant.height*variant.scale,anchor);
+                    if(!inside(candidate)||occupied.some(b=>overlaps(candidate,b)))continue;
+                    if(leaveTownRoom&&townBoxes.some(b=>overlaps(candidate,b,4)))continue;
+                    box=candidate;fitted=variant;show=true;break;
+                }
+                if(show)break;
+            }
+            if(show)break;
+        }
+        if(show)occupied.push(box);
+        return{box,fitted,show};
+    };
+    const regions=measured.filter(v=>v.region),visibleRegions=regions.filter(v=>v.visibleAnchors).length;
+    const arrange=limit=>{const occupied=[],placements=new Map();let count=0,named=0;for(const v of regions){const p=fit(v,occupied,limit);placements.set(v,p);if(p.show){count++;if(p.fitted.kind!=='marker')named++;}}return{occupied,placements,count,named};};
+    let layout=arrange(1);
+    // Do not let an early wide name permanently consume the only anchor of a
+    // neighbour. Retry the set in smaller forms only when it restores a country.
+    for(const limit of [.9,.78,0]){if(layout.count>=visibleRegions&&layout.named>=visibleRegions)break;const candidate=arrange(limit);if(candidate.count>layout.count||(candidate.count===layout.count&&candidate.named>layout.named))layout=candidate;}
+    boxes.push(...layout.occupied);
+    for (const v of measured) {
+        const {element:e,feature:f,region}=v,{box,fitted,show}=region?layout.placements.get(v):fit(v,boxes);
+        if(region&&e.querySelector?.('.realmFullName')){
+            e.dataset.labelVariant=fitted.kind;
+            if(Number.isInteger(box.anchor))e.dataset.anchorCell=String(box.anchor);
+            e.style.width=(fitted.width-6)+'px';e.style.height=(fitted.height-4)+'px';
+            e.style.transform=`translate(-50%,-50%) scale(${fitted.scale})`;
+            // The compact form and marker still announce the complete state name.
+            e.title=fitted.kind==='full'?'Inspect '+f.name:f.name+' · Click for country details';
         }
         e.style.opacity = show ? '1' : '0';
         e.style.pointerEvents = show ? 'auto' : 'none';
+        e.tabIndex=show?0:-1;
         e.style.left = box.left+'px';
         e.style.top = box.top+'px';
         if (!show && region && renderer.hoveredRealm === f.realm) renderer.setHoveredRealm(null);
-        if (show) boxes.push(box);
     }
     $('compass').style.transform = `rotate(${-renderer.azimuth * 180 / Math.PI}deg)`;
 }

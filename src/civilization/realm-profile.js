@@ -49,7 +49,9 @@ const RealmProfile = (() => {
         const population = held.reduce((sum, p) => sum + positive(p.pop), 0), towns = held.filter(p => p.settled || p.city);
         const capital = held.find(p => p.id === c.capital)?.name || null;
         const title = RealmNames.fullName(c);
-        const facts = { area, areaShare, areaRank, provinceCount: held.length, townCount: towns.length, population, capital };
+        const peoples = mix(held, 'people', PEOPLES), primary = peoples.shares[0];
+        const facts = { area, areaShare, areaRank, provinceCount: held.length, townCount: towns.length, population, capital,
+            primaryPeople: primary?.name || null, primaryPeopleShare: primary?.share || 0 };
         const summary = `${title} holds ${counted(held.length, 'district')} and ${counted(towns.length, 'town')}, home to ${number(population)} residents.${capital ? ` Its capital is ${capital}.` : ''}${areaRank ? ` Its dry-land territory ranks ${areaRank} among living realms and covers ${number(areaShare * 100, 1)}% of the world's dry land.` : ''}`;
 
         const founding = [];
@@ -82,7 +84,8 @@ const RealmProfile = (() => {
         if (coastal || lakeside) terrain.push(`${counted(coastal, 'district')} ${coastal === 1 ? 'reaches' : 'reach'} the sea and ${counted(lakeside, 'district')} ${lakeside === 1 ? 'borders' : 'border'} inland lakes.`);
         if (!terrain.length) terrain.push('The available territorial record does not describe its landscape or climate.');
 
-        const residents = [], peoples = mix(held, 'people', PEOPLES), faiths = mix(held, 'faith', FAITHS);
+        const residents = [], faiths = mix(held, 'faith', FAITHS);
+        if (primary) residents.push(`${primary.name} ${primary.share > .5 ? 'form the majority' : 'are the largest community'}, accounting for ${number(primary.share * 100, 1)}% of residents.`);
         if (peoples.known) residents.push(`Among ${peoples.known < population ? 'residents with recorded ancestry' : 'its residents'}, the population includes ${mixtureText(peoples.shares)}.`);
         else residents.push('No population mixture is recorded for its present districts.');
         if (FAITHS[c.faith]) residents.push(`${FAITHS[c.faith].name} is the state tradition; that designation does not determine each resident's belief.`);

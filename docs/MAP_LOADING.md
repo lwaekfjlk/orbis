@@ -59,7 +59,12 @@ Other changes remove work without reducing visible detail:
 
 ## Verification
 
-`tests/landmark-index.test.mjs` locks all 168 default directory entries, including
+The original benchmark above used 168 directory entries. The subsequent
+[country formation update](POLITIES.md) reduces civic entries to 152 while
+preserving all 69 sacred sites and 78 exact queries; its complete directory was
+verified independently against eager full-city generation.
+
+`tests/landmark-index.test.mjs` locks the current default directory, including
 69 real sacred sites and nine eligible but unplaceable wonders, to the previous
 directory's metadata hash. It checks another world, saved recipes, complete city
 fingerprints and the final building API. A blocked-doorway counterexample checks

@@ -904,22 +904,27 @@ AtlasRenderer.prototype.buildCivilization = function () {
             towns.tri([pole, top, z], [pole + .60 * sc, top - .1 * sc, z], [pole, top - .42 * sc, z], rgb(c.color));
         }
     }
-    for (let y = 0; y < GH - 1; y++)
-        for (let x = 0; x < GW - 1; x++) {
+    // A country also ends at unclaimed dry land. Omitting that edge used to
+    // leave its border open, making owned territory look unassigned.
+    for (let y = 0; y < GH; y++)
+        for (let x = 0; x < GW; x++) {
             const i = y * GW + x, pa = w.provinceId[i];
-            if (pa < 0)
-                continue;
-            const a = s.provinces[pa].owner;
-            if (a < 0)
-                continue;
+            if (w.height[i] <= 0 || w.lake[i] > 0) continue;
+            const a = s.provinces[pa]?.owner ?? -1;
             for (const [dx, dy] of [[1, 0], [0, 1]]) {
+                if (x + dx >= GW || y + dy >= GH) continue;
                 const j = i + dx + dy * GW, pb = w.provinceId[j];
-                if (pb < 0 || pb === pa)
-                    continue;
-                const b = s.provinces[pb].owner;
-                if (b < 0 || a === b)
-                    continue;
+                if (w.height[j] <= 0 || w.lake[j] > 0) continue;
+                const b = s.provinces[pb]?.owner ?? -1;
+                if (a === b || (a < 0 && b < 0)) continue;
                 const cx = x + dx * .5, cy = y + dy * .5, ax = cx - dy * .51, ay = cy - dx * .51, bx = cx + dy * .51, by = cy + dx * .51;
+                if (a < 0 || b < 0) {
+                    // Short ochre dashes distinguish wilderness margins from
+                    // the continuous pale border between two named realms.
+                    const A = [lerp(ax, bx, .16), lerp(ay, by, .16)], B = [lerp(ax, bx, .84), lerp(ay, by, .84)];
+                    borders.line(this.coord(A[0], A[1], this.ground(...A) + .12), this.coord(B[0], B[1], this.ground(...B) + .12), .09, rgb('#766750'));
+                    continue;
+                }
                 borders.line(this.coord(ax, ay, this.ground(ax, ay) + .12), this.coord(bx, by, this.ground(bx, by) + .12), .13, rgb('#465457'));
                 borders.line(this.coord(ax, ay, this.ground(ax, ay) + .14), this.coord(bx, by, this.ground(bx, by) + .14), .045, rgb('#f6ecce'));
             }

@@ -59,8 +59,8 @@ for (let run = 0; run < runs; run++) {
   // startup reset invalidated its just-uploaded terrain and rebuilt it on a timer.
   await page.waitForTimeout(350); await stable();
   result.settledTerrainBuilds = await page.evaluate('__loadProbe.terrainBuilds');
-  assert.deepEqual(result.fingerprints, ['440ae5d0', '6b6c5ea8', 'aaa577eb']);
-  assert.equal(result.directory, 168); assert.equal(result.sacredSites, 69);
+  assert.deepEqual(result.fingerprints, ['440ae5d0', '6b6c5ea8', baseline ? 'aaa577eb' : 'd8ba763d']);
+  assert.equal(result.directory, baseline ? 168 : 152); assert.equal(result.sacredSites, 69);
   if (!baseline) {
    assert.equal(result.fullCities, 0, 'startup generated complete cities for its directory');
    assert.equal(result.siteQueries, 0, 'startup ran its site queries on the UI thread');
@@ -112,7 +112,7 @@ for (let run = 0; run < runs; run++) {
      finally {window.Worker = previous;}
     });
     await stable();
-    assert.deepEqual(await page.evaluate('({status:__loadProbe.index.status,directory:LandmarkUI.registry.length,world:renderer.world===world})'), {status:'unavailable',directory:168,world:true});
+    assert.deepEqual(await page.evaluate('({status:__loadProbe.index.status,directory:LandmarkUI.registry.length,world:renderer.world===world})'), {status:'unavailable',directory:152,world:true});
     result.noWorkerFallback = true;
    }
   }

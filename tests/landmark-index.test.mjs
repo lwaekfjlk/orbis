@@ -19,7 +19,8 @@ settlementFingerprint,politicalFingerprint,calls,
 withoutDryConnections(fn){const prior=cityDrySegment;cityDrySegment=()=>false;try{return fn()}finally{cityDrySegment=prior}}};`)();
 let w,s,inventory,before;
 const fingerprints=(w,s)=>[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)];
-// Stable public directory data captured before removing eager full-town builds.
+// Public directory baseline from complete eager town generation under the current
+// sovereignty rules. The optimized query must preserve that independent result.
 // Final local building data remains available explicitly, outside the search index.
 const metadata=entries=>entries.map(({id,name,recipe,provinceId,i,x,y,priority,kind})=>({id,name,recipe,provinceId,i,x,y,priority,kind}));
 
@@ -28,13 +29,13 @@ test.before(async()=>{
  before=fingerprints(w,s);inventory=E.LandmarkBinding.inventory(w,s);
 });
 
-test('the first directory preserves all 168 exact entries without generating full towns',()=>{
+test('the first directory preserves all 152 eager-baseline entries under the new founding rules',()=>{
  assert.equal(E.calls.full,0);assert.equal(E.calls.context,0);
  assert.equal(E.calls.query,78,'every eligible site still receives an exact placement query');
- assert.equal(inventory.length,168);
+ assert.equal(inventory.length,152);
  assert.equal(inventory.filter(site=>site.recipe.sacred).length,69);
  const digest=createHash('sha256').update(JSON.stringify(metadata(inventory))).digest('hex');
- assert.equal(digest,'477aa02d80cb23a15195810a2158971cb0a63b50475def7954a6698d7e06146d');
+ assert.equal(digest,'21acd52dc3052aca20b261d8adbfc3beb613e5ceffe3fde15fbafd72d543ca23');
  for(const id of [414,365,458,150,291,366,320,354,111])
   assert(!inventory.some(site=>site.provinceId===id&&site.recipe.sacred),'unplaceable wonder in province '+id);
  assert.deepEqual(fingerprints(w,s),before);
@@ -42,10 +43,10 @@ test('the first directory preserves all 168 exact entries without generating ful
 
 test('cloning or searching the index does not invoke the local-building getter',()=>{
  const calls={...E.calls};
- assert.equal(JSON.parse(JSON.stringify(inventory)).length,168);
- assert.equal(structuredClone(inventory).length,168);
+ assert.equal(JSON.parse(JSON.stringify(inventory)).length,152);
+ assert.equal(structuredClone(inventory).length,152);
  const search=inventory.map(site=>({...site,type:'site'}));
- assert.equal(search.length,168);assert.deepEqual(E.calls,calls);
+ assert.equal(search.length,152);assert.deepEqual(E.calls,calls);
  const site=inventory.find(site=>site.recipe.sacred);
  assert.equal(Object.getOwnPropertyDescriptor(site,'building').enumerable,false);
 });
@@ -100,4 +101,52 @@ test('a different world and saved landmark designs share exact placement and rec
   s2.landmarkRecipes??={};s2.landmarkRecipes[site.id]={...site.recipe,crown:'spires',roofLanguage:'gable'};
   assert.deepEqual(E.SacredCityKit.site(w2,s2,p).recipe,E.TownCityBinding.resolve(w2,s2,p,city,'temple'));
  }
+});
+
+test('a same-world capital change invalidates synchronous and preloaded site existence',async()=>{
+ const worlds=[];
+ class Worker {
+  constructor(){worlds.push(this);}
+  postMessage(request){this.request=request;}
+  terminate(){}
+ }
+ const browser={Worker,TELLURIC_TOWN_WORKER:'controlled trusted worker'};
+ const fresh=()=>Function('window',source+`
+  const query=generateCityLandmark;let queries=0;
+  generateCityLandmark=(...args)=>{queries++;return query(...args)};
+  return {SacredCityKit,citySurvey,TownCatalog,wonderFor,query,get queries(){return queries}};
+ `)(browser);
+ const probe=fresh();let states;
+ // Use actual owned towns and the shared survey, so both capital assignments
+ // are valid and the test does not depend on a particular seed's government IDs.
+ for(const p of s.provinces.filter(p=>p.city&&p.owner>=0)){
+  const q=s.provinces.find(q=>q.city&&q.owner===p.owner&&q.id!==p.id);
+  if(!q||!probe.wonderFor(probe.TownCatalog.resolve(w,s,p).style,p.detailSupport??p.urbanSupport,p))continue;
+  const old=structuredClone(s),next=structuredClone(s);
+  old.realms[p.owner].capital=q.id;next.realms[p.owner].capital=p.id;
+  if(probe.citySurvey(old,p).terrainSpan===probe.citySurvey(next,p).terrainSpan)continue;
+  // Limit the indexing queue, keeping all settled neighbours and populations.
+  for(const state of[old,next])for(const town of state.provinces)town.city=town.id===p.id;
+  states={old,next,id:p.id};break;
+ }
+ assert(states,'fixture requires a wonder town whose capital allowance changes its survey');
+ const {old,next,id}=states,p=old.provinces[id],q=next.provinces[id];
+ const e=fresh(),kit=e.SacredCityKit;
+ kit.site(w,old,p);
+ const calls=e.queries;
+ const expected=e.query(w,next,id);
+ assert.equal(!!kit.site(w,next,q),!!expected.buildings.length);
+ assert.equal(e.queries,calls+1,'site must recompute the new capital footprint');
+ kit.site(w,next,q);assert.equal(e.queries,calls+1,'the unchanged footprint still reuses its entry');
+
+ const other=fresh(),oldJob=other.SacredCityKit.preload(w,old),first=worlds.at(-1);
+ const reply=(worker,payload)=>worker.onmessage({data:{...worker.request,payload}});
+ reply(first,null);assert.equal((await oldJob.promise).status,'complete');
+ const newJob=other.SacredCityKit.preload(w,next),second=worlds.at(-1);
+ assert.notStrictEqual(second,first,'a cached negative result must not suppress the new survey query');
+ assert.notEqual(second.request.key,first.request.key);
+ reply(second,expected.buildings.length?expected:null);
+ assert.deepEqual(await newJob.promise,{status:'complete',completed:1,total:1});
+ assert.equal(!!other.SacredCityKit.site(w,next,q),!!expected.buildings.length);
+ assert.equal(other.queries,0,'the newly verified worker entry must serve the index');
 });
