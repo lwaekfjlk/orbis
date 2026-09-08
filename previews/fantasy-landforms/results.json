@@ -1,0 +1,676 @@
+{
+  "viewport": [
+    1480,
+    980
+  ],
+  "renderer": "Chromium with SwiftShader",
+  "regions": [
+    {
+      "id": 1,
+      "type": 1,
+      "kind": "red-plateau",
+      "name": "The Copper Labyrinth",
+      "i": 32022,
+      "x": 222,
+      "y": 106,
+      "center": {
+        "i": 30834,
+        "x": 234,
+        "y": 102
+      },
+      "rx": 18.04,
+      "ry": 13.7104,
+      "area": 751,
+      "detail": "A broad roof of uplifted red sediment stands above branching river canyons. Resistant beds form the mesas and escarpments; the older drainage cuts through their layered walls.",
+      "camera": {
+        "target": [
+          40.73578595317725,
+          1.5572897425890138,
+          9.03351955307263
+        ],
+        "zoom": 9.977827050997783,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "ground": {
+        "x": 222.0000000136762,
+        "y": 105.99999996857034,
+        "point": [
+          40.735785960861556,
+          1.557289719792692,
+          9.033519535865324
+        ],
+        "surface": 1.557289732384066,
+        "type": 1,
+        "strength": 1,
+        "refinement": 4,
+        "triangles": 166246
+      }
+    },
+    {
+      "id": 5,
+      "type": 2,
+      "kind": "volcanic",
+      "name": "The Obsidian Wastes",
+      "i": 16866,
+      "x": 66,
+      "y": 56,
+      "center": {
+        "i": 17466,
+        "x": 66,
+        "y": 58
+      },
+      "rx": 11.683200117592513,
+      "ry": 10.047552101129561,
+      "area": 304,
+      "detail": "Successive lava floods built a dark, terraced volcanic shield. Its summit collapsed into a broad caldera, ringed by broken rims and younger lava ridges.",
+      "camera": {
+        "target": [
+          -46.91638795986623,
+          0.6011811957871653,
+          -18.34078212290503
+        ],
+        "zoom": 15.406737724962596,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "ground": {
+        "x": 65.99999999478464,
+        "y": 56.0000000119855,
+        "point": [
+          -46.916387962796584,
+          0.6011812044803833,
+          -18.340782116343135
+        ],
+        "surface": 0.6011811953474102,
+        "type": 2,
+        "strength": 1,
+        "refinement": 8,
+        "triangles": 215018
+      }
+    },
+    {
+      "id": 4,
+      "type": 3,
+      "kind": "folded-ranges",
+      "name": "The Dragonback Marches",
+      "i": 14042,
+      "x": 242,
+      "y": 46,
+      "center": {
+        "i": 14042,
+        "x": 242,
+        "y": 46
+      },
+      "rx": 25.62426113305247,
+      "ry": 12.338475926043111,
+      "area": 842,
+      "detail": "A long belt of compressed crust rises in parallel, bending ridges. Several high crests run together above deep longitudinal valleys, with lower passes between the folds.",
+      "camera": {
+        "target": [
+          51.973244147157196,
+          2.4754869002434274,
+          -23.81564245810056
+        ],
+        "zoom": 7.024592789831503,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "ground": {
+        "x": 242.00000000932457,
+        "y": 45.999999978571026,
+        "point": [
+          51.97324415239642,
+          2.4754868847007288,
+          -23.815642469832625
+        ],
+        "surface": 2.4754868905240213,
+        "type": 3,
+        "strength": 1,
+        "refinement": 4,
+        "triangles": 223918
+      }
+    },
+    {
+      "id": 7,
+      "type": 4,
+      "kind": "karst",
+      "name": "The Jade Needles",
+      "i": 24860,
+      "x": 260,
+      "y": 82,
+      "center": {
+        "i": 24860,
+        "x": 260,
+        "y": 82
+      },
+      "rx": 9,
+      "ry": 7,
+      "area": 175,
+      "detail": "Water dissolved a warm limestone upland into clustered stone towers. Low connecting valleys separate the pinnacles and carry runoff toward the surrounding rivers.",
+      "camera": {
+        "target": [
+          62.086956521739125,
+          1.095562953623098,
+          -4.106145251396646
+        ],
+        "zoom": 20,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "ground": {
+        "x": 260.00000000243426,
+        "y": 81.99999999440575,
+        "point": [
+          62.08695652310688,
+          1.095562949565533,
+          -4.10614525445942
+        ],
+        "surface": 1.0955629533815188,
+        "type": 4,
+        "strength": 1,
+        "refinement": 8,
+        "triangles": 175370
+      }
+    }
+  ],
+  "diagnosticRegions": [
+    {
+      "id": 0,
+      "kind": "red-plateau",
+      "name": "The Vermilion Tablelands",
+      "camera": {
+        "target": [
+          -59.27759197324414,
+          1.3862982636189343,
+          -17.245810055865924
+        ],
+        "zoom": 5.82039911308204,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-0-red-plateau.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 1,
+      "kind": "red-plateau",
+      "name": "The Copper Labyrinth",
+      "camera": {
+        "target": [
+          47.478260869565226,
+          1.2410860436559612,
+          6.8435754189944085
+        ],
+        "zoom": 5.82039911308204,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-1-red-plateau.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 2,
+      "kind": "red-plateau",
+      "name": "The Painted Stair",
+      "camera": {
+        "target": [
+          -43.54515050167224,
+          1.197748313432717,
+          9.03351955307263
+        ],
+        "zoom": 6.402439024390245,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-2-red-plateau.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 3,
+      "kind": "folded-ranges",
+      "name": "The Thousandfold Ranges",
+      "camera": {
+        "target": [
+          19.38461538461539,
+          2.791067648095606,
+          11.22346368715084
+        ],
+        "zoom": 4.025904273987047,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-3-folded-ranges.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 4,
+      "kind": "folded-ranges",
+      "name": "The Dragonback Marches",
+      "camera": {
+        "target": [
+          51.973244147157196,
+          2.4754869002434274,
+          -23.81564245810056
+        ],
+        "zoom": 4.09767912740171,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-4-folded-ranges.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 5,
+      "kind": "volcanic",
+      "name": "The Obsidian Wastes",
+      "camera": {
+        "target": [
+          -46.91638795986623,
+          0.5644906103193084,
+          -17.245810055865924
+        ],
+        "zoom": 8.987263672894848,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-5-volcanic.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 6,
+      "kind": "volcanic",
+      "name": "The Ember Cauldron",
+      "camera": {
+        "target": [
+          -18.822742474916385,
+          1.1754544188596432,
+          24.36312849162011
+        ],
+        "zoom": 9.871930921364177,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-6-volcanic.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    },
+    {
+      "id": 7,
+      "kind": "karst",
+      "name": "The Jade Needles",
+      "camera": {
+        "target": [
+          62.086956521739125,
+          1.095562953623098,
+          -4.106145251396646
+        ],
+        "zoom": 11.666666666666666,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      },
+      "filename": "diagnostic-7-karst.png",
+      "disabledControls": [
+        "trees",
+        "frontiers",
+        "settlements",
+        "roads",
+        "folk",
+        "names",
+        "legends"
+      ]
+    }
+  ],
+  "bundleSha256": "bde74a575c456318a71b23f37855c850a92b8a74564df8c83082f1912759c887",
+  "fantasy": {
+    "physical": "cc113c81",
+    "settlements": "790ae3c1",
+    "politics": "90fd7fea"
+  },
+  "desktop": {
+    "realms": 25,
+    "labels": [
+      {
+        "id": 0,
+        "visible": true,
+        "text": "Read about Free State of Ra"
+      },
+      {
+        "id": 2,
+        "visible": true,
+        "text": "Read about Tribal Federation of Ereshkigal"
+      },
+      {
+        "id": 1,
+        "visible": true,
+        "text": "Read about League of Tir na nOg"
+      },
+      {
+        "id": 8,
+        "visible": true,
+        "text": "Read about Arcane Dominion of Emain Ablach"
+      },
+      {
+        "id": 9,
+        "visible": true,
+        "text": "Read about Merchant Republic of Osiris"
+      },
+      {
+        "id": 11,
+        "visible": true,
+        "text": "Read about City League of Avalon"
+      },
+      {
+        "id": 15,
+        "visible": true,
+        "text": "Read about Free State of Duat"
+      },
+      {
+        "id": 3,
+        "visible": true,
+        "text": "Read about Maritime Republic of Caer Sidi"
+      },
+      {
+        "id": 10,
+        "visible": true,
+        "text": "Read about League of Vainola"
+      },
+      {
+        "id": 5,
+        "visible": true,
+        "text": "Read about Sacred Empire of Inanna"
+      },
+      {
+        "id": 24,
+        "visible": true,
+        "text": "Read about Arcane Empire of Enki"
+      },
+      {
+        "id": 7,
+        "visible": true,
+        "text": "Read about League of Tamoanchan"
+      },
+      {
+        "id": 14,
+        "visible": true,
+        "text": "Read about Sacred Empire of Tapiola"
+      },
+      {
+        "id": 6,
+        "visible": true,
+        "text": "Read about Free State of Guixu"
+      },
+      {
+        "id": 12,
+        "visible": true,
+        "text": "Read about League of Annwn"
+      },
+      {
+        "id": 17,
+        "visible": true,
+        "text": "Read about Kingdom of Tlalocan"
+      },
+      {
+        "id": 4,
+        "visible": true,
+        "text": "Read about Tribal Federation of Alaka"
+      },
+      {
+        "id": 18,
+        "visible": true,
+        "text": "Read about Trade League of Ryugu"
+      },
+      {
+        "id": 13,
+        "visible": true,
+        "text": "Read about Republic of Aztlan"
+      },
+      {
+        "id": 19,
+        "visible": true,
+        "text": "Read about Tribal Federation of Kunlun"
+      },
+      {
+        "id": 22,
+        "visible": true,
+        "text": "Read about Clan Confederation of Dilmun"
+      },
+      {
+        "id": 16,
+        "visible": true,
+        "text": "Read about Merchant Republic of Ninhursag"
+      },
+      {
+        "id": 20,
+        "visible": true,
+        "text": "Read about Highland Principality of Midgard"
+      },
+      {
+        "id": 21,
+        "visible": true,
+        "text": "Read about Clan Confederation of Mag Mell"
+      },
+      {
+        "id": 23,
+        "visible": true,
+        "text": "Read about Federation of Abzu"
+      }
+    ]
+  },
+  "mobile": {
+    "realms": 25,
+    "labels": [
+      {
+        "id": 0,
+        "visible": true,
+        "text": "Read about Free State of Ra"
+      },
+      {
+        "id": 2,
+        "visible": true,
+        "text": "Read about Tribal Federation of Ereshkigal"
+      },
+      {
+        "id": 1,
+        "visible": true,
+        "text": "Read about League of Tir na nOg"
+      },
+      {
+        "id": 8,
+        "visible": true,
+        "text": "Read about Arcane Dominion of Emain Ablach"
+      },
+      {
+        "id": 9,
+        "visible": true,
+        "text": "Read about Merchant Republic of Osiris"
+      },
+      {
+        "id": 11,
+        "visible": true,
+        "text": "Read about City League of Avalon"
+      },
+      {
+        "id": 15,
+        "visible": true,
+        "text": "Read about Free State of Duat"
+      },
+      {
+        "id": 3,
+        "visible": true,
+        "text": "Read about Maritime Republic of Caer Sidi"
+      },
+      {
+        "id": 10,
+        "visible": true,
+        "text": "Read about League of Vainola"
+      },
+      {
+        "id": 5,
+        "visible": true,
+        "text": "Read about Sacred Empire of Inanna"
+      },
+      {
+        "id": 24,
+        "visible": true,
+        "text": "Read about Arcane Empire of Enki"
+      },
+      {
+        "id": 7,
+        "visible": true,
+        "text": "Read about League of Tamoanchan"
+      },
+      {
+        "id": 14,
+        "visible": true,
+        "text": "Read about Sacred Empire of Tapiola"
+      },
+      {
+        "id": 6,
+        "visible": true,
+        "text": "Read about Free State of Guixu"
+      },
+      {
+        "id": 12,
+        "visible": true,
+        "text": "Read about League of Annwn"
+      },
+      {
+        "id": 17,
+        "visible": true,
+        "text": "Read about Kingdom of Tlalocan"
+      },
+      {
+        "id": 4,
+        "visible": true,
+        "text": "Read about Tribal Federation of Alaka"
+      },
+      {
+        "id": 18,
+        "visible": true,
+        "text": "Read about Trade League of Ryugu"
+      },
+      {
+        "id": 13,
+        "visible": true,
+        "text": "Read about Republic of Aztlan"
+      },
+      {
+        "id": 19,
+        "visible": true,
+        "text": "Read about Tribal Federation of Kunlun"
+      },
+      {
+        "id": 22,
+        "visible": true,
+        "text": "Read about Clan Confederation of Dilmun"
+      },
+      {
+        "id": 16,
+        "visible": true,
+        "text": "Read about Merchant Republic of Ninhursag"
+      },
+      {
+        "id": 20,
+        "visible": true,
+        "text": "Read about Highland Principality of Midgard"
+      },
+      {
+        "id": 21,
+        "visible": true,
+        "text": "Read about Clan Confederation of Mag Mell"
+      },
+      {
+        "id": 23,
+        "visible": true,
+        "text": "Read about Federation of Abzu"
+      }
+    ]
+  },
+  "city": {
+    "id": 287,
+    "name": "Bramblequay",
+    "buildings": 475,
+    "audit": {
+      "iceBuildings": 0,
+      "wetBuildings": 0,
+      "roadBuildings": 0,
+      "overlaps": 0,
+      "nonfinite": 0,
+      "seaRoads": 0,
+      "buildings": 475
+    },
+    "worker": true,
+    "sameCanvas": true,
+    "fingerprint": "183d8e7f",
+    "localFingerprint": "183d8e7f",
+    "buffersIntact": true
+  },
+  "legacy": {
+    "physical": "440ae5d0",
+    "settlements": "e6aee7b8",
+    "politics": "d8ba763d"
+  },
+  "saves": {
+    "newVersion": 1,
+    "versionlessRestoredAs": 0,
+    "savedHistoryPreserved": true
+  },
+  "errors": [],
+  "externalRequests": []
+}

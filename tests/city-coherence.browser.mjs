@@ -6,7 +6,7 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),out=resolve(root,'previews/city-coherence');
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..'),out=resolve(process.env.TELLURIC_CITY_OUTPUT||resolve(root,'previews/city-coherence'));
 await mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
 const page=await browser.newPage({viewport:{width:1480,height:980},reducedMotion:'reduce'}),errors=[],requests=[],checks=[];
@@ -14,7 +14,14 @@ page.on('pageerror',e=>errors.push(String(e)));page.on('request',r=>requests.pus
 const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading',null,{timeout:240000});
 const fingerprint=()=>page.evaluate('({physical:physicalFingerprint(world),settlements:settlementFingerprint(sim),politics:politicalFingerprint(sim)})');
 try {
- await page.setContent(await readFile(resolve(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});await stable();
+ // These regression towns exercise the original terrain's difficult slopes,
+ // parcels and entrances; new-landform defaults are covered by loading/polities.
+ const original=await readFile(resolve(root,'dist/telluric-onemap.html'),'utf8');
+ const html=original.replace('/** One renderer and one atlas canvas.','GEN_DEFAULTS.landformVersion=0;\n/** One renderer and one atlas canvas.');
+ assert.notEqual(html,original,'legacy fixture was not installed before boot');
+ await page.setContent(html,{waitUntil:'load',timeout:180000});await stable();
+ assert.equal(await page.evaluate('world.params.landformVersion'),0);
+ assert.equal(await page.evaluate('physicalFingerprint(world)'),'440ae5d0');
  const before=await fingerprint();await page.evaluate('window.__originalCanvas=renderer.canvas');
  const towns=await page.evaluate(`(()=>{const top=sim.provinces.filter(p=>p.city).sort((a,b)=>b.urbanPop-a.urbanPop);return [sim.provinces[507],top[0],top.find(p=>p.harbor>.4)].filter((p,i,a)=>p&&a.indexOf(p)===i).map(p=>({id:p.id,name:p.name}));})()`);
  for(const p of towns){
@@ -37,8 +44,8 @@ try {
  const fit=await page.evaluate('2*renderer.halfH');assert(large.size<fit,'a large precinct was clipped by the previous building zoom');
  // Buildings and streets remain intact after orbiting and changing screen size.
  await page.keyboard.down('Shift');await page.mouse.move(900,450);await page.mouse.down();await page.mouse.move(1080,490,{steps:8});await page.mouse.up();await page.keyboard.up('Shift');await stable();
- await page.setViewportSize({width:430,height:900});await stable();await page.screenshot({path:resolve(out,'mobile.png')});
- await page.setViewportSize({width:1480,height:980});
+ await page.setViewportSize({width:430,height:900});await page.waitForFunction('renderer.width===430');await stable();await page.screenshot({path:resolve(out,'mobile.png')});
+ await page.setViewportSize({width:1480,height:980});await page.waitForFunction('renderer.width===1480');
  await page.locator('#forgeButton').click();await page.locator('#seed').fill('City-coherence-2026');await page.locator('#generate').click();await stable();
  assert.equal(await page.evaluate('world.params.seed'),'City-coherence-2026');assert.equal(await page.evaluate('ContinuousMap.layer.models.size'),0);
  const next=await page.evaluate('sim.provinces.filter(p=>p.city).sort((a,b)=>b.urbanPop-a.urbanPop)[0].name');

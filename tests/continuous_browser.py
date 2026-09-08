@@ -5,7 +5,7 @@ from pathlib import Path
 import json, os, time
 from playwright.sync_api import sync_playwright
 ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'previews/continuous';OUT.mkdir(parents=True,exist_ok=True)
+OUT=Path(os.environ.get('TELLURIC_CONTINUOUS_OUTPUT',ROOT/'previews/continuous'));OUT.mkdir(parents=True,exist_ok=True)
 report={'checks':[], 'errors':[], 'requests':[], 'renderer':'software', 'load_method':'bundled HTML in an about:blank document'}
 def mark(name,data=True):
  report['checks'].append({'name':name,'data':data});print('PASS',name,json.dumps(data)[:250],flush=True)
@@ -20,12 +20,18 @@ with sync_playwright() as pw:
  ctx=browser.new_context(viewport={'width':1480,'height':980},device_scale_factor=1,accept_downloads=True)
  page=ctx.new_page();page.on('pageerror',lambda e:(report['errors'].append(str(e)),print('ERROR',e,flush=True)))
  page.on('request',lambda r:report['requests'].append(r.url))
- page.set_content((ROOT/'dist/telluric-onemap.html').read_text(),wait_until='load',timeout=180000)
- stable(page);page.evaluate('window.__originalCanvas=renderer.canvas')
+ # Fix the original terrain for its named mountain/waterfront regressions.
+ original=(ROOT/'dist/telluric-onemap.html').read_text()
+ html=original.replace('/** One renderer and one atlas canvas.','GEN_DEFAULTS.landformVersion=0;\n/** One renderer and one atlas canvas.')
+ assert html!=original, 'legacy fixture was not installed before boot'
+ page.set_content(html,wait_until='load',timeout=180000)
+ stable(page);assert page.evaluate('world.params.landformVersion')==0
+ assert page.evaluate('physicalFingerprint(world)')=='440ae5d0'
+ page.evaluate('window.__originalCanvas=renderer.canvas')
  start=snapshot(page);mark('Initial geography, towns and polities load',page.evaluate('window.__generationReport'))
  shots(page,'world')
  # Actual search controls, then a camera approach rather than a scene switch.
- page.locator('#omSearchToggle').click();page.locator('#omSearch').fill('Glassbeck')  # province 507; renamed from 'Stonefall 5' by the district-naming pass
+ page.locator('#omSearchToggle').click();page.locator('#omSearch').fill(page.evaluate('sim.provinces[507].name'))  # province 507; renamed from 'Stonefall 5' by the district-naming pass
  page.locator('[data-search-enter]').first.click();page.wait_for_function('ContinuousMap.layer.models.has(507)',timeout=240000);stable(page)
  check=no_jump(page);assert check=={'canvas':'map','same':True,'scene':'world','openCity':False,'openMonument':False};mark('Search zooms to Glassbeck without replacing the map',check)
  assert snapshot(page)==start;mark('Exploration leaves geography, population and politics unchanged')
@@ -79,7 +85,7 @@ with sync_playwright() as pw:
  page.evaluate('(id)=>ContinuousMap.focusTown(id)',pid);stable(page)
  assert page.evaluate('ContinuousMap.report().worldSeed')=='Continuous-ridge-17';mark('Newly generated cities reference the new geography')
  # One mobile view, no separate scene.
- page.set_viewport_size({'width':430,'height':900});stable(page);shots(page,'mobile')
+ page.set_viewport_size({'width':430,'height':900});page.wait_for_function('renderer.width===430');stable(page);shots(page,'mobile')
  assert no_jump(page)['same'];mark('Mobile viewport retains the one-map view')
  worker_used=page.evaluate('!!ContinuousMap.layer.worker')
  before=page.evaluate('physicalFingerprint(world)')
@@ -87,7 +93,7 @@ with sync_playwright() as pw:
  assert page.evaluate('physicalFingerprint(world)')==before
  assert no_jump(page)['same'];mark('Recasting societies on the same terrain invalidates city and worker caches')
  # Roads, quays and the walking crowd. Fingerprints must survive all of it.
- page.set_viewport_size({'width':1480,'height':980});page.evaluate('ContinuousMap.home()');stable(page)
+ page.set_viewport_size({'width':1480,'height':980});page.wait_for_function('renderer.width===1480');page.evaluate('ContinuousMap.home()');stable(page)
  roads=page.evaluate('renderer.roadStats')
  assert roads and roads['roads']>10 and roads['ports']>0
  assert page.evaluate("renderer.visible('roads')") and page.evaluate("renderer.visible('ports')")

@@ -314,7 +314,9 @@ class ContinuousCityLayer {
    const steep=grade(jx,jy);
    if(steep>.62&&roll<.34){
     const unit=AtlasSpace.TOWN_UNIT,sz=(.9+rnd(gx,gy,59)*1.2)*unit;
-    this.surfaceFragment(rock,jx,jy,sz,(1+rnd(gx,gy,61))*unit,rnd(gx,gy,67)*6,colorScale(rgb('#919497'),.86+rnd(gx,gy,61)*.2));
+    const i=e.parentIndex,palette=w.params?.landformVersion>=1&&e.snow<.5?CityEnvironment.landformPalette(w.landform?.[i]):null;
+    const stone=palette?colorMix(rgb('#919497'),palette.mineral,clamp(w.landformStrength?.[i]||0)):rgb('#919497');
+    this.surfaceFragment(rock,jx,jy,sz,(1+rnd(gx,gy,61))*unit,rnd(gx,gy,67)*6,colorScale(stone,.86+rnd(gx,gy,61)*.2));
     stones++;continue;
    }
    const can=CityEnvironment.canopy(e.biome,e.temperature,e.aridity);
