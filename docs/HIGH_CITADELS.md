@@ -2,7 +2,9 @@
 
 Newly generated worlds can contain up to two rare, inhabited mountain settlements: a Dragon King's Aerie and a High Sanctuary. Each stands on an existing dry, buildable platform at least 3,500 m high. The current founding rule searches inside an already owned rural province, so a low-lying administrative centre cannot hide a habitable mountain shoulder elsewhere in the same district. Worlds without enough safe ground, local water or residents may receive fewer than two; there is no lowland fallback or invented mountain.
 
-The current default Aereth-47 world (`landformVersion: 2`, `highCitadelsVersion: 2`) contains:
+The current default Aereth-47 world (`landformVersion: 3`, `highCitadelsVersion: 2`) has no platform that meets all founding conditions. With the same rules, the generated `Meridian-21` seed and `rift` form have a dragon city at (237, 68), with 1,100 residents, and a holy city at (271, 116), with 849 residents.
+
+The published Aereth-47 terrain version 2 remains reproducible with its original sites:
 
 | Settlement | Parent-grid site | Elevation | Founding residents | Authored buildings |
 | --- | --- | ---: | ---: | ---: |
@@ -21,12 +23,12 @@ Founding versions remain explicit in saved simulation options:
 
 - Version 0 preserves histories from before rare mountain courts existed.
 - Version 1 uses only the original administrative centre. Legacy terrain keeps this default and its original two sites: Granitewatch at 4,097 m (1,100 residents) and Blackley at 3,938 m (748 residents).
-- Version 2 is the default for newly generated terrain versions 1 and 2 (the current irregular-massif geography). It searches actual eligible cells within an existing owned rural district and records both `originalCell` and the settlement's `sourceCell`.
+- Version 2 is the default for newly generated terrain versions 1, 2 and 3. It searches actual eligible cells within an existing owned rural district and records both `originalCell` and the settlement's `sourceCell`.
 
 Loading, resetting or rerolling a saved world retains its recorded founding version. An older save with neither a version nor citadel metadata stays at version 0; version 1 saves on the newer terrain do not silently acquire the version 2 courts. A newly generated world is required to opt into the new default.
 
 The previous terrain version 1 remains deterministic: Cairnwatch at (239, 117), 4,010 m and 719 residents, and Rosethorpe at (242, 115), 3,886 m and 759 residents. The regression suite retains those exact records alongside the current default.
 
-The standalone `node scripts/preview-high-citadels.mjs` review page retains the legacy terrain fixture for comparison. The current application and `tests/high-citadel-platforms.test.mjs` exercise the new default sites with the production planner.
+The standalone `node scripts/preview-high-citadels.mjs` review page retains the legacy terrain fixture for comparison. `tests/high-citadel-platforms.test.mjs` exercises the published version 1/2 sites, the version 3 rift sites and the default world without feasible platforms using the production planner.
 
 The dedicated site, layout, mesh, worker, directory and camera tests are in `tests/high-citadel-*.test.mjs` and `tests/highland-kit.test.mjs`. The version 2 regression compares all ordinary province records, cultural mixtures, administration and country data, all ordinary town surveys and the complete nearest-city layout against the same world with high-city founding disabled. Legacy version 0/1 fingerprint checks remain in place.

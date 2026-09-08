@@ -39,11 +39,52 @@ const CityEnvironment = (() => {
  function materialSlope(w,i,old){
   const x=i%GW,y=Math.floor(i/GW),h=w.height[i],left=x>0?materialHeight(w,i-1,h):h,right=x<GW-1?materialHeight(w,i+1,h):h,
    up=y>0?materialHeight(w,i-GW,h):h,down=y<GH-1?materialHeight(w,i+GW,h):h;
-  if(old&&old.h===h&&old.left===left&&old.right===right&&old.up===up&&old.down===down)return old;
+  if(old&&old.h===h&&old.left===left&&old.right===right&&old.up===up&&old.down===down&&old.slope!==undefined)return old;
   const here=Math.pow(Math.max(0,h)/1000,.98),X=MAP_X/(GW-1),Z=MAP_Z/(GH-1),
    slope=Math.max(Math.abs(Math.pow(Math.max(0,left)/1000,.98)-here)/X,Math.abs(Math.pow(Math.max(0,right)/1000,.98)-here)/X,
     Math.abs(Math.pow(Math.max(0,up)/1000,.98)-here)/Z,Math.abs(Math.pow(Math.max(0,down)/1000,.98)-here)/Z);
   return{h,left,right,up,down,slope};
+ }
+ const coverSmooth=(a,b,v)=>{const t=clamp((v-a)/(b-a));return t*t*(3-2*t);};
+ // Physical neighbour relief is an exposure proxy, NOT a measured cliff angle.
+ // Atlas horizontal units and the relief control exaggerate whole regions; they
+ // must not decide whether a wet mountainside can carry forest or meadow.
+ function landRelief(w,i,old){
+  const x=i%GW,y=Math.floor(i/GW),h=w.height[i],left=x>0?materialHeight(w,i-1,h):h,right=x<GW-1?materialHeight(w,i+1,h):h,
+   up=y>0?materialHeight(w,i-GW,h):h,down=y<GH-1?materialHeight(w,i+GW,h):h;
+  if(old&&old.h===h&&old.left===left&&old.right===right&&old.up===up&&old.down===down&&old.relief!==undefined)return old;
+  return{h,left,right,up,down,relief:Math.max(Math.abs(left-h),Math.abs(right-h),Math.abs(up-h),Math.abs(down-h))};
+ }
+ const groundVegetation={2:.62,3:.08,4:.025,5:.62,6:.76,7:.96,8:.92,9:.99,10:.90,11:.99,12:.90,13:.07,14:.015,18:.96,19:.99,20:.96,21:.98,22:.83};
+ function landCover(w,i,terrain=landRelief(w,i)){
+  const b=w.biome[i];
+  if(w.height[i]<=0||w.lake[i]>0||b===1||b===16||b===17||w.ice?.[i]>25)return{vegetation:0,soil:0,rock:0,rugged:0,relief:terrain.relief};
+  const moisture=Math.max(b===18||b===19||b===20?.85:0,coverSmooth(.18,1.3,w.arid[i])),growing=coverSmooth(-12,2,w.temp[i]),rugged=coverSmooth(300,1700,terrain.relief);
+  const potential=(groundVegetation[b]||0)*growing*(.30+.70*moisture);
+  const bare=b===13?.26:b===3?.10:b===12?.035:b===2?.025:b===4||b===14?.01:.012;
+  const rock=clamp(bare+(1-bare)*rugged*.84*(1-potential*.34),0,.86),vegetation=potential*(1-rock);
+  // These are summer substrate fractions. Stored ice and seasonal snow remain
+  // separate covers, applied after the substrate by their existing resolvers.
+  return{vegetation,soil:1-rock-vegetation,rock,rugged,relief:terrain.relief};
+ }
+ function landCoverColor(w,i,landform,strength,terrain){
+  const b=w.biome[i],t=w.temp[i],a=w.arid[i],cover=landCover(w,i,terrain),warm=clamp((t-5)/24),wet=coverSmooth(.2,1.8,a);
+  const mix=(u,v,f)=>u.map((n,k)=>lerp(n,v[k],f));
+  let vegetation=b===2||b===12?mix(rgbHex('#b2a06a'),rgbHex(t<2?'#8c9e75':'#799758'),wet):colors[b].slice();
+  // Boreal vegetation keeps its cool green, rather than acquiring a blue-grey
+  // rock wash merely because the same lapse rate made the air colder.
+  if([7,8,9,10,11,19,21,22].includes(b))vegetation=mix(vegetation,leafColor(t,a),.12);
+  let soil=b===4||b===14?colors[b].slice():mix(rgbHex('#ae9674'),rgbHex('#ceb071'),warm);
+  soil=mix(soil,rgbHex('#918363'),wet*.38);
+  let mineral=mix(rgbHex('#a99577'),rgbHex('#858c7e'),wet);
+  const material=landformPalette(landform);
+  if(material&&strength){
+   soil=mix(soil,material.earth,strength*.85);
+   mineral=mix(mineral,material.mineral,strength);
+  }
+  let color=vegetation.map((v,k)=>v*cover.vegetation+soil[k]*cover.soil+mineral[k]*cover.rock);
+  if(w.ice[i]>0&&w.ice[i]<=25)color=mix(color,frozen,clamp(w.ice[i]/25)*.30);
+  return color;
  }
  /* Break points are the measured spread of a generated world, not guesses. Over
   * land: temperature p10 -15.0, p25 -6.7, p50 6.2, p75 18.7, p90 24.4 C;
@@ -183,18 +224,19 @@ const CityEnvironment = (() => {
  function cellColor(w,i){
   let cells=cellColors.get(w);if(!cells){cells=new Array(GN);cellColors.set(w,cells);}
   const biome=w.biome[i],height=w.height[i],lake=w.lake[i],ice=w.ice[i],temperature=w.temp[i],aridity=w.arid[i],old=cells[i];
-  const materialVersion=w.params?.landformVersion>=1?1:0,landform=materialVersion?w.landform?.[i]||0:0,
-   landformStrength=landform?clamp(w.landformStrength?.[i]||0):0,slopeState=materialVersion?materialSlope(w,i,old?.slopeState):null;
+  const materialVersion=w.params?.landformVersion>=3?3:w.params?.landformVersion>=1?1:0,landform=materialVersion?w.landform?.[i]||0:0,
+   landformStrength=landform?clamp(w.landformStrength?.[i]||0):0,slopeState=materialVersion===3?landRelief(w,i,old?.slopeState):materialVersion?materialSlope(w,i,old?.slopeState):null;
   if(old&&old.biome===biome&&old.height===height&&old.lake===lake&&old.ice===ice&&old.temperature===temperature&&old.aridity===aridity&&old.materialVersion===materialVersion&&old.landform===landform&&old.landformStrength===landformStrength&&old.slopeState===slopeState)return old.color.slice();
-  const color=resolveCellColor(w,i,materialVersion,landform,landformStrength,slopeState?.slope||0);
+  const color=resolveCellColor(w,i,materialVersion,landform,landformStrength,slopeState?.slope||0,slopeState);
   cells[i]={biome,height,lake,ice,temperature,aridity,materialVersion,landform,landformStrength,slopeState,color:color.slice()};
   return color;
  }
- function resolveCellColor(w,i,materialVersion,landform,landformStrength,slope){
+ function resolveCellColor(w,i,materialVersion,landform,landformStrength,slope,terrain){
   const b=w.biome[i],h=w.height[i];
   if(w.lake[i]>0)return waterColor(2);
   if(h<=0)return waterColor(1);
   if(w.ice[i]>25){const f=clamp(w.ice[i]/900),a=rgbHex('#a1d5df'),z=rgbHex('#eef3ee');return a.map((v,k)=>v+(z[k]-v)*f);}
+  if(materialVersion===3&&b!==1&&b!==16&&b!==17)return landCoverColor(w,i,landform,landformStrength,terrain);
   let c=(colors[b]||colors[3]).slice();
   const blend=(z,t)=>{c=c.map((v,k)=>v+(z[k]-v)*clamp(t));};
   const cl=climate(w.temp[i],w.arid[i],h,w.ice[i]);
@@ -346,5 +388,5 @@ const CityEnvironment = (() => {
   return climate(w.temp[i],w.arid[i],w.height[i],w.ice?.[i]||0,w.biome[i]===16||w.biome[i]===1?1:0,winter).cover;
  }
  function roofSnow(g,k){return snowCover(g,k)>.3;}
- return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,landformPalette,refineContextRivers,sample,sampleSite,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
+ return {version,cityFootprint,cityDimensions,riverWidth,treeHeight,atlasHeight,atlasWeights,atlasSurface,atlasGrade,atlasBounds,cellColor,landformPalette,landCover,refineContextRivers,sample,sampleSite,profile,createGrid,write,context,hash,waterColor,treeKind,roofSnow,snowCover,cellCover,climate,localClimate,canopy,leafColor,band};
 })();

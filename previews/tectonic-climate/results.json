@@ -1,0 +1,131 @@
+{
+  "viewport": [
+    1480,
+    980
+  ],
+  "renderer": "Chromium with SwiftShader",
+  "bundleSha256": "29d1fc1dc74c38f91704214c02a3fb48bcbd34e6623c50a35659a8117eb926d4",
+  "fantasy": {
+    "physical": "73fe302b",
+    "settlements": "b18c6a8",
+    "politics": "b007f61e"
+  },
+  "cameras": [
+    {
+      "id": 3,
+      "name": "The Thousandfold Ranges",
+      "center": {
+        "i": 33184,
+        "x": 184,
+        "y": 110
+      },
+      "rx": 26.081097029168415,
+      "ry": 10.00160215480756,
+      "statistics": {
+        "minHeight": 619.1994018554688,
+        "maxHeight": 4178.6982421875,
+        "meanHeight": 1889.4024553908282,
+        "relief": 3559.4988403320312,
+        "exposedCells": 648,
+        "cliffCells": 207
+      },
+      "camera": {
+        "target": [
+          19.38461538461539,
+          2.5354775659596593,
+          11.22346368715084
+        ],
+        "zoom": 4.025904273987047,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      }
+    },
+    {
+      "id": 4,
+      "name": "The Dragonback Marches",
+      "center": {
+        "i": 15186,
+        "x": 186,
+        "y": 50
+      },
+      "rx": 27.886482993114388,
+      "ry": 12.129694286181985,
+      "statistics": {
+        "minHeight": 116.49211120605469,
+        "maxHeight": 3552.67724609375,
+        "meanHeight": 1376.5525172052103,
+        "relief": 3436.1851348876953,
+        "exposedCells": 716,
+        "cliffCells": 191
+      },
+      "camera": {
+        "target": [
+          20.508361204013383,
+          2.841401483609974,
+          -21.62569832402235
+        ],
+        "zoom": 3.765265057839174,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      }
+    },
+    {
+      "id": "wet-highland",
+      "name": "wet-highland",
+      "center": {
+        "x": 188,
+        "y": 108
+      },
+      "rx": 10,
+      "ry": 8,
+      "cell": {
+        "height": 2463.083740234375,
+        "temp": 10.219332695007324,
+        "arid": 2.0577220916748047,
+        "biome": 9
+      },
+      "camera": {
+        "target": [
+          21.632107023411375,
+          2.5590764509425443,
+          10.128491620111735
+        ],
+        "zoom": 10.5,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      }
+    },
+    {
+      "id": "dry-tableland",
+      "name": "dry-tableland",
+      "center": {
+        "x": 232,
+        "y": 105
+      },
+      "rx": 10,
+      "ry": 8,
+      "cell": {
+        "height": 2277.37890625,
+        "temp": 12.536367416381836,
+        "arid": 0.24523785710334778,
+        "biome": 13
+      },
+      "camera": {
+        "target": [
+          46.35451505016723,
+          2.3801989425500794,
+          8.486033519553072
+        ],
+        "zoom": 10.5,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      }
+    }
+  ],
+  "savedVersions": [
+    2,
+    3
+  ],
+  "errors": [],
+  "externalRequests": []
+}

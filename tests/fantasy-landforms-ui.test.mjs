@@ -8,14 +8,15 @@ const {generationParameters,landformRegionAt}=new Function(defaults+helpers+'ret
 
 test('new generation uses dramatic landforms while a versionless save retains its original terrain',()=>{
  const params={seed:'Old world',plates:24},before=JSON.stringify(params),save={physicalHash:'old'};
- assert.equal(generationParameters(params).landformVersion,2);
+ assert.equal(generationParameters(params).landformVersion,3);
  assert.equal(generationParameters(params,save).landformVersion,0);
  assert.equal(generationParameters({...params,landformVersion:0}).landformVersion,0);
  assert.equal(generationParameters({...params,landformVersion:1},save).landformVersion,1);
  assert.equal(generationParameters({...params,landformVersion:2},save).landformVersion,2);
+ assert.equal(generationParameters({...params,landformVersion:3},save).landformVersion,3);
  assert.equal(JSON.stringify(params),before,'normalization must not rewrite the uploaded save');
  assert.equal(generationParameters(params,save).seed,params.seed);
- for(const version of [-1,3,'1',Infinity,NaN])assert.throws(()=>generationParameters({...params,landformVersion:version},save),/unsupported landform/);
+ for(const version of [-1,4,'1',Infinity,NaN])assert.throws(()=>generationParameters({...params,landformVersion:version},save),/unsupported landform/);
 });
 
 test('landform inspection follows the clicked region and preserves water and older worlds',()=>{

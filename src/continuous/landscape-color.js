@@ -1,10 +1,10 @@
 /** Close terrain materials, sampled continuously in parent-world coordinates. */
 const LandscapeColor=(()=>{
- const cache=new WeakMap(),STRIDE=15;
+ const cache=new WeakMap(),STRIDE=19;
  const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
  function prepare(w){
-  let data=cache.get(w);if(data)return data;
-  data=new Float32Array(GN*STRIDE);const heights=new Float32Array(GN);
+  const version=w.params?.landformVersion>=3?3:w.params?.landformVersion>=1?1:0,old=cache.get(w);if(old?.version===version)return old.data;
+  const data=new Float32Array(GN*STRIDE),heights=new Float32Array(GN);
   for(let i=0;i<GN;i++){
    const o=i*STRIDE,b=w.biome[i],h=w.height[i],t=w.temp[i],a=w.arid[i];
    const cl=CityEnvironment.climate(t,a,h,w.ice?.[i]||0,b===1||b===16?1:0,w.seasonTemp?Math.min(w.seasonTemp[0][i],w.seasonTemp[1][i]):t);
@@ -19,6 +19,7 @@ const LandscapeColor=(()=>{
    const kind=w.params?.landformVersion>=1?w.landform?.[i]||0:0;
    if(data[o]&&b!==1&&b!==16&&!(w.ice?.[i]>25)&&kind>=1&&kind<=4)data[o+9+kind]=clamp(w.landformStrength?.[i]||0);
    data[o+14]=h;
+   if(version===3){const cover=CityEnvironment.landCover(w,i);data[o+15]=cover.vegetation;data[o+16]=cover.rock;data[o+17]=cover.rugged;data[o+18]=cover.vegetation+cover.soil+cover.rock;}
    heights[i]=CityEnvironment.atlasHeight(w,i,1);
   }
   // A continuous fallback slope for consumers without terrain normals. Compute
@@ -28,7 +29,35 @@ const LandscapeColor=(()=>{
    const i=y*GW+x,dx=(heights[y*GW+Math.min(GW-1,x+1)]-heights[y*GW+Math.max(0,x-1)])/(2*X),dz=(heights[Math.min(GH-1,y+1)*GW+x]-heights[Math.max(0,y-1)*GW+x])/(2*Z);
    data[i*STRIDE+9]=Math.hypot(dx,dz);
   }
-  cache.set(w,data);return data;
+  cache.set(w,{version,data});return data;
+ }
+ // The far color already contains the shared vegetation/soil/rock mixture. Close
+ // detail adds variations to those materials, never a second altitude/slope rock
+ // layer over the complete biome. Camera relief therefore cannot strip a forest.
+ function coveredSample(w,x,y,baseRGB,field,{normal}={}){
+  const land=field(0),cover=field(1),strength=(1-cover)*(1-cover),vegetation=field(15),rock=field(16),rugged=field(17),soil=Math.max(0,1-vegetation-rock);
+  const seed=w.seed|0,broad=noise(x*.83+y*.19+11,y*.89-x*.23+37,seed+211),patch=noise(x*3.1+y*.73+41,y*2.93-x*.51+9,seed+223),fine=noise(x*13.7+y*4.1+17,y*12.9-x*3.3+23,seed+229);
+  const materials=[field(10),field(11),field(12),field(13)],weight=materials.reduce((a,b)=>a+b,0),p=LandscapePatterns.sample(w,x,y);
+  const strata=Math.sin(field(14)*.058+broad*.45)*.5,grain=(p.strata-.5)*.10+(p.scree-.5)*.065;
+  const light=1+broad*.025+patch*.019+fine*.014,dune=field(8)*(1-cover)*(1-rock),duneLight=1+(p.dune-.5)*.17+(p.scree-.5)*.045;
+  const pole=clamp((GH*.5-y)/20,-1,1),shade=normal&&Number.isFinite(normal[2])?clamp(.5-normal[2]*pole*.5):.5;
+  const snow=cover*clamp(.76+shade*.30+(p.wind-.5)*.20-rugged*.57),snowTone=(p.wind-.5)*.065+(p.scree-.5)*.016;
+  const iceTone=(p.wind-.5)*.035+(p.ridge-.5)*.055,crack=p.crevasse*(.54+rugged*.13);
+  return baseRGB.map((base,k)=>{
+   let band=grain*(1-weight);
+   for(let j=0;j<4;j++)band+=materials[j]*(j===0?strata*(k===0?.20:k===1?.14:.065):(p.scree-.5)*(j===1?.065:.10));
+   let value=base*light+rock*band;
+   // Soil flecks are small and inherit the existing hue. Vegetated ground gets
+   // green-brown grain, while a dry plateau retains its exposed earth palette.
+   value+=(patch*.020+fine*.012)*(soil+vegetation*(k===1?.65:.40));
+   value=lerp(base,value,strength)*lerp(1,duneLight,dune);
+   value=lerp(value,(k===0?.89:k===1?.935:.965)+snowTone,snow);
+   let ice=(k===0?.805:k===1?.89:.935)+iceTone;
+   ice=lerp(ice,k===0?.26:k===1?.51:.66,crack);
+   ice=lerp(ice,k===0?.95:k===1?.98:.995,p.ridge*.10*(1-p.crevasse));
+   value=lerp(value,ice,p.glacier);
+   return clamp(lerp(base,value,land));
+  });
  }
  function sample(w,gx,gy,baseRGB,{slope,relief=1,normal}={}){
   const data=prepare(w),x=clamp(gx,0,GW-1),y=clamp(gy,0,GH-1),ax=Math.min(GW-2,Math.floor(x)),ay=Math.min(GH-2,Math.floor(y)),u=x-ax,v=y-ay;
@@ -36,6 +65,8 @@ const LandscapeColor=(()=>{
   const field=k=>lerp(lerp(data[a+k],data[b+k],u),lerp(data[c+k],data[d+k],u),v);
   const land=field(0),cover=field(1),strength=(1-cover)*(1-cover);
   if(land===0)return baseRGB.slice();
+  const substrate=w.params?.landformVersion>=3?field(18):0;
+  if(substrate===1)return coveredSample(w,x,y,baseRGB,field,{normal});
   const dry=field(2),wet=field(3),warm=field(4),cold=field(5),alpine=field(6),rock=field(7),rawSand=field(8),modern=w.params?.landformVersion>=1;
   const materials=modern?[field(10),field(11),field(12),field(13)]:null,materialWeight=materials?materials.reduce((a,b)=>a+b,0):0;
   const steep=smooth(.13,.95,Number.isFinite(slope)?Math.max(0,slope):field(9)*Math.max(0,relief));
@@ -105,6 +136,9 @@ const LandscapeColor=(()=>{
    value=lerp(value,ice,p.glacier);
    result[k]=clamp(lerp(base,value,land));
   }
+  // A mixed ice/soil cell approaches the untouched glacier palette continuously;
+  // switching branches at the first nonzero soil weight would leave an ice seam.
+  if(substrate>0){const covered=coveredSample(w,x,y,baseRGB,field,{normal});return result.map((v,k)=>lerp(v,covered[k],substrate));}
   return result;
  }
  return{sample};
