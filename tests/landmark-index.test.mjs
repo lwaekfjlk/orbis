@@ -25,15 +25,21 @@ const metadata=entries=>entries.map(({id,name,recipe,provinceId,i,x,y,priority,k
 
 test.before(async()=>{
  w=await E.generateWorld(defaults);s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});
+ // Founding may validate candidate highland layouts. Measure directory work
+ // separately from those simulation preflight queries.
+ Object.assign(E.calls,{full:0,query:0,context:0});
  before=fingerprints(w,s);inventory=E.LandmarkBinding.inventory(w,s);
 });
 
-test('the first directory preserves all 168 exact entries without generating full towns',()=>{
+test('the first directory preserves all 168 ordinary entries and adds two exact high cities without full-town builds',()=>{
  assert.equal(E.calls.full,0);assert.equal(E.calls.context,0);
- assert.equal(E.calls.query,78,'every eligible site still receives an exact placement query');
- assert.equal(inventory.length,168);
+ assert.equal(E.calls.query,80,'the 78 existing candidates and two compact high cities each receive an exact placement query');
+ const ordinary=inventory.filter(site=>!site.highCitadel),high=inventory.filter(site=>site.highCitadel);
+ assert.equal(inventory.length,170);assert.equal(ordinary.length,168);assert.equal(high.length,2);
+ assert.deepEqual(high.map(site=>site.highCitadel.kind).sort(),['dragon','holy']);
+ assert(high.every(site=>site.buildingId&&site.recipe.buildingId===site.buildingId&&!site.recipe.sacred));
  assert.equal(inventory.filter(site=>site.recipe.sacred).length,69);
- const digest=createHash('sha256').update(JSON.stringify(metadata(inventory))).digest('hex');
+ const digest=createHash('sha256').update(JSON.stringify(metadata(ordinary))).digest('hex');
  assert.equal(digest,'477aa02d80cb23a15195810a2158971cb0a63b50475def7954a6698d7e06146d');
  for(const id of [414,365,458,150,291,366,320,354,111])
   assert(!inventory.some(site=>site.provinceId===id&&site.recipe.sacred),'unplaceable wonder in province '+id);
@@ -42,10 +48,10 @@ test('the first directory preserves all 168 exact entries without generating ful
 
 test('cloning or searching the index does not invoke the local-building getter',()=>{
  const calls={...E.calls};
- assert.equal(JSON.parse(JSON.stringify(inventory)).length,168);
- assert.equal(structuredClone(inventory).length,168);
+ assert.equal(JSON.parse(JSON.stringify(inventory)).length,170);
+ assert.equal(structuredClone(inventory).length,170);
  const search=inventory.map(site=>({...site,type:'site'}));
- assert.equal(search.length,168);assert.deepEqual(E.calls,calls);
+ assert.equal(search.length,170);assert.deepEqual(E.calls,calls);
  const site=inventory.find(site=>site.recipe.sacred);
  assert.equal(Object.getOwnPropertyDescriptor(site,'building').enumerable,false);
 });

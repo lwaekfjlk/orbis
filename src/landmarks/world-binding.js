@@ -1,6 +1,15 @@
 /** Read-only resolution from existing cities/geography to reusable landmark recipes. */
 const LandmarkBinding = (()=>{
  const cache=new Map();
+ function highCitadelLabel(p){const h=p?.highCitadel;if(!h||!['dragon','holy'].includes(h.kind))return'';return h.kind==='dragon'?'Dragon King Citadel':'High Holy City';}
+ function highCitadelSite(w,s,p){
+  const label=highCitadelLabel(p);if(!label||!p.settled||p.urbanPop<650)return null;
+  // Query the compact layout's real anchor. A directory entry never substitutes
+  // a generic mountain palace for this complete, individually built settlement.
+  const c=generateCityLandmark(w,s,p.id),b=c.buildings.find(b=>b.landmark&&b.highRole);if(!b)return null;
+  const recipe=LandmarkCatalog.recipe('mountain',`${w.params.seed}/high-citadel/${p.i}`,{id:`site-${p.id}-high-citadel`,name:p.name,provinceId:p.id,kind:b.type,buildingId:b.id,highCitadel:{...p.highCitadel},material:p.highCitadel.kind==='dragon'?'basalt':'ivory',provenance:'A compact settlement at the existing high-altitude site. Visit its town to inspect the actual architecture.'});
+  return{id:recipe.id,name:recipe.name,recipe,provinceId:p.id,buildingId:b.id,i:p.i,x:p.x,y:p.y,highCitadel:{...p.highCitadel},priority:1e9,kind:label+' · '+Math.round(p.highCitadel.elevation??p.altitude).toLocaleString()+' m',icon:p.highCitadel.kind==='dragon'?'♜':'✧'};
+ }
  function resolve(w,s,p,kind='civic'){
   const base=LandmarkCatalog.fromProvince(w,s,p,kind),saved=s.landmarkRecipes?.[base.id];
   if(saved){try{return LandmarkCatalog.validate({...saved,provinceId:p.id,id:base.id,realm:base.realm,geography:base.geography,provenance:base.provenance})}catch(_){/* Old or malformed optional design: retain a valid derived recipe. */}}
@@ -29,7 +38,8 @@ const LandmarkBinding = (()=>{
   return true;
  }
  function inventory(w,s){if(!w||!s)return[];const cap=new Set(s.realms.filter(c=>c.alive).map(c=>c.capital)),out=[];
-  for(const p of s.provinces.filter(p=>p.city).sort((a,b)=>b.urbanPop-a.urbanPop)){
+  for(const p of s.provinces.filter(p=>p.city||highCitadelLabel(p)).sort((a,b)=>b.urbanPop-a.urbanPop)){
+   if(highCitadelLabel(p)){const site=highCitadelSite(w,s,p);if(site)out.push(site);continue;}
    if(cap.has(p.id)){const r=resolve(w,s,p);out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop*2,kind:'Civic palace'})}
    if(p.harbor>.28&&p.urbanPop>8000){const r=resolve(w,s,p,'harbor');out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop*.6,kind:'Harbor landmark'})}
    if(s.realms[p.owner]?.gov===2){const r=resolve(w,s,p,'academy');out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop,kind:'Arcane college'})}
@@ -37,8 +47,8 @@ const LandmarkBinding = (()=>{
    if(!sacred&&s.realms[p.owner]?.gov===1){const r=resolve(w,s,p,'temple');out.push({id:r.id,name:r.name,recipe:r,i:p.i,x:p.x,y:p.y,provinceId:p.id,priority:p.urbanPop,kind:'Great sanctuary'})}
   }
   const tests=[['grove','Rootbound Sanctuary',i=>[7,9,11].includes(w.biome[i])&&w.ice[i]<10],['labyrinth','The Ninth Stair',i=>[4,13].includes(w.biome[i])&&w.height[i]>0],['ice','The Pale Archive',i=>w.height[i]>0&&w.ice[i]<30&&Math.abs(w.lat[i])>50],['observatory','The Meridian Orrery',i=>w.height[i]>1600&&w.height[i]<3600&&w.ice[i]<10],['bridge','The Crownspan',i=>w.height[i]>0&&w.lake[i]<=0&&w.flow[i]>w.riverThreshold*2]];
-  for(const [style,name,test]of tests){let chosen=-1,best=-1;for(const p of s.provinces.filter(p=>p.settled)){if(test(p.i)){const val=LandmarkCatalog.hash(w.params.seed+'/'+style+'/'+p.i);if(val>best){best=val;chosen=p.i}}}if(chosen<0)continue;const p=s.provinces[w.provinceId[chosen]],base=LandmarkCatalog.fromProvince(w,s,p),r=LandmarkCatalog.recipe(style,w.params.seed+'/regional/'+style,{id:'regional-'+style,name,provinceId:p.id,realm:s.realms[p.owner]?.name||'Local communities',geography:base.geography,provenance:`A fictional regional landmark assigned near the existing settlement ${p.name}. Detailed microterrain is illustrative; it neither excavates global terrain nor invents a city.`});const saved=s.landmarkRecipes?.[r.id];let recipe=saved?LandmarkCatalog.validate({...saved,geography:r.geography,provenance:r.provenance}):r;out.push({id:r.id,name:r.name,recipe,i:chosen,x:chosen%GW,y:Math.floor(chosen/GW),provinceId:p.id,priority:30000,kind:'Regional landmark'})}
+  for(const [style,name,test]of tests){let chosen=-1,best=-1;for(const p of s.provinces.filter(p=>p.settled&&!highCitadelLabel(p))){if(test(p.i)){const val=LandmarkCatalog.hash(w.params.seed+'/'+style+'/'+p.i);if(val>best){best=val;chosen=p.i}}}if(chosen<0)continue;const p=s.provinces[w.provinceId[chosen]],base=LandmarkCatalog.fromProvince(w,s,p),r=LandmarkCatalog.recipe(style,w.params.seed+'/regional/'+style,{id:'regional-'+style,name,provinceId:p.id,realm:s.realms[p.owner]?.name||'Local communities',geography:base.geography,provenance:`A fictional regional landmark assigned near the existing settlement ${p.name}. Detailed microterrain is illustrative; it neither excavates global terrain nor invents a city.`});const saved=s.landmarkRecipes?.[r.id];let recipe=saved?LandmarkCatalog.validate({...saved,geography:r.geography,provenance:r.provenance}):r;out.push({id:r.id,name:r.name,recipe,i:chosen,x:chosen%GW,y:Math.floor(chosen/GW),provinceId:p.id,priority:30000,kind:'Regional landmark'})}
   return out.sort((a,b)=>b.priority-a.priority);
  }
- return {resolve,miniature,worldSymbol,inventory,clearCache(){cache.clear()}};
+ return {resolve,miniature,worldSymbol,inventory,highCitadelLabel,clearCache(){cache.clear()}};
 })();

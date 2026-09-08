@@ -118,9 +118,9 @@ test('the seat of government answers to its realm and its faith, not only to its
  report.checks.palace = {byRealm: Object.fromEntries(seen), crowns: [...crowns]};
 });
 
-test('a capital is visibly a capital and a hamlet a hamlet', () => {
+test('ordinary capitals and hamlets retain their population-driven scale', () => {
  const rows = [];
- for (const p of sim.provinces.filter(q => q.settled && q.urbanPop >= 650)) {
+ for (const p of sim.provinces.filter(q => q.settled && q.urbanPop >= 650 && !q.highCitadel)) {
   const c = E.generateCity(world, sim, p.id);
   rows.push({name: p.name, pop: p.urbanPop, span: c.span, blocks: c.buildings.length});
  }
@@ -186,9 +186,9 @@ test('every new roof form builds finite geometry inside its own footprint', () =
  report.checks.geometry = {forms: Object.keys(E.TownVocabulary.ROOFS).length};
 });
 
-test('none of this moved the physical world or the society', () => {
+test('vocabulary preserves the physical world and current settlement baseline', () => {
  assert.equal(E.physicalFingerprint(world), '440ae5d0');
- assert.equal(E.settlementFingerprint(sim), '6b6c5ea8');
+ assert.equal(E.settlementFingerprint(sim), 'e6aee7b8');
 });
 
 test.after(() => writeFileSync(resolve(root, 'docs/VOCABULARY_RESULTS.json'), JSON.stringify(report, null, 2)));

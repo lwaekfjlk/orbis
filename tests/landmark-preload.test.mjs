@@ -61,8 +61,12 @@ test('two real workers prewarm every exact entry while parent buffers remain usa
  assert.equal(w.height.byteLength,bytes);assert(bytes>0);
  assert.deepEqual([e.physicalFingerprint(w),e.settlementFingerprint(s)],before);
  const inventory=e.LandmarkBinding.inventory(w,s);
- assert.equal(e.queries,0,'synchronous inventory must consume verified worker cache');
- const metadata=inventory.map(({id,name,recipe,provinceId,i,x,y,priority,kind})=>({id,name,recipe,provinceId,i,x,y,priority,kind}));
+ assert.equal(e.queries,2,'only the two compact high cities need a synchronous query; all existing wonders use the verified worker cache');
+ const ordinary=inventory.filter(site=>!site.highCitadel),high=inventory.filter(site=>site.highCitadel);
+ assert.equal(inventory.length,170);assert.equal(ordinary.length,168);assert.equal(high.length,2);
+ assert.deepEqual(high.map(site=>site.highCitadel.kind).sort(),['dragon','holy']);
+ assert(high.every(site=>site.buildingId&&!site.recipe.sacred));
+ const metadata=ordinary.map(({id,name,recipe,provinceId,i,x,y,priority,kind})=>({id,name,recipe,provinceId,i,x,y,priority,kind}));
  assert.equal(createHash('sha256').update(JSON.stringify(metadata)).digest('hex'),'477aa02d80cb23a15195810a2158971cb0a63b50475def7954a6698d7e06146d');
  assert.deepEqual(await e.SacredCityKit.preload(w,s).promise,{status:'complete',completed:0,total:0});
  assert.equal(workers.length,2,'a populated cache must not create more workers');

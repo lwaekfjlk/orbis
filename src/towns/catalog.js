@@ -25,6 +25,7 @@ const TownCatalog = (() => {
  // The old delta (wet>.24) and basalt (rift>.65 AND ore>.38) tests were above the
  // observed maxima, so neither tradition was ever assigned to anywhere.
  function native(p,w){
+  if(['dragon','holy'].includes(p.highCitadel?.kind))return 'mountain';
   const e=CityEnvironment.profile(w,p);
   if(e.temperature<6&&p.harbor>.12)return 'fjord';
   // A cold/dry foothill is not a hot-desert architectural assignment.
@@ -74,14 +75,16 @@ const TownCatalog = (() => {
  }
  function resolve(w,s,p,override={}){
   const stored=s.townRecipes?.[p.id]||{};let id=override.style||stored.style||native(p,w),compatibilityNote='';
+  const highCitadel=['dragon','holy'].includes(p.highCitadel?.kind)?{kind:p.highCitadel.kind,version:p.highCitadel.version||1}:null;
+  if(highCitadel)id='mountain';
   if(!override.style&&stored.style&&!allowed(p,w,stored.style)){id=native(p,w);compatibilityNote='Legacy layout was adapted to the actual site climate; the world was not changed.';}
   const style=styles.find(t=>t.id===id)||styles[0];
   if(!allowed(p,w,style.id))throw Error(`${style.name} is incompatible with this existing site's geography.`);
   const seed=String(override.seed??stored.seed??`${w.params.seed}/town/${p.i}`).slice(0,120);
   const mix=Number(override.variety??stored.variety??.6);
-  return {format:'telluric-town-recipe',version:1,style:style.id,seed,variety:Math.max(0,Math.min(1,Number.isFinite(mix)?mix:.6)),provinceId:p.id,sourceCell:p.i,environmentVersion:CityEnvironment.version,compatibilityNote};
+  return {format:'telluric-town-recipe',version:1,style:style.id,seed,variety:Math.max(0,Math.min(1,Number.isFinite(mix)?mix:.6)),provinceId:p.id,sourceCell:p.i,environmentVersion:CityEnvironment.version,compatibilityNote,...(highCitadel?{highCitadel}:{})};
  }
  function validate(r){if(!r||r.format!=='telluric-town-recipe'||r.version!==1||!styles.some(t=>t.id===r.style)||typeof r.seed!=='string'||r.seed.length>120||!Number.isInteger(r.provinceId)||!Number.isFinite(r.variety)||r.variety<0||r.variety>1)throw Error('Invalid town composition recipe.');return r}
- function signature(r){return hash(JSON.stringify([r.version,r.style,r.seed,r.variety])).toString(16)}
+ function signature(r){const fields=[r.version,r.style,r.seed,r.variety];if(r.highCitadel)fields.push(r.highCitadel.kind,r.highCitadel.version);return hash(JSON.stringify(fields)).toString(16)}
  return {styles,native,allowed,resolve,validate,signature,hash};
 })();

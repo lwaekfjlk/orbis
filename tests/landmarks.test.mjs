@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {root,defaults} from './engine-loader.mjs';
-const scripts=['src/world/geography.js','src/civilization/realm-names.js', 'src/civilization/simulation.js','src/city/environment.js', 'src/towns/catalog.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/render/export-glb.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js','src/landmarks/world-binding.js'];
+const scripts=['src/world/geography.js','src/civilization/realm-names.js', 'src/civilization/simulation.js','src/city/environment.js','src/civilization/high-citadels.js', 'src/towns/catalog.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/high-citadel-plan.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/render/export-glb.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js','src/landmarks/world-binding.js'];
 const e=Function(scripts.map(f=>readFileSync(resolve(root,f),'utf8')).join('\n')+'\nreturn {LandmarkCatalog,LandmarkTemplates,LandmarkBinding,generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,politicalFingerprint,exportGeometryGLB};')();
 const C=e.LandmarkCatalog,T=e.LandmarkTemplates;
 function geometryHash(m,filter=()=>true){const h=createHash('sha256');for(const p of m.parts.filter(filter))h.update(Buffer.from(new Float32Array(p.geometry.data).buffer));return h.digest('hex')}

@@ -2,7 +2,7 @@
 window.CityUI = (() => {
     let cr = null, activeId = null, layout = null, tab = 'dossier', selectedBuilding = null, lastFocus = null, cache = new Map(), labelNodes = [], journey = null, previousWorld = null;
     const E = id => document.getElementById(id), esc = s => escapeHTML(s);
-    function key(p) { return `sacred-v1/${world.params.seed}/${sim.physicalHash||''}/env-${CityEnvironment.version}/${p.i}/${p.detailSupport ?? p.urbanSupport}/${TownCatalog.signature(TownCatalog.resolve(world,sim,p))}`; }
+    function key(p) { return `sacred-v1/${world.params.seed}/${sim.physicalHash||''}/env-${CityEnvironment.version}/${p.i}/${p.detailSupport ?? p.urbanSupport}/${TownCatalog.signature(TownCatalog.resolve(world,sim,p))}${p.highCitadel?'/high/'+JSON.stringify(p.highCitadel):''}`; }
     function getLayout(p) { const k = key(p); if (cache.has(k)) {
         const value = cache.get(k);
         cache.delete(k);
@@ -72,7 +72,7 @@ window.CityUI = (() => {
                 close();
                 return;
             }
-            if(worldReplaced)layout=getLayout(p);
+            layout=getLayout(p);
             cr.setCity(layout, p, sim.realms[p.owner], sim.cityState?.[p.id] || {});
             render();
         }
@@ -84,7 +84,7 @@ window.CityUI = (() => {
         if (!el)
             return;
         const keep = el.value;
-        el.innerHTML = sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop).map(p => `<option value="${p.id}">${esc(p.name)} · ${fmtPop(p.urbanPop)} · ${esc(p.harbor > .3 ? 'Coastal' : p.siteLake > .25 ? 'Lakeshore' : p.altitude > 1400 ? 'Highland' : p.aridity < .65 ? 'Dryland' : 'Inland')}</option>`).join('');
+        el.innerHTML = sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop).map(p => `<option value="${p.id}">${esc(p.name)} · ${fmtPop(p.urbanPop)} · ${esc(LandmarkBinding.highCitadelLabel(p) || (p.harbor > .3 ? 'Coastal' : p.siteLake > .25 ? 'Lakeshore' : p.altitude > 1400 ? 'Highland' : p.aridity < .65 ? 'Dryland' : 'Inland'))}</option>`).join('');
         if ([...el.options].some(o => o.value === keep))
             el.value = keep;
     }
@@ -115,7 +115,7 @@ window.CityUI = (() => {
         E('cityMapName').textContent = p.name;
         E('cityYear').textContent = `YEAR ${sim.year} AC`;
         E('cityBreadcrumb').innerHTML = `WORLD / ${esc(continent?.name || 'REGION')} / <b>${esc(realm?.name || 'FREE COMMUNITIES')}</b>`;
-        E('cityMapSubtitle').textContent = `${layout.siteEnvironment.label} · ${layout.stats.modules} compounds`;
+        E('cityMapSubtitle').textContent = `${LandmarkBinding.highCitadelLabel(p)||layout.siteEnvironment.label}${p.highCitadel?' · '+Math.round(p.highCitadel.elevation).toLocaleString()+' m':''} · ${layout.stats.modules} compounds`;
         E('cityProvenance').textContent = `WORLD CELL ${p.i} · ENV ${layout.environment.signature} · ${cr.software ? 'CANVAS' : 'WEBGL2'}`;
         document.querySelectorAll('[data-city-tab]').forEach(b => b.classList.toggle('active', b.dataset.cityTab === tab));
         document.querySelectorAll('[data-city-mode]').forEach(b => b.classList.toggle('active', b.dataset.cityMode === cr.mode));
@@ -141,11 +141,11 @@ window.CityUI = (() => {
     }
     function settingPanel(p){
         const e=layout.siteEnvironment,g=layout.environment;
-        return `<section class="town-setting-card"><div class="overline">GEOGRAPHY LOCKED · WORLD CELL ${p.i}</div><h3>${esc(e.label)}</h3><p>Town site: ${BIOME[e.biome][0]} · ${e.temperature.toFixed(1)} °C · ${esc(e.climateBand||'')}.<br>Surrounding relief: ${Math.round(e.minElevation).toLocaleString()}–${Math.round(e.maxElevation).toLocaleString()} model m.${e.glacialFoothills?'<br>Glacier-bearing slopes are inherited from the atlas; the town floor is not automatically snow-covered.':''}</p><div class="city-facts"><span>Climate source</span><b>Each world sample</b><span>Ice / biome data</span><b>Inherited, not template colors</b><span>Roofs, walls &amp; planting</span><b>Adapted per block to its own cell</b><span>Environment hash</span><b>${g.signature}</b></div><button id="cityShowSetting">Town + surroundings ↗</button> <button id="cityLocateSource">Locate on atlas</button>${layout.townRecipe.compatibilityNote?`<p>${esc(layout.townRecipe.compatibilityNote)}</p>`:''}</section>`;
+        return `<section class="town-setting-card"><div class="overline">GEOGRAPHY LOCKED · WORLD CELL ${p.i}</div><h3>${esc(LandmarkBinding.highCitadelLabel(p)||e.label)}</h3><p>Town site: ${BIOME[e.biome][0]} · ${e.temperature.toFixed(1)} °C · ${esc(e.climateBand||'')}.<br>Surrounding relief: ${Math.round(e.minElevation).toLocaleString()}–${Math.round(e.maxElevation).toLocaleString()} model m.${e.glacialFoothills?'<br>Glacier-bearing slopes are inherited from the atlas; the town floor is not automatically snow-covered.':''}</p><div class="city-facts"><span>Climate source</span><b>Each world sample</b><span>Ice / biome data</span><b>Inherited, not template colors</b><span>Roofs, walls &amp; planting</span><b>Adapted per block to its own cell</b><span>Environment hash</span><b>${g.signature}</b></div><button id="cityShowSetting">Town + surroundings ↗</button> <button id="cityLocateSource">Locate on atlas</button>${layout.townRecipe.compatibilityNote?`<p>${esc(layout.townRecipe.compatibilityNote)}</p>`:''}</section>`;
     }
     function assemblyPanel(p,el) {
-        const t=layout.townProfile,r=layout.townRecipe;
-        el.innerHTML=`${settingPanel(p)}<div class="overline">TOWN → DISTRICTS → COMPOUNDS</div><h2>${esc(t.name)}</h2><p class="lead">${esc(t.description)}</p><div class="town-type-grid">${TownCatalog.styles.map(a=>`<button data-town-style="${a.id}" class="${a.id===t.id?'active':''}" ${TownCatalog.allowed(p,world,a.id)?'':'disabled'} title="${esc(TownCatalog.allowed(p,world,a.id)?a.description:'This site lacks the required geography.')}" ><span>${esc(a.short)}</span><small>${esc(a.plan.toUpperCase())}</small></button>`).join('')}</div><div class="city-metrics"><div><b>${layout.stats.modules}</b><small>ORDINARY COMPOUNDS</small></div><div><b>${layout.stats.landmarks}</b><small>PUBLIC ANCHORS</small></div></div><label class="town-label" for="townSeed">Composition seed</label><input id="townSeed" value="${esc(r.seed)}" maxlength="120" spellcheck="false"><button id="townRecompose" class="enter-city-btn">Recompose town · same land</button><p class="city-note">This is a visual planning change, not an economic event. Country borders, water, terrain and population are read-only.</p><h3>Assembly recipe</h3><div class="city-facts"><span>Street grammar</span><b>${esc(t.plan)}</b><span>Ordinary module family</span><b>${esc(t.kit)}</b><span>Urban material</span><b>${esc(t.material)}</b><span>Roof language</span><b>${esc(t.roof)}</b><span>Street-connected blocks</span><b>${layout.connectors.length} / ${layout.stats.buildings}</b></div><h3>Explore the districts</h3><div class="city-landmark-list">${layout.districts.map(d=>`<button data-town-district="${d.id}">${esc(d.name)} · ${d.buildings} modules ↗</button>`).join('')}</div><div class="town-recipe-actions"><button id="townSaveRecipe">Save recipe</button><button id="townImportRecipe">Load recipe</button></div><input type="file" id="townRecipeInput" accept="application/json,.json" hidden><p class="city-note">One module can contain several houses, a shared court, a workshop and a street socket. Models are schematic; no new residents or landforms are created.</p>`;
+        const t=layout.highCitadel?{...layout.townProfile,name:LandmarkBinding.highCitadelLabel(p),description:layout.highCitadel.kind==='dragon'?'A small royal aerie of dark stone, winged roofs and guarded mountain courts.':'A small pilgrimage settlement of pale stone, cloistered courts and a summit sanctuary.'}:layout.townProfile,r=layout.townRecipe;
+        el.innerHTML=`${settingPanel(p)}<div class="overline">TOWN → DISTRICTS → COMPOUNDS</div><h2>${esc(t.name)}</h2><p class="lead">${esc(t.description)}</p><div class="town-type-grid">${(layout.highCitadel?TownCatalog.styles.filter(a=>a.id==='mountain'):TownCatalog.styles).map(a=>`<button data-town-style="${a.id}" class="${a.id===t.id?'active':''}" ${TownCatalog.allowed(p,world,a.id)?'':'disabled'} title="${esc(TownCatalog.allowed(p,world,a.id)?a.description:'This site lacks the required geography.')}" ><span>${esc(a.short)}</span><small>${esc(a.plan.toUpperCase())}</small></button>`).join('')}</div><div class="city-metrics"><div><b>${layout.stats.modules}</b><small>ORDINARY COMPOUNDS</small></div><div><b>${layout.stats.landmarks}</b><small>PUBLIC ANCHORS</small></div></div><label class="town-label" for="townSeed">Composition seed</label><input id="townSeed" value="${esc(r.seed)}" maxlength="120" spellcheck="false"><button id="townRecompose" class="enter-city-btn">Recompose town · same land</button><p class="city-note">This is a visual planning change, not an economic event. Country borders, water, terrain and population are read-only.</p><h3>Assembly recipe</h3><div class="city-facts"><span>Street grammar</span><b>${esc(t.plan)}</b><span>Ordinary module family</span><b>${esc(t.kit)}</b><span>Urban material</span><b>${esc(t.material)}</b><span>Roof language</span><b>${esc(t.roof)}</b><span>Street-connected blocks</span><b>${layout.connectors.length} / ${layout.stats.buildings}</b></div><h3>Explore the districts</h3><div class="city-landmark-list">${layout.districts.map(d=>`<button data-town-district="${d.id}">${esc(d.name)} · ${d.buildings} modules ↗</button>`).join('')}</div><div class="town-recipe-actions"><button id="townSaveRecipe">Save recipe</button><button id="townImportRecipe">Load recipe</button></div><input type="file" id="townRecipeInput" accept="application/json,.json" hidden><p class="city-note">One module can contain several houses, a shared court, a workshop and a street socket. Models are schematic; no new residents or landforms are created.</p>`;
         E('cityShowSetting').onclick=()=>{E('cityContext').checked=true;cr.frameSetting()};
         E('cityLocateSource').onclick=()=>{close();setLayer('relief');renderer.focus(p.x,p.y);renderer.zoom=9;inspectCell(p.i);renderer.request()};
         el.querySelectorAll('[data-town-style]').forEach(b=>b.onclick=()=>recompose({style:b.dataset.townStyle}));
@@ -175,13 +175,13 @@ window.CityUI = (() => {
         el.innerHTML = `${b ? `<div class="building-card"><div class="overline">SELECTED TOWN MODULE / ${esc(b.id)}</div><h3>${esc(b.name)}</h3><p>${esc(CITY_TYPES[b.type]?.description || (b.type === 'granary' ? 'Stores part of the already allocated food surplus. Expand its stores from Projects.' : 'Collects and distributes water from the accessible local supply.'))}</p><div class="city-facts"><span>Precinct</span><b>${esc(layout.districts[b.district].name)}</b><span>Form</span><b>${b.landmark ? 'Public landmark' : esc(b.module)}</b><span>Street socket</span><b>${b.streetSocket??'Unconnected'}</b></div></div>` : ''}<div class="overline">${esc(p.settlementType)} / FIELD DOSSIER</div><h2>${esc(p.name)}</h2><p class="lead">${esc(p.siteReason)}</p><div class="city-metrics"><div><b>${fmtPop(p.urbanPop)}</b><small>URBAN RESIDENTS</small></div><div><b>${fmtPop(p.ruralPop)}</b><small>RURAL HINTERLAND</small></div><div><b>${p.dev.toFixed(2)}</b><small>DEVELOPMENT INDEX</small></div><div><b>${Math.round(p.unrest)}</b><small>UNREST / 100</small></div></div><div class="city-facts"><span>Ruler</span><b>${esc(c?.name || 'Local communities')}</b><span>Local climate</span><b>${world.temp[p.i].toFixed(1)} °C</b><span>Freshwater access</span><b>${p.fresh.toFixed(2)}</b><span>Food support budget</span><b>${fmtPop(p.urbanSupport)}</b><span>Local majority tradition</span><b>${esc(FAITHS[cDominant(p.faith)].name)}</b></div><h3>People & traditions</h3>${mixtureHTML(p.people, PEOPLES)}<h3>Landmarks</h3><div class="city-landmark-list">${layout.buildings.filter(b => b.landmark).map(b => `<button data-landmark="${b.id}">${esc(b.name)} ↗</button>`).join('')}</div><p class="city-note">Every rendered house is a representative building, not one household. Street patterns and names are procedural detail; demographic totals and resources come from the parent simulation.</p>`;
         if (b && ['civic','temple','academy','harbor'].includes(b.type)) {
             const card=el.querySelector('.building-card'), enter=document.createElement('button');
-            enter.className='city-monument-prompt'; enter.id='openBuildingMonument'; enter.textContent='Enter architectural model →';
+            enter.className='city-monument-prompt'; enter.id='openBuildingMonument'; enter.textContent=b.highRole?'Focus this building →':'Enter architectural model →';
             enter.onclick=()=>window.LandmarkUI?.openBuilding(activeId,b); card.appendChild(enter);
         }
         el.querySelectorAll('[data-landmark]').forEach(btn => {
             const b=layout.buildings.find(b=>b.id===btn.dataset.landmark);
             if (['civic','temple','academy','harbor'].includes(b.type)) {
-                btn.textContent=b.name+' · Explore 3D →';
+                btn.textContent=b.name+(b.highRole?' · Focus →':' · Explore 3D →');
                 btn.onclick=()=>window.LandmarkUI?.openBuilding(activeId,b);
             } else btn.onclick=()=>{select(b);cr.focusBuilding(b)};
         });

@@ -52,7 +52,7 @@ test('Requested tradition, custom names and historical names survive allocation'
 test('Founding and secession use mythological names, with stable saves and unchanged founding geography', async () => {
     const w = await E.generateWorld(defaults), s = E.createCivilization(w, { realms: 18, historySeed: 'First-dawn' });
     assert.equal(E.physicalFingerprint(w), '440ae5d0');
-    assert.equal(E.settlementFingerprint(s), '6b6c5ea8');
+    assert.equal(E.settlementFingerprint(s), 'e6aee7b8');
     assert.equal(E.politicalFingerprint(s), 'aaa577eb');
     s.realms.forEach(assertOrigin);
     const saved = JSON.parse(JSON.stringify(s));

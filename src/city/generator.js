@@ -124,6 +124,7 @@ function cityStreetConnections(city) {
 }
 /** Read the existing survey extent without generating streets or consuming RNG. */
 function citySurvey(sim, p) {
+    if (typeof HighCitadelPlan !== 'undefined' && HighCitadelPlan.matches(p)) return HighCitadelPlan.survey(p);
     const capital = sim.realms.some(r => r.alive && r.capital === p.id);
     const scale = p.detailSupport ?? p.urbanSupport ?? p.urbanPop ?? 0;
     const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
@@ -236,6 +237,8 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
             const k = y * n + x;
             city.slope[k] = Math.max(Math.abs(city.height[y * n + Math.min(n - 1, x + 1)] - city.height[y * n + Math.max(0, x - 1)]), Math.abs(city.height[Math.min(n - 1, y + 1) * n + x] - city.height[Math.max(0, y - 1) * n + x]));
         }
+    if (typeof HighCitadelPlan !== 'undefined' && HighCitadelPlan.matches(p))
+        return HighCitadelPlan.build(city, p, {landmarkOnly, parcelBounds, atlasScale});
     // Short bridges may cross modeled rivers, never entire seas or lakes.
     // A street is a graded surface, not a climb. The cost term below reads
     // city.height, which is asinh-compressed, so it never noticed the difference
