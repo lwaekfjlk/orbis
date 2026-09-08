@@ -1,0 +1,34 @@
+{
+  "checks": [
+    {
+      "stage": "gallery",
+      "phase": 0.85,
+      "playing": false,
+      "angle": 90,
+      "clay": true,
+      "triangles": [
+        1398,
+        616
+      ]
+    },
+    {
+      "stage": "town",
+      "town": 349,
+      "crowd": {
+        "residents": 55,
+        "travelling": 2,
+        "budget": 220,
+        "fullFigures": 48,
+        "simpleFigures": 13,
+        "triangles": 9038,
+        "clock": 12,
+        "software": false
+      },
+      "simulationUnchanged": true,
+      "animationClockAdvances": true,
+      "toggleWorks": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}
