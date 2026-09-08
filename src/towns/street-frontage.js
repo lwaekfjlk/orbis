@@ -46,7 +46,7 @@ const StreetFrontage=(()=>{
   // A shop is an inhabited house with a counter, never an extra market building.
   const shops=houses.filter(h=>h.streetFacing).sort((a,b)=>Math.hypot(a.x-entry.x,a.z-entry.z)-Math.hypot(b.x-entry.x,b.z-entry.z)||a.index-b.index);
   if(commercial)for(const h of shops.slice(0,dense?1:2))h.shop=true;
-  return {version:1,enabled:!b.landmark&&!b.highRole&&!c.highCitadel&&!['civic','well','granary'].includes(b.type)&&CW>0&&CD>0,
+  return {version:1,enabled:(!b.landmark||commercial)&&!b.highRole&&!c.highCitadel&&!['civic','well','granary'].includes(b.type)&&CW>0&&CD>0,
    CW,CD,front,houses,cols,ranks,dense,lod:options.lod??b.lod??2,commercial,
    seed:hash((c.townRecipe?.seed||'street')+'/'+b.id),baseY:.18};
  }

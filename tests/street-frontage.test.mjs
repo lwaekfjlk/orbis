@@ -48,7 +48,7 @@ test('old city data has a socket fallback and a harmless already-rotated front f
  const {b,c,p}=fixture({angle:Math.PI/2,side:[1,0]});delete c.connectors;
  const socket=F.plan(b,c,p.CW,p.CD);assert.equal(socket.front.source,'socket');assert.equal(socket.front.side,p.front.side);
  delete c.xy;const old=F.plan(b,c,p.CW,p.CD);assert.equal(old.front.side,'south');assert.equal(old.front.source,'fallback');
- assert.equal(F.plan({...b,landmark:true},c,p.CW,p.CD).enabled,false);
+ assert.equal(F.plan({...b,type:'home',landmark:true},c,p.CW,p.CD).enabled,false);
  assert.equal(F.plan({...b,highRole:'lodge'},c,p.CW,p.CD).enabled,false);
  assert.equal(F.plan(b,{...c,highCitadel:{kind:'holy'}},p.CW,p.CD).enabled,false);
 });
@@ -140,5 +140,19 @@ test('the production compound passes its shifted house entrance through to the f
    assert.ok(y+height<=e.baseY+1e-7,'steps must meet the actual door sill');
   }
   assert.ok(result.model.stats.modules['open-shop-counter'],'the real workshop must retain a street counter');
+ }
+});
+
+
+test('existing commercial landmarks receive a real street counter and removable canopy',()=>{
+ for(const type of['market','workshop']){
+  const {b,c}=fixture({w:3.2,d:3.2});Object.assign(b,{y:1.2,moduleVariant:2,landmark:true,type});
+  Object.assign(c,{townProfile:E.TownCatalog.styles.find(s=>s.id==='river'),siteEnvironment:{temperature:14,aridity:1,bed:400,forestFraction:.4,ore:.2},
+   environment:{temperature:[14],aridity:[1],bed:[400],ice:[0],snow:[0],winter:[6]},index:()=>0});
+  const snapshot=JSON.stringify({b,c}),result=E.ArtisanCityKit.compound(b,c,{faith:[1,0,0,0,0,0],people:[1],fresh:.4,ore:.2},{color:'#998866'}),modules=result.model.stats.modules;
+  assert.equal(result.structures,1);assert.equal(JSON.stringify({b,c}),snapshot,'a market landmark must not change its saved parcel');
+  assert.ok(modules['street-doorstep'],type+' needs its visible street approach');
+  assert.ok(modules['open-shop-counter'],type+' must retain a commercial frontage');
+  assert.ok(result.model.parts.filter(p=>p.role==='roof').some(p=>p.modules.includes('street-shop-canopy')),type+' canopy must disappear with roofs');
  }
 });
