@@ -208,6 +208,43 @@ test('an extremely narrow visible country keeps an owned, accessible marker with
     assert(item.element.title.includes(item.feature.name));assert.equal(item.element.tabIndex,0);assert.equal(item.element.style.pointerEvents,'auto');
 });
 
+test('a dense mobile country cluster reserves every owned marker before expanding names',()=>{
+    const items=[150,190,230].map((x,id)=>measuredRealm(id,x,410,{full:150,compact:60}));
+    positionMapLabels(items,1,{width:430,height:900});
+    assert(items.every(v=>v.element.style.opacity==='1'),'an earlier short name must not erase a neighbouring country');
+    for(let j=0;j<items.length;j++){
+        assert.equal(items[j].element.dataset.anchorCell,String(j));
+        assert.equal(items[j].element.tabIndex,0);
+        assert.equal(items[j].element.style.pointerEvents,'auto');
+        for(let k=0;k<j;k++)assert(separated(labelBox(items[j]),labelBox(items[k])));
+    }
+});
+
+test('the actual narrow-screen world retains all 22 countries on their own land without overlaps',()=>{
+    const fixture=JSON.parse(readFileSync(new URL('./fixtures/realm-label-mobile.json',import.meta.url),'utf8'));
+    // Use the measured screen positions and text dimensions after the browser's
+    // resize, including the tightly packed southern and western small states.
+    // The font range also exercises the minimum text-size constraint.
+    for(const labelSize of [12,18,24]){
+        const items=fixture.countries.map(c=>{
+            const anchors=c.anchors.map(([i,x,y])=>({i,x,y})),first=anchors[0];
+            const item=measuredRealm(c.id,first.x,first.y,{anchors,labelSize});
+            const probes=Object.fromEntries(['.realmFullName','.realmCompactName','.realmMarker'].map((key,i)=>[key,{offsetWidth:c.probes[i][0],offsetHeight:c.probes[i][1]}]));
+            item.feature.name=c.name;item.element.querySelector=selector=>probes[selector];return item;
+        });
+        positionMapLabels(items,1,fixture);
+        assert.equal(items.filter(v=>v.element.style.opacity==='1').length,22);
+        for(let j=0;j<items.length;j++){
+            const item=items[j],box=labelBox(item);
+            assert(item.feature.anchors.some(a=>String(a.i)===item.element.dataset.anchorCell));
+            assert(box.x>=8&&box.x+box.w<=fixture.width-8);
+            assert.equal(item.element.tabIndex,0);assert.equal(item.element.style.pointerEvents,'auto');
+            assert(item.element.title.includes(item.feature.name),'every short name or marker exposes its full state name');
+            for(let k=0;k<j;k++)assert(separated(box,labelBox(items[k])),'overlap in actual mobile terrain projection');
+        }
+    }
+});
+
 test('country anchor coverage includes the opposite edge and a separate island',()=>{
     const src=readFileSync(`${root}/src/ui/world-ui.js`,'utf8'),helper=src.slice(src.indexOf('function realmLabelAnchors('),src.indexOf('function legendLabels('));
     const width=140,world={height:Array(width*60).fill(1),lake:Array(width*60).fill(-1)},cells=[];

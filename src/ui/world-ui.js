@@ -575,6 +575,46 @@ function positionLabels() {
     // Do not let an early wide name permanently consume the only anchor of a
     // neighbour. Retry the set in smaller forms only when it restores a country.
     for(const limit of [.9,.78,0]){if(layout.count>=visibleRegions&&layout.named>=visibleRegions)break;const candidate=arrange(limit);if(candidate.count>layout.count||(candidate.count===layout.count&&candidate.named>layout.named))layout=candidate;}
+    if(layout.count<visibleRegions){
+        // On a phone several countries may share a few dozen screen pixels.
+        // Reserve a valid minimum footprint for each country before expanding
+        // any name: shrinking only the next name cannot undo an earlier choice.
+        const entries=regions.map(v=>{
+            const fitted=v.variants.reduce((a,b)=>a.width*a.height*a.scale*a.scale<=b.width*b.height*b.scale*b.scale?a:b);
+            const candidates=v.anchors.map(a=>at(v.feature,fitted.width*fitted.scale,fitted.height*fitted.scale,a)).filter(inside);
+            return{v,fitted,candidates};
+        }).filter(e=>e.candidates.length);
+        const minimum=new Map(),occupied=[];let visits=0;
+        const reserve=pending=>{
+            if(!pending.length)return true;
+            if(++visits>256)return false;
+            let chosen=null,available=null;
+            for(const entry of pending){
+                const free=entry.candidates.filter(c=>!occupied.some(b=>overlaps(c,b)));
+                if(!free.length)return false;
+                if(!available||free.length<available.length){chosen=entry;available=free;}
+            }
+            const rest=pending.filter(e=>e!==chosen);
+            for(const box of available){
+                occupied.push(box);minimum.set(chosen.v,{box,fitted:chosen.fitted,show:true});
+                if(reserve(rest))return true;
+                occupied.pop();minimum.delete(chosen.v);
+                if(visits>256)break;
+            }
+            return false;
+        };
+        if(reserve(entries)){
+            const placements=new Map(layout.placements);
+            for(const [v,p] of minimum)placements.set(v,p);
+            for(const {v} of entries){
+                const other=[...placements].filter(([key,p])=>key!==v&&p.show).map(([,p])=>p.box);
+                const expanded=fit(v,other);
+                if(expanded.show)placements.set(v,expanded);
+            }
+            const shown=[...placements.values()].filter(p=>p.show),candidate={placements,occupied:shown.map(p=>p.box),count:shown.length,named:shown.filter(p=>p.fitted.kind!=='marker').length};
+            if(candidate.count>layout.count||(candidate.count===layout.count&&candidate.named>layout.named))layout=candidate;
+        }
+    }
     boxes.push(...layout.occupied);
     for (const v of measured) {
         const {element:e,feature:f,region}=v,{box,fitted,show}=region?layout.placements.get(v):fit(v,boxes);

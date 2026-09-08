@@ -58,15 +58,43 @@ try {
   await page.keyboard.press('Escape');
   // Zooming and resizing must reveal names in the visible territory, preserve
   // hover/click access, and keep the complete realm list on a narrow display.
-  await page.setViewportSize({width:430,height:900});await stable();await page.waitForTimeout(200);
-  report.mobile=await measure();await page.screenshot({path:join(out,'mobile.png')});
-  assert(report.mobile.labels.some(l=>l.visible),'mobile hides all country names');
+  await page.setViewportSize({width:430,height:900});
+  await page.waitForFunction('renderer.width===430');
+  await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));await stable();
+  await page.screenshot({path:join(out,'mobile.png')});report.mobile=await measure();
+  const mobileLayout=await page.evaluate(()=>labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>({id:f.realm,name:f.name,visible:e.style.opacity==='1',anchors:(f.anchors||[f]).map(a=>({...a,screen:renderer.screen(a.x,a.y,.6)})),probes:[e.querySelector('.realmFullName'),e.querySelector('.realmCompactName'),e.querySelector('.realmMarker')].map(p=>({width:p.offsetWidth,height:p.offsetHeight}))})));
+  await writeFile(join(out,'mobile-layout.json'),JSON.stringify({mobile:report.mobile,layout:mobileLayout},null,2)+'\n');
+  assert.equal(report.mobile.labels.filter(l=>l.visible).length,report.desktop.realms,'mobile loses a country instead of retaining its marker');
+  assert(report.mobile.labels.filter(l=>l.visible).every(l=>l.x>=0&&l.x+l.w<=430),'mobile label measurements came from the old desktop viewport');
   assert.equal(report.mobile.labels.length,report.desktop.realms);
-  const id=report.mobile.labels.find(l=>l.visible)?.id;
+  const mobileVisible=report.mobile.labels.filter(l=>l.visible);
+  for(let i=0;i<mobileVisible.length;i++)for(let j=i+1;j<mobileVisible.length;j++){
+   const a=mobileVisible[i],b=mobileVisible[j];assert(!(a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&a.y<b.y+b.h-1&&a.y+a.h>b.y+1),'overlapping mobile country labels: '+a.id+' / '+b.id);
+  }
+  const id=mobileVisible.find(l=>l.variant==='marker')?.id??mobileVisible[0].id;
+  const mobileLabel=page.locator('#labels [data-realm-id="'+id+'"]');
+  assert(await mobileLabel.getAttribute('aria-label'),'a country marker must expose its complete name');
+  await mobileLabel.click();await stable();
+  assert(await page.locator('.realm-community').isVisible(),'a mobile country marker must open its overview');
+  assert.equal(await page.locator('.realm-overview').getAttribute('data-realm-id'),String(id),'the mobile marker must select its own country');
+  await page.keyboard.press('Escape');await stable();
   await page.evaluate(id=>{const c=sim.realms[id],p=sim.provinces[c.capital];renderer.focus(p.x,p.y);},id);await stable();
   assert(await page.locator('#labels [data-realm-id="'+id+'"]').evaluate(e=>e.style.opacity==='1'));
   await page.screenshot({path:join(out,'mobile-region.png')});
   assert.deepEqual((await measure()).fingerprints,report.desktop.fingerprints,'reading the map changed its world');
+  if(process.env.TELLURIC_LEGACY_SIM){
+   const saved=JSON.parse(await readFile(process.env.TELLURIC_LEGACY_SIM,'utf8'));
+   const history=s=>JSON.stringify({year:s.year,events:s.events,provinces:s.provinces.map(p=>[p.owner,p.pop,p.people]),realms:s.realms.map(c=>[c.id,c.name,c.title])});
+   const original=history(saved);
+   await page.setViewportSize({width:1480,height:980});await page.waitForFunction('renderer.width===1480');
+   await page.evaluate(s=>buildWorld(GEN_DEFAULTS,s.options,s),saved);await stable();await page.waitForTimeout(350);await stable();
+   const restored=await page.evaluate(()=>({year:sim.year,events:sim.events,provinces:sim.provinces.map(p=>[p.owner,p.pop,p.people]),realms:sim.realms.map(c=>[c.id,c.name,c.title])}));
+   assert.equal(JSON.stringify(restored),original,'loading an old save rewrote its borders, people or history');
+   report.legacy=await measure();
+   assert.equal(report.legacy.realms,saved.realms.filter(c=>c.alive).length);
+   assert.equal(report.legacy.labels.filter(l=>l.visible).length,report.legacy.realms,'an old save still loses its country labels');
+   await page.screenshot({path:join(out,'legacy.png')});
+  }
  }
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
  await writeFile(join(out,'results.json'),JSON.stringify({...report,errors,external},null,2)+'\n');

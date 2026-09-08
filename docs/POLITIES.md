@@ -28,6 +28,12 @@ country's short name when necessary. Tiny regions on narrow screens retain a
 numbered, clickable marker with the complete name in its accessible label and
 tooltip. Labels disappear from keyboard navigation when outside the viewport.
 Hovering still outlines the current territory, and clicking opens its overview.
+On the 430 × 900 overview, all 22 countries remain accessible: 4 full names,
+8 short names, and 10 markers. When the first layout loses a small country, a
+bounded placement pass reserves every country's smallest footprint before
+expanding names into the remaining space.
+
+![Country names and marked wilderness](../previews/polities/after.png)
 
 Unclaimed regions have explicit `NO REALM / Unclaimed wilds` labels. A settled
 independent region is labelled `Independent communities`. Dashed boundaries
@@ -62,6 +68,10 @@ and distinguish a majority from a largest community that is below 50%.
 
 ## Verification
 
+The complete Node suite passed all 395 checks after integration with the latest
+terrain update. The final mobile placement correction additionally passed focused
+label and hover regressions and the actual offline Chromium workflow.
+
 Three independent seed regressions lock every province's full-precision
 population, settlement coordinates, cells, capacity allocations and faith
 mixture to the previous engine, as well as the physical and settlement hashes.
@@ -69,6 +79,8 @@ They verify connected ownership, settlement coverage, direct-administration
 budgets, national majorities, nonzero minorities, and deterministic JSON save
 continuation. Eight additional worlds, including islands, cold and rift maps,
 were audited for the same invariants.
+Concentrated homelands also revealed duplicate story-character names; independent
+deterministic family names enlarge that vocabulary without advancing world RNG.
 
 The default political hash intentionally changes from `aaa577eb` to `d8ba763d`;
 physical `440ae5d0`, settlements `6b6c5ea8`, and the save-compatible province
@@ -85,3 +97,6 @@ so a political reroll that changes a capital cannot reuse its old placement.
 all desktop names, non-overlap, country hover and overview, wilderness inspection,
 mobile overview and approach, and unchanged simulation after viewing. Set
 `PLAYWRIGHT_MODULE` and `CHROMIUM_PATH` to existing local installations if needed.
+An optional `TELLURIC_LEGACY_SIM` path also exercises a real old simulation save
+through the browser loading path; the old 34-country world displays all 34 names
+while retaining its original borders, residents and events.
