@@ -157,7 +157,7 @@ test('plateau roofs, river canyons, parallel ridges and calderas have distinct m
 
 test('the new geological histories replay deterministically', async () => {
     const again = await E.generateWorld({ ...defaults, landformVersion: 1 });
-    assert.equal(E.physicalFingerprint(again), 'cc113c81', 'the reviewed new-default terrain changed');
+    assert.equal(E.physicalFingerprint(again), 'cc113c81', 'the published version-1 terrain changed');
     assert.equal(rasterDigest(again), rasterDigest(worlds[0].next));
     assert.deepEqual(again.landformRegions, worlds[0].next.landformRegions);
 });

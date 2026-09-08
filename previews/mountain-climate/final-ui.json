@@ -1,0 +1,21 @@
+{
+  "bundleSha256": "94b5bf472fa9a64f7c28789022f4ec8c02a0047bb8fdd203e40ffdbc8191d0c8",
+  "viewports": [
+    {
+      "width": 1480,
+      "height": 980,
+      "realms": 26,
+      "visible": 26,
+      "brand": "TELLURIC"
+    },
+    {
+      "width": 430,
+      "height": 900,
+      "realms": 26,
+      "visible": 26,
+      "brand": "TELLURIC"
+    }
+  ],
+  "errors": [],
+  "externalRequests": []
+}

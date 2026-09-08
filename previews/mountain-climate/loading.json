@@ -1,0 +1,285 @@
+{
+  "bundleSha256": "ca01db9f59ce0645177a45cd8d72be189378493d7d9b5a306cd8350544a164ff",
+  "note": "Single offline functional run, not a controlled performance comparison.",
+  "renderer": "Chromium with SwiftShader",
+  "viewport": [
+    1480,
+    980
+  ],
+  "offline": true,
+  "runs": [
+    {
+      "readyMs": 12085.200000017881,
+      "generationMs": 10969.09999999404,
+      "fullCities": 0,
+      "terrainBuilds": 1,
+      "siteQueries": 0,
+      "index": {
+        "status": "complete",
+        "completed": 89,
+        "total": 89,
+        "frames": 20
+      },
+      "directory": 173,
+      "sacredSites": 82,
+      "fingerprints": [
+        "2377e4fa",
+        "1d618deb",
+        "24a862f0"
+      ],
+      "landformVersion": 2,
+      "software": false,
+      "nearRoadVertices": 0,
+      "settledTerrainBuilds": 1,
+      "cities": [
+        {
+          "id": 288,
+          "readyMs": 3112.5,
+          "name": "Whitebeck",
+          "buildings": 417,
+          "cityFingerprint": "ba686660",
+          "triangles": 436009,
+          "worker": true,
+          "meshes": {
+            "cm:288:buildings": {
+              "count": 311508,
+              "words": 2803572,
+              "bits": [
+                3861850704,
+                2572050886
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:cityWalls": {
+              "count": 112392,
+              "words": 1011528,
+              "bits": [
+                933039662,
+                2870998243
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:details": {
+              "count": 583452,
+              "words": 5251068,
+              "bits": [
+                420595272,
+                2051229088
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:farms": {
+              "count": 192,
+              "words": 1728,
+              "bits": [
+                2150696623,
+                1920183698
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:port": {
+              "count": 0,
+              "words": 0,
+              "bits": [
+                2166136261,
+                2654435769
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:roofs": {
+              "count": 235506,
+              "words": 2119554,
+              "bits": [
+                930036621,
+                1869483918
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:silhouettes": {
+              "count": 17514,
+              "words": 157626,
+              "bits": [
+                4164202437,
+                1233140377
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:streets": {
+              "count": 30585,
+              "words": 275265,
+              "bits": [
+                2982203348,
+                744339052
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:trees": {
+              "count": 34392,
+              "words": 309528,
+              "bits": [
+                758615341,
+                2830364106
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:288:vegetation": {
+              "count": 60678,
+              "words": 546102,
+              "bits": [
+                1261747383,
+                1716521543
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            }
+          }
+        },
+        {
+          "id": 415,
+          "readyMs": 2873.5,
+          "name": "Bluewell",
+          "buildings": 457,
+          "cityFingerprint": "e0737409",
+          "triangles": 346167,
+          "worker": true,
+          "meshes": {
+            "cm:415:buildings": {
+              "count": 616128,
+              "words": 5545152,
+              "bits": [
+                3105821780,
+                1148397034
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:cityWalls": {
+              "count": 118296,
+              "words": 1064664,
+              "bits": [
+                2082432507,
+                2215529445
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:details": {
+              "count": 55224,
+              "words": 497016,
+              "bits": [
+                361657695,
+                3613413258
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:farms": {
+              "count": 198,
+              "words": 1782,
+              "bits": [
+                964588968,
+                2438849469
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:port": {
+              "count": 0,
+              "words": 0,
+              "bits": [
+                2166136261,
+                2654435769
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:roofs": {
+              "count": 194298,
+              "words": 1748682,
+              "bits": [
+                3107240800,
+                467745594
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:silhouettes": {
+              "count": 19194,
+              "words": 172746,
+              "bits": [
+                288307767,
+                3216000051
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:streets": {
+              "count": 32859,
+              "words": 295731,
+              "bits": [
+                694533045,
+                2079486583
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:trees": {
+              "count": 21498,
+              "words": 193482,
+              "bits": [
+                2541115636,
+                2200166045
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:415:vegetation": {
+              "count": 31320,
+              "words": 281880,
+              "bits": [
+                738732570,
+                894334508
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            }
+          }
+        }
+      ],
+      "regeneration": true,
+      "failureRecovery": true,
+      "noWorkerFallback": true
+    }
+  ],
+  "medianReadyMs": 12085.200000017881,
+  "medianGenerationMs": 10969.09999999404
+}

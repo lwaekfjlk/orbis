@@ -1,0 +1,527 @@
+{
+  "bundleSha256": "94b5bf472fa9a64f7c28789022f4ec8c02a0047bb8fdd203e40ffdbc8191d0c8",
+  "checks": [
+    {
+      "viewport": "1480x980",
+      "action": "brand and GitHub visible, separate hit targets",
+      "text": "TELLURIC",
+      "brand": {
+        "x": 37,
+        "y": 32,
+        "width": 124.5,
+        "height": 36
+      },
+      "github": {
+        "x": 173.5,
+        "y": 32,
+        "width": 36,
+        "height": 36
+      },
+      "tools": {
+        "x": 1322,
+        "y": 20,
+        "width": 136,
+        "height": 52
+      },
+      "href": "https://github.com/lwaekfjlk/telluric",
+      "target": "_blank",
+      "rel": "noopener noreferrer",
+      "brandHit": true,
+      "githubHit": true,
+      "viewportWidth": 1480
+    },
+    {
+      "viewport": "1480x980",
+      "action": "toggle open",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "panel interior click",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "panel padding click",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "layer relief",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "layer faiths",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "layer realms",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "native select popup open",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "native select popup committed",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "more-layer water selection",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "more-layer change event",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "frontiers checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "roads checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "rivers checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "trees checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "camera overhead",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "camera relief",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "same-world update",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "return to realms",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "toggle closed",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "Escape",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "outside map click",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "switch to search",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "switch back from more menu",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "1480x980",
+      "action": "final Escape",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "430x900",
+      "action": "brand and GitHub visible, separate hit targets",
+      "text": "TELLURIC",
+      "brand": {
+        "x": 23,
+        "y": 21,
+        "width": 100.765625,
+        "height": 36
+      },
+      "github": {
+        "x": 129.765625,
+        "y": 21,
+        "width": 32,
+        "height": 36
+      },
+      "tools": {
+        "x": 312,
+        "y": 12,
+        "width": 106,
+        "height": 50
+      },
+      "href": "https://github.com/lwaekfjlk/telluric",
+      "target": "_blank",
+      "rel": "noopener noreferrer",
+      "brandHit": true,
+      "githubHit": true,
+      "viewportWidth": 430
+    },
+    {
+      "viewport": "430x900",
+      "action": "toggle open",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "panel interior click",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "panel padding click",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "layer relief",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "layer faiths",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "layer realms",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "native select popup open",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "native select popup committed",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "more-layer water selection",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "more-layer change event",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "frontiers checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "roads checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "rivers checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "trees checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "camera overhead",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "camera relief",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "same-world update",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "return to realms",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "toggle closed",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "430x900",
+      "action": "Escape",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "430x900",
+      "action": "outside map click",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "430x900",
+      "action": "switch to search",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "430x900",
+      "action": "switch back from more menu",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "430x900",
+      "action": "final Escape",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "320x844",
+      "action": "brand and GitHub visible, separate hit targets",
+      "text": "TELLURIC",
+      "brand": {
+        "x": 23,
+        "y": 21,
+        "width": 100.765625,
+        "height": 36
+      },
+      "github": {
+        "x": 129.765625,
+        "y": 21,
+        "width": 32,
+        "height": 36
+      },
+      "tools": {
+        "x": 202,
+        "y": 12,
+        "width": 106,
+        "height": 50
+      },
+      "href": "https://github.com/lwaekfjlk/telluric",
+      "target": "_blank",
+      "rel": "noopener noreferrer",
+      "brandHit": true,
+      "githubHit": true,
+      "viewportWidth": 320
+    },
+    {
+      "viewport": "320x844",
+      "action": "toggle open",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "panel interior click",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "panel padding click",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "layer relief",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "layer faiths",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "layer realms",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "native select popup open",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "native select popup committed",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "more-layer water selection",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "more-layer change event",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "frontiers checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "roads checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "rivers checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "trees checkbox label",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "camera overhead",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "camera relief",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "same-world update",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "return to realms",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "toggle closed",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "320x844",
+      "action": "Escape",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "320x844",
+      "action": "outside map click",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "320x844",
+      "action": "switch to search",
+      "visible": false,
+      "expanded": "false"
+    },
+    {
+      "viewport": "320x844",
+      "action": "switch back from more menu",
+      "visible": true,
+      "expanded": "true"
+    },
+    {
+      "viewport": "320x844",
+      "action": "final Escape",
+      "visible": false,
+      "expanded": "false"
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "out": "/tmp/telluric-v2-final-menu"
+}

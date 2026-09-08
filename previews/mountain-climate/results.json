@@ -1,0 +1,79 @@
+{
+  "viewport": [
+    1480,
+    980
+  ],
+  "renderer": "Chromium with SwiftShader",
+  "bundleSha256": "ca01db9f59ce0645177a45cd8d72be189378493d7d9b5a306cd8350544a164ff",
+  "fantasy": {
+    "physical": "2377e4fa",
+    "settlements": "1d618deb",
+    "politics": "24a862f0"
+  },
+  "cameras": [
+    {
+      "id": 3,
+      "name": "The Thousandfold Ranges",
+      "center": {
+        "i": 33184,
+        "x": 184,
+        "y": 110
+      },
+      "rx": 26.081097029168415,
+      "ry": 10.00160215480756,
+      "statistics": {
+        "minHeight": 649.6725463867188,
+        "maxHeight": 4660.21826171875,
+        "meanHeight": 2297.8328896618764,
+        "relief": 4010.5457153320312,
+        "exposedCells": 653,
+        "cliffCells": 363
+      },
+      "camera": {
+        "target": [
+          19.38461538461539,
+          2.695369328516984,
+          11.22346368715084
+        ],
+        "zoom": 4.025904273987047,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      }
+    },
+    {
+      "id": 4,
+      "name": "The Dragonback Marches",
+      "center": {
+        "i": 14042,
+        "x": 242,
+        "y": 46
+      },
+      "rx": 25.62426113305247,
+      "ry": 12.338475926043111,
+      "statistics": {
+        "minHeight": 153.0167999267578,
+        "maxHeight": 4676.5205078125,
+        "meanHeight": 1934.1421908380867,
+        "relief": 4523.503707885742,
+        "exposedCells": 809,
+        "cliffCells": 380
+      },
+      "camera": {
+        "target": [
+          51.973244147157196,
+          2.294436727903811,
+          -23.81564245810056
+        ],
+        "zoom": 4.09767912740171,
+        "azimuth": -0.42,
+        "elevation": 0.88
+      }
+    }
+  ],
+  "savedVersions": [
+    1,
+    2
+  ],
+  "errors": [],
+  "externalRequests": []
+}

@@ -26,7 +26,7 @@ function meshSignature(meshes) {
 }
 async function defaultReference() {
  const ui=await readFile(join(root,'src/ui/world-ui.js'),'utf8'),declaration=ui.match(/const GEN_DEFAULTS = \{[^\n]+\};/)?.[0];
- assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,1);
+ assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,2);
  const source=(await Promise.all(scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFile(join(root,f),'utf8')))).join('\n');
  // Use the same JavaScript runtime for bit-exact comparisons. Node and Chrome
  // can differ by one double ULP in Math-derived population/priority values.
@@ -106,7 +106,7 @@ for (let run = 0; run < runs; run++) {
   assert.equal(result.directory,baseline?168:reference.directory.length);
   assert.equal(result.sacredSites,baseline?69:reference.directory.filter(s=>s.recipe.sacred).length);
   if (!baseline) {
-   assert.equal(result.landformVersion,1,'cold-load benchmark booted the legacy terrain fixture');
+   assert.equal(result.landformVersion,2,'cold-load benchmark booted the legacy terrain fixture');
    assert.deepEqual(await page.evaluate('JSON.parse(JSON.stringify(LandmarkUI.registry))'),reference.directory,'worker index differs from independent source queries');
    assert.equal(result.fullCities, 0, 'startup generated complete cities for its directory');
    assert.equal(result.siteQueries, 0, 'startup ran its site queries on the UI thread');
