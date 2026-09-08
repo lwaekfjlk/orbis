@@ -69,6 +69,10 @@ test('near atlas roads use street widths and enter through an existing exterior 
  assert(Math.hypot(last.x-end[0],last.y-end[1])<1e-9,'the approach ends on the real gate street');
  for(const q of access){const x=(q.x-p.x)/frame.cells*c.width,z=(q.y-p.y)/frame.cells*c.width;assert(!(x>-35&&x<35&&z>-30&&z<30),'parent roads cannot cut through the curtain and town blocks');}
  const g=meshes.roadsNear;assert(g.data.every(Number.isFinite));
+ for(let i=0;i<g.data.length;i+=9){const [x,z]=E.AtlasSpace.grid(g.data[i],g.data[i+2]),lift=g.data[i+1]-E.AtlasSpace.surface(r.world,x,z);
+  assert(Math.abs(lift-(E.AtlasSpace.BUILDING_LIFT+.14)*frame.scale)<1e-9,'approaches and local streets share their construction height');
+  assert(lift<frame.scale*.2,'an approach cannot float half a storey above its town');
+ }
  const west=E.AtlasSpace.point(r.world,p.x-2,p.y);let halfwidth=0;
  for(let i=0;i<g.data.length;i+=9)if(g.data[i]<west[0])halfwidth=Math.max(halfwidth,Math.abs(g.data[i+2]-west[2]));
  assert(Math.abs(halfwidth-.67*frame.scale*E.AtlasSpace.Z/E.AtlasSpace.X)<1e-8,'near road must use the street scale exactly once');

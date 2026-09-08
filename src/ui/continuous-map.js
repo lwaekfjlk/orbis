@@ -67,18 +67,32 @@ window.ContinuousMap = (() => {
  }
  function cancel(){animation++;moving=false;}
  function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));moving=true;
-  return new Promise(resolve=>{function frame(now){if(token!==animation||busy){moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
+  return new Promise(resolve=>{function frame(now){if(token!==animation||busy){if(token===animation)moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
+ }
+ // Show two facades and the roof. In mountains keep the peak behind the town:
+ // a fixed compass bearing can put the entire town behind a foreground hillside.
+ function townBearing(p){const e=CityEnvironment.profile(world,p),az=e.mountainous?Math.atan2(-(e.peak.x-p.x),-(e.peak.y-p.y)):Math.PI+.45,axis=Math.round(az/(Math.PI/2))*Math.PI/2,offset=az-axis;return Math.abs(offset)<.4?axis+(offset<-.0001?-.45:.45):az;}
+ function townObscured(m){
+  const r=renderer,homes=m.city.buildings.filter(b=>!b.landmark),step=Math.max(1,Math.floor(homes.length/24));let sampled=0,hidden=0;r.updateCamera();
+  for(let i=0;i<homes.length;i+=step){const b=homes[i],a=m.frame.anchors.get(b.id);if(!a)continue;const point=[a.x,a.y+(m.heights[b.id]||b.h)*a.scale*.8,a.z],q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height;if(x<0||x>r.width||y<0||y>r.height)continue;
+   const floor=AtlasSpace.pickGround(r,x,y);sampled++;if(floor&&dot(sub(floor.point,point),r.dir)<-.025)hidden++;
+  }return sampled>0&&hidden/sampled>.12;
  }
  async function focusTown(id,zoom=AtlasSpace.DETAIL_ZOOM*1.44){if(!ready())return null;const p=sim.provinces[+id];if(!p?.settled)return null;OneMap.closeDrawer();OneMap.closeMenus();OneMap.clearSelection();layer.focusId=p.id;
-  const target=AtlasSpace.point(world,p.x,p.y,renderer.relief);target[1]+=.15;const e=CityEnvironment.profile(world,p),az=e.mountainous?Math.atan2(-(e.peak.x-p.x),-(e.peak.y-p.y)):renderer.azimuth;const flight=animate(target,zoom,.94,1000,az);
-  const model=await layer.ensure(p.id);await flight;if(model){window.__cityReady=true;window.__cityError=null;window.__continuousFocus=p.id;updateTitle();}else toast('This location has no buildable detailed layout. The original terrain is unchanged.');return model;
+  const focusWorld=world,target=AtlasSpace.point(world,p.x,p.y,renderer.relief);target[1]+=.15;const az=townBearing(p),flight=animate(target,zoom,.72,1000,az),flightToken=animation;
+  const model=await layer.ensure(p.id),arrived=await flight;
+  if(!arrived||animation!==flightToken||world!==focusWorld||!ready())return null;
+  if(!model){toast('This location has no buildable detailed layout. The original terrain is unchanged.');return null;}
+  if(townObscured(model)){const correction=animate(target,zoom,.94,280,az),token=animation;if(!await correction||animation!==token||world!==focusWorld||!ready())return null;}
+  window.__cityReady=true;window.__cityError=null;window.__continuousFocus=p.id;updateTitle();return model;
  }
- async function focusBuilding(pid,bid){if(!ready())return;const p=sim.provinces[pid];if(!p)return;layer.focusId=pid;const m=await layer.ensure(pid);if(!m)return;const b=typeof bid==='string'?m.city.buildings.find(a=>a.id===bid):bid;const chosen=b||m.city.buildings.find(b=>b.sacred)||m.city.buildings.find(b=>b.landmark);if(!chosen)return;const a=m.frame.anchors.get(chosen.id);const h=(m.heights[chosen.id]||chosen.h)*a.scale;
+ async function focusBuilding(pid,bid){if(!ready())return;const p=sim.provinces[pid];if(!p)return;cancel();const token=animation,focusWorld=world;layer.focusId=pid;const m=await layer.ensure(pid);if(!m||animation!==token||world!==focusWorld||!ready())return;const b=typeof bid==='string'?m.city.buildings.find(a=>a.id===bid):bid;const chosen=b||m.city.buildings.find(b=>b.sacred)||m.city.buildings.find(b=>b.landmark);if(!chosen)return;const a=m.frame.anchors.get(chosen.id);const h=(m.heights[chosen.id]||chosen.h)*a.scale;
   const excavation=m.excavations?.find(h=>h.buildingId===chosen.id),depth=excavation?Math.max(0,a.y-excavation.floorY):0;
   const size=Math.max(chosen.w*m.frame.sx,chosen.d*m.frame.sz,h+depth),aspect=renderer.width/renderer.height;
   const fit=Math.max(49,94/aspect)*1.25/Math.max(.05,size);
   const zoom=clamp(fit,AtlasSpace.DETAIL_ZOOM,AtlasSpace.MAX_ZOOM);
-  select({model:m,building:chosen,anchor:a});return animate([a.x,a.y+(h-depth)*.35,a.z],zoom,excavation?1.16:.87);
+  const az=renderer.zoom<AtlasSpace.TOWN_ZOOM?townBearing(p):renderer.azimuth;
+  select({model:m,building:chosen,anchor:a});return animate([a.x,a.y+(h-depth)*.35,a.z],zoom,excavation?1.16:.70,850,az);
  }
  async function focusSite(id){const site=LandmarkUI.registry.find(s=>s.id===id);if(!site)return;if(site.provinceId!=null){const m=await focusTown(site.provinceId);if(m){const b=m.city.buildings.find(b=>b.sacred&&site.recipe.sacred)||m.city.buildings.find(b=>b.type===(site.recipe.kind||'temple'))||m.city.buildings.find(b=>b.landmark);if(b)return focusBuilding(site.provinceId,b.id);}}else return animate(AtlasSpace.point(world,site.x,site.y,renderer.relief),30,.94);}
  function wider(){if(!ready())return;const id=layer.focusId,m=layer.models.get(id);if(m){const a=AtlasSpace.point(world,m.p.x,m.p.y,renderer.relief);a[1]+=.2;return animate(a,10,1.02);}return animate(renderer.target.slice(),Math.max(1,renderer.zoom*.45),1.02);}

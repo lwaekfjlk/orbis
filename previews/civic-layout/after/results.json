@@ -1,0 +1,62 @@
+{
+  "checks": [
+    {
+      "id": 507,
+      "name": "Glassbeck",
+      "buildings": 515,
+      "azimuth": -2.691592653589793,
+      "elevation": 0.72,
+      "visible": 43,
+      "sampled": 43,
+      "worker": true
+    },
+    {
+      "id": 349,
+      "name": "Scorchspire",
+      "buildings": 499,
+      "azimuth": -2.6915926535897934,
+      "elevation": 0.72,
+      "visible": 42,
+      "sampled": 42,
+      "worker": true
+    },
+    {
+      "id": 168,
+      "name": "Oakwaystead",
+      "buildings": 279,
+      "azimuth": -0.9272952180016123,
+      "elevation": 0.72,
+      "visible": 46,
+      "sampled": 46,
+      "worker": true
+    },
+    {
+      "id": 414,
+      "name": "Millwell",
+      "buildings": 384,
+      "azimuth": 0.7853981633974483,
+      "elevation": 0.72,
+      "visible": 42,
+      "sampled": 42,
+      "worker": true
+    },
+    {
+      "id": 127,
+      "name": "Longshaw",
+      "buildings": 264,
+      "azimuth": 3.5915926535897933,
+      "elevation": 0.72,
+      "visible": 44,
+      "sampled": 44,
+      "worker": true
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "stableBearing": true,
+  "housePicking": true,
+  "obliqueCloseup": true,
+  "orbit": true,
+  "mobile": true,
+  "undergroundCloseup": true
+}

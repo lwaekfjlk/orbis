@@ -65,12 +65,12 @@ test('gateway feet reach the terrain on both sides of a steep road',()=>{
  for(const offset of feet)assert(offset<.05&&offset>-.5,'a gateway leg floats above the roadway');
 });
 
-test('Scorchspire recovers a genuine gate lane without removing or crossing any buildings',async()=>{
+test('Scorchspire keeps a genuine gate lane without removing or crossing any buildings',async()=>{
  const w=await generateWorld(defaults),s=createCivilization(w,{realms:18,historySeed:'First-dawn'}),build=FortressPlan.build;let snapshot;
  FortressPlan.build=c=>{snapshot=structuredClone(c.buildings);return build(c);};
  let c;try{c=generateCity(w,s,349);}finally{FortressPlan.build=build;}
  assert.equal(c.name,'Scorchspire');assert.deepEqual(c.buildings,snapshot,'recovering a lane must preserve the generated buildings');
- const d=c.defenses,approach=c.roads.find(r=>r.role==='gate-approach'&&r.refined);assert(approach,'coarse occupancy must not seal the town');closed(d);assert(d.gates.length>0);
+ const d=c.defenses,approach=c.roads.find(r=>r.role==='gate-approach');assert(approach,'the city must retain an outward street approach');closed(d);assert(d.gates.length>0);
  const outside=q=>d.perimeter.some((a,j)=>{const b=d.perimeter[(j+1)%d.perimeter.length];return(b.x-a.x)*(q.z-a.z)-(b.z-a.z)*(q.x-a.x)<-1e-7;});
  assert(!outside(approach.points[0]));assert(outside(approach.points.at(-1)));
  const last=approach.points.at(-1),socket=c.xy(c.index(last.x,last.z));assert(Math.hypot(last.x-socket.x,last.z-socket.z)<1e-9,'outside endpoint must join the intercity grid exactly');
@@ -82,5 +82,27 @@ test('Scorchspire recovers a genuine gate lane without removing or crossing any 
  const edges=new Map();for(const road of c.roads)for(let k=1;k<road.nodes.length;k++){const a=road.nodes[k-1],b=road.nodes[k];if(!edges.has(a))edges.set(a,new Set());if(!edges.has(b))edges.set(b,new Set());edges.get(a).add(b);edges.get(b).add(a);}
  const queue=[c.marketIndex],seen=new Set(queue);for(const a of queue)for(const b of edges.get(a)||[])if(!seen.has(b)){seen.add(b);queue.push(b);}
  for(const b of c.buildings)assert(seen.has(b.streetSocket),b.id+' lost street access');assert(seen.has(approach.nodes.at(-1)));assert.equal(c.connectors.length,c.buildings.length);
+ const audit=auditCity(c);for(const k of['wetBuildings','roadBuildings','overlaps','nonfinite','seaRoads'])assert.equal(audit[k],0,k);
+});
+
+
+test('a real lane hidden by coarse occupancy is recovered without moving its houses',()=>{
+ // Four-unit survey cells round both sides of this 2.8-unit lane into its
+ // center cell. The two-unit approach mesh must find the actual clear space.
+ const n=31,c={n,width:120,depth:120,townProfile:{id:'river',palace:'gilded-palace',width:1},townRecipe:{seed:'lane-regression'},market:{x:0,z:0},streetGradeCap:1.2,buildings:[],roads:[],road:new Uint8Array(n*n),height:new Float64Array(n*n).fill(3),water:new Uint8Array(n*n),waterKind:new Uint8Array(n*n),atlasSlope:new Float32Array(n*n),environment:{ice:new Uint8Array(n*n),snow:new Float32Array(n*n)}};
+ c.xy=k=>({x:(k%n-15)*4,z:(Math.floor(k/n)-15)*4});c.index=(x,z)=>Math.round(Math.max(0,Math.min(30,z/4+15)))*n+Math.round(Math.max(0,Math.min(30,x/4+15)));c.marketIndex=c.index(0,0);
+ for(const z of[-5.2,5.2])c.buildings.push({x:12,z,w:4,d:7.6});
+ for(const z of[-6,0,6])c.buildings.push({x:-12,z,w:4,d:6});
+ for(const z of[-12,12])for(const x of[-9,-3,3,9])c.buildings.push({x,z,w:6,d:4});
+ c.buildings.forEach((b,i)=>Object.assign(b,{id:'b'+i,y:3,h:3,type:'home'}));
+ const nodes=[-4,0,4].map(x=>c.index(x,0));nodes.forEach(k=>c.road[k]=1);c.roads=[{kind:'street',nodes,points:nodes.map(k=>({...c.xy(k),y:3}))}];
+ const snapshot=structuredClone(c.buildings),d=FortressPlan.build(c),approach=c.roads.find(r=>r.refined);
+ assert(approach,'coarse occupancy must not seal a physically open lane');assert.equal(d.refinedApproachCount,1);assert.equal(d.gates.length,1);closed(d);assert.deepEqual(c.buildings,snapshot);
+ const half=c.townProfile.width*.67;
+ for(let k=1;k<approach.points.length;k++){
+  const a=approach.points[k-1],b=approach.points[k];
+  for(const house of c.buildings)assert(!citySegmentBox(a,b,house.x-house.w/2-half,house.z-house.d/2-half,house.x+house.w/2+half,house.z+house.d/2+half),house.id+' intersects the recovered lane');
+ }
+ assert(approach.points.at(-1).x>23,'the recovered lane must finish beyond the wall on a parent-grid socket');
  const audit=auditCity(c);for(const k of['wetBuildings','roadBuildings','overlaps','nonfinite','seaRoads'])assert.equal(audit[k],0,k);
 });

@@ -42,13 +42,13 @@ test('Overhangs and neighbouring buildings keep their own rigid transform, inclu
     const range=ranges[rangeIndex],a=range&&range.start<=k?model.frame.anchors.get(range.id):null;
     const points=[];
     for(let j=0;j<3;j++){
-     const t=k+j*9,v=model.frame.vertex(local[t],local[t+1],local[t+2],a);
-     if(a&&local[t+1]<a.b.y-.015)v[1]=Math.min(v[1],model.frame.ground(local[t],local[t+2])-.006);
+     const t=k+j*9,v=model.frame.vertex(local[t],local[t+1],local[t+2],a,range?.footing);
+     if(a&&!range.footing&&local[t+1]<a.b.y-.015)v[1]=Math.min(v[1],model.frame.ground(local[t],local[t+2])-.006);
      points.push(v);
     }
     const [A,B,C]=points,u=B.map((v,i)=>v-A[i]),v=C.map((v,i)=>v-A[i]);
     if(Math.hypot(u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0])<1e-10)continue;
-    if(a)for(let j=0;j<3;j++){
+    if(a&&!range.footing)for(let j=0;j<3;j++){
      const t=k+j*9;
      if(local[t+1]<a.b.y-.015)continue;
      assert(Math.abs(actual[cursor+j*9+1]-(a.y+(local[t+1]-a.b.y)*a.scale))<1e-8,`${name}/${a.b.id} tears away from its building`);

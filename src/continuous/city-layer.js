@@ -305,9 +305,9 @@ class ContinuousCityLayer {
    for(let k=0;k<data.length;k+=27){
     while(rangeIndex<ranges.length&&ranges[rangeIndex].end<=k)rangeIndex++;
     const range=ranges[rangeIndex],anchor=range&&range.start<=k?frame.anchors.get(range.id):null,pts=[];
-    for(let j=0;j<3;j++){const t=k+j*9;const q=frame.vertex(data[t],data[t+1],data[t+2],anchor);
+    for(let j=0;j<3;j++){const t=k+j*9;const q=frame.vertex(data[t],data[t+1],data[t+2],anchor,range?.footing);
      // Footings reach the actual slope instead of hovering below flat compounds.
-     if(anchor&&!excavatedBuildings.has(range.id)&&data[t+1]<anchor.b.y-.015)q[1]=Math.min(q[1],frame.ground(data[t],data[t+2])-.006);
+     if(anchor&&!range.footing&&!excavatedBuildings.has(range.id)&&data[t+1]<anchor.b.y-.015)q[1]=Math.min(q[1],frame.ground(data[t],data[t+2])-.006);
      pts.push(q);
     }g.tri(pts[0],pts[1],pts[2],[data[k+6],data[k+7],data[k+8]]);
    }

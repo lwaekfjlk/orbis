@@ -71,7 +71,9 @@ class LandmarkKit {
    ridge([0,h*1.02,-D*.34],[0,h*1.02,D*.34],.085);for(const sign of[-1,1])this.cone(0,h*1.02,sign*D*.34,.12,h*.26,'metal',0,6);return;
   }
   if(kind==='deepeave'){
-   const over=Math.max(w,d)*.20,ww=W+over,dd=D+over;pitched(ww,dd,h*.62);
+   // Eaves span the room's short side. A long narrow wing must not acquire
+   // a canopy as wide as its length and shrink the whole house to fit its lot.
+   const over=Math.min(w,d)*.20,ww=W+over,dd=D+over;pitched(ww,dd,h*.62);
    if(this.lod>0)for(let u=-1;u<=1;u+=.5)for(const sign of[-1,1])this.beam([W*u,-.05,sign*D],[W*u,-.22,sign*dd],.045,'wood',4,true);return;
   }
   if(kind==='vault'){

@@ -213,7 +213,8 @@ test('every ribbon and quay is seated on the surface it was sampled against',()=
  // Inside a town the same road has to lie ON the street, not a storey above it.
  r.continuousModels=new Map(net.nodes.slice(0,2).map(p=>[p.id,{p}]));
  r.buildNearRoads(true);
- const near=seated('roadsNear',.004,.006,.0005);
+ const streetScale=7.8*E.AtlasSpace.CITY_FOOTPRINT/152*Math.sqrt(E.AtlasSpace.X*E.AtlasSpace.Z),streetLift=(E.AtlasSpace.BUILDING_LIFT+.14)*streetScale;
+ const near=seated('roadsNear',streetLift,streetLift,.00001);
  assert(near.triangles>0,'a loaded town gets a ground-seated road band');
  assert(near.over<far.under,'the near band is seated below the cartographic ribbon');
  // A quay deck belongs above its own water, not under it.

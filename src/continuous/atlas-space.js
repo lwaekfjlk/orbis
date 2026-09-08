@@ -5,7 +5,7 @@ const AtlasSpace = (() => {
  const X=MAP_X/(GW-1), Z=MAP_Z/(GH-1);
  // Layout surveying and mesh placement share one footprint. The broader site
  // profile still reads the surrounding valley independently of the built area.
- const CITY_FOOTPRINT=CityEnvironment.cityFootprint, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620;
+ const CITY_FOOTPRINT=CityEnvironment.cityFootprint, TOWN_ZOOM=16, DETAIL_ZOOM=60, MAX_ZOOM=620, BUILDING_LIFT=.02;
  // Town art grows with its surveyed footprint, so this unit is independent of
  // population, camera zoom and whether a city has finished streaming.
  const TOWN_UNIT=CityEnvironment.cityDimensions.span*CITY_FOOTPRINT/CityEnvironment.cityDimensions.width*Math.sqrt(X*Z);
@@ -25,8 +25,15 @@ const AtlasSpace = (() => {
   const anchors=new Map();
   // The parcel survey limits its fall; seat the whole rigid compound above its
   // highest point. Lowering the anchor into a bank buried uphill walls and roofs.
-  for(const b of c.buildings){const a=at(b.x-b.w/2,b.z-b.d/2),z=at(b.x+b.w/2,b.z+b.d/2),{top,low}=CityEnvironment.atlasBounds(w,a[0],a[1],z[0],z[1],relief);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:top+.006,low,top,b,scale});}
-  function vertex(x,y,z,anchor=null){return[origin[0]+x*sx,anchor?anchor.y+(y-anchor.b.y)*scale:ground(x,z)+(y-localGround(x,z))*scale+.003,origin[2]+z*sz];}
+  // A rendering seam is measured in the building's units. A fixed atlas offset
+  // added most of a storey beneath small houses, even on level ground.
+  for(const b of c.buildings){const a=at(b.x-b.w/2,b.z-b.d/2),z=at(b.x+b.w/2,b.z+b.d/2),{top,low}=CityEnvironment.atlasBounds(w,a[0],a[1],z[0],z[1],relief);anchors.set(b.id,{x:origin[0]+b.x*sx,z:origin[2]+b.z*sz,y:top+BUILDING_LIFT*scale,low,top,b,scale});}
+  function vertex(x,y,z,anchor=null,footing=null){
+   // Only the support profile follows the rendered parcel fall. Its intermediate
+   // retaining steps remain level; the house above keeps its original rigid pose.
+   const rise=anchor&&footing?(y-anchor.b.y)/footing.depth*((anchor.y-anchor.low)+.04*scale):anchor?(y-anchor.b.y)*scale:0;
+   return[origin[0]+x*sx,anchor?anchor.y+rise:ground(x,z)+(y-localGround(x,z)+BUILDING_LIFT)*scale,origin[2]+z*sz];
+  }
   return{origin,sx,sz,scale,cells,at,ground,localGround,anchors,vertex};
  }
  function ray(r,sx,sy){r.updateCamera();const nx=(sx/r.width*2-1)*r.halfW,ny=(1-sy/r.height*2)*r.halfH,origin=r.target.map((v,i)=>v+r.right[i]*nx+r.up[i]*ny-r.dir[i]*180);return{origin,dir:r.dir};}
@@ -50,5 +57,5 @@ const AtlasSpace = (() => {
  }
  function hitBox(origin,dir,lo,hi){let t0=0,t1=Infinity;for(let k=0;k<3;k++){if(Math.abs(dir[k])<1e-10){if(origin[k]<lo[k]||origin[k]>hi[k])return Infinity;continue;}const a=(lo[k]-origin[k])/dir[k],b=(hi[k]-origin[k])/dir[k];t0=Math.max(t0,Math.min(a,b));t1=Math.min(t1,Math.max(a,b));}return t0<=t1?t0:Infinity;}
  function matrixFor(frame){return{origin:frame.origin.slice(),horizontalScale:[frame.sx,frame.sz],verticalScale:frame.scale,crs:'TELLURIC_RECTANGULAR_ATLAS'};}
- return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,TOWN_UNIT,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
+ return{X,Z,CITY_FOOTPRINT,TOWN_ZOOM,DETAIL_ZOOM,MAX_ZOOM,TOWN_UNIT,BUILDING_LIFT,height,weights,surface,coarseSurface,point,grid,cityFrame,ray,pickGround,hitBox,matrixFor};
 })();

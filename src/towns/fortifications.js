@@ -1,5 +1,5 @@
 /** Defensive urbanism, v11. Pure layout data; never edits a parent world field.
- * A citadel reserves genuinely buildable high ground BEFORE streets are routed.
+ * Civic precincts reserve buildable neighborhoods BEFORE streets are routed.
  * The outer enceinte follows a buffered urban hull. Water gaps are not called gates.
  */
 /** A town that has both a tradition and the surplus to carry a wonder gets one, and WHICH
@@ -37,24 +37,51 @@ function wonderFor(style, support, p) {
 }
 const FortressPlan=(()=>{
  const inside=(q,b,pad=0)=>Math.abs(q.x-b.x)<=b.w/2+pad&&Math.abs(q.z-b.z)<=b.d/2+pad;
+ // A civic parcel includes room for the streets and houses around it. A palace
+ // that merely fits on dry land can otherwise become the edge of the whole town.
+ function civicRoom(c,site){
+  const radius=c.urbanRadius??c.width*.4,pad=Math.max(4,Math.min(8,radius*.14));
+  for(const sx of[-1,1])for(const sz of[-1,1]){
+   const x=site.x+sx*(site.w/2+pad),z=site.z+sz*(site.d/2+pad);
+   if(Math.hypot(x-c.market.x,z-c.market.z)>radius||Math.abs(x)>c.width/2-2||Math.abs(z)>c.depth/2-2)return{fits:false,sides:0};
+  }
+  const counts=[];
+  for(const[nx,nz]of[[1,0],[0,1],[-1,0],[0,-1]]){
+   let count=0;
+   for(const t of[-.8,-.4,0,.4,.8])for(const off of[3,6,9]){
+    const x=site.x+nx*(site.w/2+off)+(nz?site.w*.5*t:0),z=site.z+nz*(site.d/2+off)+(nx?site.d*.5*t:0),i=c.index(x,z);
+    if(Math.hypot(x-c.market.x,z-c.market.z)>radius||c.water[i]||c.environment.ice[i]>25||c.environment.snow?.[i]>.5||c.slope?.[i]>.8||c.atlasSlope?.[i]>(c.streetGradeCap??1.2)||c.road?.[i])continue;
+    if([...c.buildings,...(c.civicSites||[]),...(c.citadelSite?[c.citadelSite]:[])].some(b=>inside({x,z},b,.7)))continue;
+    count++;
+   }
+   counts.push(count);
+  }
+  return{fits:true,sides:counts.filter(n=>n>=4).length,counts};
+ }
  function reserve(c,candidates,p,steep=.85,terrain=null){
   // A hamlet does not acquire a royal capital just because its view was opened.
   if((p.detailSupport??p.urbanSupport)<1500||c.townProfile.id==='delta')return null;
   const wonder=wonderFor(c.townProfile.id,p.detailSupport??p.urbanSupport,p),sacred=!!wonder;
-  const ordinary=candidates.filter(a=>{const q=c.xy(a.k),d=Math.hypot(q.x-c.market.x,q.z-c.market.z);const S=c.width/152;return d>(sacred?23:19)*S&&d<(sacred?34:43)*S&&Math.abs(q.x)<c.width*.34&&Math.abs(q.z)<c.depth*.32});
-  const ranked=ordinary.map(a=>({k:a.k,score:c.height[a.k]*(sacred?1.7:2.4)-Math.max(0,c.slope[a.k]-.8)*4-Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)*(sacred?.14:.05)})).sort((a,b)=>b.score-a.score);
-  for(const size of (sacred?[38,34,30,26,22]:[26,22,18])) for(const {k}of ranked.slice(0,700)){
+  const radius=c.urbanRadius??c.width*.4;
+  const ordinary=candidates.filter(a=>{const q=c.xy(a.k);return Math.hypot(q.x-c.market.x,q.z-c.market.z)<radius*.62});
+  // First prefer a complete residential setting. A genuine shore or scarp may
+  // leave one side open, but elevation never outranks a central, supported site.
+  const ranked=ordinary.map(a=>({k:a.k,score:Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)+c.slope[a.k]*20})).sort((a,b)=>a.score-b.score||a.k-b.k);
+  for(const sides of[4,3])for(const size of (sacred?[38,34,30,26,22,18,14]:[26,22,18,14])) for(const {k}of ranked.filter(a=>!inside(c.market,{...c.xy(a.k),w:size,d:size},4.5)).slice(0,700)){
    const q=c.xy(k),site={...q,k,w:size,d:size},samples=[];let valid=true;
-   if(inside(c.market,site,5))continue;
+   const room=civicRoom(c,site);if(!room.fits||room.sides<sides)continue;
    // Step with the grid, not a fixed stride: anything coarser than a cell skips cells that
    // buildingAt then finds, and the reserve hands back a parcel the precinct cannot use.
    // The grid is n x n over width x depth, so the z cell is the smaller of the two.
    const step=Math.min(c.width,c.depth)/(c.n-1)*.85;
    for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>steep){valid=false;break}samples.push(c.height[j])}if(!valid)break}
-   // A cut-in citadel spans a real bank, so it is allowed far more fall than a pad would be.
+   // Bound compressed survey relief as well as the exact projected footing below.
+   // Only models with an excavation opening cut into the hill; a name is not one.
    if(!valid||Math.max(...samples)-Math.min(...samples)>13)continue;
    // Choose a supported precinct before streets commit to its protected parcel.
-   if(terrain){const bounds=terrain.bounds(q.x,q.z,size,size);if((bounds.top-bounds.low)/terrain.scale>(sacred?44:13)*.65)continue;}
+   const footingLimit=(sacred?44:13)*.65;
+   if(terrain){const bounds=terrain.bounds(q.x,q.z,size,size);if((bounds.top-bounds.low)/terrain.scale>footingLimit)continue;}
+   site.footingLimit=footingLimit;site.neighborhoodSides=room.sides;
    site.sacred=sacred;site.wonder=wonder;site.deck=Math.max(...samples)+.16;site.bed=Math.min(...samples);site.relief=site.deck-site.bed;
    // buildingAt() snaps its footprint samples to the NEAREST cell, so a cell centre up to
    // half a cell beyond the parcel edge is still tested. Mask that far or a street routes
@@ -63,6 +90,36 @@ const FortressPlan=(()=>{
    const masks=new Uint8Array(c.n*c.n);for(let j=0;j<masks.length;j++)if(inside(c.xy(j),site,pad))masks[j]=1;
    c.citadelReserve=masks;c.citadelSite=site;return site;
   }return null;
+ }
+ // Secondary halls need their own reserved block too. Once the street grammar
+ // has subdivided the core, its only remaining large parcels are at the rim.
+ function reserveCivic(c,candidates,type,terrain){
+  const radius=c.urbanRadius??c.width*.4,major=c.townProfile.id==='basilica'?'temple':c.townProfile.id==='arcane'?'academy':'civic';
+  const sizes=type===major?[18,16,14,12,10,8,6]:[12,10,8,6],height=type==='academy'?10:7;
+  const ranked=candidates.map(a=>({k:a.k,dist:Math.hypot(c.xy(a.k).x-c.market.x,c.xy(a.k).z-c.market.z)})).filter(a=>a.dist<radius*.66).sort((a,b)=>a.dist-b.dist||a.k-b.k);
+  for(const size of sizes){
+   let best=null;
+   for(const{k,dist}of ranked){
+    const q=c.xy(k),site={...q,k,w:size,d:size,type};
+    if(inside(c.market,site,4.5))continue;
+    if([...(c.civicSites||[]),...(c.citadelSite?[c.citadelSite]:[])].some(b=>Math.abs(q.x-b.x)<(size+b.w)/2+5&&Math.abs(q.z-b.z)<(size+b.d)/2+5))continue;
+    const room=civicRoom(c,site);if(!room.fits||room.sides<3)continue;
+    let valid=true;
+    const step=Math.min(c.width,c.depth)/(c.n-1)*.85;
+    for(let x=-size/2-1.1;x<=size/2+1.1;x+=step){for(let z=-size/2-1.1;z<=size/2+1.1;z+=step){const j=c.index(q.x+x,q.z+z);if(c.water[j]||c.environment.ice[j]>25||c.environment.snow[j]>.5||c.slope[j]>.9){valid=false;break}}if(!valid)break}
+    if(!valid)continue;
+    const bounds=terrain.bounds(q.x,q.z,size,size),fall=(bounds.top-bounds.low)/terrain.scale;
+    if(fall>height*.65)continue;
+    const score=dist+fall*3+(4-room.sides)*radius*.3;
+    if(!best||score<best.score)best={...site,score,neighborhoodSides:room.sides};
+   }
+   if(!best)continue;
+   c.civicSites??=[];c.civicSites.push(best);c.citadelReserve??=new Uint8Array(c.n*c.n);
+   const pad=Math.max(.65,c.width/(c.n-1)*.5+.05);
+   for(let j=0;j<c.citadelReserve.length;j++)if(inside(c.xy(j),best,pad))c.citadelReserve[j]=1;
+   return best;
+  }
+  return null;
  }
  function hull(points){const pts=points.slice().sort((a,b)=>a.x-b.x||a.z-b.z),cross=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);const lo=[],hi=[];for(const p of pts){while(lo.length>1&&cross(lo.at(-2),lo.at(-1),p)<=0)lo.pop();lo.push(p)}for(const p of pts.reverse()){while(hi.length>1&&cross(hi.at(-2),hi.at(-1),p)<=0)hi.pop();hi.push(p)}lo.pop();hi.pop();return lo.concat(hi)}
  // A coarse occupancy cell can cover both a house and a genuinely open lane.
@@ -211,5 +268,5 @@ const FortressPlan=(()=>{
   d.approachCount=approaches.length;
   c.walls=[];return d;
  }
- return{reserve,build,hull,inside};
+ return{reserve,reserveCivic,build,hull,inside,civicRoom};
 })();

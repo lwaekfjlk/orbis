@@ -31,6 +31,15 @@ test('pitched surfaces face the light and the eave has physical depth at town LO
   assert.ok(model.stats.triangles<100,kind+' exhausts the ordinary town roof budget');
  }
 });
+test('deep eaves shade narrow wings without widening in proportion to the long facade',()=>{
+ for(const lod of[0,1,2])for(const [w,d]of[[3,18],[18,3],[6,6]]){
+  const m=build(lod,k=>k.roof(0,0,0,w,d,2,'roof','deepeave')),span=Math.min(w,d),axis=w<=d?0:2;
+  const reach=m.bounds.max[axis]-span*.55;
+  assert(reach>span*.19,'the deep canopy keeps substantial shelter beyond a pitched roof');
+  assert(reach<span*.24,'the long wing cannot force excessive sideways overhang');
+  closed(m,`deep-eave ${w}x${d} LOD ${lod}`);
+ }
+});
 test('turned stone, a moulded column and all dome details have finite closed geometry',()=>{
  for(const lod of[0,1,2])for(const name of['cylinder','cone','column','dome']){const model=build(lod,k=>k[name](0,0,0,2,4));closed(model,name+' LOD '+lod);assert.ok(model.bounds.max[1]<=5);assert.ok(model.bounds.min[1]>=0);if(name==='dome')assert.ok(model.parts.every(p=>p.role==='roof'))}
  const distant=build(0,k=>k.dome(0,0,0,2,4)),near=build(1,k=>k.dome(0,0,0,2,4));assert.ok(distant.stats.triangles<near.stats.triangles*.4,'Far domes should omit the costly ribs');
