@@ -11,7 +11,7 @@ body.onemap .maploading p{color:#4c7061;font-size:12px}
 body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6da9c}
 body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
 body.onemap .maplabel em{font:italic 15px Georgia,serif}
-body.onemap .maplabel.realmLabel em{font:400 clamp(18px,1.5vw,22px)/1.35 var(--realm-lettering);letter-spacing:0;color:#443c2d}
+body.onemap .maplabel.realmLabel em{font:400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);letter-spacing:0;color:#443c2d}
 body.onemap .maplabel.townLabel em{font:italic 10.5px/1.3 var(--town-lettering);letter-spacing:.1px}
 body.onemap .maplabel.legendLabel{color:#5a3d10;text-shadow:0 1px 3px #fffbe8,0 0 10px #f4dda3c4}
 body.onemap .maplabel.legendLabel em{font:17px Georgia,serif;letter-spacing:.7px}
@@ -162,3 +162,16 @@ body.onemap .om-forge .forgefooter{display:grid;grid-template-columns:minmax(0,1
 body.onemap .om-forge .forgefooter>p{display:none}
 body.onemap .om-forge .forgefooter button{width:100%;max-width:100%;margin:0!important;white-space:normal;min-width:0}
 body.onemap #omHistory .events{height:auto;max-height:none;overflow:visible}
+
+/* Reading a country keeps the atlas behind a dedicated, current realm overview. */
+body.onemap #omDrawer .realm-overview .realm-lead{font:15px/1.75 Georgia,serif;color:#e5dfc9;margin:12px 0 18px}
+body.onemap #omDrawer .realm-overview .realm-facts{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 0;border-block:1px solid #ffffff18;margin-bottom:18px}
+body.onemap #omDrawer .realm-overview .realm-facts b{display:block;font:20px/1.2 Georgia,serif}
+body.onemap #omDrawer .realm-overview .realm-facts small{font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+body.onemap #omDrawer .realm-overview section{border-top:1px solid #ffffff18;padding-top:12px;margin:16px 0}
+body.onemap #omDrawer .realm-overview h3{font:18px/1.3 Georgia,serif;margin:0 0 8px}
+body.onemap #omDrawer .realm-overview section p{font:13px/1.8 Georgia,serif;color:#ced3c3;margin:0}
+body.onemap #omDrawer .realm-overview .realm-history{list-style:none;padding:0;margin:0}
+body.onemap #omDrawer .realm-overview .realm-history li{border-left:1px solid #ae956866;padding:0 0 14px 13px;font:12px/1.7 Georgia,serif;color:#c8d0bf}
+body.onemap #omDrawer .realm-overview .realm-history time{display:block;color:#dbc692;font:10px/1.4 system-ui,sans-serif;margin-bottom:3px}
+@media(max-width:700px){body.onemap .maplabel.realmLabel em{font-size:calc(var(--realm-label-size,18px) * .85)}}

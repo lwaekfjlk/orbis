@@ -93,17 +93,17 @@ test('Origin markup escapes imported text and long labels use actual rendered wi
     const dom = { labels: { classList: { toggle() {} } }, names: { checked: true }, compass: { style: {} } };
     const label = (x, width) => ({ element: { offsetWidth: width, offsetHeight: 40, style: {} }, feature: { name: 'Chicomoztoc', x, y: 200, realm: 0 } });
     const items = [label(300, 230), label(480, 220)];
-    const renderer = { width: 1000, height: 600, azimuth: 0, screen: (x, y) => [x, y] };
+    const renderer = { width: 1000, height: 600, azimuth: 0, zoom: 1, screen: (x, y) => [x, y] };
     new Function('$', 'renderer', 'world', 'labelItems', position + ';positionLabels();')(id => dom[id], renderer, {}, items);
     assert.equal(items[0].element.style.opacity, '1');
     assert.equal(items[1].element.style.opacity, '0', 'long adjacent names must not overlap');
 });
 
-function positionMapLabels(items) {
+function positionMapLabels(items, zoom = 1) {
     const src = readFileSync(`${root}/src/ui/world-ui.js`, 'utf8');
     const position = src.slice(src.indexOf('function positionLabels()'), src.indexOf('function makeGeoJumps()'));
     const dom = { labels: { classList: { toggle() {} } }, names: { checked: true }, compass: { style: {} } };
-    const renderer = { width: 1000, height: 600, azimuth: 0, screen: (x, y) => [x, y] };
+    const renderer = { width: 1000, height: 600, azimuth: 0, zoom, screen: (x, y) => [x, y] };
     new Function('$', 'renderer', 'world', 'labelItems', position + ';positionLabels();')(id => dom[id], renderer, {}, items);
 }
 function mapLabel(feature, width, height) {
@@ -158,4 +158,33 @@ test('A crowded realm hides its own name instead of overlapping or hiding the ci
     assert.equal(city.element.style.opacity, '1');
     assert.equal(city.element.style.left, '300px');
     assert.equal(city.element.style.top, '220px');
+});
+
+test('Formal realm names use recognizable state forms and preserve custom names', () => {
+    const s = fixture(80);
+    E.RealmNames.generate(s);
+    for (const c of s.realms) {
+        const full = E.RealmNames.fullName(c);
+        assert(full.includes(c.name));
+        assert(/empire|kingdom|principality|theocracy|magocracy|dominion|confederacy|confederation|federation|republic|league|commonwealth|state/i.test(full));
+    }
+    assert(s.realms.some(c => /Empire/.test(E.RealmNames.fullName(c))), 'the naming repertoire includes empires');
+    const legacy = { name: 'Asgard', title: 'the Asgard Throne', gov: 0 };
+    const before = structuredClone(legacy);
+    assert.equal(E.RealmNames.fullName(legacy), 'Kingdom of Asgard');
+    assert.deepEqual(legacy, before, 'displaying an old save does not rename its stored state');
+    assert.equal(E.RealmNames.fullName({name:'My $& Realm',title:'My $& Realm',gov:0,namedFor:'custom'}), 'My $& Realm');
+    assert.equal(E.RealmNames.fullName(null), '');
+});
+
+test('World overview leaves space for realm names and reveals minor town labels on approach', () => {
+    const town = mapLabel({ name: 'Mossford', town: true, minZoom: 2, x: 300, y: 220 }, 80, 24);
+    const realm = mapLabel({ name: 'Kingdom of Asgard', realm: 0, x: 300, y: 220,
+        anchors: [{ x: 300, y: 220 }, { x: 550, y: 220 }] }, 150, 32);
+    positionMapLabels([realm, town], 1);
+    assert.equal(town.element.style.opacity, '0');
+    assert.equal(realm.element.style.left, '300px');
+    positionMapLabels([realm, town], 2);
+    assert.equal(town.element.style.opacity, '1');
+    assert.equal(realm.element.style.left, '550px');
 });

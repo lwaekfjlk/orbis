@@ -122,6 +122,18 @@ function cityStreetConnections(city) {
         return best;
     };
 }
+/** Read the existing survey extent without generating streets or consuming RNG. */
+function citySurvey(sim, p) {
+    const capital = sim.realms.some(r => r.alive && r.capital === p.id);
+    const scale = p.detailSupport ?? p.urbanSupport ?? p.urbanPop ?? 0;
+    const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
+    const wanted = (6.4 + 7.0 * crowd) * (capital ? 1.10 : 1);
+    const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / CityEnvironment.cityDimensions.span;
+    const settled = .55 + .45 * crowd;
+    const width = CityEnvironment.cityDimensions.width * grow, depth = CityEnvironment.cityDimensions.depth * grow;
+    const terrainSpan = span * CityEnvironment.cityFootprint;
+    return {span, grow, crowd, settled, width, depth, terrainSpan};
+}
 function generateCity(w, sim, provinceId, design = {}) {
     return buildCityLayout(w, sim, provinceId, design, false);
 }
@@ -141,25 +153,19 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
     // individual houses. terrainSpan below applies the shared atlas footprint;
     // the built disc reaches .375 * terrainSpan * settled parent cells. Broader
     // landscape and climate context is retained independently in siteEnvironment.
-    const capital = sim.realms.some(r => r.alive && r.capital === p.id);
     // detailSupport is the settlement's founding scale, fixed when it was founded and
     // NOT re-derived as the years run. Keying off live urbanPop made the plan drift
     // every simulated year, which breaks the reproducible-layout contract in
     // docs/MODEL.md — the same value the block target already uses.
-    const scale = p.detailSupport ?? p.urbanSupport ?? p.urbanPop ?? 0;
-    const crowd = Math.sqrt(cityClamp(scale / 90000, 0, 1));
-    const wanted = (6.4 + 7.0 * crowd) * (capital ? 1.10 : 1);
-    const span = cityClamp(Math.min(cityReach(sim, p) / 1.16, wanted), 6.4, 16), grow = span / CityEnvironment.cityDimensions.span;
+    const {span, grow, crowd, settled, width, depth, terrainSpan} = citySurvey(sim, p);
     // Population controls the built radius as well as the block target. A high
     // floor made neighboring hamlets fill almost as much ground as capitals.
     // Retain a modest core for gates and civic buildings, with room to grow.
-    const settled = .55 + .45 * crowd;
     // n stays ODD: the context grid keys its inner hole on (n-1)/2 and the centre sample
     // must land exactly on the parent cell, neither of which survives an even grid.
-    const n = 111, width = CityEnvironment.cityDimensions.width * grow, depth = CityEnvironment.cityDimensions.depth * grow, nn = n * n;
+    const n = 111, nn = n * n;
     // Survey the exact parent-world footprint that the atlas displays. Sampling the
     // wider contextual span moved local shores, cliffs and rivers under the city.
-    const terrainSpan = span * CityEnvironment.cityFootprint;
     const city = { version: 3, seed, townRecipe: recipe, townProfile: profile, provinceId, name: p.name, n, width, depth, span, terrainSpan, urbanRadius:width*.375*settled, center: [p.x, p.y],
         height: new Float32Array(nn), water: new Uint8Array(nn), waterKind: new Uint8Array(nn),
         slope: new Float32Array(nn), wet: new Float32Array(nn), road: new Uint8Array(nn),
