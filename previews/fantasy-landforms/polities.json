@@ -1,149 +1,154 @@
 {
-  "bundleSha256": "bde74a575c456318a71b23f37855c850a92b8a74564df8c83082f1912759c887",
+  "bundleSha256": "ca01db9f59ce0645177a45cd8d72be189378493d7d9b5a306cd8350544a164ff",
   "baseline": false,
   "desktop": {
-    "realms": 25,
-    "towns": 114,
-    "visibleTownNames": 114,
+    "realms": 26,
+    "towns": 106,
+    "visibleTownNames": 106,
     "majority": [
       {
         "id": 0,
-        "name": "Ra",
-        "share": 0.818312235404671
+        "name": "Duat",
+        "share": 0.672898611204975
       },
       {
         "id": 1,
-        "name": "Tir na nOg",
-        "share": 0.7698483030357887
+        "name": "Ereshkigal",
+        "share": 0.8341488101506954
       },
       {
         "id": 2,
-        "name": "Ereshkigal",
-        "share": 0.7025406998806913
+        "name": "Enki",
+        "share": 0.6533568005898758
       },
       {
         "id": 3,
-        "name": "Caer Sidi",
-        "share": 0.5704574019918502
+        "name": "Amaravati",
+        "share": 0.8195398579444333
       },
       {
         "id": 4,
-        "name": "Alaka",
-        "share": 0.6593299298807039
+        "name": "Tlalocan",
+        "share": 0.8078412006325609
       },
       {
         "id": 5,
-        "name": "Inanna",
-        "share": 0.5621268831670128
+        "name": "Dilmun",
+        "share": 0.6760612372969842
       },
       {
         "id": 6,
-        "name": "Guixu",
-        "share": 0.8245040799868989
+        "name": "Horus",
+        "share": 0.5644502078160759
       },
       {
         "id": 7,
-        "name": "Tamoanchan",
-        "share": 0.8191498756340309
+        "name": "Inanna",
+        "share": 0.826690813908705
       },
       {
         "id": 8,
-        "name": "Emain Ablach",
-        "share": 0.8237258795554333
+        "name": "Osiris",
+        "share": 0.8436103729460809
       },
       {
         "id": 9,
-        "name": "Osiris",
-        "share": 0.8459656978694083
+        "name": "Aaru",
+        "share": 0.8187597541541282
       },
       {
         "id": 10,
-        "name": "Vainola",
-        "share": 0.7725760046107935
+        "name": "Guixu",
+        "share": 0.8288085557461804
       },
       {
         "id": 11,
-        "name": "Avalon",
-        "share": 0.5791049847672013
+        "name": "Mag Mell",
+        "share": 0.5315102991778866
       },
       {
         "id": 12,
         "name": "Annwn",
-        "share": 0.7669902848304818
+        "share": 0.7750426855699095
       },
       {
         "id": 13,
-        "name": "Aztlan",
-        "share": 0.6193375513825486
+        "name": "Tapiola",
+        "share": 0.7153629630216167
       },
       {
         "id": 14,
-        "name": "Tapiola",
-        "share": 0.8169537275280571
+        "name": "Aztlan",
+        "share": 0.7984342482516869
       },
       {
         "id": 15,
-        "name": "Duat",
-        "share": 0.6566244995302328
+        "name": "Vainola",
+        "share": 0.5819413010065517
       },
       {
         "id": 16,
-        "name": "Ninhursag",
-        "share": 0.8138659018130913
+        "name": "Abzu",
+        "share": 0.8124503084490191
       },
       {
         "id": 17,
-        "name": "Tlalocan",
-        "share": 0.5287676716125524
+        "name": "Ryugu",
+        "share": 0.8230289366012056
       },
       {
         "id": 18,
-        "name": "Ryugu",
-        "share": 0.8179712055364116
+        "name": "Asgard",
+        "share": 0.8286150798882594
       },
       {
         "id": 19,
-        "name": "Kunlun",
-        "share": 0.8097017284523454
+        "name": "Chicomoztoc",
+        "share": 0.7082505988457931
       },
       {
         "id": 20,
-        "name": "Midgard",
-        "share": 0.6315582816773597
+        "name": "Nidavellir",
+        "share": 0.7753623188405796
       },
       {
         "id": 21,
-        "name": "Mag Mell",
+        "name": "Emain Ablach",
         "share": 0.7753623188405797
       },
       {
         "id": 22,
-        "name": "Dilmun",
-        "share": 0.7753623188405798
+        "name": "Fangzhang",
+        "share": 0.8113497861860675
       },
       {
         "id": 23,
-        "name": "Abzu",
-        "share": 0.7753623188405797
+        "name": "Ninhursag",
+        "share": 0.7753623188405798
       },
       {
         "id": 24,
-        "name": "Enki",
-        "share": 0.8353097950973813
+        "name": "Midgard",
+        "share": 0.7753623188405797
+      },
+      {
+        "id": 25,
+        "name": "Svarga",
+        "share": 0.7753623188405796
       }
     ],
     "unownedTowns": 0,
-    "unownedPopulation": 38578.69586970869,
-    "population": 11820648.551698,
+    "unownedPopulation": 34477.60250745429,
+    "population": 11770226.062669564,
     "labels": [
       {
         "id": 0,
-        "text": "Ra",
+        "text": "Duat",
         "visible": true,
         "variant": "compact",
-        "x": 1107.484375,
-        "y": 572.8125,
-        "w": 35,
+        "x": 1078.765625,
+        "y": 555.640625,
+        "w": 49,
         "h": 29,
         "lettering": [
           {
@@ -159,14 +164,14 @@
         ]
       },
       {
-        "id": 2,
-        "text": "Ereshkigal",
+        "id": 5,
+        "text": "Dilmun",
         "visible": true,
         "variant": "compact",
-        "x": 543.65625,
-        "y": 657.953125,
-        "w": 80,
-        "h": 29,
+        "x": 425.375,
+        "y": 583.96875,
+        "w": 63,
+        "h": 28,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -182,12 +187,12 @@
       },
       {
         "id": 1,
-        "text": "Tir na nOg",
+        "text": "Ereshkigal",
         "visible": true,
         "variant": "compact",
-        "x": 888.8125,
-        "y": 634.265625,
-        "w": 81,
+        "x": 883.625,
+        "y": 625.421875,
+        "w": 74,
         "h": 27,
         "lettering": [
           {
@@ -203,234 +208,14 @@
         ]
       },
       {
-        "id": 8,
-        "text": "Emain Ablach",
-        "visible": true,
-        "variant": "compact",
-        "x": 723.59375,
-        "y": 677.671875,
-        "w": 100,
-        "h": 28,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 9,
-        "text": "Osiris",
-        "visible": true,
-        "variant": "compact",
-        "x": 208.84375,
-        "y": 250.375,
-        "w": 49,
-        "h": 28,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 11,
-        "text": "Avalon",
-        "visible": true,
-        "variant": "compact",
-        "x": 433.1875,
-        "y": 285.109375,
-        "w": 59,
-        "h": 28,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 15,
-        "text": "Duat",
-        "visible": true,
-        "variant": "compact",
-        "x": 201.015625,
-        "y": 555.984375,
-        "w": 44,
-        "h": 26,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 3,
-        "text": "Caer Sidi",
-        "visible": true,
-        "variant": "compact",
-        "x": 269.625,
-        "y": 377.4375,
-        "w": 64,
-        "h": 25,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 10,
-        "text": "Vainola",
-        "visible": true,
-        "variant": "compact",
-        "x": 1176.40625,
-        "y": 335.375,
-        "w": 57,
-        "h": 26,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 5,
+        "id": 7,
         "text": "Inanna",
         "visible": true,
         "variant": "compact",
-        "x": 262.78125,
-        "y": 560.234375,
-        "w": 53,
-        "h": 25,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 24,
-        "text": "Enki",
-        "visible": true,
-        "variant": "compact",
-        "x": 391.984375,
-        "y": 420.453125,
-        "w": 39,
-        "h": 23,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 7,
-        "text": "Tamoanchan",
-        "visible": true,
-        "variant": "compact",
-        "x": 824.828125,
-        "y": 361.25,
-        "w": 78,
-        "h": 24,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 14,
-        "text": "Tapiola",
-        "visible": true,
-        "variant": "compact",
-        "x": 1010.65625,
-        "y": 259.375,
-        "w": 64,
+        "x": 780.5625,
+        "y": 570.71875,
+        "w": 61,
         "h": 29,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 6,
-        "text": "Guixu",
-        "visible": true,
-        "variant": "compact",
-        "x": 157.34375,
-        "y": 475.84375,
-        "w": 46,
-        "h": 23,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -449,9 +234,119 @@
         "text": "Annwn",
         "visible": true,
         "variant": "compact",
-        "x": 820.71875,
-        "y": 531.390625,
-        "w": 53,
+        "x": 392.65625,
+        "y": 244.828125,
+        "w": 62,
+        "h": 28,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "text": "Mag Mell",
+        "visible": true,
+        "variant": "compact",
+        "x": 495.0625,
+        "y": 588.046875,
+        "w": 74,
+        "h": 26,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "text": "Aaru",
+        "visible": true,
+        "variant": "compact",
+        "x": 266.515625,
+        "y": 547.34375,
+        "w": 46,
+        "h": 27,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "text": "Horus",
+        "visible": true,
+        "variant": "compact",
+        "x": 228.46875,
+        "y": 374.625,
+        "w": 49,
+        "h": 26,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "text": "Osiris",
+        "visible": true,
+        "variant": "compact",
+        "x": 217.984375,
+        "y": 285.65625,
+        "w": 47,
+        "h": 26,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "text": "Amaravati",
+        "visible": true,
+        "variant": "compact",
+        "x": 398.125,
+        "y": 444.265625,
+        "w": 70,
         "h": 24,
         "lettering": [
           {
@@ -467,14 +362,36 @@
         ]
       },
       {
-        "id": 17,
-        "text": "Tlalocan",
+        "id": 18,
+        "text": "Asgard",
         "visible": true,
         "variant": "compact",
-        "x": 747.71875,
-        "y": 315.828125,
-        "w": 57,
-        "h": 23,
+        "x": 1164.171875,
+        "y": 304.0625,
+        "w": 56,
+        "h": 26,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "text": "Vainola",
+        "visible": true,
+        "variant": "compact",
+        "x": 1017.5625,
+        "y": 367.671875,
+        "w": 55,
+        "h": 25,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -490,12 +407,34 @@
       },
       {
         "id": 4,
-        "text": "Alaka",
+        "text": "Tlalocan",
         "visible": true,
         "variant": "compact",
-        "x": 433.515625,
-        "y": 457.4375,
-        "w": 43,
+        "x": 804.6875,
+        "y": 294.125,
+        "w": 59,
+        "h": 24,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "text": "Fangzhang",
+        "visible": true,
+        "variant": "compact",
+        "x": 134.3125,
+        "y": 460.359375,
+        "w": 66,
         "h": 23,
         "lettering": [
           {
@@ -511,7 +450,73 @@
         ]
       },
       {
-        "id": 18,
+        "id": 2,
+        "text": "Enki",
+        "visible": true,
+        "variant": "compact",
+        "x": 315.40625,
+        "y": 490.765625,
+        "w": 39,
+        "h": 23,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "text": "Chicomoztoc",
+        "visible": true,
+        "variant": "compact",
+        "x": 799.234375,
+        "y": 266.859375,
+        "w": 71,
+        "h": 23,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "text": "Guixu",
+        "visible": true,
+        "variant": "compact",
+        "x": 534.15625,
+        "y": 460.390625,
+        "w": 45,
+        "h": 22,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 17,
         "text": "Ryugu",
         "visible": true,
         "variant": "compact",
@@ -533,14 +538,14 @@
         ]
       },
       {
-        "id": 13,
+        "id": 14,
         "text": "Aztlan",
         "visible": true,
         "variant": "compact",
-        "x": 909.15625,
-        "y": 358.84375,
-        "w": 51,
-        "h": 24,
+        "x": 935.34375,
+        "y": 351.34375,
+        "w": 52,
+        "h": 25,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -555,14 +560,14 @@
         ]
       },
       {
-        "id": 19,
-        "text": "Kunlun",
+        "id": 13,
+        "text": "Tapiola",
         "visible": true,
         "variant": "compact",
-        "x": 532.15625,
-        "y": 460.390625,
-        "w": 49,
-        "h": 22,
+        "x": 995.3125,
+        "y": 271.78125,
+        "w": 59,
+        "h": 26,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -577,13 +582,13 @@
         ]
       },
       {
-        "id": 22,
-        "text": "Dilmun",
+        "id": 23,
+        "text": "Ninhursag",
         "visible": true,
         "variant": "compact",
-        "x": 305.828125,
+        "x": 299.328125,
         "y": 446.78125,
-        "w": 51,
+        "w": 64,
         "h": 23,
         "lettering": [
           {
@@ -600,12 +605,12 @@
       },
       {
         "id": 16,
-        "text": "Ninhursag",
+        "text": "Abzu",
         "visible": true,
         "variant": "compact",
-        "x": 668.71875,
+        "x": 680.21875,
         "y": 384.078125,
-        "w": 62,
+        "w": 39,
         "h": 22,
         "lettering": [
           {
@@ -622,12 +627,12 @@
       },
       {
         "id": 20,
-        "text": "Midgard",
+        "text": "Nidavellir",
         "visible": true,
         "variant": "compact",
-        "x": 1327.078125,
-        "y": 328.703125,
-        "w": 57,
+        "x": 1310.234375,
+        "y": 330.765625,
+        "w": 64,
         "h": 22,
         "lettering": [
           {
@@ -644,12 +649,12 @@
       },
       {
         "id": 21,
-        "text": "Mag Mell",
+        "text": "Emain Ablach",
         "visible": true,
         "variant": "compact",
-        "x": 519.90625,
+        "x": 511.40625,
         "y": 355.203125,
-        "w": 60,
+        "w": 77,
         "h": 22,
         "lettering": [
           {
@@ -665,13 +670,35 @@
         ]
       },
       {
-        "id": 23,
-        "text": "Abzu",
+        "id": 25,
+        "text": "Svarga",
         "visible": true,
         "variant": "compact",
-        "x": 258.09375,
-        "y": 506.796875,
-        "w": 38,
+        "x": 263.09375,
+        "y": 498.453125,
+        "w": 46,
+        "h": 22,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "text": "Midgard",
+        "visible": true,
+        "variant": "compact",
+        "x": 909.953125,
+        "y": 445.578125,
+        "w": 55,
         "h": 22,
         "lettering": [
           {
@@ -716,6 +743,11 @@
       {
         "name": "wildness",
         "text": "wildness",
+        "visible": false
+      },
+      {
+        "name": "wildness",
+        "text": "wildness",
         "visible": true
       },
       {
@@ -735,19 +767,19 @@
       }
     ],
     "territory": {
-      "landCells": 22899,
-      "lakeCells": 726,
-      "unclaimedCells": 5989,
+      "landCells": 23038,
+      "lakeCells": 587,
+      "unclaimedCells": 6022,
       "invalidClaims": 0,
       "oceanClaims": 0,
       "enclosedSeaCells": 307
     },
     "fingerprints": [
-      "cc113c81",
-      "790ae3c1",
-      "90fd7fea"
+      "2377e4fa",
+      "1d618deb",
+      "24a862f0"
     ],
-    "landformVersion": 1
+    "landformVersion": 2
   },
   "wild": {
     "i": 1639,
@@ -759,155 +791,160 @@
     "i": 15995,
     "height": -9.975212097167969,
     "inland": 1,
-    "owner": 11,
-    "country": "Avalon",
+    "owner": 12,
+    "country": "Annwn",
     "cells": 64,
     "hit": 15995
   },
   "mobile": {
-    "realms": 25,
-    "towns": 114,
-    "visibleTownNames": 114,
+    "realms": 26,
+    "towns": 106,
+    "visibleTownNames": 106,
     "majority": [
       {
         "id": 0,
-        "name": "Ra",
-        "share": 0.818312235404671
+        "name": "Duat",
+        "share": 0.672898611204975
       },
       {
         "id": 1,
-        "name": "Tir na nOg",
-        "share": 0.7698483030357887
+        "name": "Ereshkigal",
+        "share": 0.8341488101506954
       },
       {
         "id": 2,
-        "name": "Ereshkigal",
-        "share": 0.7025406998806913
+        "name": "Enki",
+        "share": 0.6533568005898758
       },
       {
         "id": 3,
-        "name": "Caer Sidi",
-        "share": 0.5704574019918502
+        "name": "Amaravati",
+        "share": 0.8195398579444333
       },
       {
         "id": 4,
-        "name": "Alaka",
-        "share": 0.6593299298807039
+        "name": "Tlalocan",
+        "share": 0.8078412006325609
       },
       {
         "id": 5,
-        "name": "Inanna",
-        "share": 0.5621268831670128
+        "name": "Dilmun",
+        "share": 0.6760612372969842
       },
       {
         "id": 6,
-        "name": "Guixu",
-        "share": 0.8245040799868989
+        "name": "Horus",
+        "share": 0.5644502078160759
       },
       {
         "id": 7,
-        "name": "Tamoanchan",
-        "share": 0.8191498756340309
+        "name": "Inanna",
+        "share": 0.826690813908705
       },
       {
         "id": 8,
-        "name": "Emain Ablach",
-        "share": 0.8237258795554333
+        "name": "Osiris",
+        "share": 0.8436103729460809
       },
       {
         "id": 9,
-        "name": "Osiris",
-        "share": 0.8459656978694083
+        "name": "Aaru",
+        "share": 0.8187597541541282
       },
       {
         "id": 10,
-        "name": "Vainola",
-        "share": 0.7725760046107935
+        "name": "Guixu",
+        "share": 0.8288085557461804
       },
       {
         "id": 11,
-        "name": "Avalon",
-        "share": 0.5791049847672013
+        "name": "Mag Mell",
+        "share": 0.5315102991778866
       },
       {
         "id": 12,
         "name": "Annwn",
-        "share": 0.7669902848304818
+        "share": 0.7750426855699095
       },
       {
         "id": 13,
-        "name": "Aztlan",
-        "share": 0.6193375513825486
+        "name": "Tapiola",
+        "share": 0.7153629630216167
       },
       {
         "id": 14,
-        "name": "Tapiola",
-        "share": 0.8169537275280571
+        "name": "Aztlan",
+        "share": 0.7984342482516869
       },
       {
         "id": 15,
-        "name": "Duat",
-        "share": 0.6566244995302328
+        "name": "Vainola",
+        "share": 0.5819413010065517
       },
       {
         "id": 16,
-        "name": "Ninhursag",
-        "share": 0.8138659018130913
+        "name": "Abzu",
+        "share": 0.8124503084490191
       },
       {
         "id": 17,
-        "name": "Tlalocan",
-        "share": 0.5287676716125524
+        "name": "Ryugu",
+        "share": 0.8230289366012056
       },
       {
         "id": 18,
-        "name": "Ryugu",
-        "share": 0.8179712055364116
+        "name": "Asgard",
+        "share": 0.8286150798882594
       },
       {
         "id": 19,
-        "name": "Kunlun",
-        "share": 0.8097017284523454
+        "name": "Chicomoztoc",
+        "share": 0.7082505988457931
       },
       {
         "id": 20,
-        "name": "Midgard",
-        "share": 0.6315582816773597
+        "name": "Nidavellir",
+        "share": 0.7753623188405796
       },
       {
         "id": 21,
-        "name": "Mag Mell",
+        "name": "Emain Ablach",
         "share": 0.7753623188405797
       },
       {
         "id": 22,
-        "name": "Dilmun",
-        "share": 0.7753623188405798
+        "name": "Fangzhang",
+        "share": 0.8113497861860675
       },
       {
         "id": 23,
-        "name": "Abzu",
-        "share": 0.7753623188405797
+        "name": "Ninhursag",
+        "share": 0.7753623188405798
       },
       {
         "id": 24,
-        "name": "Enki",
-        "share": 0.8353097950973813
+        "name": "Midgard",
+        "share": 0.7753623188405797
+      },
+      {
+        "id": 25,
+        "name": "Svarga",
+        "share": 0.7753623188405796
       }
     ],
     "unownedTowns": 0,
-    "unownedPopulation": 38578.69586970869,
-    "population": 11820648.551698,
+    "unownedPopulation": 34477.60250745429,
+    "population": 11770226.062669564,
     "labels": [
       {
-        "id": 11,
-        "text": "Avalon",
+        "id": 12,
+        "text": "13",
         "visible": true,
-        "variant": "compact",
-        "x": 110.25,
-        "y": 371.84375,
-        "w": 59,
-        "h": 28,
+        "variant": "marker",
+        "x": 126.265625,
+        "y": 393.375,
+        "w": 16,
+        "h": 18,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -923,167 +960,13 @@
       },
       {
         "id": 0,
-        "text": "Ra",
+        "text": "Duat",
         "visible": true,
         "variant": "compact",
-        "x": 314.828125,
-        "y": 447.46875,
-        "w": 35,
-        "h": 29,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 2,
-        "text": "Ereshkigal",
-        "visible": true,
-        "variant": "compact",
-        "x": 128.390625,
-        "y": 483.484375,
-        "w": 80,
-        "h": 29,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 1,
-        "text": "Tir na nOg",
-        "visible": true,
-        "variant": "compact",
-        "x": 237.203125,
-        "y": 482.65625,
-        "w": 81,
-        "h": 27,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 8,
-        "text": "9",
-        "visible": true,
-        "variant": "marker",
-        "x": 214.46875,
-        "y": 484.25,
-        "w": 16,
-        "h": 18,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 9,
-        "text": "Osiris",
-        "visible": true,
-        "variant": "compact",
-        "x": 43.21875,
-        "y": 373.828125,
+        "x": 325.90625,
+        "y": 443.828125,
         "w": 49,
-        "h": 28,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 15,
-        "text": "16",
-        "visible": true,
-        "variant": "marker",
-        "x": 91.125,
-        "y": 482.5625,
-        "w": 16,
-        "h": 18,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 3,
-        "text": "4",
-        "visible": true,
-        "variant": "marker",
-        "x": 87.421875,
-        "y": 407.328125,
-        "w": 16,
-        "h": 18,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 10,
-        "text": "Vainola",
-        "visible": true,
-        "variant": "compact",
-        "x": 323.125,
-        "y": 382.15625,
-        "w": 57,
-        "h": 26,
+        "h": 29,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -1102,8 +985,8 @@
         "text": "6",
         "visible": true,
         "variant": "marker",
-        "x": 93.703125,
-        "y": 460.34375,
+        "x": 109.296875,
+        "y": 472.90625,
         "w": 16,
         "h": 18,
         "lettering": [
@@ -1120,14 +1003,14 @@
         ]
       },
       {
-        "id": 24,
-        "text": "25",
+        "id": 1,
+        "text": "Ereshkigal",
         "visible": true,
-        "variant": "marker",
-        "x": 113.4375,
-        "y": 433.5,
-        "w": 17,
-        "h": 18,
+        "variant": "compact",
+        "x": 243.5,
+        "y": 471.015625,
+        "w": 74,
+        "h": 27,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -1143,13 +1026,13 @@
       },
       {
         "id": 7,
-        "text": "8",
+        "text": "League of Inanna",
         "visible": true,
-        "variant": "marker",
-        "x": 232.96875,
-        "y": 393.3125,
-        "w": 16,
-        "h": 18,
+        "variant": "full",
+        "x": 190.0812530517578,
+        "y": 503.15625,
+        "w": 117.90000915527344,
+        "h": 27,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -1164,12 +1047,34 @@
         ]
       },
       {
-        "id": 14,
-        "text": "15",
+        "id": 11,
+        "text": "Mag Mell",
+        "visible": true,
+        "variant": "compact",
+        "x": 132.9375,
+        "y": 473.15625,
+        "w": 74,
+        "h": 26,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "text": "10",
         "visible": true,
         "variant": "marker",
-        "x": 300.03125,
-        "y": 381.46875,
+        "x": 84.90625,
+        "y": 471.8125,
         "w": 16,
         "h": 18,
         "lettering": [
@@ -1187,57 +1092,101 @@
       },
       {
         "id": 6,
-        "text": "Guixu",
-        "visible": true,
-        "variant": "compact",
-        "x": 11.578125,
-        "y": 427.8125,
-        "w": 46,
-        "h": 23,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 12,
-        "text": "League of Annwn",
-        "visible": true,
-        "variant": "full",
-        "x": 191.640625,
-        "y": 453,
-        "w": 109,
-        "h": 25,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 17,
-        "text": "18",
+        "text": "7",
         "visible": true,
         "variant": "marker",
-        "x": 221.71875,
-        "y": 371.03125,
+        "x": 65.421875,
+        "y": 415.03125,
         "w": 16,
         "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "text": "Principality of Osiris",
+        "visible": true,
+        "variant": "full",
+        "x": 13.63125228881836,
+        "y": 384.7987365722656,
+        "w": 105.29998779296875,
+        "h": 21.839996337890625,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "text": "4",
+        "visible": true,
+        "variant": "marker",
+        "x": 117.84375,
+        "y": 431.1875,
+        "w": 16,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "text": "Asgard",
+        "visible": true,
+        "variant": "compact",
+        "x": 315.875,
+        "y": 382.328125,
+        "w": 56,
+        "h": 26,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "text": "Vainola",
+        "visible": true,
+        "variant": "compact",
+        "x": 288.828125,
+        "y": 414.578125,
+        "w": 55,
+        "h": 25,
         "lettering": [
           {
             "family": "\"IM Fell English\", Palatino, Georgia, serif",
@@ -1256,75 +1205,9 @@
         "text": "5",
         "visible": true,
         "variant": "marker",
-        "x": 137.046875,
-        "y": 435.09375,
+        "x": 231.65625,
+        "y": 394.578125,
         "w": 16,
-        "h": 18,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 18,
-        "text": "Ryugu",
-        "visible": true,
-        "variant": "compact",
-        "x": 36.515625,
-        "y": 493.59375,
-        "w": 45,
-        "h": 23,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 13,
-        "text": "Republic of Aztlan",
-        "visible": true,
-        "variant": "full",
-        "x": 232.796875,
-        "y": 415.984375,
-        "w": 113,
-        "h": 26,
-        "lettering": [
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          },
-          {
-            "family": "\"IM Fell English\", Palatino, Georgia, serif",
-            "style": "italic",
-            "weight": "400"
-          }
-        ]
-      },
-      {
-        "id": 19,
-        "text": "20",
-        "visible": true,
-        "variant": "marker",
-        "x": 160.046875,
-        "y": 434.03125,
-        "w": 18,
         "h": 18,
         "lettering": [
           {
@@ -1344,8 +1227,162 @@
         "text": "23",
         "visible": true,
         "variant": "marker",
-        "x": 90.375,
-        "y": 429.578125,
+        "x": 40.109375,
+        "y": 435.71875,
+        "w": 17,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "text": "3",
+        "visible": true,
+        "variant": "marker",
+        "x": 89.296875,
+        "y": 444.5625,
+        "w": 16,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "text": "20",
+        "visible": true,
+        "variant": "marker",
+        "x": 220.71875,
+        "y": 371.03125,
+        "w": 18,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "text": "Guixu",
+        "visible": true,
+        "variant": "compact",
+        "x": 140.546875,
+        "y": 432.03125,
+        "w": 45,
+        "h": 22,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "text": "Ryugu",
+        "visible": true,
+        "variant": "compact",
+        "x": 31.40625,
+        "y": 492.296875,
+        "w": 45,
+        "h": 23,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "text": "15",
+        "visible": true,
+        "variant": "marker",
+        "x": 266.234375,
+        "y": 400.515625,
+        "w": 16,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "text": "14",
+        "visible": true,
+        "variant": "marker",
+        "x": 289.75,
+        "y": 381.375,
+        "w": 16,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 23,
+        "text": "24",
+        "visible": true,
+        "variant": "marker",
+        "x": 93.03125,
+        "y": 418.96875,
         "w": 17,
         "h": 18,
         "lettering": [
@@ -1388,7 +1425,7 @@
         "text": "21",
         "visible": true,
         "variant": "marker",
-        "x": 387.96875,
+        "x": 381.96875,
         "y": 397.921875,
         "w": 16,
         "h": 18,
@@ -1428,12 +1465,34 @@
         ]
       },
       {
-        "id": 23,
-        "text": "24",
+        "id": 25,
+        "text": "26",
         "visible": true,
         "variant": "marker",
         "x": 66,
         "y": 449.078125,
+        "w": 17,
+        "h": 18,
+        "lettering": [
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          },
+          {
+            "family": "\"IM Fell English\", Palatino, Georgia, serif",
+            "style": "italic",
+            "weight": "400"
+          }
+        ]
+      },
+      {
+        "id": 24,
+        "text": "25",
+        "visible": true,
+        "variant": "marker",
+        "x": 263.890625,
+        "y": 436.203125,
         "w": 17,
         "h": 18,
         "lettering": [
@@ -1495,22 +1554,27 @@
         "name": "wildness",
         "text": "wildness",
         "visible": false
+      },
+      {
+        "name": "wildness",
+        "text": "wildness",
+        "visible": false
       }
     ],
     "territory": {
-      "landCells": 22899,
-      "lakeCells": 726,
-      "unclaimedCells": 5989,
+      "landCells": 23038,
+      "lakeCells": 587,
+      "unclaimedCells": 6022,
       "invalidClaims": 0,
       "oceanClaims": 0,
       "enclosedSeaCells": 307
     },
     "fingerprints": [
-      "cc113c81",
-      "790ae3c1",
-      "90fd7fea"
+      "2377e4fa",
+      "1d618deb",
+      "24a862f0"
     ],
-    "landformVersion": 1
+    "landformVersion": 2
   },
   "highCities": [],
   "originalHighCities": [

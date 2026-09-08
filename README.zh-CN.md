@@ -1,4 +1,7 @@
-# TELLURIC
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/telluric-wordmark-dark.svg">
+  <img src="assets/brand/telluric-wordmark.svg" alt="TELLURIC" width="252" height="72">
+</picture>
 
 一张自动生成的奇幻世界地图，可以从大陆一路放大到城市街道。在浏览器里探索国家与居民，看历史继续发展。
 
@@ -16,7 +19,7 @@
 | 移动或旋转视角 | 拖动平移；**Shift + 拖动**或右键拖动旋转 |
 | 找到一个地方 | 打开 **Search**，或按 **/**；选择 **Zoom ↗** 接近城镇 |
 | 查看国家或建筑 | 点击名称、标记或建筑；悬停国名可高亮国界 |
-| 返回世界全景 | 点击左上角标题或按 **H**；**Wider setting** 可从城镇拉远 |
+| 返回世界全景 | 点击左上角 **TELLURIC** 标记或按 **H**；**Wider setting** 可从城镇拉远 |
 
 底部 **Play** 和年份按钮用于推进历史。**Regenerate** 可按种子与设置生成新世界。**⋯** 菜单提供保存、读取、编年史和导出；生成新世界前，先保存想保留的世界。
 

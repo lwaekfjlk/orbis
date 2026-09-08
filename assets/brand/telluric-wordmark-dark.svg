@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="252" height="72" viewBox="0 0 126 36" role="img" aria-labelledby="title">
+  <title id="title">TELLURIC</title>
+  <g transform="translate(0 5) scale(1.0833333333)" fill="none" stroke="#d5e7ae" stroke-width="1.2" stroke-linejoin="round">
+    <path d="m3 19 7-13 5 8 3-5 4 10H3Z"/>
+    <path d="m7 11 3 2 2-2"/>
+  </g>
+  <text x="35" y="23" fill="#f5f3e8" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="650" letter-spacing="3">TELLURIC</text>
+</svg>

@@ -48,3 +48,7 @@ npm run test:mountains-browser
 ```
 
 浏览器检查使用本地 Chromium，可通过 `PLAYWRIGHT_MODULE` 和 `CHROMIUM_PATH` 指定已有安装。
+
+本次通过旧版地貌 7 项、新山形与版本兼容 5 项、气候因果 3 项，以及 55 项相关集成检查；合并最新菜单与品牌更新后，13 项界面检查和桌面／手机实际菜单操作也通过。真实浏览器还检查了三种地形版本的存档恢复、26 个国家、106 个城镇和城市 Worker 网格一致性。
+
+离线 Chromium + SwiftShader 的一次功能验收中，地图就绪耗时约 12.09 秒，173 条地标目录完整，城市细节、无 Worker 回退和生成失败恢复均通过。这是单次运行记录，不是性能对照或速度保证；详见[加载记录](../previews/mountain-climate/loading.json)。

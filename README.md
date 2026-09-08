@@ -1,4 +1,7 @@
-# TELLURIC
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/telluric-wordmark-dark.svg">
+  <img src="assets/brand/telluric-wordmark.svg" alt="TELLURIC" width="252" height="72">
+</picture>
 
 A procedural fantasy atlas you can explore from continents to city streets. Generate a world, discover its countries and people, and watch its history unfold—all in your browser.
 
@@ -16,7 +19,7 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 | Move or rotate the view | Drag to pan; **Shift + drag** or right-drag to orbit |
 | Find a place | Open **Search** or press **/**; choose **Zoom ↗** to approach a town |
 | Inspect a country or building | Click its name, marker or building; hover a country name to highlight its borders |
-| Return to the world | Click the top-left title or press **H**; **Wider setting** pulls back from a town |
+| Return to the world | Click the top-left **TELLURIC** logo or press **H**; **Wider setting** pulls back from a town |
 
 Use **Play** or the year-step buttons to advance history. **Regenerate** creates a new world from a seed and your settings. The **⋯** menu includes save/load, the chronicle and exports; save your world before replacing it.
 

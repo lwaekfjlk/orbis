@@ -20,6 +20,7 @@
     "test:landforms-browser": "node tests/fantasy-landforms.browser.mjs",
     "test:mountains-browser": "node tests/irregular-mountains.browser.mjs",
     "test:lake-labels-browser": "node tests/lake-labels.browser.mjs",
+    "test:menus-browser": "node tests/menu.browser.mjs",
     "test:terrain-browser": "node tests/terrain-refinement.browser.mjs",
     "assets": "node scripts/export-landmarks.mjs",
     "test:towns": "node --test tests/towns.test.mjs",
