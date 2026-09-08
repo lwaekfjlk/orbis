@@ -1,6 +1,6 @@
 /** glTF 2.0 / GLB exporter for non-indexed position-normal-color geometry. */
 function exportGeometryGLB(meshes, metadata = {}) {
-    const gltf = { asset: { version: '2.0', generator: 'Telluric IX Townsmith', extras: metadata }, scene: 0, scenes: [{ nodes: [] }], nodes: [], meshes: [], materials: [{ name: 'Matte vertex colors', doubleSided: true, pbrMetallicRoughness: { metallicFactor: 0, roughnessFactor: 1 } }], buffers: [{ byteLength: 0 }], bufferViews: [], accessors: [] };
+    const gltf = { asset: { version: '2.0', generator: 'Orbis Townsmith', extras: metadata }, scene: 0, scenes: [{ nodes: [] }], nodes: [], meshes: [], materials: [{ name: 'Matte vertex colors', doubleSided: true, pbrMetallicRoughness: { metallicFactor: 0, roughnessFactor: 1 } }], buffers: [{ byteLength: 0 }], bufferViews: [], accessors: [] };
     const chunks = [];
     let offset = 0;
     for (const [name, m] of Object.entries(meshes)) {

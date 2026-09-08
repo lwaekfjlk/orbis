@@ -46,7 +46,7 @@ try{
    const hit=e=>{const b=e.getBoundingClientRect();return e.contains(document.elementFromPoint(b.x+b.width/2,b.y+b.height/2));};
    return{text:brand.innerText,brand:box(brand),github:box(github),tools:box(tools),href:github.href,target:github.target,rel:github.rel,brandHit:hit(brand),githubHit:hit(github),viewportWidth:innerWidth};
   });
-  assert.equal(header.text,'TELLURIC');assert.equal(header.href,'https://github.com/lwaekfjlk/telluric');assert.equal(header.target,'_blank');assert(header.rel.includes('noopener'));
+  assert.equal(header.text,'ORBIS');assert.equal(header.href,'https://github.com/lwaekfjlk/telluric');assert.equal(header.target,'_blank');assert(header.rel.includes('noopener'));
   assert(header.brandHit&&header.githubHit,'both brand and GitHub must receive their own pointer input');
   assert(header.brand.x>=0&&header.github.x+header.github.width<=size.width,'branding must fit the narrow header');
   assert(header.github.x+header.github.width<=header.tools.x||header.github.y+header.github.height<=header.tools.y,'branding and map tools must not overlap');

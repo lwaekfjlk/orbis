@@ -16,7 +16,8 @@ test('OneMap has a single startup entry, with shell before executable scripts',(
  for(const id of ['map','play','step1','step10','forgeButton','omDrawer'])assert(ids.includes(id));
 });
 test('Single-file build has no external styles or executable scripts',()=>{
- const html=read('dist/telluric-onemap.html');
+ const html=read('dist/orbis-onemap.html');
+ assert.equal(read('dist/telluric-onemap.html'),html,'Legacy downloads must contain the same offline app');
  assert(!/<script[^>]+src=/i.test(html));
  assert(!/<link[^>]+rel=["']stylesheet/i.test(html));
  assert(html.includes('body.onemap #stage'));

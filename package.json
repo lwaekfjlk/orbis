@@ -1,5 +1,5 @@
 {
-  "name": "telluric-continuous-atlas",
+  "name": "orbis-continuous-atlas",
   "version": "13.8.0",
   "private": true,
   "description": "One georeferenced world canvas, progressive town detail, inherited surrounding terrain and continuous camera navigation.",

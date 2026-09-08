@@ -58,5 +58,7 @@ if (html.indexOf('id="omChrome"') > html.indexOf('<script>')) throw Error('Map s
 await mkdir(resolve(root, 'dist'), { recursive: true });
 
 
+await writeFile(resolve(root, 'dist/orbis-onemap.html'), html);
+// Keep the existing download path usable for bookmarks and older tooling.
 await writeFile(resolve(root, 'dist/telluric-onemap.html'), html);
-console.log('Built dist/telluric-onemap.html (single-map interface).');
+console.log('Built dist/orbis-onemap.html (with the legacy download alias).');
