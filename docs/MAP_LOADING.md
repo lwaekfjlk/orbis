@@ -4,6 +4,16 @@ In three cold Chromium loads, the default map's median time to a rendered,
 usable screen fell from **44.46 s to 12.45 s** (**72% less waiting**, 3.57× faster).
 The complete measurements are in [MAP_LOADING_RESULTS.json](MAP_LOADING_RESULTS.json).
 
+This controlled comparison uses baseline `2f9de96` and the performance changes
+alone. The branch subsequently integrates main's realm descriptions (#39) and
+nearby landscape relief/materials (#40); their intended visual changes are not
+part of the before/after screenshot comparison. Integration is checked again
+against the combined source and rebuilt standalone HTML.
+That additional browser run reached a usable map in 13.76 s and passed city
+entry, regeneration, failure recovery and no-worker fallback checks. All 306
+tests passed before integration; all 105 targeted integration tests passed after
+combining the branches.
+
 | Default world, cold load | Before | After |
 | --- | ---: | ---: |
 | Run 1 | 44.46 s | 12.45 s |

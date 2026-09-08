@@ -192,5 +192,69 @@
       "before": "2f5d8fa63cf5df5e2a79976a23005dc9920bc1038e92f2f8ceacce3b7b3270d0",
       "after": "2f5d8fa63cf5df5e2a79976a23005dc9920bc1038e92f2f8ceacce3b7b3270d0"
     }
+  },
+  "comparisonScope": "Performance changes isolated on baseline 2f9de96, before integrating main PRs #39 and #40. Screenshot hashes refer only to this isolated comparison.",
+  "integration": {
+    "mainCommit": "15ee054e259a065800dfc065b323c117216b3779",
+    "testedCommit": "cb9d9a4",
+    "note": "One additional correctness run after integrating realm descriptions and landscape changes; run concurrently with integration tests, separate from the controlled three-run timing comparison.",
+    "nodeTests": {
+      "preIntegrationFullSuite": 306,
+      "postIntegrationTargeted": 105,
+      "failures": 0
+    },
+    "browser": {
+      "renderer": "Chromium with SwiftShader",
+      "viewport": [
+        1480,
+        980
+      ],
+      "offline": true,
+      "runs": [
+        {
+          "readyMs": 13764.70000000298,
+          "generationMs": 10820.39999999106,
+          "fullCities": 0,
+          "terrainBuilds": 1,
+          "siteQueries": 0,
+          "index": {
+            "status": "complete",
+            "completed": 78,
+            "total": 78,
+            "frames": 7
+          },
+          "directory": 168,
+          "sacredSites": 69,
+          "fingerprints": [
+            "440ae5d0",
+            "6b6c5ea8",
+            "aaa577eb"
+          ],
+          "software": false,
+          "nearRoadVertices": 0,
+          "settledTerrainBuilds": 1,
+          "cities": [
+            {
+              "id": 507,
+              "readyMs": 4085.9000000059605,
+              "buildings": 515,
+              "triangles": 253181,
+              "worker": true
+            },
+            {
+              "id": 349,
+              "readyMs": 4321.70000000298,
+              "buildings": 499,
+              "triangles": 215252,
+              "worker": true
+            }
+          ],
+          "regeneration": true,
+          "failureRecovery": true,
+          "noWorkerFallback": true
+        }
+      ],
+      "medianReadyMs": 13764.70000000298
+    }
   }
 }
