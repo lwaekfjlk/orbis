@@ -552,15 +552,16 @@ header {
   font:italic 400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);
   font-synthesis:none;
   letter-spacing:0;
-  color:#33403a
+  color:#302f25;
+  text-shadow:0 0 1px #fff6d9,0 1px 1px #fff6d9
 }
 .maplabel.townLabel { padding:1px 2px;z-index:1;width:max-content;max-width:min(120px,calc(100vw - 24px));white-space:normal;overflow-wrap:anywhere }
 .maplabel.townLabel em {
   font:italic 400 10px/1.3 var(--town-lettering);
   font-synthesis:none;
   letter-spacing:0;
-  color:#233d33;
-  text-shadow:0 0 2px #fffbea,0 1px 2px #fffbea,1px 0 1px #fffbea,-1px 0 1px #fffbea
+  color:#20352d;
+  text-shadow:0 0 1px #fffbea,0 1px 1px #fffbea
 }
 .maplabel.townLabel small { display:none }
 .maplabel.townLabel:before {
@@ -2432,7 +2433,7 @@ body.onemap .maploading p{color:#4c7061;font-size:12px}
 body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6da9c}
 body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
 body.onemap .maplabel em{font:italic 15px Georgia,serif}
-body.onemap .maplabel.realmLabel em{font:italic 400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);letter-spacing:0;color:#443c2d}
+body.onemap .maplabel.realmLabel em{font:italic 400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);letter-spacing:0;color:#302f25}
 body.onemap .maplabel.realmLabel .realmCompactName{font-size:clamp(11px,calc(var(--realm-label-size,18px) * .8),17px)}
 body.onemap .maplabel.wildernessLabel em{font:italic 11.5px/1.3 Georgia,serif;color:#566054;letter-spacing:.1px}
 body.onemap .maplabel.wildernessLabel small{font:6px/1.3 ui-monospace,monospace;letter-spacing:1px;color:#657064}
@@ -2452,23 +2453,22 @@ body.onemap .city-top,body.onemap .city-tools,body.onemap .city-district-strip,b
 body.onemap .city-stage,body.onemap .lm-stage{position:absolute;inset:0;height:100%;width:100%;min-height:0;max-height:none;border:0;border-radius:0;margin:0}
 body.onemap .city-stage-label,body.onemap .city-stamp,body.onemap .city-maphelp,body.onemap .city-camera,body.onemap .lm-scene-title,body.onemap .lm-scene-stamp,body.onemap .lm-help,body.onemap .lm-cam{display:none!important}
 body.onemap #omChrome{position:fixed;inset:0;z-index:40;pointer-events:none;color:var(--ui-text)}
-body.onemap #omChrome button,body.onemap #omChrome input,body.onemap #omChrome select,body.onemap #omChrome summary,body.onemap #omChrome label{pointer-events:auto}
+body.onemap #omChrome a,body.onemap #omChrome button,body.onemap #omChrome input,body.onemap #omChrome select,body.onemap #omChrome summary,body.onemap #omChrome label{pointer-events:auto}
 body.onemap .glass{background:var(--glass);color:var(--ui-text);border:1px solid #dce6d129;box-shadow:0 6px 28px #173b3420,0 1px 2px #14281e22;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 body.onemap #omChrome button,body.onemap #omChrome select,body.onemap .om-forge button,body.onemap .om-forge input,body.onemap .om-forge select{font:500 12px/1.4 inherit;color:inherit;border:1px solid transparent;background:transparent;box-shadow:none;transition:background .13s,border-color .13s,opacity .13s;cursor:pointer;border-radius:7px}
 body.onemap #omChrome button:hover,body.onemap .om-forge button:hover{background:#ffffff12;border-color:#ffffff0a;transform:none}
 body.onemap #omChrome button:disabled{opacity:.35;cursor:wait}
-body.onemap #omChrome button:focus-visible,body.onemap #omChrome input:focus-visible,body.onemap #omChrome select:focus-visible,body.onemap .om-forge :focus-visible{outline:2px solid var(--ui-accent);outline-offset:3px}
+body.onemap #omChrome a:focus-visible,body.onemap #omChrome button:focus-visible,body.onemap #omChrome input:focus-visible,body.onemap #omChrome select:focus-visible,body.onemap .om-forge :focus-visible{outline:2px solid var(--ui-accent);outline-offset:3px}
 body.onemap .om-header{position:absolute;inset:20px 22px auto;display:flex;justify-content:space-between;align-items:start;gap:16px;height:auto;padding:0;border:0;background:none;pointer-events:none}
-body.onemap .om-brandbar{display:flex;gap:11px;align-items:center;min-height:60px;border-radius:12px;padding:8px 14px;pointer-events:auto}
-body.onemap #omChrome .om-brand{display:flex;gap:9px;align-items:center;padding:0;font-size:13px;font-weight:650;letter-spacing:3px;height:36px}
+body.onemap .om-brandbar{display:flex;gap:12px;align-items:center;min-height:60px;border-radius:12px;padding:8px 14px;pointer-events:auto}
+body.onemap #omChrome .om-brand{display:flex;gap:9px;align-items:center;padding:0;font-size:13px;font-weight:650;letter-spacing:3px;height:36px;white-space:nowrap}
 body.onemap .om-brand svg{width:26px;height:26px;fill:none;stroke:var(--ui-accent);stroke-width:1.2;stroke-linejoin:round}
-body.onemap .om-brand-divider{height:27px;width:1px;background:var(--ui-line);margin:0 3px}
-body.onemap .om-address{max-width:260px;padding-right:5px}
-body.onemap #omSceneLabel{font-size:8px;letter-spacing:1.6px;color:var(--ui-muted);display:block}
-body.onemap #omPlaceName{display:block;font:17px/1.45 Georgia,serif;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.onemap .om-tools{display:flex;align-items:center;padding:5px;border-radius:11px;gap:2px;pointer-events:auto}
 body.onemap #omChrome .om-icon{height:40px;width:40px;padding:9px;display:grid;place-items:center;font-size:25px;font-weight:300;line-height:1;flex-shrink:0}
 body.onemap .om-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+body.onemap #omChrome .om-github{width:36px;height:36px;color:var(--ui-muted);border:1px solid transparent;border-radius:7px;text-decoration:none;transition:background .13s,color .13s}
+body.onemap #omChrome .om-github:hover{color:var(--ui-text);background:#ffffff12;border-color:#ffffff0a}
+body.onemap .om-github svg{width:18px;height:18px;fill:currentColor;stroke:none}
 body.onemap #omChrome .om-icon[aria-expanded=true]{background:#d5e7ae22;color:var(--ui-accent)}
 body.onemap #omBack{width:26px!important;padding:3px!important;margin:-5px}
 body.onemap .om-dock{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:13px;min-height:66px;pointer-events:auto;white-space:nowrap}
@@ -2586,7 +2586,7 @@ body.onemap .om-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:r
 body.onemap[data-working=true] .om-tools,body.onemap[data-working=true] #omSelection{opacity:.5;pointer-events:none}
 body.onemap[data-working=true] .om-tools button,body.onemap[data-working=true] #omSelection button{pointer-events:none}
 @media(max-width:1150px){body.onemap .om-hint{display:none}body.onemap .om-event{max-width:420px}body.onemap #omSelection{bottom:146px}body.onemap .om-dock{bottom:18px}}
-@media(max-width:700px){body.onemap .om-header{inset:12px 12px auto;gap:8px}body.onemap .om-brandbar{padding:8px 10px;gap:6px;min-height:53px;max-width:calc(100vw - 143px)}body.onemap .om-brand span{display:none}body.onemap .om-brand-divider{display:none}body.onemap .om-brand svg{width:22px;height:22px}body.onemap #omPlaceName{font-size:15px;max-width:140px}body.onemap #omSceneLabel{font-size:7px}body.onemap .om-tools{gap:0;padding:4px}body.onemap #omChrome .om-tools .om-icon{width:32px;height:40px;padding:8px}body.onemap .om-dock{gap:7px;padding:8px 9px;bottom:max(12px,env(safe-area-inset-bottom));min-height:61px;border-radius:12px}body.onemap .om-date{padding:0 2px;min-width:41px}body.onemap .om-date b,body.onemap .om-date #year{font-size:23px}body.onemap #omTimeControls{gap:2px}body.onemap #omTimeControls button{font-size:11px;padding:6px 8px}body.onemap #omTimeControls #play{min-width:70px}body.onemap #omTimeControls #speed{width:43px;font-size:10px;padding-left:3px}body.onemap #step50{display:none!important}body.onemap #omRegenHost button{font-size:10px;padding:6px 7px}body.onemap .om-camera{right:12px;bottom:91px;padding:3px}body.onemap .om-camera button{width:31px;height:29px}body.onemap .om-popover,body.onemap .om-forge{right:12px;top:77px;width:calc(100vw - 24px);max-height:calc(100dvh - 167px)}body.onemap #omMorePanel{width:272px}body.onemap #omDrawer{inset:77px 12px 86px auto;width:calc(100vw - 24px);max-height:none}body.onemap #omSelection{left:12px;bottom:91px;max-width:calc(100vw - 76px);width:calc(100vw - 76px);min-width:0;padding:14px 17px}body.onemap .om-event{bottom:86px;max-width:calc(100vw - 90px);left:12px;transform:none;font-size:9px!important}body.onemap:has(#omSelection:not(.hidden)) .om-event{display:none!important}body.onemap #omSelection h3{font-size:19px}body.onemap #toast{bottom:83px}body.onemap .city-label{font-size:10px}body.onemap .om-address{overflow:hidden}}
+@media(max-width:700px){body.onemap .om-header{inset:12px 12px auto;gap:8px}body.onemap .om-brandbar{padding:8px 10px;gap:6px;min-height:53px;max-width:calc(100vw - 143px)}body.onemap #omChrome .om-brand{gap:6px;font-size:11px;letter-spacing:2px}body.onemap #omChrome .om-github{width:32px;height:36px}body.onemap .om-brand svg{width:22px;height:22px}body.onemap .om-tools{gap:0;padding:4px}body.onemap #omChrome .om-tools .om-icon{width:32px;height:40px;padding:8px}body.onemap .om-dock{gap:7px;padding:8px 9px;bottom:max(12px,env(safe-area-inset-bottom));min-height:61px;border-radius:12px}body.onemap .om-date{padding:0 2px;min-width:41px}body.onemap .om-date b,body.onemap .om-date #year{font-size:23px}body.onemap #omTimeControls{gap:2px}body.onemap #omTimeControls button{font-size:11px;padding:6px 8px}body.onemap #omTimeControls #play{min-width:70px}body.onemap #omTimeControls #speed{width:43px;font-size:10px;padding-left:3px}body.onemap #step50{display:none!important}body.onemap #omRegenHost button{font-size:10px;padding:6px 7px}body.onemap .om-camera{right:12px;bottom:91px;padding:3px}body.onemap .om-camera button{width:31px;height:29px}body.onemap .om-popover,body.onemap .om-forge{right:12px;top:77px;width:calc(100vw - 24px);max-height:calc(100dvh - 167px)}body.onemap #omMorePanel{width:272px}body.onemap #omDrawer{inset:77px 12px 86px auto;width:calc(100vw - 24px);max-height:none}body.onemap #omSelection{left:12px;bottom:91px;max-width:calc(100vw - 76px);width:calc(100vw - 76px);min-width:0;padding:14px 17px}body.onemap .om-event{bottom:86px;max-width:calc(100vw - 90px);left:12px;transform:none;font-size:9px!important}body.onemap:has(#omSelection:not(.hidden)) .om-event{display:none!important}body.onemap #omSelection h3{font-size:19px}body.onemap #toast{bottom:83px}body.onemap .city-label{font-size:10px}}
 @media(prefers-reduced-motion:reduce){body.onemap *{transition:none!important;scroll-behavior:auto!important}}
 /* Event text must stay legible over both snow and pale urban ground. */
 body.onemap #omChrome .om-event{background:rgba(23,40,40,.90);border:1px solid #dce6d129}
@@ -2885,7 +2885,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 </div>
 </dialog><div id="omChrome">
 <header class="om-header">
-<div class="om-brandbar glass"><button aria-label="Whole world" class="om-brand" id="omHome" title="Return to whole world"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 19 7-13 5 8 3-5 4 10H3Z"></path><path d="m7 11 3 2 2-2"></path></svg><span>TELLURIC</span></button><span class="om-brand-divider"></span><button aria-label="Back one level" class="om-icon hidden" id="omBack"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"></path></svg></button><div class="om-address"><span id="omSceneLabel">WORLD ATLAS</span><b id="omPlaceName">The Manyfold World</b></div></div>
+<div class="om-brandbar glass"><button aria-label="TELLURIC — Whole world" class="om-brand" id="omHome" title="Return to whole world"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 19 7-13 5 8 3-5 4 10H3Z"></path><path d="m7 11 3 2 2-2"></path></svg><span>TELLURIC</span></button><a aria-label="TELLURIC on GitHub (opens in a new tab)" class="om-icon om-github" href="https://github.com/lwaekfjlk/telluric" id="omGitHub" rel="noopener noreferrer" target="_blank" title="TELLURIC on GitHub"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 .75a11.25 11.25 0 0 0-3.558 21.922c.563.104.769-.244.769-.542 0-.267-.01-.975-.015-1.915-3.13.68-3.791-1.508-3.791-1.508-.512-1.3-1.25-1.646-1.25-1.646-1.022-.699.077-.684.077-.684 1.13.08 1.726 1.16 1.726 1.16 1.005 1.722 2.637 1.224 3.279.936.102-.728.393-1.225.715-1.507-2.5-.284-5.128-1.25-5.128-5.565 0-1.23.439-2.234 1.159-3.021-.117-.285-.502-1.429.11-2.978 0 0 .945-.302 3.094 1.154a10.79 10.79 0 0 1 5.625 0c2.148-1.456 3.091-1.154 3.091-1.154.614 1.549.229 2.693.112 2.978.721.787 1.157 1.792 1.157 3.021 0 4.326-2.632 5.278-5.14 5.557.404.349.764 1.04.764 2.096 0 1.513-.014 2.733-.014 3.104 0 .301.203.651.774.541A11.25 11.25 0 0 0 12 .75Z"></path></svg></a><button aria-label="Back one level" class="om-icon hidden" id="omBack"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m14 6-6 6 6 6"></path></svg></button></div>
 <nav aria-label="Map tools" class="om-tools glass"><button aria-expanded="false" aria-label="Find a place" class="om-icon" id="omSearchToggle" title="Find a place /"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.2"></circle><path d="m15 15 5 5"></path></svg></button><button aria-expanded="false" aria-label="Map layers" class="om-icon" id="omLayersToggle" title="Layers"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 8 9-5 9 5-9 5-9-5Zm0 5 9 5 9-5M3 18l9 5 9-5"></path></svg></button><button aria-expanded="false" aria-label="More options" class="om-icon" id="omMoreToggle" title="Save, load &amp; history"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></button></nav>
 </header>
 <section aria-label="Find a place" class="om-popover glass hidden" id="omSearchPanel"><label class="om-eyebrow" for="omSearch">FIND YOUR WAY</label><input autocomplete="off" id="omSearch" placeholder="Town, realm or landmark…" spellcheck="false" type="search"/><div class="om-results" id="omSearchResults"></div><p class="om-note">Scroll towards a town: streets and buildings appear in the same landscape.</p></section>
@@ -18183,16 +18183,19 @@ window.OneMap = (() => {
         E('closeNotes').onclick=()=>{E('notes').close();E('omMoreToggle').focus();};
         document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>command(b.dataset.command));
         E('omLayersPanel').addEventListener('click',e=>{
-            const b=e.target.closest('[data-layer]');
-            if(b){closeMenus();onWorldUpdate();}
+            // The body also carries data-layer for theme styling. Only actual
+            // panel buttons represent a layer choice; controls remain open so
+            // several layers and display options can be adjusted together.
+            const b=e.target.closest('button[data-layer]');
+            if(b&&e.currentTarget.contains(b))onWorldUpdate();
         });
-        E('moreLayer').addEventListener('change',()=>{closeMenus();onWorldUpdate();});
+        E('moreLayer').addEventListener('change',onWorldUpdate);
         document.querySelectorAll('[data-local-mode]').forEach(b=>b.onclick=()=>{
             if(scene!=='city'||!CityUI.renderer)return;
             document.querySelector(`[data-city-mode="${b.dataset.localMode}"]`)?.click();
-            localControls();closeMenus();
+            localControls();
         });
-        E('omSetting').onclick=()=>{E('citySetting').click();closeMenus();};
+        E('omSetting').onclick=()=>{E('citySetting').click();localControls();};
         for(const [id,source] of [['omLocalRoofs','townRoofs'],['omLocalTrees','townTrees'],['omMonumentRoofs','lmRoofs'],['omMonumentExplode','lmExplode']]){
             E(id).onchange=()=>{E(source).checked=E(id).checked;E(source).dispatchEvent(new Event('change'));};
         }
@@ -18263,14 +18266,6 @@ window.OneMap = (() => {
         if(changed){closeMenus();closeDrawer();closeRegenerate();clearSelection();}
         show('omBack',value!=='world');
         E('omBack').title=value==='landmark'&&CityUI.activeId!==null?'Return to town':'Return to world';
-        let title='The Manyfold World',sub=sim?`WORLD ATLAS · ${sim.realms.filter(c=>c.alive).length} REALMS · ${sim.provinces.filter(p=>p.city).length} TOWNS`:'WORLD ATLAS';
-        if(value==='city'){
-            title=CityUI.layout?.name||'Town';
-            const p=sim?.provinces[CityUI.activeId];
-            sub=p?`${sim.realms[p.owner]?.name||'FREE COMMUNITIES'} / TOWN`:'TOWN';
-        }
-        if(value==='landmark'){title=LandmarkUI.recipe?.name||'Landmark';sub='ARCHITECTURAL DETAIL';}
-        E('omPlaceName').textContent=title;E('omPlaceName').title=title;E('omSceneLabel').textContent=sub;
         E('omHint').textContent=value==='landmark'?'DRAG TO ORBIT · SCROLL TO APPROACH · CLICK A PART':value==='city'?'DRAG TO EXPLORE · SHIFT-DRAG TO ORBIT · CLICK A BUILDING':'DRAG TO EXPLORE · SCROLL TO APPROACH · DOUBLE-CLICK A TOWN';
         localControls();
         // Resize only the newly active scene. The world camera itself is never reset on Back.
@@ -18532,10 +18527,8 @@ window.ContinuousMap = (() => {
  }
  function updateTitle(){if(!enabled||!world||!sim)return;const r=renderer,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=AtlasSpace.TOWN_ZOOM*1.04&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
-  const mode=r.zoom<AtlasSpace.TOWN_ZOOM?'WORLD ATLAS':r.zoom<AtlasSpace.TOWN_ZOOM*3.33?'REGION & TOWNS':r.zoom<AtlasSpace.DETAIL_ZOOM*3.06?'TOWN & LANDSCAPE':'BUILDING DETAIL';
-  E('omSceneLabel').textContent=mode+' · ONE CONTINUOUS MAP';E('omPlaceName').textContent=near?nearest.p.name:'The Manyfold World';
   E('cmContext').style.display=r.zoom>AtlasSpace.TOWN_ZOOM*1.04?'block':'none';
-  E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.settled).length} towns · scroll towards a town`;
+  E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${nearest.p.name} · ${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.settled).length} towns · scroll towards a town`;
   E('omHint').textContent='SCROLL TO APPROACH · SHIFT-DRAG TO ORBIT · CLICK A BUILDING';
   document.body.dataset.detail=r.zoom>=AtlasSpace.TOWN_ZOOM?'local':'atlas';
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};

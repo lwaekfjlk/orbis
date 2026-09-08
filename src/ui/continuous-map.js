@@ -50,10 +50,8 @@ window.ContinuousMap = (() => {
  }
  function updateTitle(){if(!enabled||!world||!sim)return;const r=renderer,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=AtlasSpace.TOWN_ZOOM*1.04&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
-  const mode=r.zoom<AtlasSpace.TOWN_ZOOM?'WORLD ATLAS':r.zoom<AtlasSpace.TOWN_ZOOM*3.33?'REGION & TOWNS':r.zoom<AtlasSpace.DETAIL_ZOOM*3.06?'TOWN & LANDSCAPE':'BUILDING DETAIL';
-  E('omSceneLabel').textContent=mode+' · ONE CONTINUOUS MAP';E('omPlaceName').textContent=near?nearest.p.name:'The Manyfold World';
   E('cmContext').style.display=r.zoom>AtlasSpace.TOWN_ZOOM*1.04?'block':'none';
-  E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.settled).length} towns · scroll towards a town`;
+  E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${nearest.p.name} · ${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.settled).length} towns · scroll towards a town`;
   E('omHint').textContent='SCROLL TO APPROACH · SHIFT-DRAG TO ORBIT · CLICK A BUILDING';
   document.body.dataset.detail=r.zoom>=AtlasSpace.TOWN_ZOOM?'local':'atlas';
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
