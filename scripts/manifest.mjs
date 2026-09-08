@@ -19,7 +19,7 @@ export const scripts = [
     'src/landmarks/templates.js',
     'src/landmarks/world-binding.js',
     'src/render/depth-rasterizer.js',
-    'src/towns/building-kit.js', 'src/towns/artisan-kit.js',
+    'src/towns/building-kit.js', 'src/towns/street-frontage.js', 'src/towns/artisan-kit.js',
     'src/towns/wonders-woodland.js', 'src/towns/wonders-stone.js', 'src/towns/wonders-arcane.js',
     'src/towns/sacred-kit.js', 'src/towns/highland-kit.js',
     'src/render/city-renderer.js',
