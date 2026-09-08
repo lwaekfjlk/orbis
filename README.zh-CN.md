@@ -34,11 +34,18 @@
 
 可以搜索地貌名称来定位。重新生成世界即可体验新地形；旧存档保留原来的地理和历史。[查看地貌说明](docs/FANTASY_LANDFORMS.md)与[板块、气候与颜色对照](docs/TECTONICS_AND_LANDCOVER.md)。
 
-## 城市生长在原有地形上
+## 最大的几座城池
 
-![四座城市的2×2拼图：海岸、河谷、山麓和林冠聚落](previews/readme/grids/cities-grid.png)
+![默认世界建筑地块最多的四座城池，按规模排列的2×2实景拼图](previews/readme/grids/cities-grid.png)
 
-*从左到右、从上到下：Camelastrbelhaven 海岸城市、Ath Annaber 河谷城镇、Tapiokylinkoski 山麓城市、Sarrnavgalbourne 林冠聚落。*
+*默认世界 Aereth-47，第 400 年。按实际生成的建筑地块数排名，拼图顺序与下表一致。一个地块可以包含一组建筑。*
+
+| 排名 | 城市 | 建筑地块 | 人口 |
+| --- | --- | ---: | ---: |
+| 1 | Corbinbelararhaven | **971** | 41,006 |
+| 2 | Sarrelmont | **874** | 32,386 |
+| 3 | Alflundenvik | **792** | 32,228 |
+| 4 | Saint Tuoneneli | **716** | 26,875 |
 
 逐步放大，就能看到同一片土地上的房屋、城墙、神殿、王宫与港口。近处地形会变得更细致，气候也会影响地表、植被和建筑外观。点击建筑可查看说明，**Details** 面板还可导出 GLB 格式的城镇三维模型，模型不含周围地形。
 

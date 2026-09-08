@@ -34,11 +34,18 @@ Explore red-rock mesas, basalt calderas, irregular mountain massifs, branching r
 
 Search for a named landform to find it. Recreate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md) and [tectonics, climate and colour comparisons](docs/TECTONICS_AND_LANDCOVER.md).
 
-## Cities belong to the landscape
+## The largest cities
 
-![Four city views in a 2×2 collage: coast, river valley, foothills and a canopy settlement](previews/readme/grids/cities-grid.png)
+![The four largest cities by building plots, shown in a 2×2 collage](previews/readme/grids/cities-grid.png)
 
-*Left to right, top to bottom: coastal Camelastrbelhaven, riverside Ath Annaber, Tapiokylinkoski in the foothills and Sarrnavgalbourne's canopy settlement.*
+*Aereth-47, year 400. Ranked by generated building plots, in the same order as the table. A plot may contain a group of buildings.*
+
+| Rank | City | Building plots | Population |
+| --- | --- | ---: | ---: |
+| 1 | Corbinbelararhaven | **971** | 41,006 |
+| 2 | Sarrelmont | **874** | 32,386 |
+| 3 | Alflundenvik | **792** | 32,228 |
+| 4 | Saint Tuoneneli | **716** | 26,875 |
 
 Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 

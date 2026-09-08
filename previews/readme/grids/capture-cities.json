@@ -1,47 +1,47 @@
 {
-  "bundleSHA": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
-  "sourceCommit": "d4806dc",
-  "sourceBase": "99d4bfb",
+  "bundleSHA": "7fa6d360eef9a33c5e73f9417781657e015686f8e70a426879341046905080b0",
+  "sourceCommit": "7001d9074fc452efac84e0fade758aea30ae7bb7",
+  "selection": "Generated building count, descending",
   "bundlePath": "dist/orbis-onemap.html",
   "viewport": {
-    "width": 1480,
-    "height": 980
+    "width": 1200,
+    "height": 1020
   },
   "panel": {
     "x": 0,
-    "y": 90,
-    "width": 1480,
-    "height": 790
+    "y": 0,
+    "width": 1200,
+    "height": 1020
   },
   "cities": [
     {
-      "id": 257,
-      "name": "Camelastrbelhaven",
-      "urban": 58420.404738001555,
-      "harbor": 0.8960056304931641,
+      "id": 216,
+      "name": "Corbinbelararhaven",
+      "urban": 41006.06212791392,
+      "harbor": 0.6769288182258606,
       "river": 0,
-      "biome": "Savanna",
-      "style": "lagoon",
+      "biome": "Temperate forest",
+      "style": "river",
       "environment": {
-        "label": "Savanna",
-        "bed": 171.87841796875,
-        "temperature": 25.15884780883789,
-        "aridity": 1.1407601833343506,
-        "mountainous": false,
-        "relief": 883.8011713027954,
-        "forestFraction": 0.44086021505376344
+        "label": "Temperate forest · mountain slopes",
+        "bed": 162.4718475341797,
+        "temperature": 15.732399940490723,
+        "aridity": 1.0859099626541138,
+        "mountainous": true,
+        "relief": 2729.662609100342,
+        "forestFraction": 0.3902439024390244
       },
-      "scene": "Coastal city",
-      "buildings": 488,
-      "roads": 107,
-      "walls": 270,
+      "rank": 1,
+      "buildings": 971,
+      "roads": 97,
+      "walls": 278,
       "gates": 3,
       "landmarks": [
         {
           "id": "b0",
-          "name": "Camelastrbelhaven · Tide Palace",
+          "name": "Corbinbelararhaven · Gilded Palace",
           "type": "temple",
-          "wonder": "tide-palace"
+          "wonder": "gilded-palace"
         },
         {
           "id": "b1",
@@ -64,150 +64,61 @@
           "type": "harbor"
         },
         {
-          "id": "b62",
-          "name": "The Common Cistern",
-          "type": "well"
-        },
-        {
-          "id": "b204",
+          "id": "b790",
           "name": "Public Grain House",
           "type": "granary"
         }
       ],
       "bounds": {
-        "minX": 371.72900071788604,
-        "minY": 164.88901675749887,
-        "maxX": 1120.7809182391668,
-        "maxY": 835.0553317270488
+        "minX": 101.26497853957517,
+        "minY": 49.999388299951875,
+        "maxX": 1098.7356481698953,
+        "maxY": 969.999417161405
       },
-      "triangles": 246042,
+      "triangles": 301430,
       "camera": {
         "target": [
-          48.03963136357017,
-          0.32878847197777344,
-          -7.384803186862676
+          65.9908235608714,
+          0.383679409134581,
+          -16.643067293658873
         ],
-        "zoom": 90.36228963608748,
-        "azimuth": -1.7802306442901457,
-        "elevation": 0.86
+        "zoom": 103.59380540285274,
+        "azimuth": 1.2441258666746502,
+        "elevation": 0.74
       },
       "worker": true,
       "error": null,
-      "full": "/tmp/telluric-readme-grids-qa/cities/city-257.png",
-      "panel": "/tmp/telluric-readme-grids-qa/cities/city-257-panel.png",
-      "sceneZh": "海岸城市",
-      "description": "Camelastrbelhaven: turquoise-roofed residential blocks, connected streets and a domed Tide Palace inside a coastal curtain wall.",
-      "panelVisuallyReviewed": true,
-      "panelFit": true
+      "full": null,
+      "panel": "/tmp/telluric-largest-cities-qa/city-216-panel.png"
     },
     {
-      "id": 421,
-      "name": "Ath Annaber",
-      "urban": 73124.34246895454,
-      "harbor": 0,
-      "river": 1,
-      "biome": "Floodplain meadow",
-      "style": "delve",
+      "id": 264,
+      "name": "Sarrelmont",
+      "urban": 32386.099604574712,
+      "harbor": 0.7459158301353455,
+      "river": 0,
+      "biome": "Tropical rainforest",
+      "style": "monsoon",
       "environment": {
-        "label": "Floodplain meadow · mountain slopes",
-        "bed": 1105.2745361328125,
-        "temperature": 18.07208251953125,
-        "aridity": 1.299644112586975,
+        "label": "Tropical rainforest · mountain slopes",
+        "bed": 916.591552734375,
+        "temperature": 22.495033264160156,
+        "aridity": 5.643034934997559,
         "mountainous": true,
-        "relief": 1908.138198852539,
-        "forestFraction": 0.5325443786982249
+        "relief": 2814.1373748779297,
+        "forestFraction": 0.66
       },
-      "scene": "River-valley town",
-      "buildings": 299,
-      "roads": 41,
-      "walls": 236,
-      "gates": 2,
+      "rank": 2,
+      "buildings": 874,
+      "roads": 112,
+      "walls": 322,
+      "gates": 8,
       "landmarks": [
         {
           "id": "b0",
-          "name": "Ath Annaber · Forge Hollow",
-          "type": "temple",
-          "wonder": "forge-hollow"
-        },
-        {
-          "id": "b1",
-          "name": "The Council Keep",
-          "type": "civic"
-        },
-        {
-          "id": "b2",
-          "name": "The Covered Exchange",
-          "type": "market"
-        },
-        {
-          "id": "b3",
-          "name": "The Guildhall",
-          "type": "workshop"
-        },
-        {
-          "id": "b8",
-          "name": "Public Grain House",
-          "type": "granary"
-        },
-        {
-          "id": "b61",
-          "name": "The Common Cistern",
-          "type": "well"
-        }
-      ],
-      "bounds": {
-        "minX": 409.93278134055345,
-        "minY": 134.70792336534942,
-        "maxX": 1059.1025033736378,
-        "maxY": 831.7869551866943
-      },
-      "triangles": 224035,
-      "camera": {
-        "target": [
-          58.16183660284061,
-          1.2510125230334874,
-          10.067033249497593
-        ],
-        "zoom": 97.18432586567937,
-        "azimuth": 0.5044278907691636,
-        "elevation": 0.86
-      },
-      "worker": true,
-      "error": null,
-      "full": "/tmp/telluric-readme-grids-qa/cities/city-421.png",
-      "panel": "/tmp/telluric-readme-grids-qa/cities/city-421-panel.png",
-      "sceneZh": "河谷城镇",
-      "description": "Ath Annaber: a river through dark stone housing and civic blocks beside the excavated Forge Hollow.",
-      "panelVisuallyReviewed": true,
-      "panelFit": true
-    },
-    {
-      "id": 413,
-      "name": "Tapiokylinkoski",
-      "urban": 69376.75395204214,
-      "harbor": 0,
-      "river": 1,
-      "biome": "Floodplain meadow",
-      "style": "delta",
-      "environment": {
-        "label": "Floodplain meadow · mountain slopes",
-        "bed": 537.733154296875,
-        "temperature": 21.894046783447266,
-        "aridity": 1.5091956853866577,
-        "mountainous": true,
-        "relief": 2061.3598022460938,
-        "forestFraction": 0.6982248520710059
-      },
-      "scene": "Foothill city",
-      "buildings": 683,
-      "roads": 111,
-      "walls": 284,
-      "gates": 3,
-      "landmarks": [
-        {
-          "id": "b0",
-          "name": "The Council Keep",
-          "type": "civic"
+          "name": "The High Citadel",
+          "type": "civic",
+          "wonder": null
         },
         {
           "id": "b1",
@@ -216,79 +127,75 @@
         },
         {
           "id": "b2",
+          "name": "The Meridian Collegium",
+          "type": "academy"
+        },
+        {
+          "id": "b3",
           "name": "The Covered Exchange",
           "type": "market"
         },
         {
-          "id": "b3",
-          "name": "The Guildhall",
-          "type": "workshop"
-        },
-        {
-          "id": "b14",
+          "id": "b34",
           "name": "Public Grain House",
           "type": "granary"
         },
         {
-          "id": "b77",
+          "id": "b777",
           "name": "The Common Cistern",
           "type": "well"
         }
       ],
       "bounds": {
-        "minX": 380.39552729829666,
-        "minY": 131.1377640787282,
-        "maxX": 1109.0715167679132,
-        "maxY": 847.5533122829809
+        "minX": 72.09871079557217,
+        "minY": 49.99892831779306,
+        "maxX": 1127.9020239272938,
+        "maxY": 969.9989385314414
       },
-      "triangles": 201598,
+      "triangles": 430592,
       "camera": {
         "target": [
-          26.70041303005476,
-          0.7350539623452901,
-          9.55437132408061
+          -78.7343431039217,
+          0.8415530415513521,
+          -3.7336308899281385
         ],
-        "zoom": 84.1330117372283,
-        "azimuth": 1.4099313488300262,
-        "elevation": 0.86
+        "zoom": 111.87359948106757,
+        "azimuth": 2.2963032650549695,
+        "elevation": 0.74
       },
       "worker": true,
       "error": null,
-      "full": "/tmp/telluric-readme-grids-qa/cities/city-413.png",
-      "panel": "/tmp/telluric-readme-grids-qa/cities/city-413-panel.png",
-      "sceneZh": "山麓城市",
-      "description": "Tapiokylinkoski: dense timber housing, riverside streets, civic landmarks and a continuous wooden enclosure on a wooded foothill.",
-      "panelVisuallyReviewed": true,
-      "panelFit": true
+      "full": null,
+      "panel": "/tmp/telluric-largest-cities-qa/city-264-panel.png"
     },
     {
-      "id": 289,
-      "name": "Sarrnavgalbourne",
-      "urban": 71332.26124133327,
-      "harbor": 0,
-      "river": 1,
-      "biome": "Savanna",
-      "style": "forest",
+      "id": 499,
+      "name": "Alflundenvik",
+      "urban": 32228.13761061071,
+      "harbor": 0.6477975845336914,
+      "river": 0,
+      "biome": "Temperate forest",
+      "style": "mountain",
       "environment": {
-        "label": "Savanna",
-        "bed": 443.0412292480469,
-        "temperature": 24.88016700744629,
-        "aridity": 1.088423252105713,
-        "mountainous": false,
-        "relief": 1395.3266925811768,
-        "forestFraction": 0.5662650602409639
+        "label": "Temperate forest · glacial foothills",
+        "bed": 182.9259796142578,
+        "temperature": 8.168896675109863,
+        "aridity": 1.2604910135269165,
+        "mountainous": true,
+        "relief": 3799.216899871826,
+        "forestFraction": 0.3140495867768595
       },
-      "scene": "Canopy settlement",
-      "buildings": 235,
-      "roads": 55,
-      "walls": 205,
-      "gates": 2,
+      "rank": 3,
+      "buildings": 792,
+      "roads": 71,
+      "walls": 312,
+      "gates": 3,
       "landmarks": [
         {
           "id": "b0",
-          "name": "Sarrnavgalbourne · Grove Sanctuary",
+          "name": "Alflundenvik · Deep City",
           "type": "temple",
-          "wonder": "grove-sanctuary"
+          "wonder": "deep-city"
         },
         {
           "id": "b1",
@@ -307,40 +214,118 @@
         },
         {
           "id": "b4",
+          "name": "Harbormaster House",
+          "type": "harbor"
+        },
+        {
+          "id": "b772",
+          "name": "Public Grain House",
+          "type": "granary"
+        }
+      ],
+      "bounds": {
+        "minX": 52.22569655920779,
+        "minY": 49.999727731968875,
+        "maxX": 1147.775186525996,
+        "maxY": 969.9997782162714
+      },
+      "triangles": 250937,
+      "camera": {
+        "target": [
+          -51.999000719335534,
+          0.3873498529176228,
+          23.863445924608165
+        ],
+        "zoom": 123.74913480101215,
+        "azimuth": -0.39060139085280254,
+        "elevation": 0.74
+      },
+      "worker": true,
+      "error": null,
+      "full": null,
+      "panel": "/tmp/telluric-largest-cities-qa/city-499-panel.png"
+    },
+    {
+      "id": 267,
+      "name": "Saint Tuoneneli",
+      "urban": 26875.458581828294,
+      "harbor": 0.8866433501243591,
+      "river": 0,
+      "biome": "Savanna",
+      "style": "lagoon",
+      "environment": {
+        "label": "Savanna",
+        "bed": 78.24849700927734,
+        "temperature": 27.406661987304688,
+        "aridity": 1.1840012073516846,
+        "mountainous": false,
+        "relief": 719.7760047912598,
+        "forestFraction": 0.08791208791208792
+      },
+      "rank": 4,
+      "buildings": 716,
+      "roads": 124,
+      "walls": 218,
+      "gates": 14,
+      "landmarks": [
+        {
+          "id": "b0",
+          "name": "Saint Tuoneneli · Tide Palace",
+          "type": "temple",
+          "wonder": "tide-palace"
+        },
+        {
+          "id": "b1",
+          "name": "The Council Keep",
+          "type": "civic"
+        },
+        {
+          "id": "b2",
+          "name": "The Meridian Collegium",
+          "type": "academy"
+        },
+        {
+          "id": "b3",
+          "name": "The Covered Exchange",
+          "type": "market"
+        },
+        {
+          "id": "b4",
+          "name": "Harbormaster House",
+          "type": "harbor"
+        },
+        {
+          "id": "b7",
           "name": "Public Grain House",
           "type": "granary"
         },
         {
-          "id": "b49",
+          "id": "b692",
           "name": "The Common Cistern",
           "type": "well"
         }
       ],
       "bounds": {
-        "minX": 335.8206612533155,
-        "minY": 219.67181172747985,
-        "maxX": 1143.7494087967434,
-        "maxY": 832.4102018750127
+        "minX": 50.00116849646474,
+        "minY": 147.64084673222757,
+        "maxX": 1150.001129589839,
+        "maxY": 872.357331279423
       },
-      "triangles": 232443,
+      "triangles": 250329,
       "camera": {
         "target": [
-          59.29441315899591,
-          0.7302620600343073,
-          -5.198123246621424
+          -64.3002411736162,
+          0.2507799140326683,
+          -4.57728388357796
         ],
-        "zoom": 115.19071452689185,
-        "azimuth": 2.4479517158984327,
-        "elevation": 0.86
+        "zoom": 129.19279696775993,
+        "azimuth": 0.33716126308781996,
+        "elevation": 0.74
       },
       "worker": true,
       "error": null,
-      "full": "/tmp/telluric-readme-grids-qa/cities/city-289.png",
-      "panel": "/tmp/telluric-readme-grids-qa/cities/city-289-panel.png",
-      "sceneZh": "林冠聚落",
-      "description": "Sarrnavgalbourne: small canopy homes and an elevated Grove Sanctuary supported above the slope.",
-      "panelVisuallyReviewed": true,
-      "panelFit": true
+      "full": null,
+      "panel": "/tmp/telluric-largest-cities-qa/city-267-panel.png"
     }
   ],
   "errors": [],
@@ -373,12 +358,5 @@
     "b18c6a8",
     "b007f61e"
   ],
-  "passed": true,
-  "selectedCityIds": [
-    257,
-    421,
-    413,
-    289
-  ],
-  "captureMethod": "Unmodified offline ORBIS production bundle; the same four ordinary city IDs entered through actual search, camera fitted to mounted city bounds, full viewport and panel captured directly with Playwright page.screenshot."
+  "passed": true
 }

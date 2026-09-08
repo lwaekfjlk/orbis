@@ -1,11 +1,5 @@
 {
-  "sourceCommit": "99d4bfbf1a2e3448c1a2cbca5c919534ea4a2068",
-  "bundleSha256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
   "method": "Each source panel is a direct browser screenshot of the running offline application. The four unchanged panel files are laid out with HTML/CSS and the resulting grid is captured as one PNG.",
-  "panelDimensions": [
-    1480,
-    790
-  ],
   "grids": [
     {
       "id": "cities",
@@ -14,34 +8,54 @@
       "rows": 2,
       "panels": [
         {
-          "source": "panels/city-257-panel.png",
-          "sourceSha256": "c05c5ce96ee48b21204087976b4241fd54a11d1e2550dbb1f6142fbc7dca6716",
-          "title": "Camelastrbelhaven",
-          "subtitle": "Coastal city",
-          "position": 1
+          "source": "panels/city-216-panel.png",
+          "sourceSha256": "d47e058d2d18bd5dcb8a996fa3106b4a13d96ff33c053e68e7906bc832ef3824",
+          "title": "Corbinbelararhaven",
+          "subtitle": "971 building plots \u00b7 41,006 people",
+          "position": 1,
+          "cityId": 216,
+          "buildingPlots": 971,
+          "population": 41006
         },
         {
-          "source": "panels/city-421-panel.png",
-          "sourceSha256": "f1fde4f4019a774abfc7d8376dd910c88b852c899eff6e9a8beda1b642b1c6cd",
-          "title": "Ath Annaber",
-          "subtitle": "River city",
-          "position": 2
+          "source": "panels/city-264-panel.png",
+          "sourceSha256": "5f8ad2ad49f393ad6ac4a1c13d51ebabbf07681aac0681ac2e3d57008e959c34",
+          "title": "Sarrelmont",
+          "subtitle": "874 building plots \u00b7 32,386 people",
+          "position": 2,
+          "cityId": 264,
+          "buildingPlots": 874,
+          "population": 32386
         },
         {
-          "source": "panels/city-413-panel.png",
-          "sourceSha256": "fe337124c94746b595a6af1c7a5dc98eff5d8a21310032ff162dc1ac411874fa",
-          "title": "Tapiokylinkoski",
-          "subtitle": "Foothill city",
-          "position": 3
+          "source": "panels/city-499-panel.png",
+          "sourceSha256": "783b397085be63ffd05ca5650386840834c03e33bde5c4bfb5e2438c149848b6",
+          "title": "Alflundenvik",
+          "subtitle": "792 building plots \u00b7 32,228 people",
+          "position": 3,
+          "cityId": 499,
+          "buildingPlots": 792,
+          "population": 32228
         },
         {
-          "source": "panels/city-289-panel.png",
-          "sourceSha256": "49cf957920209eb8223de43425a59d5429d135e41c40d3fa9eed920c8764e9bc",
-          "title": "Sarrnavgalbourne",
-          "subtitle": "Canopy settlement",
-          "position": 4
+          "source": "panels/city-267-panel.png",
+          "sourceSha256": "f8ff30d4a9ffae078fce6dad7e22f3b517c50e25cab39b19a395841456f969d0",
+          "title": "Saint Tuoneneli",
+          "subtitle": "716 building plots \u00b7 26,875 people",
+          "position": 4,
+          "cityId": 267,
+          "buildingPlots": 716,
+          "population": 26875
         }
-      ]
+      ],
+      "sourceCommit": "7001d9074fc452efac84e0fade758aea30ae7bb7",
+      "bundleSha256": "7fa6d360eef9a33c5e73f9417781657e015686f8e70a426879341046905080b0",
+      "panelDimensions": [
+        1200,
+        1020
+      ],
+      "selection": "Four largest ordinary cities in the default world, ranked by generated building plots.",
+      "ranking": "city-ranking.json"
     },
     {
       "id": "sites",
@@ -77,6 +91,12 @@
           "subtitle": "Ancient dragon ruins",
           "position": 4
         }
+      ],
+      "sourceCommit": "99d4bfbf1a2e3448c1a2cbca5c919534ea4a2068",
+      "bundleSha256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
+      "panelDimensions": [
+        1480,
+        790
       ]
     },
     {
@@ -113,6 +133,12 @@
           "subtitle": "Lyrariel Ithemesae \u00b7 Sylvans",
           "position": 4
         }
+      ],
+      "sourceCommit": "99d4bfbf1a2e3448c1a2cbca5c919534ea4a2068",
+      "bundleSha256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
+      "panelDimensions": [
+        1480,
+        790
       ]
     }
   ]
