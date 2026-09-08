@@ -157,9 +157,11 @@ test('Mesh collection does not request a second canvas or graphics context',()=>
 });
 test('Sub-cell curvature refines the ground without moving the model or cracking it',()=>{
  const A=E.AtlasSpace;
- // Renderer, layout grade and parcel bounds must survey the same curved surface.
- // A separate renderer-only displacement would move the ground under its buildings.
- assert.equal(A.surface,E.CityEnvironment.atlasSurface);
+ // The physical survey stays bilinear. Display relief is optional and leaves
+ // unprepared worlds unchanged; town/water protection is checked separately.
+ const untouched={height:w.height,lake:w.lake,ice:w.ice};
+ for(const [x,y] of [[p.x,p.y],[150.23,90.61],[81.7,30.2]])
+  assert.equal(A.surface(untouched,x,y),E.CityEnvironment.atlasSurface(untouched,x,y));
  // The model still defines the original lattice, including ice and lake levels.
  let identity=0;
  for(let y=0;y<E.GH;y++)for(let x=0;x<E.GW;x++)identity=Math.max(identity,Math.abs(A.height(w,y*E.GW+x)-A.surface(w,x,y)));

@@ -9,7 +9,10 @@ const AtlasSpace = (() => {
  // Town art grows with its surveyed footprint, so this unit is independent of
  // population, camera zoom and whether a city has finished streaming.
  const TOWN_UNIT=CityEnvironment.cityDimensions.span*CITY_FOOTPRINT/CityEnvironment.cityDimensions.width*Math.sqrt(X*Z);
- const height=CityEnvironment.atlasHeight,weights=CityEnvironment.atlasWeights,surface=CityEnvironment.atlasSurface;
+ const height=CityEnvironment.atlasHeight,weights=CityEnvironment.atlasWeights;
+ // Visual microrelief shares one surface with roads, rivers, plants and picking.
+ // The city survey keeps its original bilinear surface inside protected parcels.
+ function surface(w,x,y,relief=1){return CityEnvironment.atlasSurface(w,x,y,relief)+(typeof LandscapeRelief==='undefined'?0:LandscapeRelief.offset(w,x,y,relief));}
  // World-scale map symbols are built against the original two coarse faces.
  // Detail uses the curved patch; rebuild overlays when that view changes over.
  function coarseSurface(w,x,y,relief=1){const[ids,q]=weights(x,y);return ids.reduce((h,i,k)=>h+height(w,i,relief)*q[k],0);}

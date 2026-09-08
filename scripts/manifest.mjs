@@ -22,7 +22,7 @@ export const scripts = [
     'src/towns/wonders-woodland.js', 'src/towns/wonders-stone.js', 'src/towns/wonders-arcane.js',
     'src/towns/sacred-kit.js',
     'src/render/city-renderer.js',
-    'src/continuous/atlas-space.js', 'src/render/river-renderer.js',
+    'src/continuous/landscape-relief.js', 'src/continuous/atlas-space.js', 'src/continuous/landscape-color.js', 'src/render/river-renderer.js',
     'src/continuous/river-detail.js', 'src/continuous/city-layer.js',
     'src/render/landmark-renderer.js',
     'src/render/export-glb.js',

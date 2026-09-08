@@ -11,7 +11,8 @@ let worldPromise;const worldAndSociety=()=>worldPromise??=(async()=>{const w=awa
 function ridge(){const w={height:new Float64Array(E.GW*E.GH).fill(100),lake:new Float64Array(E.GW*E.GH),ice:new Float64Array(E.GW*E.GH)};w.height[cell]=w.height[cell+E.GW+1]=1000;return w;}
 test('refinement samples a curved patch instead of repeating the coarse diagonal faces',()=>{
  const w=ridge(),high=E.AtlasSpace.height(w,cell),low=E.AtlasSpace.height(w,cell+1);
- assert.equal(E.AtlasSpace.surface,E.CityEnvironment.atlasSurface,'mesh registration must share the refined surface');
+ for(const [u,v] of [[0,0],[.25,.25],[.5,.5],[.73,.29],[1,1]])
+  assert.equal(E.AtlasSpace.surface(w,100+u,50+v),E.CityEnvironment.atlasSurface(w,100+u,50+v),'unprepared survey must retain its bilinear surface');
  for(const[u,v,i]of[[0,0,cell],[1,0,cell+1],[0,1,cell+E.GW],[1,1,cell+E.GW+1]])assert.equal(E.AtlasSpace.surface(w,100+u,50+v),E.AtlasSpace.height(w,i));
  const center=E.AtlasSpace.surface(w,100.5,50.5),quarter=E.AtlasSpace.surface(w,100.25,50.25);
  assert(Math.abs(center-(high+low)/2)<1e-12);assert(Math.abs(quarter-(high*.625+low*.375))<1e-12);

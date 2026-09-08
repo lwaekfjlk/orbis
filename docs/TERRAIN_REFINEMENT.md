@@ -4,6 +4,8 @@ The land beneath a city kept its coarse triangles as the camera moved closer. Cl
 
 Near terrain now interpolates all four inherited corner heights. Layout grades, building foundations, picking and streets use that same curved patch, so finer ground does not move independently of the city. Ground colours also interpolate across all four corners instead of retaining a large diagonal colour boundary. The world map keeps its original coarse surface, and its road and river overlays are reseated when entering or leaving detail.
 
+The subsequent [landscape detail update](LANDSCAPE_DETAIL.md) adds small display-only rises and material patches outside protected town surveys and water corridors. Physical layout surveys remain bilinear; roads, vegetation and picking share the resulting displayed surface.
+
 The visible region receives up to 128 subdivisions per parent-cell edge, selected from projected pixel size and limited by a mesh budget. Neighbouring levels share stitched boundary vertices, including colours and normals. Camera zoom, pan and viewport resizing request a settled terrain rebuild, and replacing the world cancels pending work.
 
 ## Actual uploaded mesh comparison
