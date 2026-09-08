@@ -1,38 +1,67 @@
-# TELLURIC 13 — Continuous Atlas
+# TELLURIC
 
-One visible map canvas, one georeference, one camera. Zoom towards a real settlement to see buildings **inside its original landscape**. No town or monument scene replaces the world.
+A procedural fantasy atlas you can explore from continents to city streets. Generate a world, discover its countries and people, and watch its history unfold—all in your browser.
 
-Open `dist/telluric-onemap.html`, or run `npm run dev` with Node.js 20+. There are no npm dependencies or external assets. Run `npm run build` after changing source; it rebuilds both the trusted Blob Worker source and the self-contained HTML.
+**[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-Countries draw recognizable names from ten mythological traditions, including Asgard, Avalon, Olympus and Kunlun. Inspired by Azgaar's namebases, each short name has a separate government title and a visible explanation of its mythological source. New worlds, new political histories and secessions use these names; loaded saves retain their existing names, and manual renaming clears the generated origin. See [realm names and sources](docs/REALM_NAMES.md).
+![World overview with named countries, settlements and unclaimed wilderness](previews/polities/after.png)
 
-Scroll to approach, drag to pan, Shift-drag to orbit, click a building to inspect, and use **Wider setting** to pull back. Search → **Zoom** flies the same camera to the town. The timeline, regeneration and world saves remain available.
+*The default world, Aereth-47. Click a country name to see its territory, population and history. Unclaimed wilderness is explicitly marked.*
 
-Heavy meshes are synthesized in a Worker and mounted in atlas coordinates. The model cache is bounded to two detailed towns; regional silhouettes are replaced with finer geometry nearby. This does not promise zero LOD popping or real-time frame rates on software graphics.
+## Start exploring
 
-Seven **legendary places** are named from the finished physical model, not invented on top of it: The Dragonwell stands on the greatest river's own headwater, The Skymirror on the highest standing water in the world, The Nightspire and The Drowned Choir on the two extremes of the elevation field, and so on for The Emberthroat, The Weeping Stair and The Hollow Crown. Each carries its lore and the measurement it was chosen by, and appears as a gilt marker, a name on the map, a search hit and a detail card. A world whose landform is missing simply has no legend there. Toggle them with **Legends**.
+| What you want to do | Control |
+| --- | --- |
+| Zoom from the world into a town | Scroll, pinch, or use **+ / −** |
+| Move or rotate the view | Drag to pan; **Shift + drag** or right-drag to orbit |
+| Find a place | Open **Search** or press **/**; choose **Zoom ↗** to approach a town |
+| Inspect a country or building | Click its name, marker or building; hover a country name to highlight its borders |
+| Return to the world | Click the top-left title or press **H**; **Wider setting** pulls back from a town |
 
-Terrain refinement follows the camera — a grid cell is subdivided up to eight ways once it covers enough screen — and the map renders above CSS resolution. Refined vertices sample the same parent surface, so this adds triangles, not landscape.
+Use **Play** or the year-step buttons to advance history. **Regenerate** creates a new world from a seed and your settings. The **⋯** menu includes save/load, the chronicle and exports; save your world before replacing it.
 
-Terrain is sampled from the unchanged physical world. Refined triangles do not invent new mountains or water, and buildings use re-seated foundations. Render scale remains exaggerated and non-metric. Architecture is synthetic and not a surveyed, engineering-valid city.
+## Cities belong to the landscape
 
-Sanctuaries, palaces and houses use modeled window reveals, layered entrances, supported bell chambers and finished roof edges. See the [architecture refinement and synchronized comparison](docs/ARCHITECTURE_REFINEMENT.md), or run `npm run preview:architecture -- --baseline b5f00bc` to inspect the original and refined meshes together.
+![An oblique view of Glassbeck, showing houses, streets, walls and the waterfront](previews/readme/city.png)
 
-All fifteen native wonders now have an individual review and export: fourteen further assemblies receive their own refined architecture, alongside the previously refined sanctuary. See the [complete wonder list, comparisons and GLB exports](docs/WONDER_REFINEMENT.md), or run `npm run preview:wonders -- --baseline 7264fd6`.
+*Glassbeck: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
 
-Roads join settlements over real ground — bridges only where the world has a channel, never a metre of road over open water — and coastal towns get a working waterfront. Small figures of the world's seven peoples walk the streets and the roads; each is one sample of its province's population mixture, and appearance is the only thing that differs between peoples. None of this feeds back into the simulation: roads carry no trade and figures carry no cargo. See [roads, ports and folk](docs/ROADS_PORTS_FOLK.md).
-Ground colour, vegetation and building form all read one climate resolver over the existing temperature, aridity and ice fields, so a boreal town and a tropical town are visibly different places at both scales. Roof pitch, eaves, openings, chimneys and palette are decided per block from that block's own cell. This is a legibility pass over data the model already produced — no snow, water or terrain is invented, and the physical world is byte-identical to before it.
+Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 
-**Click a town and somebody who lives there tells you about it.** An illustrated portrait — a human, an elf, a broad and bearded Stonekin, a horned Hornkin, a finned Tideborn, a muzzled Beastfolk, or a dragon with swept horns and slit pupils — with their name, their office and five chapters in their own voice: the peoples who came, the polity that formed, the trial the town survived, the deed that answered it, and what is still standing. The portraits use layered colour, shaped hair and clothing, and distinct anatomical silhouettes; each narrator keeps the same seeded face wherever they appear. Each chapter shows the model fact beneath it. The trial is a real conquest or siege from the chronicle when there is one, and otherwise the ground itself: the arcane rift under the district, a legendary place within reach, a live volcano, the wells, the open coast. A conqueror belongs to their realm, so one warlord recurs across every town they took and reading along a frontier assembles one war. No people is ever the enemy — an adversary is a state, a disaster or a place, and narrators and heroes alike are drawn from each province's live population mixture. See [city sagas](docs/CITY_SAGAS.md).
+City detail loads as you approach. Initial generation and large cities can take longer on slower devices. Terrain and buildings use stylized scales.
 
-See [中文完整说明](README.zh-CN.md), [verification](docs/CONTINUOUS_VERIFICATION.md), and `src/continuous/`.
-## Tests
+## People, countries and stories
 
-- `npm test` — current model and geometry tests.
-- `npm run test:climate` — climate legibility: colour separation, treeline, house response, same-tradition divergence.
-- `npm run test:continuous` — shared-surface and rigid-anchor checks.
-- `npm run test:roads` — road, bridge, quay and waterfront checks.
-- `npm run test:folk` — population mixture, figure and animation-budget checks.
-- `npm run test:browser` — the current one-canvas exploration workflow (Python Playwright + Chromium).
+![A town's resident narrator and illustrated city story beside the map](previews/readme/story.png)
 
-Older modal scene browser tests are retained for historical reference and are not the current interaction acceptance tests. The recorded browser run uses the offline bundle loaded in-memory and software graphics, not a hardware GPU benchmark.
+*Wengar Brendis introduces Scorchspire. Each story chapter includes the world or historical facts behind it.*
+
+Seven peoples inhabit the atlas. New countries form around a majority people while retaining minority communities; migration and political events can change that mix. Names draw on mythological traditions, and national overviews explain their origins.
+
+Select a town and choose **Hear the whole story** to meet its narrator. Explore founding stories, recorded conflicts and local landmarks, including legendary places chosen from the world's geography.
+
+## Run locally
+
+Download or clone this repository, then open **[dist/telluric-onemap.html](dist/telluric-onemap.html)** in a modern browser. The standalone file works offline, with no account, API key or external asset downloads.
+
+For development, use **Node.js 20+**. No npm dependencies need installing:
+
+```bash
+npm run dev
+```
+
+Open **http://127.0.0.1:5173**. After changing source, rebuild the offline HTML and its worker:
+
+```bash
+npm run build
+npm test
+```
+
+New generation rules apply when you regenerate; loading an old save preserves its existing history.
+
+## Learn more
+
+- [Countries and population](docs/POLITIES.md) · [Mythological names](docs/REALM_NAMES.md)
+- [Cities and terrain](docs/CITY_COHERENCE.md) · [Climate and landscapes](docs/BIOME_LANDSCAPES.md)
+- [Resident stories](docs/CITY_SAGAS.md) · [Architecture gallery and GLB exports](docs/WONDER_REFINEMENT.md)
+- [Loading performance](docs/MAP_LOADING.md) · [Map architecture](docs/CONTINUOUS_ARCHITECTURE.md)
