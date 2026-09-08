@@ -531,7 +531,7 @@ header {
 }
 .maplabel.realmLabel:after { content:none }
 .maplabel.realmLabel em {
-  font:400 22px/1.35 var(--realm-lettering);
+  font:400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);
   letter-spacing:0;
   color:#33403a
 }
@@ -1149,7 +1149,7 @@ dialog a {
     font-size:24px
   }
   .maplabel.realmLabel em {
-    font-size:20px
+    font-size:var(--realm-label-size,18px)
   }
   .maphead h3 {
     font-size:21px
@@ -1396,7 +1396,7 @@ dialog a {
     font-size:10px
   }
   .maplabel.realmLabel em {
-    font-size:18px
+    font-size:calc(var(--realm-label-size,18px) * .85)
   }
   .maplabel small {
     font-size:5px
