@@ -70,16 +70,19 @@ window.OneMap = (() => {
         E('closeNotes').onclick=()=>{E('notes').close();E('omMoreToggle').focus();};
         document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>command(b.dataset.command));
         E('omLayersPanel').addEventListener('click',e=>{
-            const b=e.target.closest('[data-layer]');
-            if(b){closeMenus();onWorldUpdate();}
+            // The body also carries data-layer for theme styling. Only actual
+            // panel buttons represent a layer choice; controls remain open so
+            // several layers and display options can be adjusted together.
+            const b=e.target.closest('button[data-layer]');
+            if(b&&e.currentTarget.contains(b))onWorldUpdate();
         });
-        E('moreLayer').addEventListener('change',()=>{closeMenus();onWorldUpdate();});
+        E('moreLayer').addEventListener('change',onWorldUpdate);
         document.querySelectorAll('[data-local-mode]').forEach(b=>b.onclick=()=>{
             if(scene!=='city'||!CityUI.renderer)return;
             document.querySelector(`[data-city-mode="${b.dataset.localMode}"]`)?.click();
-            localControls();closeMenus();
+            localControls();
         });
-        E('omSetting').onclick=()=>{E('citySetting').click();closeMenus();};
+        E('omSetting').onclick=()=>{E('citySetting').click();localControls();};
         for(const [id,source] of [['omLocalRoofs','townRoofs'],['omLocalTrees','townTrees'],['omMonumentRoofs','lmRoofs'],['omMonumentExplode','lmExplode']]){
             E(id).onchange=()=>{E(source).checked=E(id).checked;E(source).dispatchEvent(new Event('change'));};
         }
@@ -150,14 +153,6 @@ window.OneMap = (() => {
         if(changed){closeMenus();closeDrawer();closeRegenerate();clearSelection();}
         show('omBack',value!=='world');
         E('omBack').title=value==='landmark'&&CityUI.activeId!==null?'Return to town':'Return to world';
-        let title='The Manyfold World',sub=sim?`WORLD ATLAS · ${sim.realms.filter(c=>c.alive).length} REALMS · ${sim.provinces.filter(p=>p.city).length} TOWNS`:'WORLD ATLAS';
-        if(value==='city'){
-            title=CityUI.layout?.name||'Town';
-            const p=sim?.provinces[CityUI.activeId];
-            sub=p?`${sim.realms[p.owner]?.name||'FREE COMMUNITIES'} / TOWN`:'TOWN';
-        }
-        if(value==='landmark'){title=LandmarkUI.recipe?.name||'Landmark';sub='ARCHITECTURAL DETAIL';}
-        E('omPlaceName').textContent=title;E('omPlaceName').title=title;E('omSceneLabel').textContent=sub;
         E('omHint').textContent=value==='landmark'?'DRAG TO ORBIT · SCROLL TO APPROACH · CLICK A PART':value==='city'?'DRAG TO EXPLORE · SHIFT-DRAG TO ORBIT · CLICK A BUILDING':'DRAG TO EXPLORE · SCROLL TO APPROACH · DOUBLE-CLICK A TOWN';
         localControls();
         // Resize only the newly active scene. The world camera itself is never reset on Back.
