@@ -10,8 +10,34 @@ const layerTitles = { potential: 'SETTLEMENT POTENTIAL', settlements: 'SETTLEMEN
 function toast(text) { $('toast').textContent = text; $('toast').classList.remove('hidden'); clearTimeout(toast.timer); toast.timer = setTimeout(() => $('toast').classList.add('hidden'), 4800); }
 function pause() { playing = false; clearTimeout(timer); timer = null; $('play').textContent = '▶ Play'; window.OneMap?.onPlayback(); }
 function setBusy(value) { busy = value; if (value) renderer?.setHoveredRealm(null); for (const id of ['generate', 'play', 'step1', 'step10', 'step50', 'resetAge', 'exportToggle', 'forgeButton'])
-    $(id).disabled = value; $('loading').classList.toggle('hidden', !value); window.OneMap?.onBusy(value); }
-async function stageProgress(text) { $('loadingText').textContent = text; await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0))); }
+    $(id).disabled = value; $('loading').classList.toggle('hidden', !value); $('map').setAttribute('aria-busy', String(value)); window.OneMap?.onBusy(value); }
+const WORLD_BUILD_STAGES = 11;
+let loadingPercent = 0;
+function updateLoadingProgress(completed, text) {
+    // Callbacks announce the next stage, so only count the stages already done.
+    // This measures completed work stages, not an estimate of remaining time.
+    loadingPercent = Math.max(loadingPercent, Math.round(Math.min(WORLD_BUILD_STAGES, Math.max(0, completed)) / WORLD_BUILD_STAGES * 100));
+    $('loadingText').textContent = text;
+    $('loadingProgress').setAttribute('aria-valuenow', String(loadingPercent));
+    $('loadingProgress').setAttribute('aria-valuetext', `${loadingPercent}% — ${text}`);
+    $('loadingFill').style.transform = `scaleX(${loadingPercent / 100})`;
+    $('loadingPercent').textContent = `${loadingPercent}%`;
+}
+const paintLoadingProgress = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+async function stageProgress(text) {
+    const stage = /^(\d+)\s*\/\s*/.exec(text);
+    updateLoadingProgress(stage ? Number(stage[1]) - 1 : 0, text.replace(/^\d+\s*\/\s*/, ''));
+    await paintLoadingProgress();
+}
+function loadingError(title, message, retry = null) {
+    $('loading').dataset.state = 'error';
+    $('map').setAttribute('aria-busy', 'false');
+    $('loadingTitle').textContent = title;
+    $('loadingText').textContent = message;
+    $('loadingProgress').setAttribute('aria-valuetext', `Stopped at ${loadingPercent}% — ${message}`);
+    $('loadingRetry').classList.toggle('hidden', !retry);
+    $('loadingRetry').onclick = retry;
+}
 function landformRegionAt(w, i) {
     if (!Number.isInteger(i) || !(w?.height?.[i] > 0) || w.lake?.[i] >= 0)
         return null;
@@ -73,16 +99,21 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
     window.__ready = false;
     window.__error = null;
     window.__generationReport = null;
-    $('loadingTitle').textContent = 'A world taking shape.';
-    $('spinner').classList.remove('hidden');
+    $('loading').dataset.state = 'loading';
+    $('loadingTitle').textContent = restored ? 'Your world returning.' : 'A world taking shape.';
+    $('loadingRetry').classList.add('hidden');
+    $('loadingRetry').onclick = null;
+    loadingPercent = 0;
+    updateLoadingProgress(0, restored ? 'Reading your saved world…' : 'Preparing your atlas…');
     let landmarkPreload = null;
     try {
         focusedContinent = null;
         const start = performance.now(), w = await generateWorld(generationParameters(params, restored), stageProgress);
-        await stageProgress('08 / Water, food capacity, villages and market networks');
+        await stageProgress('08 / Founding towns and trade routes');
         const initial = createCivilization(w, opts);
         let next = initial;
         if (restored) {
+            await stageProgress('09 / Restoring your realms and their history');
             if (restored.gridSignature !== initial.gridSignature || (restored.physicalHash && restored.physicalHash !== physicalFingerprint(w)))
                 throw Error('The saved geography does not match this engine version.');
             next = restored;
@@ -90,12 +121,12 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
             aggregateRealms(next);
         }
         else {
-            await stageProgress('09 / Connected realms and local administrations');
+            await stageProgress('09 / Checking realms and their communities');
         }
         validateSimulation(next, w);
         // Independent site queries can run while the atlas attaches its meshes.
         landmarkPreload = typeof SacredCityKit !== 'undefined' ? SacredCityKit.preload(w, next) : null;
-        await stageProgress('10 / Attaching towns, realms and borders to the map');
+        await stageProgress('10 / Drawing towns and borders on the atlas');
         world = w;
         sim = next;
         window.world = w;
@@ -113,11 +144,13 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         renderer.setWorld(world);
         renderer.buildCivilization();
         window.__generationReport = generationReport(world, sim);
-        await stageProgress('11 / Locating landmarks and their town entrances');
+        await stageProgress('11 / Discovering wonders and hidden places');
         if (landmarkPreload) await landmarkPreload.promise;
         refreshAll(false);
         makeGeoJumps();
         document.querySelectorAll('[data-layer]').forEach(b => { b.classList.toggle('active', b.dataset.layer === currentLayer); b.setAttribute('aria-selected', String(b.dataset.layer === currentLayer)); });
+        updateLoadingProgress(WORLD_BUILD_STAGES, 'Your world is ready.');
+        await paintLoadingProgress();
         // Include the directory and UI attachment: until those finish the map
         // still has its loading screen and cannot accept input.
         window.lastGenerationMs = performance.now() - start;
@@ -160,9 +193,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         }
         setBusy(false);
         $('loading').classList.toggle('hidden', recovered);
-        $('spinner').classList.add('hidden');
-        $('loadingTitle').textContent = 'Generation stopped.';
-        $('loadingText').textContent = e.message;
+        loadingError('Creation stopped.', e.message, () => buildWorld(params, opts, restored));
         window.__ready = recovered;
         window.__error = e.message;
         toast(recovered ? 'Generation failed. Your previous world and history are unchanged. ' + e.message : e.message);
@@ -1136,8 +1167,7 @@ function boot() {
     }
     catch (e) {
         window.__error = e.message;
-        $('loadingTitle').textContent = 'A graphics-capable browser is needed.';
-        $('loadingText').textContent = e.message;
+        loadingError('A graphics-capable browser is needed.', e.message);
         return;
     }
     bindCamera();

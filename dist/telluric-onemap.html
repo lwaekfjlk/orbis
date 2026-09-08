@@ -2427,8 +2427,25 @@ body.onemap #legacyHooks,body.onemap .explore-strip,body.onemap .city-offer{disp
 body.onemap #stage{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0;max-height:none;border:0;border-radius:0;margin:0;z-index:0;isolation:isolate;background:#9fc4c5}
 body.onemap #stage canvas,body.onemap #cityCanvas,body.onemap #lmCanvas{width:100%;height:100%;display:block;outline:none;touch-action:none}
 body.onemap #stage>.maphead,body.onemap #stage>.mapstamp,body.onemap #stage>.mapfooter,body.onemap #stage>.maptools{display:none}
-body.onemap .maploading{position:absolute;inset:0;z-index:5;background:rgba(177,202,196,.96);color:#2b4e43}
-body.onemap .maploading p{color:#4c7061;font-size:12px}
+body.onemap .maploading{position:absolute;inset:0;z-index:5;padding:88px 20px 132px;background:radial-gradient(ellipse at 50% 42%,#e6eadeef,rgba(167,191,180,.97));color:#293f35}
+body.onemap .loading-card{width:min(460px,100%);padding:34px 38px 32px;border:1px solid #fbf8eae6;border-radius:16px;background:#f5f2e8;box-shadow:0 20px 70px #284c3a1c,0 2px 6px #284c3a0a;display:flex;flex-direction:column;align-items:center;text-align:center}
+body.onemap .loading-mark{width:54px;height:54px;margin-bottom:19px;fill:none;stroke:#637b61;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+body.onemap .loading-mark circle{stroke:#ad9763;stroke-width:.7}
+body.onemap .loading-eyebrow{color:#64705d;font-size:9px;font-weight:600;letter-spacing:2.1px;line-height:1.5}
+body.onemap .maploading strong{margin-top:13px;font:italic 30px/1.2 Georgia,serif;letter-spacing:-.5px}
+body.onemap .maploading p{min-height:36px;width:100%;margin:14px 0 20px;color:#5c6c5d;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+body.onemap .loading-meter{display:flex;align-items:center;gap:14px;width:100%}
+body.onemap .loading-track{height:8px;flex:1;overflow:hidden;border-radius:20px;background:#dce0d1;box-shadow:inset 0 1px 2px #2c4a3114}
+body.onemap .loading-fill{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#355a46,#829567);transform:scaleX(0);transform-origin:left;transition:transform .24s ease-out}
+body.onemap .loading-track:is([aria-valuenow="0"],[aria-valuenow="100"]) .loading-fill{transition:none}
+body.onemap #loadingPercent{min-width:35px;text-align:right;color:#45603f;font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}
+body.onemap .loading-retry{display:flex;align-items:center;gap:14px;margin-top:24px;min-height:44px;padding:10px 19px;border:1px solid #355a46;border-radius:7px;background:#355a46;color:#f5f2e8;font-size:12px;font-weight:600;cursor:pointer}
+body.onemap .loading-retry:hover{background:#284936}
+body.onemap .loading-retry:focus-visible{outline:2px solid #355a46;outline-offset:4px}
+body.onemap .maploading[data-state="error"] .loading-fill{background:#a27b59;transition:none}
+body.onemap .maploading[data-state="error"] #loadingPercent{color:#806044}
+@media(max-width:480px){body.onemap .maploading{padding:80px 16px 148px}body.onemap .loading-card{padding:28px 24px}body.onemap .maploading strong{font-size:27px}body.onemap .loading-mark{width:48px;height:48px;margin-bottom:16px}}
+@media(max-height:540px){body.onemap .maploading{padding:75px 16px 114px}body.onemap .loading-card{padding:18px 24px}body.onemap .loading-mark{display:none}body.onemap .maploading p{margin:10px 0 12px}}
 body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6da9c}
 body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
 body.onemap .maplabel em{font:italic 15px Georgia,serif}
@@ -2896,7 +2913,15 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 
 -->
-</head><body class="onemap" data-scene="world"><div class="stage om-world-scene" id="stage"><canvas aria-label="Interactive fantasy civilization atlas. Click a realm or landscape to inspect it; drag to pan, shift-drag to rotate, scroll to zoom." id="map"></canvas><div class="maphead"><div class="overline">TELLURIC / LIVING ATLAS</div><h3 id="mapName">Many Crowns, One World</h3><div class="rule"></div></div><div class="mapstamp" id="mapStamp">REALMS / YEAR 400</div><div class="labels" id="labels"></div><div class="maptools"><button id="zoomIn" title="Zoom in">+</button><button id="zoomOut" title="Zoom out">−</button><button id="resetView" title="Whole world">↺</button><button id="fullscreen" title="Fullscreen map">⛶</button></div><div class="mapfooter"><div class="compass"><svg id="compass" viewBox="0 0 25 43"><text style="fill:#dcebe2;stroke:none;font:8px Georgia;text-anchor:middle" x="12" y="8">N</text><path d="m12 14-5 17 5-3 5 3-5-17Z"></path><path d="M12 14v24M3 28h18"></path></svg><small>86° N — 86° S<br/>QUALITATIVE MODEL SPACE</small></div><span>RELIEF EXAGGERATED · SETTLEMENT SYMBOLS NOT TO SCALE</span></div><div class="maploading" id="loading"><div class="loader" id="spinner"></div><strong id="loadingTitle">A world taking shape.</strong><p id="loadingText" role="status">Reading the lithosphere…</p></div></div><div aria-hidden="true" hidden="" id="legacyHooks" inert=""><header><div class="brand"><div class="seal">♜</div><div><strong>TELLURIC <span style="font:16px Georgia,serif;letter-spacing:0;color:#9ba887">IX</span></strong><small>LAND FIRST · MANY CROWNS</small></div></div><div class="headcenter">Geography gives possibilities. History makes the world.</div><div class="headright"><span class="pill">OFFLINE SIMULATION</span><button class="mobilemenu" id="mobileToggle">Realms</button><button class="plain" id="notesButton">Model notes</button><div class="exportwrap"><button id="exportToggle">Export ▾</button><div class="exportmenu hidden" id="exportMenu"><button id="saveGame">Save simulation<small>JSON · resume the same world and year</small></button><button id="loadGame">Load simulation<small>Restore a Telluric VI–IX save</small></button><button id="savePNG">Save atlas image<small>PNG · actual rendered map and labels</small></button><button id="saveGLB">Save 3D scene<small>GLB · terrain, settlements and vegetation</small></button><button id="saveLore">Save world chronicle<small>Markdown · realms, relations and events</small></button></div></div></div></header><div class="workspace">
+</head><body class="onemap" data-scene="world"><div class="stage om-world-scene" id="stage"><canvas aria-busy="true" aria-label="Interactive fantasy civilization atlas. Click a realm or landscape to inspect it; drag to pan, shift-drag to rotate, scroll to zoom." id="map"></canvas><div class="maphead"><div class="overline">TELLURIC / LIVING ATLAS</div><h3 id="mapName">Many Crowns, One World</h3><div class="rule"></div></div><div class="mapstamp" id="mapStamp">REALMS / YEAR 400</div><div class="labels" id="labels"></div><div class="maptools"><button id="zoomIn" title="Zoom in">+</button><button id="zoomOut" title="Zoom out">−</button><button id="resetView" title="Whole world">↺</button><button id="fullscreen" title="Fullscreen map">⛶</button></div><div class="mapfooter"><div class="compass"><svg id="compass" viewBox="0 0 25 43"><text style="fill:#dcebe2;stroke:none;font:8px Georgia;text-anchor:middle" x="12" y="8">N</text><path d="m12 14-5 17 5-3 5 3-5-17Z"></path><path d="M12 14v24M3 28h18"></path></svg><small>86° N — 86° S<br/>QUALITATIVE MODEL SPACE</small></div><span>RELIEF EXAGGERATED · SETTLEMENT SYMBOLS NOT TO SCALE</span></div><div class="maploading" id="loading" data-state="loading">
+<div class="loading-card">
+<svg class="loading-mark" aria-hidden="true" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22"></circle><path d="m7 34 12-22 9 14 5-8 9 16H7Z M14 21l5 4 4-3"></path></svg>
+<span class="loading-eyebrow">TELLURIC · A LIVING ATLAS</span>
+<strong id="loadingTitle">A world taking shape.</strong>
+<p id="loadingText" role="status" aria-atomic="true">Preparing your atlas…</p>
+<div class="loading-meter"><div class="loading-track" id="loadingProgress" role="progressbar" aria-label="World creation progress" aria-describedby="loadingText" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0% — Preparing your atlas…"><span class="loading-fill" id="loadingFill"></span></div><span id="loadingPercent" aria-hidden="true">0%</span></div>
+<button id="loadingRetry" class="loading-retry hidden" type="button">Try again <span aria-hidden="true">↻</span></button>
+</div></div></div><div aria-hidden="true" hidden="" id="legacyHooks" inert=""><header><div class="brand"><div class="seal">♜</div><div><strong>TELLURIC <span style="font:16px Georgia,serif;letter-spacing:0;color:#9ba887">IX</span></strong><small>LAND FIRST · MANY CROWNS</small></div></div><div class="headcenter">Geography gives possibilities. History makes the world.</div><div class="headright"><span class="pill">OFFLINE SIMULATION</span><button class="mobilemenu" id="mobileToggle">Realms</button><button class="plain" id="notesButton">Model notes</button><div class="exportwrap"><button id="exportToggle">Export ▾</button><div class="exportmenu hidden" id="exportMenu"><button id="saveGame">Save simulation<small>JSON · resume the same world and year</small></button><button id="loadGame">Load simulation<small>Restore a Telluric VI–IX save</small></button><button id="savePNG">Save atlas image<small>PNG · actual rendered map and labels</small></button><button id="saveGLB">Save 3D scene<small>GLB · terrain, settlements and vegetation</small></button><button id="saveLore">Save world chronicle<small>Markdown · realms, relations and events</small></button></div></div></div></header><div class="workspace">
 
 <main class="main"><div class="maintitle"><div><div class="overline">A WORLD OF KINGDOMS, CREEDS &amp; CONSEQUENCES</div><h1>The Manyfold World</h1><p id="worldSubtitle">Continents and watersheds beneath a changing political world.</p></div><div class="worldstats"><div class="worldstat"><b id="statPopulation">—</b><small>POPULATION</small></div><div class="worldstat"><b id="statRealms">—</b><small>REALMS</small></div><div class="worldstat"><b id="statAlliances">—</b><small>PACTS</small></div><div class="worldstat"><b id="statWars">—</b><small>WARS</small></div></div></div>
 <div class="timebar"><div class="clock"><span class="overline">YEAR</span><div class="year"> <small>AC</small></div></div><div class="simbuttons"><button id="resetAge" title="Restart the founding history on this geography">↺ Reset</button></div><span class="simstatus" id="simStatus">Deterministic annual steps</span></div>
@@ -17107,8 +17132,34 @@ const layerTitles = { potential: 'SETTLEMENT POTENTIAL', settlements: 'SETTLEMEN
 function toast(text) { $('toast').textContent = text; $('toast').classList.remove('hidden'); clearTimeout(toast.timer); toast.timer = setTimeout(() => $('toast').classList.add('hidden'), 4800); }
 function pause() { playing = false; clearTimeout(timer); timer = null; $('play').textContent = '▶ Play'; window.OneMap?.onPlayback(); }
 function setBusy(value) { busy = value; if (value) renderer?.setHoveredRealm(null); for (const id of ['generate', 'play', 'step1', 'step10', 'step50', 'resetAge', 'exportToggle', 'forgeButton'])
-    $(id).disabled = value; $('loading').classList.toggle('hidden', !value); window.OneMap?.onBusy(value); }
-async function stageProgress(text) { $('loadingText').textContent = text; await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0))); }
+    $(id).disabled = value; $('loading').classList.toggle('hidden', !value); $('map').setAttribute('aria-busy', String(value)); window.OneMap?.onBusy(value); }
+const WORLD_BUILD_STAGES = 11;
+let loadingPercent = 0;
+function updateLoadingProgress(completed, text) {
+    // Callbacks announce the next stage, so only count the stages already done.
+    // This measures completed work stages, not an estimate of remaining time.
+    loadingPercent = Math.max(loadingPercent, Math.round(Math.min(WORLD_BUILD_STAGES, Math.max(0, completed)) / WORLD_BUILD_STAGES * 100));
+    $('loadingText').textContent = text;
+    $('loadingProgress').setAttribute('aria-valuenow', String(loadingPercent));
+    $('loadingProgress').setAttribute('aria-valuetext', `${loadingPercent}% — ${text}`);
+    $('loadingFill').style.transform = `scaleX(${loadingPercent / 100})`;
+    $('loadingPercent').textContent = `${loadingPercent}%`;
+}
+const paintLoadingProgress = () => new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+async function stageProgress(text) {
+    const stage = /^(\d+)\s*\/\s*/.exec(text);
+    updateLoadingProgress(stage ? Number(stage[1]) - 1 : 0, text.replace(/^\d+\s*\/\s*/, ''));
+    await paintLoadingProgress();
+}
+function loadingError(title, message, retry = null) {
+    $('loading').dataset.state = 'error';
+    $('map').setAttribute('aria-busy', 'false');
+    $('loadingTitle').textContent = title;
+    $('loadingText').textContent = message;
+    $('loadingProgress').setAttribute('aria-valuetext', `Stopped at ${loadingPercent}% — ${message}`);
+    $('loadingRetry').classList.toggle('hidden', !retry);
+    $('loadingRetry').onclick = retry;
+}
 function landformRegionAt(w, i) {
     if (!Number.isInteger(i) || !(w?.height?.[i] > 0) || w.lake?.[i] >= 0)
         return null;
@@ -17170,16 +17221,21 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
     window.__ready = false;
     window.__error = null;
     window.__generationReport = null;
-    $('loadingTitle').textContent = 'A world taking shape.';
-    $('spinner').classList.remove('hidden');
+    $('loading').dataset.state = 'loading';
+    $('loadingTitle').textContent = restored ? 'Your world returning.' : 'A world taking shape.';
+    $('loadingRetry').classList.add('hidden');
+    $('loadingRetry').onclick = null;
+    loadingPercent = 0;
+    updateLoadingProgress(0, restored ? 'Reading your saved world…' : 'Preparing your atlas…');
     let landmarkPreload = null;
     try {
         focusedContinent = null;
         const start = performance.now(), w = await generateWorld(generationParameters(params, restored), stageProgress);
-        await stageProgress('08 / Water, food capacity, villages and market networks');
+        await stageProgress('08 / Founding towns and trade routes');
         const initial = createCivilization(w, opts);
         let next = initial;
         if (restored) {
+            await stageProgress('09 / Restoring your realms and their history');
             if (restored.gridSignature !== initial.gridSignature || (restored.physicalHash && restored.physicalHash !== physicalFingerprint(w)))
                 throw Error('The saved geography does not match this engine version.');
             next = restored;
@@ -17187,12 +17243,12 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
             aggregateRealms(next);
         }
         else {
-            await stageProgress('09 / Connected realms and local administrations');
+            await stageProgress('09 / Checking realms and their communities');
         }
         validateSimulation(next, w);
         // Independent site queries can run while the atlas attaches its meshes.
         landmarkPreload = typeof SacredCityKit !== 'undefined' ? SacredCityKit.preload(w, next) : null;
-        await stageProgress('10 / Attaching towns, realms and borders to the map');
+        await stageProgress('10 / Drawing towns and borders on the atlas');
         world = w;
         sim = next;
         window.world = w;
@@ -17210,11 +17266,13 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         renderer.setWorld(world);
         renderer.buildCivilization();
         window.__generationReport = generationReport(world, sim);
-        await stageProgress('11 / Locating landmarks and their town entrances');
+        await stageProgress('11 / Discovering wonders and hidden places');
         if (landmarkPreload) await landmarkPreload.promise;
         refreshAll(false);
         makeGeoJumps();
         document.querySelectorAll('[data-layer]').forEach(b => { b.classList.toggle('active', b.dataset.layer === currentLayer); b.setAttribute('aria-selected', String(b.dataset.layer === currentLayer)); });
+        updateLoadingProgress(WORLD_BUILD_STAGES, 'Your world is ready.');
+        await paintLoadingProgress();
         // Include the directory and UI attachment: until those finish the map
         // still has its loading screen and cannot accept input.
         window.lastGenerationMs = performance.now() - start;
@@ -17257,9 +17315,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         }
         setBusy(false);
         $('loading').classList.toggle('hidden', recovered);
-        $('spinner').classList.add('hidden');
-        $('loadingTitle').textContent = 'Generation stopped.';
-        $('loadingText').textContent = e.message;
+        loadingError('Creation stopped.', e.message, () => buildWorld(params, opts, restored));
         window.__ready = recovered;
         window.__error = e.message;
         toast(recovered ? 'Generation failed. Your previous world and history are unchanged. ' + e.message : e.message);
@@ -18233,8 +18289,7 @@ function boot() {
     }
     catch (e) {
         window.__error = e.message;
-        $('loadingTitle').textContent = 'A graphics-capable browser is needed.';
-        $('loadingText').textContent = e.message;
+        loadingError('A graphics-capable browser is needed.', e.message);
         return;
     }
     bindCamera();

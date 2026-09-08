@@ -1,0 +1,225 @@
+{
+  "passed": true,
+  "environment": "Offline production HTML, Chromium with SwiftShader",
+  "bundleSha256": "ea8f3708c9dba53c57fc7e90ab60ffdb5297ecac8100d6bb21f7e968bb3cc07e",
+  "defaultFingerprint": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "lifecycle": [
+    {
+      "name": "first startup",
+      "expectedOutcome": "completed",
+      "percentages": [
+        0,
+        0,
+        9,
+        18,
+        27,
+        36,
+        45,
+        55,
+        64,
+        73,
+        82,
+        91,
+        100
+      ],
+      "lastPercent": 100
+    },
+    {
+      "name": "same-seed Recreate",
+      "expectedOutcome": "completed",
+      "percentages": [
+        0,
+        0,
+        9,
+        18,
+        27,
+        36,
+        45,
+        55,
+        64,
+        73,
+        82,
+        91,
+        100
+      ],
+      "lastPercent": 100
+    },
+    {
+      "name": "legacy save via file chooser",
+      "expectedOutcome": "completed",
+      "percentages": [
+        0,
+        0,
+        9,
+        18,
+        27,
+        36,
+        45,
+        55,
+        64,
+        73,
+        82,
+        91,
+        100
+      ],
+      "lastPercent": 100
+    },
+    {
+      "name": "replacement attachment failure",
+      "expectedOutcome": "injected failure",
+      "percentages": [
+        0,
+        0,
+        9,
+        18,
+        27,
+        36,
+        45,
+        55,
+        64,
+        73,
+        82
+      ],
+      "lastPercent": 82
+    },
+    {
+      "name": "Recreate after recovery",
+      "expectedOutcome": "completed",
+      "percentages": [
+        0,
+        0,
+        9,
+        18,
+        27,
+        36,
+        45,
+        55,
+        64,
+        73,
+        82,
+        91,
+        100
+      ],
+      "lastPercent": 100
+    },
+    {
+      "name": "first-start isolated failure",
+      "expectedOutcome": "injected failure",
+      "percentages": [
+        0,
+        0
+      ],
+      "lastPercent": 0
+    },
+    {
+      "name": "Try again after first-start failure",
+      "expectedOutcome": "completed",
+      "percentages": [
+        0,
+        0,
+        9,
+        18,
+        27,
+        36,
+        45,
+        55,
+        64,
+        73,
+        82,
+        91,
+        100
+      ],
+      "lastPercent": 100
+    }
+  ],
+  "legacySaveFixture": {
+    "formatVersion": 6,
+    "engine": "6.0.0",
+    "implicitLandformVersion": 0,
+    "highCitadelsVersion": 1,
+    "expected": [
+      "440ae5d0",
+      "e6aee7b8",
+      "d8ba763d"
+    ]
+  },
+  "checks": {
+    "realCompletedStagePercentages": true,
+    "numberedStagePrefixHidden": true,
+    "noElapsedTimeProgressDuringPausedWork": true,
+    "preloadAndWorldUICompleteBefore100": true,
+    "previousWorldPreservedAfterReplacementFailure": true,
+    "firstStartRetrySucceeded": true,
+    "ariaProgressbarAndLiveStatus": true,
+    "mapAriaBusyClearedOnSuccessAndFailure": true,
+    "reducedMotionHasNoRunningAnimations": true
+  },
+  "visual": [
+    {
+      "file": "loading-desktop.png",
+      "viewport": [
+        1480,
+        980
+      ],
+      "percent": 18,
+      "paintedRatio": 0.1800000073315503,
+      "transform": "matrix(0.18, 0, 0, 1, 0, 0)",
+      "transition": "0.24s",
+      "reducedMotion": false
+    },
+    {
+      "file": "loading-mobile.png",
+      "viewport": [
+        430,
+        900
+      ],
+      "percent": 18,
+      "paintedRatio": 0.1800000244957149,
+      "transform": "matrix(0.18, 0, 0, 1, 0, 0)",
+      "transition": "0s",
+      "reducedMotion": true
+    },
+    {
+      "file": "loading-narrow.png",
+      "viewport": [
+        360,
+        800
+      ],
+      "percent": 18,
+      "paintedRatio": 0.18000000533058133,
+      "transform": "matrix(0.18, 0, 0, 1, 0, 0)",
+      "transition": "0s",
+      "reducedMotion": true
+    }
+  ],
+  "endpoints": [
+    {
+      "value": 0,
+      "ratio": 0,
+      "transition": "0s"
+    },
+    {
+      "value": 0,
+      "ratio": 0,
+      "transition": "0s"
+    },
+    {
+      "value": 100,
+      "ratio": 1,
+      "transition": "0s"
+    }
+  ],
+  "unexpectedPageErrors": [],
+  "externalRequests": [],
+  "note": "Lifecycle tests observed the real engine callbacks. Screenshots temporarily pause one real stage at its await boundary. Failures are isolated test injections; no application source was changed for QA. The final transform-only polish was verified separately after the complete lifecycle run.",
+  "build": "npm run build \u2014 passed",
+  "existingTests": {
+    "command": "node --test --test-concurrency=1 tests/onemap.test.mjs tests/continuous.test.mjs",
+    "passed": 28,
+    "failed": 0
+  }
+}
