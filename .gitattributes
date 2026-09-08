@@ -9,3 +9,4 @@
 dist/telluric-onemap.html            merge=ours linguist-generated=true
 src/continuous/generated-worker.js   merge=ours linguist-generated=true
 previews/wonders/index.html         linguist-generated=true
+previews/biomes/index.html          linguist-generated=true

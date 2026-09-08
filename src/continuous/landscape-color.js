@@ -8,7 +8,7 @@ const LandscapeColor=(()=>{
   for(let i=0;i<GN;i++){
    const o=i*STRIDE,b=w.biome[i],h=w.height[i],t=w.temp[i],a=w.arid[i];
    const cl=CityEnvironment.climate(t,a,h,w.ice?.[i]||0,b===1||b===16?1:0,w.seasonTemp?Math.min(w.seasonTemp[0][i],w.seasonTemp[1][i]):t);
-   data[o]=h>0&&!(w.lake[i]>0)?1:0;
+   data[o]=h>0&&!(w.lake[i]>0)&&b!==17?1:0;
    data[o+1]=cl.cover;data[o+2]=clamp((.85-a)/.8);
    data[o+3]=clamp((a-.65)/1.9)*.8+clamp(w.wetness?.[i]||0)*.2;
    data[o+4]=clamp((t-7)/20);data[o+5]=cl.cold;data[o+6]=cl.alpine;
@@ -25,12 +25,12 @@ const LandscapeColor=(()=>{
   }
   cache.set(w,data);return data;
  }
- function sample(w,gx,gy,baseRGB,{slope,relief=1}={}){
+ function sample(w,gx,gy,baseRGB,{slope,relief=1,normal}={}){
   const data=prepare(w),x=clamp(gx,0,GW-1),y=clamp(gy,0,GH-1),ax=Math.min(GW-2,Math.floor(x)),ay=Math.min(GH-2,Math.floor(y)),u=x-ax,v=y-ay;
   const a=(ay*GW+ax)*STRIDE,b=a+STRIDE,c=a+GW*STRIDE,d=c+STRIDE;
   const field=k=>lerp(lerp(data[a+k],data[b+k],u),lerp(data[c+k],data[d+k],u),v);
-  const land=field(0),cover=field(1),strength=land*(1-cover)*(1-cover);
-  if(strength<1e-6)return baseRGB.slice();
+  const land=field(0),cover=field(1),strength=(1-cover)*(1-cover);
+  if(land===0)return baseRGB.slice();
   const dry=field(2),wet=field(3),warm=field(4),cold=field(5),alpine=field(6),rock=field(7),sand=field(8);
   const steep=smooth(.13,.95,Number.isFinite(slope)?Math.max(0,slope):field(9)*Math.max(0,relief));
   // Three rotated, non-integer frequency bands avoid alignment with either
@@ -43,6 +43,19 @@ const LandscapeColor=(()=>{
   const moss=wet*(1-cold*.8)*(1-exposure)*(1-stone)*smooth(-.7,.5,broad)*.17;
   const damp=wet*(1-steep)*(1-alpine*.45)*smooth(.05,.72,-broad+patch*.2)*.19;
   const light=1+broad*.035+patch*.028+fine*.022;
+  // Height and colour use the same warped bands, so an ice fissure is blue
+  // where the surface actually dips and a dune's shading follows its crest.
+  const p=LandscapePatterns.sample(w,x,y),mountain=Math.max(p.alpine,p.rock)*(1-sand);
+  const mineralMix=mountain*(.35+steep*.5),mineralTone=(p.strata-.5)*.14+(p.scree-.5)*.085;
+  const grit=cold*(1-cover)*(1-sand)*(1-mountain)*.28;
+  const duneLight=1+(p.dune-.5)*.17+(p.scree-.5)*.045;
+  // Pole-facing slopes retain more snow, but only if the climate supplies it.
+  // The smooth latitude factor avoids switching the snow aspect at the equator.
+  const pole=clamp((GH*.5-y)/20,-1,1),shade=normal&&Number.isFinite(normal[2])?clamp(.5-normal[2]*pole*.5):.5;
+  const snow=cover*clamp(.76+shade*.30+(p.wind-.5)*.20-steep*.57);
+  const snowTone=(p.wind-.5)*.065+(p.scree-.5)*.016;
+  const iceTone=(p.wind-.5)*.035+(p.ridge-.5)*.055;
+  const crack=p.crevasse*(.54+steep*.13);
   const result=new Array(3);
   for(let k=0;k<3;k++){
    const base=baseRGB[k];let value=base*light;
@@ -54,7 +67,19 @@ const LandscapeColor=(()=>{
    value=lerp(value,lerp(mineral,base*.92,sand),stone);
    value=lerp(value,k===0?.39:k===1?.44:.29,moss*(1-sand));
    value=lerp(value,k===0?.23:k===1?.29:.255,damp*(1-sand));
-   result[k]=clamp(lerp(base,value,strength));
+   value=lerp(base,value,strength);
+   const rockColor=(k===0?.50+dry*.045:k===1?.51+dry*.020:.52-dry*.015)+mineralTone;
+   value=lerp(value,rockColor,mineralMix);
+   value=lerp(value,value+(p.scree-.5)*.13+(p.strata-.5)*.055,grit);
+   value*=lerp(1,duneLight,sand*(1-cover));
+   value=lerp(value,(k===0?.89:k===1?.935:.965)+snowTone,snow);
+   // Permanent land ice gets a complete cold mineral palette. Its deepest
+   // fissures expose blue ice; they never reveal the grass/soil branch below.
+   let ice=(k===0?.805:k===1?.89:.935)+iceTone;
+   ice=lerp(ice,k===0?.26:k===1?.51:.66,crack);
+   ice=lerp(ice,k===0?.95:k===1?.98:.995,p.ridge*.10*(1-p.crevasse));
+   value=lerp(value,ice,p.glacier);
+   result[k]=clamp(lerp(base,value,land));
   }
   return result;
  }
