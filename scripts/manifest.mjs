@@ -12,7 +12,7 @@ export const scripts = [
     'src/city/actions.js',
     'src/render/world-renderer.js',
     'src/render/road-renderer.js',
-    'src/render/folk-renderer.js',
+    'src/render/folk-models.js', 'src/render/folk-renderer.js',
     'src/landmarks/catalog.js',
     'src/landmarks/kit.js',
     'src/landmarks/templates.js',

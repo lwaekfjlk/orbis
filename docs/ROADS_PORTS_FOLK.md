@@ -70,8 +70,11 @@ claim about who lives in the building beside it, and no building, street or dist
 labelled by ancestry. `tests/folk.test.mjs` checks that a large draw reproduces the
 province's mixture and that the smallest minority still appears.
 
-Appearance varies — height, build, colour and one silhouette accent per people. Nothing
-else does. `Folk.speedOf` never reads `agent.people`, and a test asserts both that the
+Appearance varies: height, build, skin and clothing, and articulated anatomy. Each figure
+has a head, torso, arms, hands, legs and boots. Sylvans have pointed ears and cloaks, Stonekin
+have broad shoulders and beards, Beastfolk have muzzles, ears and tails, Hornkin have curved
+horns, Tideborn have fins, and Drakekin have reptilian heads, back spines and tails.
+The same seven meshes are used for residents and road travellers. Nothing else differs. `Folk.speedOf` never reads `agent.people`, and a test asserts both that the
 function's source contains no reference to it and that all seven peoples yield one speed.
 Individual gait still varies, per figure.
 
@@ -84,14 +87,14 @@ hulls follow the sea lanes the civilization model already computed.
 
 ## What is drawn when
 
-The change-over is the existing town-detail threshold, `AtlasRenderer.FOLK_ZOOM = 18`, so
-nothing changes representation twice on the way in.
+Residents and true-scale travellers appear at `AtlasRenderer.FOLK_ZOOM = 60`. Regional
+traffic begins at `AtlasSpace.TOWN_ZOOM = 16`.
 
 | zoom | roads | ports | traffic | townsfolk |
 |---|---|---|---|---|
-| < 4.8 world | cartographic ribbons, width by class | quay symbols | — | — |
-| 4.8 – 18 region | same, plus bridge decks | quay symbols | carts, riders and hulls as map symbols | — |
-| ≥ 18 town | ground-seated near band | the town's own waterfront | true-scale travellers | true-scale residents |
+| < 16 world | cartographic ribbons, width by class | quay symbols | — | — |
+| 16 – 60 region | same, plus bridge decks | quay symbols | carts, riders and hulls as map symbols | — |
+| ≥ 60 town | ground-seated near band | the town's own waterfront | true-scale travellers | true-scale residents |
 
 The cartographic ribbon clears the coarse jittered world terrain; inside a town that same
 clearance would be a road floating a storey above the street, so the near band is a
@@ -105,12 +108,25 @@ restoring `dirtyShadow` around the call. Both `AtlasRenderer.upload` and the sof
 rasterizer set that flag unconditionally; without the restore a walking crowd would
 re-render the shadow map twenty-four times a second. A test pins it.
 
-A measured close frame — one loaded town, 55 residents, its traffic — costs **1.8 ms mean,
-2.5 ms worst** for about 1,800 triangles, against a 40 ms budget. The crowd is culled to
-the camera box and capped at 220 figures (45 on software).
+Figures use simple silhouettes below 18 projected pixels and detailed bodies when closer.
+At most 48 figures use full detail at once (12 on software); additional figures keep their
+recognizable simple bodies. Each full model is capped at 240 triangles and each simple
+model at 70. Residents and traveller groups share a 220-item budget (45 on software), with
+escorts counted individually in the reported geometry totals.
+
+Walking articulates knees and elbows, counter-swings the arms and lifts the swinging foot
+while the other foot stays on the ground. Gait phase follows distance in body lengths; road
+distances are converted from atlas cells so travellers do not slide forward with frozen legs.
+The existing route, walking speed, population mixture and simulation remain unchanged.
+
+`npm run preview:folk` produces an offline rotating, animated comparison of all seven peoples
+using the actual map models. `npm run test:folk` checks model geometry, animation, figure
+budgets and simulation invariants. `npm run test:folk-browser` checks the gallery and a real
+town after building the application and preview; it accepts `PLAYWRIGHT_MODULE` and
+`CHROMIUM_PATH` for an existing browser installation.
 
 The ticker in `ContinuousMap` runs at ~24 fps and only when the map is interactive, the
-toggle is on, zoom ≥ 4.8, the tab is visible, the renderer is **not** the Canvas software
+toggle is on, zoom ≥ 16, the tab is visible, the renderer is **not** the Canvas software
 fallback, and the reader has not asked for reduced motion. In those last two cases the
 streets are still populated — the figures simply hold position.
 

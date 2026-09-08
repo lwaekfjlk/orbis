@@ -34,27 +34,27 @@
       }
     },
     "pace": {
-      "compoundCrossingSeconds": 6.9,
-      "roundTripSeconds": 146,
+      "compoundCrossingSeconds": 13.3,
+      "roundTripSeconds": 108,
       "cellCrossingSeconds": 119.6,
       "bodyLengthsPerSecond": 0.213
     },
     "scale": {
-      "buildingFootprint": 0.0176,
-      "mooredHull": 0.0136,
+      "buildingFootprint": 0.0178,
+      "mooredHull": 0.0129,
       "seaHull": 0.0227,
-      "hullRatio": 1.7,
+      "hullRatio": 1.8,
       "symbolInBuildings": 1.7
     },
     "figure": {
       "trianglesPerAccent": {
-        "none": 28,
-        "cloak": 30,
-        "broad": 36,
-        "tail": 30,
-        "horns": 30,
-        "crest": 29,
-        "ridge": 30
+        "none": 166,
+        "cloak": 180,
+        "broad": 182,
+        "tail": 181,
+        "horns": 176,
+        "crest": 168,
+        "ridge": 177
       }
     },
     "rendering": {
