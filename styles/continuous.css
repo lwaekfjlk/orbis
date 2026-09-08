@@ -1,10 +1,11 @@
 /* One actual map canvas. No modal-local scene is mounted for exploration. */
 body.continuous-map #cityDialog,body.continuous-map #landmarkDialog{display:none!important}
-body.continuous-map[data-detail=local] #labels,body.continuous-map[data-detail=local] #worldLandmarkPins{visibility:hidden;pointer-events:none}
+body.continuous-map[data-detail=local] #worldLandmarkPins{visibility:hidden;pointer-events:none}
+body.continuous-map[data-detail=local] .maplabel.townLabel em{font-size:10.5px}
 #cmLabels{position:absolute;inset:0;pointer-events:none;z-index:3}
 .cm-pin{position:absolute;pointer-events:auto;transform:translate(-50%,-100%);padding:5px 10px;border:1px solid #f0e6c57a;border-radius:5px;background:#18382cbd;color:#f6efd4;font:12px Georgia,serif;box-shadow:0 3px 14px #18352e33;white-space:nowrap;backdrop-filter:blur(4px)}
 .cm-pin:hover{background:#284d3eee}.cm-building-pin{font-size:11px;background:#ece7d3e6;color:#2e4637;border-color:#596d5280}
-.cm-town-pin{font:italic 11px/1.3 var(--town-lettering);letter-spacing:.1px;padding:4px 8px}
+#cmLabels .cm-town-pin{font:italic 11px/1.3 var(--town-lettering);letter-spacing:.1px;padding:4px 8px}
 #cmStatus{position:fixed;bottom:109px;left:50%;transform:translateX(-50%);color:#ecf0d9;background:#193b30bb;border:1px solid #d7e4c630;padding:6px 12px;border-radius:5px;font:10px/1.4 system-ui,sans-serif;pointer-events:none;z-index:12;white-space:nowrap;backdrop-filter:blur(5px)}
 .cm-context{position:fixed;right:26px;top:96px;z-index:16;padding:9px 13px;color:#e8edd8;border:1px solid #ffffff40;font:11px system-ui;display:none}
 .cm-building-list{display:grid;gap:6px;margin:8px 0 20px}.cm-building-list button{text-align:left;padding:10px 12px;font-size:11px}

@@ -215,11 +215,11 @@ window.OneMap = (() => {
     function inspectWorld(i){
         if(!world||!sim||busy||scene!=='world'||i<0)return;
         if(drawer==='realm')closeDrawer();
-        const p=sim.provinces[world.provinceId[i]],f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],realm=p&&sim.realms[p.owner];
+        const status=typeof PoliticalLand!=='undefined'?PoliticalLand.status(world,sim,i):null;
+        const p=sim.provinces[world.provinceId[i]],f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],realm=status?.realm||(p&&sim.realms[p.owner]);
         if(world.height[i]<=0&&!f&&!b){clearSelection();return;}
         selection={kind:'world',i};
         const title=p?.settled?p.name:f?.name||b?.name||BIOME[world.biome[i]][0];
-        const status=typeof PoliticalLand!=='undefined'?PoliticalLand.status(world,sim,i):null;
         const geography=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const subtitle=status&&!status.realm&&status.kind!=='water'?PoliticalLand.description(world,sim,i)+' '+geography:geography;
         const buttons=[];

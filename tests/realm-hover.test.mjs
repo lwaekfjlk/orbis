@@ -123,7 +123,7 @@ test('Replacing the world, civilization or map layer clears transient hover', ()
     }
 });
 
-test('The hover outline follows external land and lake shores without internal province seams', () => {
+test('The hover outline includes a domestic lake without internal province or shoreline seams', () => {
     const { r } = fixture();
     const index = (x, y) => y * E.GW + x;
     r.world = { height: new Float32Array(E.GN).fill(-10), lake: new Float32Array(E.GN).fill(-1),
@@ -157,19 +157,19 @@ test('The hover outline follows external land and lake shores without internal p
     const data = uploaded.geometry.data;
     assert(data.every(Number.isFinite));
     // Each edge has a casing and a light stroke, each a pair of triangles.
-    assert.equal(data.length / 27, 16 * 4, 'only twelve exterior and four lake-shore edges should be drawn');
+    assert.equal(data.length / 27, 12 * 4, 'only twelve exterior edges should be drawn; the domestic lake has no shoreline border');
     const centres = new Set();
     for (let offset = 0; offset < data.length; offset += 54) {
         const x = [], z = [];
         for (let v = offset; v < offset + 54; v += 9) { x.push(data[v]); z.push(data[v + 2]); }
         centres.add(`${(Math.min(...x) + Math.max(...x)) / 2},${(Math.min(...z) + Math.max(...z)) / 2}`);
     }
-    const expected = new Set(['11,10.5', '11,11.5', '10.5,11', '11.5,11']);
+    const expected = new Set();
     for (const value of [10, 11, 12]) {
         expected.add(`${value},9.5`); expected.add(`${value},12.5`);
         expected.add(`9.5,${value}`); expected.add(`12.5,${value}`);
     }
-    assert.deepEqual(centres, expected, 'the mesh outlines the union of provinces, including the lake hole');
+    assert.deepEqual(centres, expected, 'the mesh outlines the union of provinces, including its domestic lake');
     for (const layer of ['realms', 'diplomacy', 'faiths', 'peoples', 'wealth', 'magic']) {
         r.layer = layer;
         assert.equal(r.visible('realmHover'), true, layer);

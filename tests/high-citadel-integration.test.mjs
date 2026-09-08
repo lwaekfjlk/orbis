@@ -183,7 +183,7 @@ test('the real search input finds both small high cities by English and Chinese 
     }
 });
 
-test('unloaded town pins track settlement and population eligibility without changing metadata or model keys', () => {
+test('continuous building overlay does not duplicate persistent world town labels or gate them on population', () => {
     const nodes = new Map();
     function node() { return {id: '', children: [], replacements: 0, value: '', dataset: {}, style: {},
         classList: {toggle() {}, add() {}, remove() {}}, setAttribute() {}, addEventListener() {},
@@ -201,17 +201,22 @@ test('unloaded town pins track settlement and population eligibility without cha
     win.ContinuousMap.init(); win.ContinuousMap.onWorldUpdate();
     const labels = element('cmLabels'), metadata = JSON.stringify(high.highCitadel);
     assert.equal(win.ContinuousMap.layer.models.size, 0);
-    assert.deepEqual(labels.children.map(n => n.textContent), ['♜ Unloaded Aerie']);
+    assert.deepEqual(labels.children, [], 'world labels now own the cm-town-pin click targets across all zooms');
     const unchanged = labels.replacements; win.ContinuousMap.onWorldUpdate(); assert.equal(labels.replacements, unchanged, 'unchanged membership should retain cached buttons');
     high.urbanPop = 649; win.ContinuousMap.onWorldUpdate();
-    assert.equal(labels.children.length, 0, 'an unloaded town below the detail threshold must lose its clickable pin');
+    assert.equal(labels.children.length, 0, 'population changes must not introduce a duplicate detail-overlay name');
     high.settled = false; high.urbanPop = 650; win.ContinuousMap.onWorldUpdate();
     assert.equal(labels.children.length, 0, 'population alone must not restore an unsettled town');
     ordinary.settled = true; win.ContinuousMap.onWorldUpdate();
-    assert.deepEqual(labels.children.map(n => n.textContent), ['Unloaded Village']);
+    assert.deepEqual(labels.children, []);
     ordinary.settled = false; high.settled = true; win.ContinuousMap.onWorldUpdate();
-    assert.deepEqual(labels.children.map(n => n.textContent), ['♜ Unloaded Aerie']);
+    assert.deepEqual(labels.children, []);
     assert.equal(JSON.stringify(high.highCitadel), metadata); assert.equal(win.ContinuousMap.layer.models.size, 0);
+    const anchor={x:0,y:0,z:0,scale:1},building={id:'sanctum',name:'Dragon Sanctum',landmark:true,h:10};
+    win.ContinuousMap.layer.models.set(high.id,{p:high,key:'one-loaded-city',city:{buildings:[building]},heights:{},frame:{anchors:new Map([[building.id,anchor]])}});
+    win.ContinuousMap.onWorldUpdate();
+    assert.deepEqual(labels.children.map(n=>[n.className,n.textContent]),[['cm-pin cm-building-pin','Dragon Sanctum']], 'the continuous overlay still exposes loaded landmark buildings');
+    win.ContinuousMap.layer.models.clear();win.ContinuousMap.onWorldUpdate();assert.deepEqual(labels.children,[]);
 });
 
 test('all rendering, worker and directory operations leave parent geography and simulation unchanged', () => {

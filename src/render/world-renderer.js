@@ -482,13 +482,21 @@ class AtlasRenderer {
         }
         this.upload('legends', g, false, .72);
     }
-    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
-    setLayer(layer) { this.layer = layer; this.hoveredRealm = null; if (this.world)
+    prepareTerritory() {
+        this.territoryWorld = this.world;
+        this.territorySim = this.sim;
+        this.territoryOwners = typeof PoliticalLand !== 'undefined' && this.world && this.sim
+            ? PoliticalLand.territory(this.world, this.sim).owners : null;
+        return this.territoryOwners;
+    }
+    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.prepareTerritory(); this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
+    setLayer(layer) { this.layer = layer; this.hoveredRealm = null; this.prepareTerritory(); if (this.world)
         this.buildTerrain(); this.dirtyShadow = true; this.request(); }
     setHoveredRealm(id) {
         const next = Number.isInteger(id) && this.sim?.realms[id]?.alive ? id : null;
         if (next === this.hoveredRealm) return;
         this.hoveredRealm = next;
+        this.prepareTerritory();
         // A preview changes only colours, never the selected realm or camera.
         // The continuous map updates its existing colour buffer; the original
         // renderer retains its terrain rebuild path. Pointer movement is a no-op.
@@ -502,10 +510,12 @@ class AtlasRenderer {
     buildRealmHover() {
         const w = this.world, s = this.sim, g = new Geometry();
         if (!w || !s || this.hoveredRealm == null) return;
+        const territory = this.prepareTerritory();
         const owns = (x, y) => {
             if (x < 0 || y < 0 || x >= GW || y >= GH) return false;
             const i = cell(x, y);
-            return w.height[i] > 0 && w.lake[i] <= 0 && s.provinces[w.provinceId[i]]?.owner === this.hoveredRealm;
+            return territory ? territory[i] === this.hoveredRealm
+                : w.height[i] > 0 && w.lake[i] <= 0 && s.provinces[w.provinceId[i]]?.owner === this.hoveredRealm;
         };
         const casing = rgb('#735231'), light = rgb('#fff2b0'), neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]];
         for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
@@ -777,8 +787,19 @@ AtlasRenderer.prototype.palette = function (i) {
             return c;
         return colorMix(c, rgb('#d4d2b9'), .55);
     }
-    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0 || w.lake[i] > 0)
+    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0)
         return c;
+    if (w.lake[i] > 0) {
+        // Lakes keep their water palette. Only the temporary territory preview
+        // and selected-country wash extend across the derived inland boundary.
+        if (this.territoryWorld !== w || this.territorySim !== s) this.prepareTerritory();
+        const realm = s.realms[this.territoryOwners?.[i]];
+        if (!realm || realm.alive === false) return c;
+        if (this.hoveredRealm != null)
+            return realm.id === this.hoveredRealm ? colorMix(c, rgb(realm.color), .34) : c;
+        return ['realms', 'diplomacy'].includes(this.layer) && realm.id === this.focusRealm
+            ? colorMix(c, rgb(realm.color), .14) : c;
+    }
     const pid = w.provinceId[i], p = s.provinces[pid];
     const political = this.layer === 'realms' || this.layer === 'diplomacy';
     // Land outside every province has no measurement to show, so the data layers
@@ -908,18 +929,19 @@ AtlasRenderer.prototype.buildCivilization = function () {
             towns.tri([pole, top, z], [pole + .60 * sc, top - .1 * sc, z], [pole, top - .42 * sc, z], rgb(c.color));
         }
     }
-    // A country also ends at unclaimed dry land. Omitting that edge used to
-    // leave its border open, making owned territory look unassigned.
+    // Inland water shares the surrounding territory. Borders cross shared lakes
+    // instead of disappearing at either shore; wholly domestic lakes have no seam.
+    const territory = this.prepareTerritory();
     for (let y = 0; y < GH; y++)
         for (let x = 0; x < GW; x++) {
-            const i = y * GW + x, pa = w.provinceId[i];
-            if (w.height[i] <= 0 || w.lake[i] > 0) continue;
-            const a = s.provinces[pa]?.owner ?? -1;
+            const i = y * GW + x;
+            if (w.height[i] <= 0) continue;
+            const a = territory ? territory[i] : w.lake[i] > 0 ? -1 : s.provinces[w.provinceId[i]]?.owner ?? -1;
             for (const [dx, dy] of [[1, 0], [0, 1]]) {
                 if (x + dx >= GW || y + dy >= GH) continue;
-                const j = i + dx + dy * GW, pb = w.provinceId[j];
-                if (w.height[j] <= 0 || w.lake[j] > 0) continue;
-                const b = s.provinces[pb]?.owner ?? -1;
+                const j = i + dx + dy * GW;
+                if (w.height[j] <= 0) continue;
+                const b = territory ? territory[j] : w.lake[j] > 0 ? -1 : s.provinces[w.provinceId[j]]?.owner ?? -1;
                 if (a === b || (a < 0 && b < 0)) continue;
                 const cx = x + dx * .5, cy = y + dy * .5, ax = cx - dy * .51, ay = cy - dx * .51, bx = cx + dy * .51, by = cy + dx * .51;
                 if (a < 0 || b < 0) {
@@ -982,7 +1004,7 @@ AtlasRenderer.prototype.buildCivilization = function () {
     this.upload('reeds', reeds, true);
     this.request();
 };
-AtlasRenderer.prototype.setCivilization = function (sim) { this.sim = sim; this.hoveredRealm = null; this.buildTerrain(); this.buildCivilization(); this.request(); };
+AtlasRenderer.prototype.setCivilization = function (sim) { this.sim = sim; this.hoveredRealm = null; this.prepareTerritory(); this.buildTerrain(); this.buildCivilization(); this.request(); };
 const geographyLayerBase = AtlasRenderer.prototype.setLayer;
 AtlasRenderer.prototype.setLayer = function (layer) { geographyLayerBase.call(this, layer); if (this.sim)
     this.buildCivilization(); };
