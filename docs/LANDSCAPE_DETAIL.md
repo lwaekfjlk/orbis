@@ -28,3 +28,5 @@ The before images come from `main` commit `2f9de96`, including the merged city l
 - Existing terrain stitching, zoom lifecycle, vegetation scale, roads, rivers, underground openings and OneMap checks are included in the final validation.
 
 Final validation: **137 distinct targeted tests passed**, including the additional settlement/worker lifecycle regressions. The build and whitespace checks passed. Harthurst was also checked through the native map, and both view/version controls on the comparison page were exercised.
+
+After merging `main` through PR #39 (`94faa7a`), the regenerated bundle passed **73 landscape, continuous-map, realm-name/profile/UI and OneMap tests**. The country introduction also opened correctly in the native map. Both generated outputs were rebuilt from the combined source manifest.
