@@ -21687,16 +21687,46 @@ class AtlasRenderer {
         gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.CULL_FACE);
     }
-    upload(name, geometry, shadow = true, unlit = 0, alpha = 1) { const gl = this.gl; if (this.meshes[name]) {
-        gl.deleteBuffer(this.meshes[name].buffer);
-        gl.deleteVertexArray(this.meshes[name].vao);
-    } const vertices = geometry.data instanceof Float32Array ? geometry.data : new Float32Array(geometry.data);
+    upload(name, geometry, shadow = true, unlit = 0, alpha = 1, dynamic = false) {
+        const gl = this.gl, old = this.meshes[name];
+        const vertices = geometry.data instanceof Float32Array ? geometry.data : new Float32Array(geometry.data);
+        if (dynamic) {
+            // Moving figures keep their vertex layout and GPU allocation. The CPU
+            // view still contains only current vertices, for picking and export.
+            let buffer = old?.dynamic ? old.buffer : null, vao = old?.dynamic ? old.vao : null;
+            let capacity = old?.dynamic ? old.capacity : 0;
+            if (old && !old.dynamic) { gl.deleteBuffer(old.buffer); gl.deleteVertexArray(old.vao); }
+            if (vertices.byteLength) {
+                const create = !buffer;
+                if (create) { buffer = gl.createBuffer(); vao = gl.createVertexArray(); }
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                if (vertices.byteLength > capacity) {
+                    capacity = Math.max(vertices.byteLength, capacity * 2);
+                    gl.bufferData(gl.ARRAY_BUFFER, capacity, gl.DYNAMIC_DRAW);
+                }
+                gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
+                if (create) {
+                    gl.bindVertexArray(vao);
+                    for (let i = 0; i < 3; i++) {
+                        gl.enableVertexAttribArray(i);
+                        gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 36, i * 12);
+                    }
+                    gl.bindVertexArray(null);
+                }
+            }
+            // Empty meshes need no allocation or write, including the inactive
+            // folk/caravan band; count=0 makes old capacity unreachable to draws.
+            this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha, dynamic: true, capacity };
+            if (shadow || old?.shadow) this.dirtyShadow = true;
+            return;
+        }
+        if (old) { gl.deleteBuffer(old.buffer); gl.deleteVertexArray(old.vao); }
     // Transferred worker buffers already have the GPU format. Keep that same
     // array for picking and export instead of copying the entire mesh twice.
     const buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); for (let i = 0; i < 3; i++) {
         gl.enableVertexAttribArray(i);
         gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 36, i * 12);
-    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha }; this.dirtyShadow = true; }
+    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha }; if (shadow || old?.shadow) this.dirtyShadow = true; }
     clear() { const gl = this.gl; for (const m of Object.values(this.meshes)) {
         gl.deleteBuffer(m.buffer);
         gl.deleteVertexArray(m.vao);
@@ -22148,6 +22178,7 @@ class SoftwareAtlasRenderer extends AtlasRenderer {
     constructor(canvas, onChange) { super(canvas, onChange, true); this.ctx = canvas.getContext('2d', { alpha: false }); this.software = true; if (!this.ctx)
         throw Error('No supported canvas rendering context is available.'); }
     upload(name, geometry, shadow = true, unlit = 0, alpha = 1) {
+        const old = this.meshes[name];
         const vertices = new Float32Array(geometry.data), styles = [], triCount = vertices.length / 27;
         const sun = norm([-.65, 1, -.48]);
         for (let t = 0; t < triCount; t++) {
@@ -22165,7 +22196,7 @@ class SoftwareAtlasRenderer extends AtlasRenderer {
             styles.push(`rgb(${c[0]},${c[1]},${c[2]})`);
         }
         this.meshes[name] = { vertices, styles, count: vertices.length / 9, shadow, unlit, alpha };
-        this.dirtyShadow = true;
+        if (shadow || old?.shadow) this.dirtyShadow = true;
     }
     clear() { this.meshes = {}; this.dirtyShadow = true; }
     *shadowFieldSteps(w) {
@@ -23177,9 +23208,8 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
  * Two meshes are produced: `caravans`, map-symbol traffic on the regional view, and
  * `folk`, true-scale residents and travellers once a town's architecture has resolved.
  *
- * The figure mesh is uploaded with shadow=false and restores `dirtyShadow` afterwards.
- * Both AtlasRenderer.upload and the software rasterizer set that flag unconditionally,
- * and without this a walking crowd would re-render the shadow map every frame.
+ * Figures use a reusable GPU allocation, while software keeps the same vertex data.
+ * They do not cast shadows or invalidate the cached shadow map as the crowd walks.
  */
 (() => {
     // A figure is 1.5 town-plan units tall. Buildings in the same plan are 1.5 to 4, so a
@@ -23290,8 +23320,8 @@ Geometry.prototype.figure = function (x, y, z, height, girth, angle, cloth, skin
         }
         // Keep the shadow map: a walking crowd must not force a shadow pass every frame.
         const wasDirty = this.dirtyShadow;
-        this.upload('folk', folk, false, .10);
-        this.upload('caravans', caravans, false, .10);
+        this.upload('folk', folk, false, .10, 1, true);
+        this.upload('caravans', caravans, false, .10, 1, true);
         this.dirtyShadow = wasDirty;
         this.folkStats = { residents, travelling, budget, fullFigures: detail.full, simpleFigures: detail.simple, triangles: (folk.data.length + caravans.data.length) / 27, clock: +t.toFixed(2) };
     };
@@ -24169,7 +24199,7 @@ const LandmarkBinding = (()=>{
  */
 function installDepthRasterizer(r){
  if(!r.software)return r;
- r.upload=function(name,g,shadow=true,unlit=0,alpha=1){this.meshes[name]={vertices:g.data instanceof Float32Array?g.data:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};this.dirtyShadow=true;};
+ r.upload=function(name,g,shadow=true,unlit=0,alpha=1){const old=this.meshes[name];this.meshes[name]={vertices:g.data instanceof Float32Array?g.data:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};if(shadow||old?.shadow)this.dirtyShadow=true;};
  const hidden=document.createElement('canvas'),ctx=hidden.getContext('2d',{alpha:false});let width=0,height=0,image=null,depth=null,shadow=null,shadowKey='';const S=1024;
  let sun=norm([-.65,1,-.48]);
  function projected(v,k,m,W,H){return[(m[0]*v[k]+m[4]*v[k+1]+m[8]*v[k+2]+m[12]+1)*W*.5,(1-m[1]*v[k]-m[5]*v[k+1]-m[9]*v[k+2]-m[13])*H*.5,m[2]*v[k]+m[6]*v[k+1]+m[10]*v[k+2]+m[14]]}
@@ -24433,6 +24463,20 @@ const TownCityBinding = (()=>{
  * plain data: the caller records each finished house before building its fittings.
  */
 const StreetFrontage=(()=>{
+ const connectorCache=new WeakMap();
+ function connection(list,id){
+  if(!Array.isArray(list))return null;
+  let cached=connectorCache.get(list);
+  if(!cached||cached.length!==list.length||cached.first!==list[0]||cached.last!==list[list.length-1]){
+   cached={length:list.length,first:list[0],last:list[list.length-1],byId:new Map(list.map((q,index)=>[q.blockId,{q,index}]))};connectorCache.set(list,cached);
+  }
+  const hit=cached.byId.get(id);
+  // Existing objects can change their endpoints without invalidating this index.
+  // Replacement of an indexed slot is repaired lazily; the generator otherwise
+  // replaces the array, and history does not mutate its block identities.
+  if(hit&&list[hit.index]!==hit.q){connectorCache.delete(list);return connection(list,id);}
+  return hit?.q||null;
+ }
  const bound=(v,a,b)=>Math.max(a,Math.min(b,v));
  const finite=(v,f=0)=>Number.isFinite(v)?v:f;
  const sides=[{side:'south',angle:0,n:[0,1]},{side:'west',angle:Math.PI/2,n:[-1,0]},{side:'north',angle:Math.PI,n:[0,-1]},{side:'east',angle:-Math.PI/2,n:[1,0]}];
@@ -24442,7 +24486,7 @@ const StreetFrontage=(()=>{
   const angle=finite(b.angle),cs=Math.cos(angle),sn=Math.sin(angle),turned=Math.abs(sn)>.5,
    pw=turned?b.d:b.w,pd=turned?b.w:b.d,
    local=q=>{const x=q.x-b.x,z=q.z-b.z;return{x:(x*cs+z*sn)*CW/pw,z:(-x*sn+z*cs)*CD/pd};},
-   connector=c.connectors?.find(q=>q.blockId===b.id),socket=connector?.b||(b.streetSocket!=null&&typeof c.xy==='function'?c.xy(b.streetSocket):null),
+   connector=connection(c.connectors,b.id),socket=connector?.b||(b.streetSocket!=null&&typeof c.xy==='function'?c.xy(b.streetSocket):null),
    point=socket&&Number.isFinite(socket.x)&&Number.isFinite(socket.z)?local(socket):{x:0,z:CD},
    side=Math.abs(point.x)/CW>Math.abs(point.z)/CD?(point.x>0?3:1):(point.z<0?2:0),front={...sides[side]},
    along=front.n[0]?CD:CW,depth=front.n[0]?CW:CD,
@@ -24462,7 +24506,7 @@ const StreetFrontage=(()=>{
   // A shop is an inhabited house with a counter, never an extra market building.
   const shops=houses.filter(h=>h.streetFacing).sort((a,b)=>Math.hypot(a.x-entry.x,a.z-entry.z)-Math.hypot(b.x-entry.x,b.z-entry.z)||a.index-b.index);
   if(commercial)for(const h of shops.slice(0,dense?1:2))h.shop=true;
-  return {version:1,enabled:!b.landmark&&!b.highRole&&!c.highCitadel&&!['civic','well','granary'].includes(b.type)&&CW>0&&CD>0,
+  return {version:1,enabled:(!b.landmark||commercial)&&!b.highRole&&!c.highCitadel&&!['civic','well','granary'].includes(b.type)&&CW>0&&CD>0,
    CW,CD,front,houses,cols,ranks,dense,lod:options.lod??b.lod??2,commercial,
    seed:hash((c.townRecipe?.seed||'street')+'/'+b.id),baseY:.18};
  }
@@ -24514,13 +24558,19 @@ const StreetFrontage=(()=>{
    let bays=0;
    for(const side of[-1,1]){
     if(dense&&side!==(p.seed%2?1:-1))continue;
-    const u=side*(doorGap/2+bayW/2),q=at(door.x,door.z,angle,u,tradeReach/2),r=rect(q.x,q.z,bayW,tradeReach,angle);
-    if(!inside(r)||intersects(r,gate))continue;
+    let width=bayW,u=side*(doorGap/2+bayW/2),q=at(door.x,door.z,angle,u,tradeReach/2),r=rect(q.x,q.z,width,tradeReach,angle);
+    if(intersects(r,gate)){
+     const gu=(front.entry.x-door.x)*Math.cos(angle)+(front.entry.z-door.z)*Math.sin(angle),
+      low=u-width/2,high=u+width/2,left=Math.min(high,gu-front.gap/2-.035),right=Math.max(low,gu+front.gap/2+.035);
+     if(left-low>high-right){width=left-low;u=(low+left)/2;}else{width=high-right;u=(right+high)/2;}
+     q=at(door.x,door.z,angle,u,tradeReach/2);r=rect(q.x,q.z,width,tradeReach,angle);
+    }
+    if(width<.24||!inside(r)||intersects(r,gate))continue;
     k.mark('open-shop-counter');bays++;
-    k.box(q.x,counterY,q.z,bayW,.10,tradeReach,'wood',angle);
+    k.box(q.x,counterY,q.z,width,.10,tradeReach,'wood',angle);
     if(lod>0){
-     for(const end of[-1,1]){const leg=at(q.x,q.z,angle,end*(bayW/2-.045),0);k.box(leg.x,base,leg.z,.08,counterY-base,.08,'wood',angle);}
-     k.box(q.x,base+.14,q.z,bayW,.07,tradeReach*.78,'wood',angle);
+     for(const end of[-1,1]){const leg=at(q.x,q.z,angle,end*(width/2-.045),0);k.box(leg.x,base,leg.z,.08,counterY-base,.08,'wood',angle);}
+     k.box(q.x,base+.14,q.z,width,.07,tradeReach*.78,'wood',angle);
     }
    }
    if(!bays||dense)continue;
@@ -24784,11 +24834,20 @@ const ArtisanCityKit=(()=>{
  // A subordinate range meets the higher house with a single weathering plane.
  // Its high edge is embedded in the joined wall, so no intersecting full gable,
  // hidden dormer or extra roof crown is needed. Snow follows this exact plane.
- function domesticLeanRoof(k,w,d,y,rise,neighbor,cover,envelope){
+ function domesticLeanRoof(k,w,d,y,rise,neighbor,cover,envelope,wall){
   const axis=Math.abs(neighbor.x)>Math.abs(neighbor.z)?0:1,sign=(axis?neighbor.z:neighbor.x)<0?-1:1;
   const W=Math.min(w*.55,envelope.w),D=Math.min(d*.55,envelope.d),top=(x,z)=>y+rise*(.5+sign*(axis?z/D:x/W)*.5);
   k.using('roof',()=>{
    k.mark('domestic-lean-roof');
+   // Close the triangular wall heads beneath the sloping soffit. Their lower
+   // edge overlaps the existing room wall, so the junction cannot show daylight.
+   if(rise>.06){
+    const ring=[[-wall.w/2,-wall.d/2],[-wall.w/2,wall.d/2],[wall.w/2,wall.d/2],[wall.w/2,-wall.d/2]];
+    for(let j=0;j<4;j++){
+     const a=ring[j],b=ring[(j+1)%4];
+     k.quad([a[0],top(...a)-.085,a[1]],[a[0],y-.10,a[1]],[b[0],y-.10,b[1]],[b[0],top(...b)-.085,b[1]],wall.color);
+    }
+   }
    const slab=(inset,lift,thickness,material)=>{
     const A=[-W*inset,-D*inset],B=[W*inset,-D*inset],C=[W*inset,D*inset],F=[-W*inset,D*inset];
     const ring=[A,F,C,B].map(([x,z])=>[x,top(x,z)+lift,z]),low=ring.map(v=>[v[0],v[1]-thickness,v[2]]);
@@ -24969,8 +25028,15 @@ const ArtisanCityKit=(()=>{
    }
    const ph=flat?.3:Math.min(options.roofHeightCap??Infinity,Math.min(w,d)*(style==='fjord'?.81:.56)*pitch);
    const roofTop=plinth+h+.03;
-   if(options.annex)domesticLeanRoof(k,w+.14+eave,d+.15+eave,roofTop,flat?0:ph,options.neighbors[0],cl.cover,options.annexEnvelope);
-   else slateRoof(k,0,roofTop,0,w+.14+eave,d+.15+eave,ph,roof,style==='arcane');
+   let roofW=w+.14+eave,roofD=d+.15+eave;
+   // A circular crown on a shortened range must not project past the original
+   // dwelling merely because the range moved toward the street.
+   if(options.neighbors&&roof==='conic'){
+    const fit=Math.min(1,(Math.min(w,d)/2+.10)/(Math.min(roofW,roofD)*.55*1.06*1.01));
+    roofW*=fit;roofD*=fit;
+   }
+   if(options.annex)domesticLeanRoof(k,w+.14+eave,d+.15+eave,roofTop,flat?0:ph,options.neighbors[0],cl.cover,options.annexEnvelope,{w,d,color:wall});
+   else slateRoof(k,0,roofTop,0,roofW,roofD,ph,roof,style==='arcane');
    if(!options.annex&&k.lod>=1&&roof==='gable')k.using('roof',()=>{
     k.mark('gable-frame');
     for(const side of[-1,1]){
@@ -24981,7 +25047,7 @@ const ArtisanCityKit=(()=>{
    });
    // Snow settles on the roof it actually has. Driven by the model's cold-season
    // field, so it appears on every town whose winter freezes, not only on glaciers.
-   if(!options.annex)snowShell(k,0,roofTop,0,w+.14+eave,d+.15+eave,ph,roof,cl.cover);
+   if(!options.annex)snowShell(k,0,roofTop,0,roofW,roofD,ph,roof,cl.cover);
    if(!options.annex)entranceN(k,w,d,plinth,h,material,style,options.compact?1:variant);
    // A flue is heating, so it belongs where the model says heating is needed.
    const heated=cl.cold>.28||(!flat&&cl.warm<.55);
@@ -28029,7 +28095,7 @@ const ExcavationTerrain=(()=>{
 })();
 const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
- constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.terrainColorCache=null;this.lastLandscapeKey='none';this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
+ constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.terrainColorCache=null;this.lastLandscapeKey='none';this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.reroad=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){const survey=citySurvey(this.sim,p);return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}/${survey.terrainSpan}/${survey.width}/${survey.depth}${p.highCitadel?'/high/'+JSON.stringify(p.highCitadel):''}`;}
  remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);this.lastRiverKey=null;if(this.world&&this.r.world===this.world)this.r.buildRivers?.();
   if(a.excavations?.length){this.lastTerrainKey=null;if(this.world&&this.r.world===this.world){this.r.buildTerrain?.();this.r.request?.();}}
@@ -28037,7 +28103,7 @@ class ContinuousCityLayer {
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
  // Detach before batch removal so excavated towns cannot rebuild the discarded
  // world. A retained world closes all its openings in the single final rebuild.
- reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.reriver);this.lastRiverKey=null;clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.terrainColorCache?.world!==w||this.terrainColorCache?.sim!==s)this.terrainColorCache=null;this.lastLandscapeKey='none';this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}this.world=null;for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
+ reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.reriver);clearTimeout(this.reroad);this.lastRiverKey=null;clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.terrainColorCache?.world!==w||this.terrainColorCache?.sim!==s)this.terrainColorCache=null;this.lastLandscapeKey='none';this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}this.world=null;for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
  prepareLandscape(){const w=this.r.world||this.world;if(!w||w!==this.world||!this.sim||typeof LandscapeRelief==='undefined')return false;
   LandscapeRelief.prepare(w,this.sim);const key=LandscapeRelief.key(w);if(key===this.lastLandscapeKey)return false;
   this.lastLandscapeKey=key;this.lastTerrainKey=null;this.lastEnvironmentKey='none';this.lastRiverKey=null;this.r.roadKey=null;this.r.nearRoadKey=null;return true;
@@ -28417,21 +28483,28 @@ class ContinuousCityLayer {
   if(this.r.zoom>=AtlasSpace.TOWN_ZOOM){if(['settlements','trees','smoke','dunes','iceflow','icefloes','reeds','ports','seaLanes'].includes(name))return false;if(name==='frontiers')return false;if(name==='rivers')return this.r.options.rivers!==false;}
   return null;
  }
+ deferCamera(slot,delay,work){clearTimeout(this[slot]);const epoch=this.epoch;this[slot]=setTimeout(()=>{
+  if(epoch!==this.epoch||!this.world||this.world!==this.r.world||busy)return;
+  // A slow frame can outlast the debounce even while the pointer is held.
+  // Keep the current meshes until the gesture or camera flight actually ends.
+  if(this.r.interacting||this.r.cameraAnimating){this.deferCamera(slot,delay,work);return;}
+  work();
+ },delay);}
  cameraChanged(){if(!this.world||!this.sim||busy)return;const close=this.r.zoom>=AtlasSpace.TOWN_ZOOM;if(close!==this.natural){this.natural=close;this.r.buildTerrain();this.r.roadKey=null;this.r.nearRoadKey=null;this.r.buildRoads?.();this.r.buildLines?.();this.buildEnvironment();this.r.request();}
   // A detail/range LOD transition changes whether the well exists in the visible
   // scene. Match the terrain immediately, before the delayed refinement rebuild.
   if(this.excavationKey()!==this.lastExcavationKey){clearTimeout(this.retess);this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}
   // The scatter follows the camera, on the same settle-first rule as the terrain: it is
   // a remesh, and it must not run inside a wheel or a drag.
-  if(this.environmentKey()!==this.lastEnvironmentKey){clearTimeout(this.reflora);this.reflora=setTimeout(()=>{if(this.environmentKey()!==this.lastEnvironmentKey&&!busy){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}},190);}
+  if(this.environmentKey()!==this.lastEnvironmentKey)this.deferCamera('reflora',190,()=>{if(this.environmentKey()!==this.lastEnvironmentKey){this.buildEnvironment();this.r.dirtyShadow=true;this.r.request();}});
   // Water follows settled zoom, pan and viewport changes without rebuilding
   // unrelated atlas overlays. An unchanged camera reuses the existing buffer.
-  if(typeof RiverDetail!=='undefined'&&this.r.buildRivers&&RiverDetail.key(this)!==this.lastRiverKey){clearTimeout(this.reriver);this.reriver=setTimeout(()=>{if(!busy&&RiverDetail.key(this)!==this.lastRiverKey){this.r.buildRivers();this.r.request();}},160);}
-  if(close)this.r.buildNearRoads?.();
+  if(typeof RiverDetail!=='undefined'&&this.r.buildRivers&&RiverDetail.key(this)!==this.lastRiverKey)this.deferCamera('reriver',160,()=>{if(RiverDetail.key(this)!==this.lastRiverKey){this.r.buildRivers();this.r.request();}});
+  if(close){if(this.r.interacting||this.r.cameraAnimating)this.deferCamera('reroad',170,()=>{this.r.buildNearRoads?.();this.r.request();});else{clearTimeout(this.reroad);this.r.buildNearRoads?.();}}
   // A finer or coarser terrain patch is a remesh, so it waits for the camera to
   // settle rather than running inside a wheel or drag gesture.
-  if(this.terrainKey()!==this.lastTerrainKey){clearTimeout(this.retess);this.retess=setTimeout(()=>{if(this.terrainKey()!==this.lastTerrainKey&&!busy){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}},170);}
-  if(!close){this.onChange();return;}clearTimeout(this.timer);this.timer=setTimeout(()=>this.stream(),180);this.onChange();
+  if(this.terrainKey()!==this.lastTerrainKey)this.deferCamera('retess',170,()=>{if(this.terrainKey()!==this.lastTerrainKey){this.r.buildTerrain();this.r.dirtyShadow=true;this.r.request();}});
+  if(close)this.deferCamera('timer',180,()=>this.stream());
  }
  async stream(){if(this.loading||!this.world||busy||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;const r=this.r,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const candidates=this.sim.provinces.filter(p=>p.settled&&p.urbanPop>=650).map(p=>({p,d:Math.hypot(p.x-a[0],p.y-a[1])})).filter(q=>q.d<18).sort((a,b)=>a.d-b.d).slice(0,this.maxModels);

@@ -1,0 +1,441 @@
+{
+  "feature": "Ordinary houses and street fronts",
+  "passed": true,
+  "baselineCommit": "9f184036f8daf6f5070919f1351c6eba25343dba",
+  "sourceCommit": "7a84ab833e32b3e4b94b1c8cb78dfdb158298db3",
+  "offlineSha256": "539e2fbd6a868cdf2d7fee4ab1522ace532ef4d8e3aa10fd44bf21110d90d8e3",
+  "preservation": {
+    "before": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "after": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "worldAndSimulationUnchanged": true,
+    "allOriginalParcelsUnchanged": true,
+    "positionsAndStreetSocketsUnchanged": true,
+    "precinctMeshesUnchanged": true,
+    "precinctFamilies": 15,
+    "precinctComparison": "Root compared all precinct Float32 meshes against origin/main #69 (6811e16); 15/15 byte-identical."
+  },
+  "towns": [
+    {
+      "id": 529,
+      "name": "Saint Midulrik",
+      "style": "fjord",
+      "layout": "6a8270b8",
+      "parcels": 214,
+      "positionsSha256": "87e510ad5118963ea68a3e68b4ebac276f07f87962adc876a7a4326034a93d66",
+      "shown": 12,
+      "lods": [
+        {
+          "lod": 0,
+          "bodyTriangles": 1586,
+          "roofTriangles": 2160
+        },
+        {
+          "lod": 1,
+          "bodyTriangles": 14542,
+          "roofTriangles": 4740
+        },
+        {
+          "lod": 2,
+          "bodyTriangles": 27014,
+          "roofTriangles": 16276
+        }
+      ],
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 214
+      },
+      "shownIds": [
+        "b130",
+        "b127",
+        "b128",
+        "b132",
+        "b135",
+        "b149",
+        "b129",
+        "b98",
+        "b102",
+        "b19",
+        "b137",
+        "b21"
+      ],
+      "focus": "b130",
+      "camera": {
+        "target": [
+          20.364437057324274,
+          3.9790967655181886,
+          -11.364531125822442
+        ],
+        "zoom": 3.5,
+        "azimuth": 2.691592653589793,
+        "elevation": 0.62
+      },
+      "lodTriangles": [
+        {
+          "lod": 0,
+          "before": 2558,
+          "after": 3746
+        },
+        {
+          "lod": 1,
+          "before": 17742,
+          "after": 19282
+        },
+        {
+          "lod": 2,
+          "before": 41554,
+          "after": 43290
+        }
+      ],
+      "geometryChecks": {
+        "finite": true,
+        "bodyAndRoofPresent": true,
+        "withinOriginalParcel": true,
+        "repeatedLod2Deterministic": true,
+        "lods": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": 496,
+      "name": "Alfaskarvik",
+      "style": "river",
+      "layout": "74d53b9a",
+      "parcels": 229,
+      "positionsSha256": "9a45307998ba089245c03b55ac6b2e832b5b3a412a88dea69973476d8143268b",
+      "shown": 12,
+      "lods": [
+        {
+          "lod": 0,
+          "bodyTriangles": 1550,
+          "roofTriangles": 672
+        },
+        {
+          "lod": 1,
+          "bodyTriangles": 13502,
+          "roofTriangles": 2280
+        },
+        {
+          "lod": 2,
+          "bodyTriangles": 28794,
+          "roofTriangles": 7818
+        }
+      ],
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 229
+      },
+      "shownIds": [
+        "b16",
+        "b12",
+        "b100",
+        "b17",
+        "b52",
+        "b57",
+        "b9",
+        "b10",
+        "b20",
+        "b48",
+        "b22",
+        "b23"
+      ],
+      "focus": "b16",
+      "camera": {
+        "target": [
+          -20.40839160839161,
+          4.362292642593384,
+          -0.12542532135266837
+        ],
+        "zoom": 3.5,
+        "azimuth": -0.45,
+        "elevation": 0.62
+      },
+      "lodTriangles": [
+        {
+          "lod": 0,
+          "before": 1080,
+          "after": 2222
+        },
+        {
+          "lod": 1,
+          "before": 13912,
+          "after": 15782
+        },
+        {
+          "lod": 2,
+          "before": 36136,
+          "after": 36612
+        }
+      ],
+      "geometryChecks": {
+        "finite": true,
+        "bodyAndRoofPresent": true,
+        "withinOriginalParcel": true,
+        "repeatedLod2Deterministic": true,
+        "lods": [
+          0,
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": 463,
+      "name": "Alfeikelvik",
+      "style": "basilica",
+      "layout": "d9a9aa2d",
+      "parcels": 422,
+      "positionsSha256": "ff664132006bb3ee0fff7190ecc53bd6abe3cf152c95c35818ab9254c31f6614",
+      "shown": 8,
+      "lods": [
+        {
+          "lod": 0,
+          "bodyTriangles": 940,
+          "roofTriangles": 394
+        },
+        {
+          "lod": 1,
+          "bodyTriangles": 9272,
+          "roofTriangles": 1418
+        },
+        {
+          "lod": 2,
+          "bodyTriangles": 18588,
+          "roofTriangles": 4762
+        }
+      ],
+      "audit": {
+        "iceBuildings": 0,
+        "wetBuildings": 0,
+        "roadBuildings": 0,
+        "overlaps": 0,
+        "nonfinite": 0,
+        "seaRoads": 0,
+        "buildings": 422
+      },
+      "shownIds": [
+        "b289",
+        "b492",
+        "b365",
+        "b366",
+        "b395",
+        "b284",
+        "b286",
+        "b283"
+      ],
+      "focus": "b289",
+      "camera": {
+        "target": [
+          -37.99067280053884,
+          4.141714687347412,
+          -16.17151042286718
+        ],
+        "zoom": 3.5,
+        "azimuth": -2.0207963267948967,
+        "elevation": 0.62
+      },
+      "lodTriangles": [
+        {
+          "lod": 0,
+          "before": 654,
+          "after": 1334
+        },
+        {
+          "lod": 1,
+          "before": 9770,
+          "after": 10690
+        },
+        {
+          "lod": 2,
+          "before": 23370,
+          "after": 23350
+        }
+      ],
+      "geometryChecks": {
+        "finite": true,
+        "bodyAndRoofPresent": true,
+        "withinOriginalParcel": true,
+        "repeatedLod2Deterministic": true,
+        "lods": [
+          0,
+          1,
+          2
+        ]
+      }
+    }
+  ],
+  "gallery": {
+    "path": "previews/streets/index.html",
+    "sha256": "a1c240d42b7ab6a4dbe11070165ddf61afe0fd2d745e429d3def7720aacec56d",
+    "sameGroundRoadsParcelsPopulationAndCamera": true,
+    "browserChecks": {
+      "townSwitching": 3,
+      "lodSelections": 9,
+      "roofOffOn": 3,
+      "dragSynchronizesBothViews": true
+    },
+    "screenshots": [
+      "previews/streets/pair-529.png",
+      "previews/streets/pair-496.png",
+      "previews/streets/pair-463.png"
+    ],
+    "javascriptErrors": [],
+    "externalRequests": []
+  },
+  "actualOffline": {
+    "sourceWorldBuffersMatch": true,
+    "typedWorldFields": 62,
+    "workerCity": {
+      "id": 529,
+      "name": "Saint Midulrik",
+      "buildings": 214,
+      "triangles": 589665,
+      "worker": true,
+      "sourceFloatMeshesMatch": true
+    },
+    "nativeRoofToggle": {
+      "enabled": false,
+      "names": [
+        "cm:529:roofs"
+      ],
+      "visible": [
+        false
+      ]
+    },
+    "legacySave": {
+      "formatVersion": 6,
+      "implicitLandformVersion": 0,
+      "fingerprints": [
+        "440ae5d0",
+        "e6aee7b8",
+        "d8ba763d"
+      ]
+    },
+    "scenarios": [
+      {
+        "name": "initial real-worker startup",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "legacy v6 save restore through file chooser",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      }
+    ],
+    "errors": [],
+    "externalRequests": []
+  },
+  "densityCompatibility": {
+    "status": "Read-only combined-source check using the separate, not-yet-merged density generator; current house/frontage modules unchanged.",
+    "generatorSha256": "9548761480ef0ef5feacd4468f04354ef2b28354ee486d28b769b5e067838c60",
+    "provinceId": 529,
+    "oldParcels": 214,
+    "parcels": 429,
+    "denseInfill": 215,
+    "footprint": [
+      1.1,
+      1.1
+    ],
+    "sampled": 32,
+    "lods": [
+      {
+        "lod": 0,
+        "bodyTriangles": 1324,
+        "roofTriangles": 5728
+      },
+      {
+        "lod": 1,
+        "bodyTriangles": 31168,
+        "roofTriangles": 13600
+      },
+      {
+        "lod": 2,
+        "bodyTriangles": 74444,
+        "roofTriangles": 25328
+      }
+    ],
+    "audit": {
+      "iceBuildings": 0,
+      "wetBuildings": 0,
+      "roadBuildings": 0,
+      "overlaps": 0,
+      "nonfinite": 0,
+      "seaRoads": 0,
+      "buildings": 429
+    },
+    "generatorBranch": "codex/dense-city-performance",
+    "geometryChecks": {
+      "lods": [
+        0,
+        1,
+        2
+      ],
+      "singleStructure": true,
+      "finite": true,
+      "bodyAndRoofPresent": true,
+      "withinOriginalParcel": true
+    }
+  },
+  "scope": "Three full layout audits, 32 selected ordinary compounds at each LOD, one actual source/worker city, one legacy save, and 32 dense compounds at each LOD. No all-city geometry survey or performance benchmark."
+}
