@@ -55,7 +55,9 @@ function support(row,b){
  const a=model.frame.anchors.get(b.id),height=model.heights[b.id],ranges=collector.buildingRanges.buildings,range=ranges.find(r=>r.id===b.id&&r.footing);
  assert(range,'the supporting structure has explicit ownership');
  const data=collector.meshes.buildings.vertices,levels=new Set(),bottom=[],faces=[];let largestFace=0;
- const actual=new Set(),key=p=>p.map(v=>Math.round(v*1e8)).join(',');
+ // Projection now supplies the final upload buffer directly. Compare the exact
+ // GPU coordinates instead of the former intermediate double-precision array.
+ const actual=new Set(),key=p=>Array.from(p,Math.fround).join(',');
  for(let i=0;i<meshes[`cm:${p.id}:buildings`].length;i+=9)actual.add(key(meshes[`cm:${p.id}:buildings`].slice(i,i+3)));
  for(let i=range.start;i<range.end;i+=27){
   const ys=[],face=[];

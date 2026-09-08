@@ -21,6 +21,40 @@ test('shared streets are one ribbon at the widest route class',()=>{
  assert(Math.max(...xs)<=4.670001&&Math.min(...zs)>=-.670001,'junctions stay within their street reservation');
 });
 
+test('courtyard lanes fit their surveyed narrow reservation and still join wider streets',()=>{
+ const lane={...road('lane',point(0,0),point(0,4)),role:'courtyard-access',halfWidth:.12};
+ const narrow=mesh([lane]),xs=narrow.g.data.filter((_,i)=>i%9===0);
+ assert(Math.abs(Math.max(...xs)-.12)<1e-9);assert(Math.abs(Math.min(...xs)+.12)<1e-9);
+ const joined=mesh([road('arterial',point(-3,0),point(3,0)),lane]),tris=triangles(joined.g);
+ for(const p of[point(0,0),point(0,.5),point(0,1),point(.11,2)])assert(tris.some(t=>covers(t,p)),'narrow access must meet the actual street surface');
+ assert(!tris.some(t=>covers(t,point(.13,2))),'the lane must not bleed into its neighbouring parcel');
+ const ordinary=mesh([{...lane,role:'street'}]);
+ assert(Math.max(...ordinary.g.data.filter((_,i)=>i%9===0))>.3,'only explicit courtyard access changes the existing street class widths');
+});
+
+test('adjacent fine-grid lanes discard zero-area clipping fragments without losing road surface',()=>{
+ // A long house connector partially overlaps a lane made of short shared-end
+ // segments. Closed-plane clipping formerly duplicated each coincident edge:
+ // just 12 segments already produced over 8,000 fragments, eventually OOMing
+ // dense real cities despite almost all those fragments having zero area.
+ const count=24,points=Array.from({length:count+1},(_,k)=>point(-11-k*.275,76.8));
+ const lane={kind:'lane',role:'courtyard-access',halfWidth:.12,points};
+ const connectors=[{a:point(-11,76.74),b:point(-11-count*.275,76.74)}];
+ const ground=(x,z)=>x*.3-z*.2+x*z*.01,{g,stats}=mesh([lane],ground,connectors),tris=triangles(g);
+ assert.equal(stats.edges,count+1);
+ assert(stats.maxFragments<=count,'coincident edges must not multiply into surface fragments');
+ assert(tris.length<12*count,'triangulation stays proportional to the real lane segments');
+ assert(g.data.every(Number.isFinite));
+ for(let i=0;i<g.data.length;i+=9)assert(Math.abs(g.data[i+1]-ground(g.data[i],g.data[i+2])-.14)<1e-9);
+ for(let k=0;k<count;k++)for(const z of[76.67,76.70,76.8,76.91]){
+  const p=point(-11-(k+.37)*.275,z);
+  assert(tris.some(t=>covers(t,p)),'the lane and exposed connector strip retain their surface');
+  const interiors=tris.filter(t=>{const s=t.map((a,j)=>side(a,t[(j+1)%3],p));return s.every(v=>v>1e-9)||s.every(v=>v< -1e-9);});
+  assert.equal(interiors.length,1,'overlapping routes must still produce exactly one road face');
+ }
+ for(const z of[76.65,76.93])assert(!tris.some(t=>covers(t,point(-13,z))),'clipping must preserve the surveyed road widths');
+});
+
 test('corners, forks and building connectors have a continuous single surface',()=>{
  const roads=[road('arterial',point(-4,0),point(0,0),point(0,4)),road('street',point(0,0),point(3,-3))];
  const {g}=mesh(roads,()=>0,[{a:point(0,3),b:point(2,3)}]),tris=triangles(g);

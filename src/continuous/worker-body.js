@@ -29,7 +29,7 @@ self.onmessage=async e=>{const{id,world:w,sim:s,pid,relief,kind,token,key}=e.dat
   self.postMessage({id,kind,token,pid,key,payload:result.buildings.length?pack(result):null});return;
  }
  if(w)loadedWorld=w;if(!loadedWorld)throw Error('Missing parent geography in mesh worker.');self.world=loadedWorld;self.sim=s;
- const meshes={};const r={relief,upload(name,g,shadow=true,unlit=0,alpha=1){meshes[name]={vertices:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};}};
+ const meshes={};const r={relief,upload(name,g,shadow=true,unlit=0,alpha=1){meshes[name]={vertices:g.data instanceof Float32Array?g.data:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};}};
  const layer=new ContinuousCityLayer(r);layer.world=loadedWorld;layer.sim=s;
  const m=layer.build(s.provinces[pid]);const payload={city:pack(m.city),heights:m.heights,excavations:m.excavations,triangles:m.triangles,meshes};
  const buffers=new Set();function visit(v){if(ArrayBuffer.isView(v))buffers.add(v.buffer);else if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v==='object')Object.values(v).forEach(visit);}visit(payload);
