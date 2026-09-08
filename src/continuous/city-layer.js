@@ -79,13 +79,15 @@ const ExcavationTerrain=(()=>{
 })();
 const SEASON_SNOW=rgb('#e9f1f4');
 class ContinuousCityLayer {
- constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
+ constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.terrainColorCache=null;this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}`;}
  remove(id){const a=this.models.get(id);if(!a)return;for(const key of a.meshNames)this.drop(key);this.models.delete(id);this.lastRiverKey=null;if(this.world&&this.r.world===this.world)this.r.buildRivers?.();
   if(a.excavations?.length){this.lastTerrainKey=null;if(this.world&&this.r.world===this.world){this.r.buildTerrain?.();this.r.request?.();}}
  }
  drop(key){const r=this.r,m=r.meshes[key];if(!m)return;if(r.gl){r.gl.deleteBuffer(m.buffer);r.gl.deleteVertexArray(m.vao);}delete r.meshes[key];r.dirtyShadow=true;}
- reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.reriver);this.lastRiverKey=null;clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
+ // setWorld may already have built the incoming world's baseline before bind
+ // resets the town streamer. Keep that matching cache for the first hover.
+ reset(w,s){const hadOpenings=this.activeExcavations().length>0;this.epoch++;clearTimeout(this.retess);clearTimeout(this.reflora);clearTimeout(this.reriver);this.lastRiverKey=null;clearTimeout(this.timer);this.lastEnvironmentKey='none';this.lastTerrainKey=null;if(this.terrainColorCache?.world!==w||this.terrainColorCache?.sim!==s)this.terrainColorCache=null;this.lastExcavationKey='closed';if(this.worker){this.worker.terminate();this.worker=null;for(const job of this.workerJobs.values())job.reject(new Error('World replaced'));this.workerJobs.clear();this.workerWorld=null;}for(const id of [...this.models.keys()])this.remove(id);this.pending.clear();this.failed.clear();this.focusId=null;this.preparing=null;this.world=w;this.sim=s;this.loading=false;this.natural=false;this.r.continuousModels=this.models;if(hadOpenings&&this.r.world===w)this.r.buildTerrain?.();this.r.request();}
  bind(w,s){if(w!==this.world||(this.sim&&s!==this.sim))this.reset(w,s);else this.sim=s;}
  activeExcavations(){if(this.r.world&&this.r.world!==this.world)return[];return this.r.zoom>=AtlasSpace.DETAIL_ZOOM?[...this.models.values()].filter(m=>this.visible(`cm:${m.p.id}:buildings`)===true).flatMap(m=>m.excavations||[]):[];}
  excavationKey(){const holes=this.activeExcavations();return holes.length?holes.map(h=>[h.buildingId,h.floorY,...h.outline.flat()].join(',')).join(';'):'closed';}
@@ -150,8 +152,12 @@ class ContinuousCityLayer {
    if(near&&areas.some(p=>Math.abs(p.x-x)<9&&Math.abs(p.y-y)<8))n=Math.max(n,4);
    levels[y*GW+x]=n;estimated+=n*n*2;
   }if(estimated>300000&&detail>1)detail/=2;else break;}while(true);
-  const colors=new Float32Array(GN*3);
-  for(let i=0;i<GN;i++){let c=r.palette(i);if(near&&w.height[i]>0){c=CityEnvironment.cellColor(w,i);const cover=CityEnvironment.cellCover(w,i);if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));}colors.set(c,i*3);}
+  const colors=new Float32Array(GN*3),hovered=r.hoveredRealm;
+  // Every rebuilt mesh owns an unhovered baseline, even if the camera refines
+  // terrain while the pointer still rests on a country name.
+  try{r.hoveredRealm=null;
+   for(let i=0;i<GN;i++){let c=r.palette(i);if(near&&w.height[i]>0){c=CityEnvironment.cellColor(w,i);const cover=CityEnvironment.cellCover(w,i);if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));}colors.set(c,i*3);}
+  }finally{r.hoveredRealm=hovered;}
   // 256 also represents the centre of a 1/128 cell, used by boundary stitching.
   // Fine and coarse neighbours share these vertices, colours and shading normals.
   const vertices=new Map();
@@ -183,9 +189,42 @@ class ContinuousCityLayer {
     }else if((x+y)%2){emit(V[a],V[c],V[b]);emit(V[b],V[c],V[d]);}else{emit(V[a],V[c],V[d]);emit(V[a],V[d],V[b]);}
    }
   }
+  const surfaceVertices=g.data.length/9;
   const c=rgb('#4d859e'),a=-MAP_X/2,b=MAP_X/2,n=-MAP_Z/2,s=MAP_Z/2,R=500;
   g.quad([-R,-.015,-R],[-R,-.015,n],[R,-.015,n],[R,-.015,-R],c);g.quad([-R,-.015,s],[-R,-.015,R],[R,-.015,R],[R,-.015,s],c);g.quad([-R,-.015,n],[-R,-.015,s],[a,-.015,s],[a,-.015,n],c);g.quad([b,-.015,n],[b,-.015,s],[R,-.015,s],[R,-.015,n],c);
   r.upload('terrain',g,true,near?0:r.layer==='relief'?0:.30);this.terrainTriangles=g.data.length/27;this.terrainDetail=detail;this.terrainTarget=tess;this.lastTerrainKey=this.terrainKey();this.lastExcavationKey=this.excavationKey();r.selectionKey=null;
+  this.terrainColorCache=null;
+  const mesh=r.meshes?.terrain,v=mesh?.vertices;
+  if(v){const baseColors=new Float32Array(surfaceVertices*3);
+   for(let i=0,j=0;i<surfaceVertices*9;i+=9,j+=3){baseColors[j]=v[i+6];baseColors[j+1]=v[i+7];baseColors[j+2]=v[i+8];}
+   this.terrainColorCache={mesh,vertices:v,baseColors,gridColors:colors,surfaceVertices,world:w,sim:r.sim,layer:r.layer,focusRealm:r.focusRealm,natural:near,year:r.sim?.year,hovered:null};
+   if(hovered!=null)this.recolorTerrain();
+  }
+ }
+ // A hover changes three colour channels in the existing interleaved buffer.
+ // Geometry, normals, GPU allocations and the shadow map remain untouched.
+ recolorTerrain(){const r=this.r,mesh=r.meshes?.terrain,v=mesh?.vertices,cache=this.terrainColorCache;
+  if(!r.world||!v)return false;
+  if(!cache||cache.mesh!==mesh||cache.vertices!==v||cache.world!==r.world||cache.sim!==r.sim||cache.layer!==r.layer||cache.focusRealm!==r.focusRealm||cache.natural!==this.natural||cache.year!==r.sim?.year){this.buildTerrain();return true;}
+  const hovered=this.natural?null:r.hoveredRealm??null;
+  if(hovered===null&&cache.hovered===null)return true;
+  const base=cache.baseColors,limit=cache.surfaceVertices*9;
+  if(hovered===null){
+   for(let i=0,j=0;i<limit;i+=9,j+=3){v[i+6]=base[j];v[i+7]=base[j+1];v[i+8]=base[j+2];}
+  }else{
+   const delta=new Float32Array(GN*3);
+   for(let i=0;i<GN;i++){const c=r.palette(i),o=i*3;for(let k=0;k<3;k++)delta[o+k]=Math.fround(c[k])-cache.gridColors[o+k];}
+   for(let i=0,j=0;i<limit;i+=9,j+=3){
+    const x=clamp((v[i]/MAP_X+.5)*(GW-1),0,GW-1),y=clamp((v[i+2]/MAP_Z+.5)*(GH-1),0,GH-1),ax=Math.floor(x),ay=Math.floor(y),u=x-ax,t=y-ay;
+    const o0=(ay*GW+ax)*3,o1=(ay*GW+Math.min(ax+1,GW-1))*3,o2=(Math.min(ay+1,GH-1)*GW+ax)*3,o3=(Math.min(ay+1,GH-1)*GW+Math.min(ax+1,GW-1))*3;
+    // Apply a delta to the saved colours, never to the previous hover. Zero
+    // deltas preserve unrelated terrain bit-for-bit; leave restores every bit.
+    for(let k=0;k<3;k++)v[i+6+k]=base[j+k]+lerp(lerp(delta[o0+k],delta[o1+k],u),lerp(delta[o2+k],delta[o3+k],u),t);
+   }
+  }
+  cache.hovered=hovered;
+  if(r.gl&&mesh.buffer){r.gl.bindBuffer(r.gl.ARRAY_BUFFER,mesh.buffer);r.gl.bufferSubData(r.gl.ARRAY_BUFFER,0,v);}
+  return true;
  }
  // Zooming in used to STRIP the world. Everything the atlas draws to say what a place
  // is — trees, dunes, glacier tongues, sea ice, reeds — is hidden past 4.8 because those
