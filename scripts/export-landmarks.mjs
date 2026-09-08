@@ -3,7 +3,7 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {dirname,resolve} from 'node:path';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const names=['src/world/geography.js','src/render/world-renderer.js','src/render/export-glb.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js'];
+const names=['src/world/geography.js','src/render/world-renderer.js','src/render/export-glb.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/dragon-ruins.js','src/landmarks/templates.js'];
 const code=(await Promise.all(names.map(p=>readFile(resolve(root,p),'utf8')))).join('\n');
 const api=new Function(code+'\nreturn {LandmarkCatalog,LandmarkTemplates,exportGeometryGLB};')();
 const output=resolve(root,'assets/landmarks');await mkdir(output,{recursive:true});

@@ -21,6 +21,8 @@
     "test:mountains-browser": "node tests/irregular-mountains.browser.mjs",
     "test:lake-labels-browser": "node tests/lake-labels.browser.mjs",
     "test:menus-browser": "node tests/menu.browser.mjs",
+    "test:full-realm-labels-browser": "node tests/full-realm-labels.browser.mjs",
+    "test:dragon-sites-browser": "node tests/dragon-sites.browser.mjs",
     "test:terrain-browser": "node tests/terrain-refinement.browser.mjs",
     "assets": "node scripts/export-landmarks.mjs",
     "test:towns": "node --test tests/towns.test.mjs",

@@ -16,15 +16,15 @@ function harness({state=sim,worldData=world,width=1280,height=800,projected=fals
         hoveredRealm:null,setHoveredRealm(id){this.hoveredRealm=id;},request(){}});
     r.updateCamera();if(projected)r.screen=(x,y,dh)=>{if(projected===true)assert.equal(dh,0,'town markers must project on the ground at every zoom');return[x,y];};
     const makeElement=()=>({dataset:{},children:[],style:{setProperty(k,v){this[k]=v;}},classList:{toggle(name,value){this[name]=value;}},
-        setAttribute(k,v){this[k]=v;},appendChild(child){this.children.push(child);},
+        setAttribute(k,v){this[k]=v;},appendChild(child){this.children.push(child);},replaceChildren(...children){this.children=children;},
         set innerHTML(value){this.html=value;this.children=[];},get innerHTML(){return this.html||'';},
         get offsetWidth(){return this.className?.includes('townLabel')?Math.min(120,this.nameWidth()+4):Math.min(180,this.nameWidth()+14);},
         get offsetHeight(){return this.className?.includes('townLabel')?Math.ceil((this.nameWidth()+4)/120)*12+2:30;},
         nameWidth(){return (this.html?.match(/<em(?:\s[^>]*)?>([^<]*)<\/em>/)?.[1]||'').length*4.8;},
         querySelector(selector){if(!this.className?.includes('realmLabel'))return null;
             return {'.realmFullName':{offsetWidth:Math.min(width<700?125:180,this.nameWidth()*1.5),offsetHeight:38},
-                '.realmCompactName':{offsetWidth:Math.min(100,this.nameWidth()),offsetHeight:18},
-                '.realmMarker':{offsetWidth:18,offsetHeight:18}}[selector];}
+                '.realmCompactName':{offsetWidth:Math.min(108,this.nameWidth()),offsetHeight:Math.ceil(this.nameWidth()/108)*15},
+                '.realmLeader':{style:{}}}[selector];}
     });
     const dom={labels:makeElement(),names:{checked:true},compass:makeElement(),legends:{checked:true}};
     dom.labels.getBoundingClientRect=()=>({left:37,top:93});
@@ -49,6 +49,12 @@ test('all 104 default settlements retain their complete names in overview and th
         h.make(layer);
         assert.equal(towns(h).length,expected.length,layer+' must not truncate each country or omit the towns');
         assert.equal(new Set(towns(h).map(v=>v.feature.provinceId)).size,expected.length);
+        for(const {element:e,feature:f} of h.items().filter(v=>v.feature.realm!=null)){
+            assert.equal((e.innerHTML.match(/<em[^>]+>/g)||[]).length,2);
+            assert(e.innerHTML.includes('<em class="realmFullName">'+f.name+'</em>'));
+            assert(e.innerHTML.includes('<em class="realmCompactName" aria-hidden="true">'+f.name+'</em>'),'the smaller lettering must print the same full country name');
+            assert(!e.innerHTML.includes('realmMarker'),'numbers must never replace the printed state name');
+        }
         for(const {feature:f,element:e} of towns(h)){
             assert.equal(f.name,sim.provinces[f.provinceId].name);
             assert(e.innerHTML.includes('<em>'+f.name+'</em>'),'full name, without abbreviation');
@@ -151,7 +157,7 @@ test('a decorative pin yields a country’s only anchor and returns after names,
         provinces:[{id:0,i,name:'Island Town',x,y,owner:0,cells:[i],settled:true,urbanPop:40}]};
     const pins=[],h=harness({state,worldData,projected:'all',pins});h.r.layer='realms';h.r.onChange=h.position;
     h.r.screen=(gx,gy)=>[gx+150,gy+100];
-    const container={children:[],set innerHTML(value){this.children=[];},appendChild(e){this.children.push(e);}};
+    const container={children:[],set innerHTML(value){this.children=[];},replaceChildren(...children){this.children=children;},appendChild(e){this.children.push(e);}};
     h.document.getElementById=id=>id==='worldLandmarkPins'?container:h.dom[id];
     const create=h.document.createElement;
     h.document.createElement=()=>{const e=create();e.kind='world';e.getBoundingClientRect=()=>({left:37+parseFloat(e.style.left)-12,top:93+parseFloat(e.style.top)-12,width:24,height:24});return e;};
@@ -171,6 +177,17 @@ test('a decorative pin yields a country’s only anchor and returns after names,
     sites[0].x=x;h.r.onChange();assert.equal(pins[0].style.display,'none');
     h.r.layer='settlements';h.make('settlements');assert.equal(pins[0].style.display,'grid','a layer without country lettering must not retain its suppression');
     assert.equal(towns(h)[0].element.style.opacity,'1');
+    // A dedicated dragon / holy site is part of the map's geographic identity,
+    // so its symbol keeps the real anchor and the entire country name moves.
+    pins[0].dataset.atlasSite='dragon';h.r.layer='realms';h.make('realms');
+    const fullCountry=h.items().find(v=>v.feature.realm===0),e=fullCountry.element;
+    assert.equal(pins[0].style.display,'grid','dedicated site symbols must never yield to a country name');
+    assert.equal(e.style.opacity,'1');assert.notEqual(e.dataset.labelVariant,'marker');
+    const scale=+e.style.transform.match(/scale\(([^)]+)\)/)[1],w=(parseFloat(e.style.width)+6)*scale,hh=(parseFloat(e.style.height)+4)*scale;
+    const countryBox={x:parseFloat(e.style.left)-w/2,y:parseFloat(e.style.top)-hh/2,w,h:hh};
+    assert(!overlaps(countryBox,{x:286,y:186,w:28,h:28}),'the complete country lettering must move away from the protected symbol');
+    h.dom.names.checked=false;h.position();assert.equal(pins[0].style.display,'grid');
+    h.dom.names.checked=true;h.position();assert.equal(pins[0].style.display,'grid');
 });
 
 test('settlement membership changes rebuild labels without a city-model population threshold',()=>{

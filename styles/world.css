@@ -531,18 +531,17 @@ header {
   padding:0;
   box-sizing:border-box
 }
-.maplabel.realmLabel .realmFullName,.maplabel.realmLabel .realmCompactName,.maplabel.realmLabel .realmMarker{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:max-content;margin:0;pointer-events:none}
+.maplabel.realmLabel .realmFullName,.maplabel.realmLabel .realmCompactName{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:max-content;margin:0;pointer-events:none}
 .maplabel.realmLabel .realmFullName{max-width:clamp(120px,18vw,230px);white-space:normal;overflow-wrap:anywhere}
-.maplabel.realmLabel .realmCompactName{max-width:clamp(100px,15vw,180px);white-space:normal;overflow-wrap:anywhere;font-size:clamp(11px,calc(var(--realm-label-size,18px) * .8),17px)}
-.maplabel.realmLabel .realmCompactName,.maplabel.realmLabel .realmMarker{visibility:hidden}
+.maplabel.realmLabel .realmCompactName{max-width:clamp(100px,14vw,150px);white-space:normal;overflow-wrap:anywhere;font-size:12px}
+.maplabel.realmLabel .realmCompactName{visibility:hidden}
 .maplabel.realmLabel .realmLeader{display:none;position:absolute;left:50%;top:50%;height:0;border-top:1px solid var(--realm-mark,#786c50);transform-origin:0 0;pointer-events:none}
-.maplabel.realmLabel[data-label-variant=compact] .realmFullName,.maplabel.realmLabel[data-label-variant=marker] .realmFullName{visibility:hidden}
-.maplabel.realmLabel[data-label-variant=compact] .realmCompactName,.maplabel.realmLabel[data-label-variant=marker] .realmMarker{visibility:visible}
-.maplabel.realmLabel .realmMarker{box-sizing:border-box;min-width:18px;height:18px;padding:1px 3px;border:1px solid var(--realm-mark,#786c50);border-radius:50%;background:#fff6dbea;color:#463e31;font:10px/14px Georgia,serif;text-shadow:none}
+.maplabel.realmLabel[data-label-variant=compact] .realmFullName{visibility:hidden}
+.maplabel.realmLabel[data-label-variant=compact] .realmCompactName{visibility:visible}
 .maplabel.wildernessLabel em{font:italic 11.5px/1.3 Georgia,serif;color:#566054;letter-spacing:.1px}
 .maplabel.wildernessLabel small{font:6px/1.3 ui-monospace,monospace;letter-spacing:1px;color:#657064}
 .maplabel.wildernessLabel:after{content:none}
-@media(max-width:700px){.maplabel.realmLabel .realmFullName{max-width:clamp(86px,29vw,130px)}.maplabel.realmLabel .realmCompactName{max-width:clamp(76px,26vw,110px)}}
+@media(max-width:700px){.maplabel.realmLabel .realmFullName{max-width:clamp(86px,29vw,130px)}.maplabel.realmLabel .realmCompactName{max-width:108px;font-size:11.5px}}
 .maplabel.realmLabel:after { content:none }
 .maplabel.realmLabel em {
   font:italic 400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);

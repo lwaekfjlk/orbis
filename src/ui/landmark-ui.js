@@ -42,7 +42,46 @@ window.LandmarkUI=(()=>{
  function selectPart(id,focus=false){const p=model.parts.find(p=>p.id===id);if(!p)return;selected=id;if(focus)r.focusPart(id);else r.selectPart(id);E('lmSelection').classList.remove('hidden');E('lmSelection').innerHTML=`<strong>${esc(p.name)}</strong>${esc(p.note||'Assembled from reusable '+p.modules.slice(0,4).join(', ')+' modules.')}<br><small>${Math.round(p.geometry.data.length/27).toLocaleString('en-US')} triangles · ${esc(p.role)}</small>`;E('lmParts').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.lmPart===id));placeLabels();window.OneMap?.inspectPart(p);}
  function placeLabels(){if(!r||!openState)return;const boxes=[];for(const{p,b}of pins){const v=p.anchor.map((v,i)=>v+r.offset(p)[i]);v[1]=p.bounds.max[1]+r.offset(p)[1]+1;const[x,y]=r.screen3(v),box={x:x-60,y:y-20,w:120,h:24};const shown=E('lmPins').checked&&r.visible(p.id)&&x>60&&x<r.width-50&&y>110&&y<r.height-45&&!boxes.some(a=>Math.abs(a.x-box.x)<110&&Math.abs(a.y-box.y)<26);b.style.display=shown?'block':'none';b.style.left=x+'px';b.style.top=y+'px';b.classList.toggle('active',selected===p.id);if(shown)boxes.push(box)}}
  function cameraEvents(){const c=E('lmCanvas');let down=null,pointers=new Map(),pinch=null;const move=e=>{if(pointers.has(e.pointerId))pointers.set(e.pointerId,[e.clientX,e.clientY]);if(pointers.size===2){const[a,b]=[...pointers.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(!pinch)pinch={d,z:r.zoom};r.zoom=Math.max(.45,Math.min(5,pinch.z*d/Math.max(1,pinch.d)));r.request();return}if(down){const dx=e.clientX-down.x,dy=e.clientY-down.y;down.moved=Math.max(down.moved,Math.hypot(e.clientX-down.sx,e.clientY-down.sy));if(down.pan)r.pan(dx,dy);else{r.azimuth-=dx*.007;r.elevation=Math.max(.20,Math.min(1.55,r.elevation+dy*.005));r.request()}down.x=e.clientX;down.y=e.clientY;return}};c.addEventListener('pointerdown',e=>{c.setPointerCapture(e.pointerId);pointers.set(e.pointerId,[e.clientX,e.clientY]);down={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,moved:0,pan:e.shiftKey||e.button===2};});c.addEventListener('pointermove',move);const end=e=>{pointers.delete(e.pointerId);if(down&&down.moved<4&&!pinch){const rect=c.getBoundingClientRect(),p=r.pickPart(e.clientX-rect.left,e.clientY-rect.top);if(p)selectPart(p.id)}down=null;if(pointers.size<2)pinch=null};c.addEventListener('pointerup',end);c.addEventListener('pointercancel',()=>{down=null;pinch=null;pointers.clear()});c.addEventListener('contextmenu',e=>e.preventDefault());c.addEventListener('wheel',e=>{e.preventDefault();r.zoom=Math.max(.45,Math.min(5,r.zoom*Math.exp(-e.deltaY*.001)));r.request()},{passive:false});c.addEventListener('dblclick',e=>{const rect=c.getBoundingClientRect(),p=r.pickPart(e.clientX-rect.left,e.clientY-rect.top);if(p)selectPart(p.id,true)});c.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')r.azimuth-=.12;else if(e.key==='ArrowRight')r.azimuth+=.12;else if(e.key==='ArrowUp')r.elevation=Math.min(1.55,r.elevation+.08);else if(e.key==='ArrowDown')r.elevation=Math.max(.20,r.elevation-.08);else if(['+','='].includes(e.key))r.zoom=Math.min(5,r.zoom*1.15);else if(e.key==='-')r.zoom=Math.max(.45,r.zoom/1.15);else return;e.preventDefault();r.request()});}
- function onWorldUpdate(){if(!world||!sim)return;registry=LandmarkBinding.inventory(world,sim);lastSim=sim;lastWorld=world;if(renderer&&!renderer.__landmarkHook){const old=renderer.onChange;renderer.onChange=()=>{positionWorldPins();old()};renderer.__landmarkHook=true}const node=E('worldLandmarkPins');if(node){node.innerHTML='';worldPins=[];const used=new Set();for(const s of registry){if(used.has(s.i))continue;used.add(s.i);const b=document.createElement('button');b.className='world-landmark-pin';b.title=s.highCitadel?s.name+' · '+Math.round(s.highCitadel.elevation).toLocaleString()+' m · Visit city':s.name+' · Open 3D landmark';b.setAttribute('aria-label',b.title);b.textContent=s.icon||LandmarkCatalog.styles.find(t=>t.id===s.recipe.style).icon;b.onclick=e=>{e.stopPropagation();openSite(s.id)};node.appendChild(b);worldPins.push({s,b})}}positionWorldPins();if(openState)renderCatalog();}
- function positionWorldPins(){if(!renderer||!worldPins.length)return;const rects=[];for(let n=0;n<worldPins.length;n++){const{s,b}=worldPins[n],[x,y]=renderer.screen(s.x,s.y,s.highCitadel?.08:1.7);const available=['realms','relief','settlements','faiths','peoples','magic','wealth'].includes(renderer.layer),show=available&&(renderer.zoom>1.7||n<12)&&x>24&&x<renderer.width-30&&y>70&&y<renderer.height-45&&!rects.some(a=>Math.hypot(a[0]-x,a[1]-y)<38);b.style.display=show?'grid':'none';b.style.left=x+'px';b.style.top=y+'px';if(show)rects.push([x,y])}}
+ const specialKind=s=>s.highCitadel?.kind||(s.dragonRuins?'dragon-ruin':null);
+ function onWorldUpdate(){
+  if(!world||!sim)return;registry=LandmarkBinding.inventory(world,sim);lastSim=sim;lastWorld=world;
+  if(renderer&&!renderer.__landmarkHook){const old=renderer.onChange;renderer.onChange=()=>{positionWorldPins();old()};renderer.__landmarkHook=true;}
+  const node=E('worldLandmarkPins');if(node){node.replaceChildren();worldPins=[];const used=new Set();
+   // Unique high cities and dragon relics have priority over ordinary monuments.
+   const ordered=registry.slice().sort((a,b)=>Number(!!specialKind(b))-Number(!!specialKind(a)));
+   for(const s of ordered){if(used.has(s.i))continue;used.add(s.i);const kind=specialKind(s),button=document.createElement('button');
+    button.className='world-landmark-pin';button.dataset.siteId=s.id;
+    button.title=s.highCitadel?s.name+' · '+Math.round(s.highCitadel.elevation).toLocaleString()+' m · Visit city':s.name+' · '+(s.dragonRuins?'Explore dragon ruins':'Open 3D landmark');
+    button.setAttribute('aria-label',button.title);
+    if(kind&&typeof AtlasMarks!=='undefined'){button.dataset.atlasSite=kind;button.innerHTML=AtlasMarks.markup(kind,{size:24});}
+    else button.textContent=s.icon||LandmarkCatalog.styles.find(t=>t.id===s.recipe.style)?.icon||'◇';
+    button.onclick=e=>{e.stopPropagation();openSite(s.id);};node.appendChild(button);worldPins.push({s,b:button});
+   }
+  }
+  positionWorldPins();if(openState)renderCatalog();
+ }
+ function positionWorldPins(){
+  if(!renderer||!worldPins.length)return;const rects=[];
+  for(let n=0;n<worldPins.length;n++){
+   const{s,b}=worldPins[n],kind=specialKind(s),[x,y]=renderer.screen(s.x,s.y,kind?.08:1.7);
+   const available=['realms','relief','settlements','faiths','peoples','magic','wealth'].includes(renderer.layer);
+   const enabled=s.dragonRuins?renderer.options.legends!==false:true;
+   let show=enabled&&(kind||available)&&(kind||renderer.zoom>1.7||n<12)&&x>18&&x<renderer.width-18&&y>70&&y<renderer.height-85,px=x,py=y;
+   const fits=(a,c,radius)=>a>18&&a<renderer.width-18&&c>70&&c<renderer.height-85&&!rects.some(p=>Math.hypot(p[0]-a,p[1]-c)<radius);
+   if(show&&kind&&!fits(px,py,33)){
+    // Nearby high cities keep separate, clickable crests. A short leader still
+    // locates each one on its real platform, instead of dropping the second.
+    let placed=false;
+    for(let ring=1;ring<=4&&!placed;ring++)for(const[dx,dy]of[[1,0],[-1,0],[0,-1],[0,1],[1,-1],[-1,-1],[1,1],[-1,1]]){
+     const a=x+dx*33*ring,c=y+dy*33*ring;if(fits(a,c,33)){px=a;py=c;placed=true;break;}
+    }
+    show=placed;
+   }else if(show&&!kind)show=fits(px,py,38);
+   b.style.display=show?'grid':'none';b.style.left=px+'px';b.style.top=py+'px';
+   if(kind){const dx=x-px,dy=y-py;b.style.setProperty('--site-leader-length',Math.hypot(dx,dy)+'px');b.style.setProperty('--site-leader-angle',Math.atan2(dy,dx)+'rad');}
+   if(show)rects.push([px,py]);
+  }
+ }
+
  return{init,openLibrary,openSite,openCity,openBuilding,close,onWorldUpdate,positionWorldPins,get renderer(){return r},get recipe(){return recipe},get model(){return model},get registry(){return registry},get isOpen(){return openState},selectPart,loadRecipe(rr){siteId=null;ensure();load(rr)}};
 })();

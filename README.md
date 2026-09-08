@@ -7,9 +7,9 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and marked wildness](previews/fantasy-landforms/after/world.png)
+![World overview with named countries, settlements and marked wildness](previews/dragon-sites/world.png)
 
-*The default world, Aereth-47. Click a country name to see its territory, population and history. Domestic lakes belong to their surrounding countries; open wildness remains clearly marked.*
+*The default world, Aereth-47. Click a country name to see its territory, population and history. Countries print their full formal names. Domestic lakes belong to their surrounding countries; open wildness remains clearly marked.*
 
 ## Start exploring
 
@@ -42,6 +42,14 @@ Search for a named landform to find it. Regenerate to explore the new terrain; o
 Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 
 City detail loads as you approach. Initial generation and large cities can take longer on slower devices. Terrain and buildings use stylized scales.
+
+### High cities and dragon relics
+
+A coiled dragon totem marks a Dragon King Citadel; a sacred sun seal marks a High Holy City. These tiny settlements stand on mountain platforms above 3,500 m. A broken dragon totem marks ancient ruins: shattered nesting courts, dragon-spine arches and horned gateways.
+
+Click a special symbol or open Search to visit. Searches for **龙城**, **圣城** and **龙族遗迹** work too. Ruins can be explored part by part and exported as a 3D model. [Explore the dragon sites](docs/DRAGON_SITES.md).
+
+![Ancient dragon ruins with broken stone rings and spine arches](previews/dragon-sites/ruins-aerie.png)
 
 ## People, countries and stories
 

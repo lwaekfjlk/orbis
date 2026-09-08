@@ -1,5 +1,8 @@
 // Production DOM / WebGL verification. Supply PLAYWRIGHT_MODULE and CHROMIUM_PATH
 // when using an external browser runtime; no browser packages enter the app.
+// This is the preserved 104-town / 22-country lake fixture: original landforms
+// and V1 high-city founding. Current defaults are covered by the full-realm-labels
+// and dragon-sites browser tests, rather than replacing these legacy assertions.
 import assert from 'node:assert/strict';
 import {readFile,writeFile,mkdir,mkdtemp,rm} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
@@ -23,7 +26,12 @@ try {
  page.on('pageerror',e=>errors.push(String(e)));
  const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading',null,{timeout:180000});
  await page.setContent(await readFile(join(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});
+ await stable();
+ await page.evaluate(()=>buildWorld({...GEN_DEFAULTS,landformVersion:0},{realms:18,conflict:1,highCitadelsVersion:1}));
  await stable();await page.evaluate(()=>document.fonts.ready);await page.evaluate(()=>positionLabels());
+ const fixture=await page.evaluate(()=>({landformVersion:world.params.landformVersion,highCitadelsVersion:sim.options.highCitadelsVersion,
+  fingerprints:[physicalFingerprint(world),settlementFingerprint(sim),politicalFingerprint(sim)]}));
+ assert.deepEqual(fixture,{landformVersion:0,highCitadelsVersion:1,fingerprints:['440ae5d0','e6aee7b8','d8ba763d']},'the legacy reference world must not silently use current founding or terrain');
  const measure=()=>page.evaluate(()=>{
   const labels=labelItems.filter(v=>v.feature.town||v.feature.realm!=null).map(({element:e,feature:f})=>{
    const b=e.getBoundingClientRect(),q=renderer.screen(f.x,f.y,f.town?0:.6);
@@ -49,7 +57,7 @@ try {
   assert.deepEqual(clipped,[],'a visible city name is clipped');
   assert(m.labels.every(l=>l.family.includes('IM Fell English')&&l.fontStyle==='italic'&&l.weight==='400'),'city and country names must use the actual antique italic face');
  };
- const report={desktop:await measure()};complete(report.desktop);
+ const report={fixture,desktop:await measure()};complete(report.desktop);
  report.territory=await page.evaluate(()=>{
   const t=PoliticalLand.territory(world,sim);let dry=0,lakes=0,wildness=0,oceanClaims=0,enclosedSea=0,holes=0;
   for(let i=0;i<GN;i++)if(world.height[i]>0){if(world.lake[i]>0)lakes++;else dry++;if(t.owners[i]<0)wildness++;}else if(t.owners[i]>=0){if(t.inlandWater[i])enclosedSea++;else oceanClaims++;}
@@ -102,6 +110,7 @@ try {
   renderer.setHoveredRealm(realm.id);const colored=renderer.palette(i);renderer.setHoveredRealm(null);const plain=renderer.palette(i);
   inspectCell(i);return{i,height:world.height[i],inland:t.inlandWater[i],realm:realm.name,fullName:s.label,colored,plain};
  });await stable();
+ assert.equal(report.inlandSea.realm,'Annwn','the original enclosed-sea fixture must retain its country');
  assert(report.inlandSea.height<=0&&report.inlandSea.inland);assert.notDeepEqual(report.inlandSea.colored,report.inlandSea.plain);
  assert.equal(await page.locator('#omSelectionBody > .om-eyebrow').innerText(),report.inlandSea.realm);
  assert((await page.locator('#inspector').innerText()).includes('Territory of '+report.inlandSea.fullName));
@@ -131,7 +140,7 @@ try {
  await page.locator('#omHome').click();await stable();
  await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill('');
  const highIds=await page.locator('[data-high-city]').evaluateAll(nodes=>nodes.map(n=>+n.dataset.highCity));
- assert.equal(highIds.length,2,'the default world must expose both real high cities without a query');
+ assert.equal(highIds.length,2,'the legacy V1 world must expose both real high cities without a query');
  await page.screenshot({path:join(out,'high-city-search.png')});
  for(const id of highIds){
   if(!(await page.locator('#omSearchPanel').isVisible()))await page.locator('#omSearchToggle').click();
@@ -148,6 +157,7 @@ try {
   await page.waitForFunction(kind=>sim.provinces[window.__continuousFocus]?.highCitadel?.kind===kind,kind);
   assert.equal(await page.locator('#omSearchPanel').isVisible(),false,'a primary result enters the model and closes search');
  }
+ assert.deepEqual(await page.evaluate(()=>[physicalFingerprint(world),settlementFingerprint(sim),politicalFingerprint(sim)]),fixture.fingerprints,'reading and visiting the legacy world must not change its data');
  assert.deepEqual(errors,[]);
  await writeFile(join(out,'report.json'),JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({desktop:{towns:104,realms:22,overlaps:report.desktop.overlaps},mobile:{towns:104,realms:22,overlaps:report.mobile.overlaps},territory:report.territory,highCities:report.highCities,layers:Object.keys(report.layers),localZooms:report.local.map(v=>v.zoom),lake,errors,out},null,2));

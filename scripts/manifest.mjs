@@ -15,6 +15,7 @@ export const scripts = [
     'src/render/folk-models.js', 'src/render/folk-renderer.js',
     'src/landmarks/catalog.js',
     'src/landmarks/kit.js',
+    'src/landmarks/dragon-ruins.js',
     'src/landmarks/templates.js',
     'src/landmarks/world-binding.js',
     'src/render/depth-rasterizer.js',
@@ -28,11 +29,13 @@ export const scripts = [
     'src/render/export-glb.js',
     'src/civilization/realm-profile.js', 'src/civilization/political-land.js',
     'src/ui/world-ui.js',
+    'src/ui/atlas-marks.js',
     'src/ui/city-ui.js',
     'src/ui/landmark-ui.js',
     'src/ui/onemap-ui.js',
     'src/continuous/generated-worker.js',
+    'src/continuous/ruin-layer.js',
     'src/ui/continuous-map.js',
     'src/bootstrap.js',
 ];
-export const styles = ['styles/world.css', 'styles/city.css', 'styles/landmarks.css', 'styles/towns.css', 'styles/onemap.css', 'styles/continuous.css'];
+export const styles = ['styles/world.css', 'styles/city.css', 'styles/landmarks.css', 'styles/towns.css', 'styles/onemap.css', 'styles/continuous.css', 'styles/atlas-marks.css'];
