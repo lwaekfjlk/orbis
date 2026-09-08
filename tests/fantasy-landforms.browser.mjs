@@ -84,7 +84,7 @@ try {
     await page.setContent(testedHtml.toString('utf8'), {waitUntil: 'load', timeout: 240000});
     await page.evaluate(() => document.fonts.ready);
     await settled(); await assertReady();
-    assert.equal(await page.evaluate('world.params.landformVersion'), 2, 'the shipped app did not use the new default');
+    assert.equal(await page.evaluate('world.params.landformVersion'), 3, 'the shipped app did not use the new default');
     report.fantasy = await fingerprints();
     assert.notEqual(report.fantasy.physical, '440ae5d0', 'the new default silently fell back to the legacy terrain');
     const metadata = await page.evaluate(() => {
@@ -194,7 +194,7 @@ try {
         window.__fantasySave = JSON.stringify(saved);
         window.__fantasyHistory = JSON.stringify(saved.simulation);
     });
-    assert.equal(await page.evaluate('JSON.parse(__fantasySave).parameters.landformVersion'), 2);
+    assert.equal(await page.evaluate('JSON.parse(__fantasySave).parameters.landformVersion'), 3);
     assert.equal(await page.evaluate('sim.year'), 401);
 
     // This legacy world is made by the actual current generator's version-0 path.
@@ -234,7 +234,7 @@ try {
     });
     await page.evaluate(() => loadSimulation(new File([__fantasySave], 'fantasy.json', {type: 'application/json'})));
     await settled(); await assertReady();
-    assert.equal(await page.evaluate('world.params.landformVersion'), 2);
+    assert.equal(await page.evaluate('world.params.landformVersion'), 3);
     assert.equal((await fingerprints()).physical, report.fantasy.physical);
     assert(await page.evaluate('JSON.stringify(sim)===__fantasyHistory'), 'new-format restore changed saved history');
     await page.evaluate(() => loadSimulation(new File([__legacySave], 'legacy.json', {type: 'application/json'})));

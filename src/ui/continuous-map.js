@@ -33,7 +33,7 @@ window.ContinuousMap = (() => {
   const prior=renderer.onChange;renderer.onChange=()=>{onCamera();prior();};
   const el=document.createElement('div');el.id='cmLabels';E('stage').appendChild(el);
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
-  const btn=document.createElement('button');btn.id='cmContext';btn.className='cm-context glass';btn.textContent='Wider setting';btn.title='Pull back in the same map';btn.onclick=wider;E('omChrome').appendChild(btn);
+  const btn=document.createElement('button');btn.id='cmContext';btn.type='button';btn.className='cm-context';btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5L7 12L14 19M7 12H21"/></svg><span>Back to world</span>';btn.title='Return to the whole world (H)';btn.onclick=async()=>{if(ready()&&await home())renderer.canvas.focus({preventScroll:true});};E('omChrome').appendChild(btn);
   layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();};
   ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();};
   bindCamera();
@@ -57,7 +57,7 @@ window.ContinuousMap = (() => {
  function updateTitle(){if(!enabled||!world||!sim)return;const r=renderer,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=AtlasSpace.TOWN_ZOOM*1.04&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
   const nearbyRuin=r.zoom>=AtlasSpace.TOWN_ZOOM?[...ruins.models.values()].find(m=>Math.hypot(m.site.x-a[0],m.site.y-a[1])<2):null;
-  E('cmContext').style.display=r.zoom>AtlasSpace.TOWN_ZOOM*1.04?'block':'none';
+  E('cmContext').style.display=r.zoom>1.15?'inline-flex':'none';
   E('cmStatus').textContent=nearbyRuin?`${nearbyRuin.site.name} · Ancient dragon ruins · ${Math.round(world.height[nearbyRuin.site.i]).toLocaleString()} m`:layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${nearest.p.name} · ${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.settled).length} towns · scroll towards a town`;
   E('omHint').textContent='SCROLL TO APPROACH · SHIFT-DRAG TO ORBIT · CLICK A BUILDING';
   document.body.dataset.detail=r.zoom>=AtlasSpace.TOWN_ZOOM?'local':'atlas';

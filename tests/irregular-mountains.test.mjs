@@ -10,6 +10,12 @@ const publishedV1={
  "Landforms-Mesa-2": "08d278751c78132522a448aab3486fa09fb375838411da952b27f7c8eaea7fcc",
  "Landforms-Folds-3": "73a7fc19c3b5441a0b0be2b5ce8b38dcd1daa36fd9f4218f1729ec3ff32837e0"
 };
+// Captured independently from published efdca8d before the v3 changes.
+const publishedV2={
+    "Aereth-47": "d641c2659031d41c52842bd7510d502123c32a31243839c5377546d923c6cfee",
+    "Landforms-Mesa-2": "9229fe4f33f6f2bf73e698d21566dfe7e89592931768f518bf3dd89d243353a7",
+    "Landforms-Folds-3": "9b80e13cf0e9d69eb5a16ac938b288df5cfcc44bd98cadbfceef9072c167f924"
+  };
 const digest=w=>{
  const hash=createHash('sha256');
  for(const key of Object.keys(w).sort()){
@@ -80,6 +86,10 @@ function elevatedNetwork(w,r){
 test('all three published v1 worlds retain every typed raster byte',()=>{
  for(const{seed,old}of worlds)assert.equal(digest(old),publishedV1[seed],seed+' changed an already published v1 save');
  assert.equal(E.physicalFingerprint(worlds[0].old),'cc113c81');
+});
+
+test('all three published v2 worlds retain every typed raster byte',()=>{
+ for(const{seed,next}of worlds)assert.equal(digest(next),publishedV2[seed],seed+' changed a published v2 save');
 });
 
 test('v2 bedrock changes stay within mountain regions and their blended edges before climate is recomputed',()=>{

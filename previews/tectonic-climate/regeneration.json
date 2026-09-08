@@ -1,0 +1,69 @@
+{
+  "scenario": "Regenerate after visiting current default Oakfield (421) then Whitewatch (289); both models remain in the two-town cache.",
+  "environment": {
+    "viewport": [
+      1480,
+      980
+    ],
+    "offline": true,
+    "renderer": "Chrome headless WebGL with SwiftShader",
+    "reducedMotion": true
+  },
+  "observation": "Two terrain builds: an unnecessary close-view rebuild of the old world while removing Oakfield’s excavation, followed by the required atlas of the replacement world.",
+  "observedBuilds": [
+    {
+      "durationMs": 831.8000000119209,
+      "world": 1,
+      "rendererWorld": 1,
+      "zoom": 86.40000000000002,
+      "natural": true,
+      "busy": false,
+      "keyBefore": "32/252/77/258/83/true/realms/1/1480/980/289/closed/none",
+      "lastKeyBefore": null,
+      "keyAfter": "32/252/77/258/83/true/realms/1/1480/980/289/closed/2/1",
+      "stack": [
+        "at ContinuousCityLayer.<computed> (<anonymous>:7:227)",
+        "at renderer.buildTerrain (<anonymous>:31:49)",
+        "at ContinuousCityLayer.remove (<anonymous>:86:117)",
+        "at ContinuousCityLayer.<computed> (<anonymous>:7:316)",
+        "at ContinuousCityLayer.reset (<anonymous>:90:652)",
+        "at ContinuousCityLayer.<computed> (<anonymous>:7:316)",
+        "at Object.beforeWorldBuild (<anonymous>:48:54)",
+        "at buildWorld (<anonymous>:69:27)",
+        "at eval (eval at evaluate (:290:30), <anonymous>:1:73)"
+      ]
+    },
+    {
+      "durationMs": 178.7000000178814,
+      "world": 2,
+      "rendererWorld": 2,
+      "zoom": 1,
+      "natural": false,
+      "busy": true,
+      "keyBefore": "base/realms/1/closed",
+      "lastKeyBefore": null,
+      "keyAfter": "base/realms/1/closed",
+      "stack": [
+        "at ContinuousCityLayer.<computed> (<anonymous>:7:227)",
+        "at renderer.buildTerrain (<anonymous>:31:49)",
+        "at AtlasRenderer.setWorld (<anonymous>:495:125)",
+        "at buildWorld (<anonymous>:114:18)",
+        "at async eval (eval at evaluate (:290:30), <anonymous>:1:67)",
+        "at async <anonymous>:316:30"
+      ]
+    }
+  ],
+  "pageErrors": [],
+  "rootCause": "reset() removed cached models while this.world still referred to the old renderer world. remove() immediately re-seated rivers and refilled excavation terrain for each removed model.",
+  "fix": "Detach this.world before batch removal. Restore the requested world after cleanup; retain the existing final one-build guard when resetting the same world with open excavations. Standalone remove() remains unchanged.",
+  "limitations": "831.8 ms is a single observed discarded rebuild in this diagnostic run, not a promised speedup or performance benchmark.",
+  "regressions": [
+    "clear and different-world resets generate no discarded terrain or rivers",
+    "same-world multi-excavation reset restores the ground in exactly one rebuild",
+    "single-model eviction still closes its opening immediately"
+  ],
+  "sourceSHA256": {
+    "src/continuous/city-layer.js": "257a376a9bc7e4e23bf5f6e3570eb6cefa57aba3aac4870fd80981c0addd3b8e",
+    "tests/excavation-terrain.test.mjs": "94e30eb641867a0314e994ba2cd0d9fb69af944fd61c5bf4b320a930fbbe11b8"
+  }
+}

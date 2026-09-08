@@ -1,0 +1,821 @@
+{
+  "sourceSha256": "60bb8a64d94287c3d6ce2fe226e3a6d1c014f202d210845a592ce8d7cdc0d2be",
+  "publishedComparison": "efdca8d83610852629adc94ca8788a5422c07df7, landformVersion 2",
+  "units": "Heights in uncalibrated model metres; lengths in parent-grid cells",
+  "legacyHighlandCells": {
+    "above3500": 1073,
+    "zeroUpliftAbove3500": 389
+  },
+  "current": {
+    "physical": "73fe302b",
+    "dry": 23831,
+    "above2500": 1487,
+    "above3500": 569,
+    "plateaus": [
+      {
+        "cells": 470,
+        "level": 2995.733890774,
+        "broad": 122.73528850078583,
+        "support": 1.1633384227752686
+      },
+      {
+        "cells": 437,
+        "level": 3165.449792335085,
+        "broad": 113.94954013824463,
+        "support": 1.0754332542419434
+      },
+      {
+        "cells": 593,
+        "level": 2738.460457418118,
+        "broad": 104.02273763716221,
+        "support": 0.9924846291542053
+      }
+    ],
+    "regions": [
+      {
+        "id": 0,
+        "kind": "red-plateau",
+        "i": 32324,
+        "center": {
+          "i": 30834,
+          "x": 234,
+          "y": 102
+        },
+        "axis": 2.53131107112447,
+        "level": 2270.449990121008,
+        "area": 793,
+        "statistics": {
+          "minHeight": 349.6751403808594,
+          "maxHeight": 3331.48388671875,
+          "meanHeight": 1939.1904106765496,
+          "relief": 2981.8087463378906,
+          "exposedCells": 793,
+          "cliffCells": 287
+        }
+      },
+      {
+        "id": 1,
+        "kind": "red-plateau",
+        "i": 17143,
+        "center": {
+          "i": 17444,
+          "x": 44,
+          "y": 58
+        },
+        "axis": 2.2662338882769513,
+        "level": 2427.7546112455548,
+        "area": 591,
+        "statistics": {
+          "minHeight": 275.34747314453125,
+          "maxHeight": 3413.90771484375,
+          "meanHeight": 1858.0934736377696,
+          "relief": 3138.5602416992188,
+          "exposedCells": 575,
+          "cliffCells": 333
+        }
+      },
+      {
+        "id": 2,
+        "kind": "red-plateau",
+        "i": 37009,
+        "center": {
+          "i": 36714,
+          "x": 114,
+          "y": 122
+        },
+        "axis": 0.4559056555495175,
+        "level": 1409.3623070823317,
+        "area": 273,
+        "statistics": {
+          "minHeight": 154.8837127685547,
+          "maxHeight": 2607.84130859375,
+          "meanHeight": 1082.6302458375364,
+          "relief": 2452.9575958251953,
+          "exposedCells": 271,
+          "cliffCells": 121
+        }
+      },
+      {
+        "id": 3,
+        "kind": "folded-ranges",
+        "i": 33184,
+        "center": {
+          "i": 33184,
+          "x": 184,
+          "y": 110
+        },
+        "axis": 1.8982753662734373,
+        "level": 1500,
+        "area": 673,
+        "statistics": {
+          "minHeight": 619.1994018554688,
+          "maxHeight": 4178.6982421875,
+          "meanHeight": 1889.4024553908282,
+          "relief": 3559.4988403320312,
+          "exposedCells": 648,
+          "cliffCells": 207
+        },
+        "structure": {
+          "massifs": 5,
+          "summits": 13,
+          "branches": 3,
+          "minSummit": 1733.4658797965535,
+          "maxSummit": 4379.011355292838,
+          "minShoulder": 2.1,
+          "tectonicSupport": [
+            {
+              "i": 28989,
+              "base": 395.225341796875,
+              "compression": 0.640949010848999,
+              "summit": 3412.050776069052
+            },
+            {
+              "i": 27490,
+              "base": 223.93287658691406,
+              "compression": 0.666114330291748,
+              "summit": 2787.079872056734
+            },
+            {
+              "i": 30188,
+              "base": 716.9205322265625,
+              "compression": 0.5899531841278076,
+              "summit": 3696.3547068708795
+            },
+            {
+              "i": 31689,
+              "base": 961.3766479492188,
+              "compression": 0.30850332975387573,
+              "summit": 2635.9410602466637
+            },
+            {
+              "i": 31092,
+              "base": 750.3964233398438,
+              "compression": 0.13156668841838837,
+              "summit": 1733.4658797965535
+            },
+            {
+              "i": 32586,
+              "base": 1177.9610595703125,
+              "compression": 0.519910991191864,
+              "summit": 3042.8225158199352
+            },
+            {
+              "i": 34082,
+              "base": 876.3319091796875,
+              "compression": 0.7504988312721252,
+              "summit": 3263.9520873068486
+            },
+            {
+              "i": 34087,
+              "base": 884.6217651367188,
+              "compression": 0.25037750601768494,
+              "summit": 2244.855723071803
+            },
+            {
+              "i": 35281,
+              "base": 1147.1461181640625,
+              "compression": 0.5987364649772644,
+              "summit": 4116.385019158921
+            },
+            {
+              "i": 36477,
+              "base": 1407.1519775390625,
+              "compression": 0.27081358432769775,
+              "summit": 2892.9068464559605
+            },
+            {
+              "i": 34378,
+              "base": 977.8624877929688,
+              "compression": 0.804731547832489,
+              "summit": 4379.011355292838
+            },
+            {
+              "i": 37380,
+              "base": 1205.326904296875,
+              "compression": 0.08401452004909515,
+              "summit": 2323.1282731370056
+            },
+            {
+              "i": 38877,
+              "base": 1179.7938232421875,
+              "compression": 0.11318816989660263,
+              "summit": 2161.178649583221
+            }
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "kind": "folded-ranges",
+        "i": 15186,
+        "center": {
+          "i": 15186,
+          "x": 186,
+          "y": 50
+        },
+        "axis": 1.2850849506400528,
+        "level": 1422.9512109375,
+        "area": 783,
+        "statistics": {
+          "minHeight": 116.49211120605469,
+          "maxHeight": 3552.67724609375,
+          "meanHeight": 1376.5525172052103,
+          "relief": 3436.1851348876953,
+          "exposedCells": 716,
+          "cliffCells": 191
+        },
+        "structure": {
+          "massifs": 4,
+          "summits": 12,
+          "branches": 2,
+          "minSummit": 349.1100218089191,
+          "maxSummit": 3953.5376645466117,
+          "minShoulder": 2.1,
+          "tectonicSupport": [
+            {
+              "i": 10983,
+              "base": 315.4008483886719,
+              "compression": 0.08143948763608932,
+              "summit": 1291.560949823396
+            },
+            {
+              "i": 9480,
+              "base": 117.58735656738281,
+              "compression": 0.004541140515357256,
+              "summit": 349.1100218089191
+            },
+            {
+              "i": 11886,
+              "base": 835.2648315429688,
+              "compression": 0.12364877015352249,
+              "summit": 2202.894011931752
+            },
+            {
+              "i": 14286,
+              "base": 1058.7620849609375,
+              "compression": 0.45957151055336,
+              "summit": 3099.2850195352003
+            },
+            {
+              "i": 15184,
+              "base": 869.6961669921875,
+              "compression": 0.8436047434806824,
+              "summit": 3498.835443827007
+            },
+            {
+              "i": 13084,
+              "base": 1130.6082763671875,
+              "compression": 0.51780766248703,
+              "summit": 3234.1512227014555
+            },
+            {
+              "i": 15788,
+              "base": 849.29736328125,
+              "compression": 0.38636019825935364,
+              "summit": 2790.5195987496422
+            },
+            {
+              "i": 16691,
+              "base": 512.497802734375,
+              "compression": 0.18169893324375153,
+              "summit": 1618.926979268975
+            },
+            {
+              "i": 14291,
+              "base": 1255.4542236328125,
+              "compression": 0.05836744233965874,
+              "summit": 2249.6125736865124
+            },
+            {
+              "i": 18787,
+              "base": 69.92906951904297,
+              "compression": 0.5174642205238342,
+              "summit": 3016.9209819258676
+            },
+            {
+              "i": 17587,
+              "base": 207.1523895263672,
+              "compression": 0.7030465602874756,
+              "summit": 3953.5376645466117
+            },
+            {
+              "i": 18491,
+              "base": 102.02731323242188,
+              "compression": 0.18862269818782806,
+              "summit": 1667.5217890098995
+            }
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "kind": "volcanic",
+        "i": 17766,
+        "center": {
+          "i": 17466,
+          "x": 66,
+          "y": 58
+        },
+        "axis": 2.6946720287621053,
+        "level": 950,
+        "area": 291,
+        "statistics": {
+          "minHeight": 267.7847595214844,
+          "maxHeight": 1970.17041015625,
+          "meanHeight": 1002.750107073702,
+          "relief": 1702.3856506347656,
+          "exposedCells": 284,
+          "cliffCells": 93
+        }
+      },
+      {
+        "id": 6,
+        "kind": "volcanic",
+        "i": 15857,
+        "center": {
+          "i": 16458,
+          "x": 258,
+          "y": 54
+        },
+        "axis": 0.7372922881320224,
+        "level": 1540.8813720703124,
+        "area": 254,
+        "statistics": {
+          "minHeight": 353.9180603027344,
+          "maxHeight": 5385.63623046875,
+          "meanHeight": 1704.9637878898561,
+          "relief": 5031.718170166016,
+          "exposedCells": 232,
+          "cliffCells": 166
+        }
+      },
+      {
+        "id": 7,
+        "kind": "karst",
+        "i": 24860,
+        "center": {
+          "i": 24860,
+          "x": 260,
+          "y": 82
+        },
+        "axis": 2.0352650815252886,
+        "level": 430,
+        "area": 175,
+        "statistics": {
+          "minHeight": 157.03350830078125,
+          "maxHeight": 1413.1390380859375,
+          "meanHeight": 644.8455777413504,
+          "relief": 1256.1055297851562,
+          "exposedCells": 175,
+          "cliffCells": 49
+        }
+      }
+    ],
+    "boundaryTypes": [
+      241,
+      94,
+      376,
+      973,
+      507
+    ],
+    "audit": {
+      "finite": true,
+      "downhillErrors": 0,
+      "unsupportedVents": 0,
+      "topology": true,
+      "iceBudget": 2.267367213784969e-09,
+      "waterBudget": 4.81001237793742e-15
+    }
+  },
+  "upliftZero": {
+    "physical": "501c55c4",
+    "dry": 22605,
+    "above2500": 2,
+    "above3500": 0,
+    "plateaus": [],
+    "regions": [
+      {
+        "id": 0,
+        "kind": "red-plateau",
+        "i": 34689,
+        "center": {
+          "i": 34988,
+          "x": 188,
+          "y": 116
+        },
+        "axis": 1.315619037920004,
+        "level": 862.3585815429688,
+        "area": 519,
+        "statistics": {
+          "minHeight": 255.16476440429688,
+          "maxHeight": 1431.9346923828125,
+          "meanHeight": 799.6950666541538,
+          "relief": 1176.7699279785156,
+          "exposedCells": 506,
+          "cliffCells": 0
+        }
+      },
+      {
+        "id": 1,
+        "kind": "red-plateau",
+        "i": 16855,
+        "center": {
+          "i": 17444,
+          "x": 44,
+          "y": 58
+        },
+        "axis": 2.2662338882769513,
+        "level": 1206.90234375,
+        "area": 522,
+        "statistics": {
+          "minHeight": 175.43557739257812,
+          "maxHeight": 1566.817138671875,
+          "meanHeight": 1055.9110312041653,
+          "relief": 1391.3815612792969,
+          "exposedCells": 522,
+          "cliffCells": 9
+        }
+      },
+      {
+        "id": 2,
+        "kind": "red-plateau",
+        "i": 36088,
+        "center": {
+          "i": 35488,
+          "x": 88,
+          "y": 118
+        },
+        "axis": 0.8604305560152429,
+        "level": 846.07177734375,
+        "area": 636,
+        "statistics": {
+          "minHeight": 85.69112396240234,
+          "maxHeight": 1572.884765625,
+          "meanHeight": 761.0222931747917,
+          "relief": 1487.1936416625977,
+          "exposedCells": 636,
+          "cliffCells": 10
+        }
+      },
+      {
+        "id": 3,
+        "kind": "folded-ranges",
+        "i": 33830,
+        "center": {
+          "i": 33830,
+          "x": 230,
+          "y": 112
+        },
+        "axis": 0.8100689048714487,
+        "level": 850,
+        "area": 806,
+        "statistics": {
+          "minHeight": 41.8896484375,
+          "maxHeight": 1542.74462890625,
+          "meanHeight": 646.9749635833665,
+          "relief": 1500.85498046875,
+          "exposedCells": 806,
+          "cliffCells": 1
+        },
+        "structure": {
+          "massifs": 5,
+          "summits": 11,
+          "branches": 1,
+          "minSummit": 161.56532287597656,
+          "maxSummit": 1514.869140625,
+          "minShoulder": 2.1,
+          "tectonicSupport": [
+            {
+              "i": 29921,
+              "base": 793.7615356445312,
+              "compression": 4.656541932490654e-05,
+              "summit": 793.7615356445312
+            },
+            {
+              "i": 31726,
+              "base": 1073.0504150390625,
+              "compression": 0.029737820848822594,
+              "summit": 1073.0504150390625
+            },
+            {
+              "i": 29626,
+              "base": 1514.869140625,
+              "compression": 0.00014330209523905069,
+              "summit": 1514.869140625
+            },
+            {
+              "i": 32631,
+              "base": 1178.107177734375,
+              "compression": 0.2479884922504425,
+              "summit": 1178.107177734375
+            },
+            {
+              "i": 31720,
+              "base": 517.9110107421875,
+              "compression": 0.0019837969448417425,
+              "summit": 517.9110107421875
+            },
+            {
+              "i": 32935,
+              "base": 1055.05126953125,
+              "compression": 0.2615315616130829,
+              "summit": 1055.05126953125
+            },
+            {
+              "i": 31433,
+              "base": 1131.0765380859375,
+              "compression": 0.03400928154587746,
+              "summit": 1131.0765380859375
+            },
+            {
+              "i": 35038,
+              "base": 670.4962158203125,
+              "compression": 0.6800263524055481,
+              "summit": 670.4962158203125
+            },
+            {
+              "i": 35641,
+              "base": 484.92620849609375,
+              "compression": 0.6205387711524963,
+              "summit": 484.92620849609375
+            },
+            {
+              "i": 34733,
+              "base": 595.33349609375,
+              "compression": 0.9631348848342896,
+              "summit": 595.33349609375
+            },
+            {
+              "i": 37441,
+              "base": 161.56532287597656,
+              "compression": 0.8642880916595459,
+              "summit": 161.56532287597656
+            }
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "kind": "karst",
+        "i": 35518,
+        "center": {
+          "i": 35518,
+          "x": 118,
+          "y": 118
+        },
+        "axis": 2.767468899506634,
+        "level": 430,
+        "area": 144,
+        "statistics": {
+          "minHeight": 156.75030517578125,
+          "maxHeight": 1385.1328125,
+          "meanHeight": 639.8200929429796,
+          "relief": 1228.3825073242188,
+          "exposedCells": 144,
+          "cliffCells": 51
+        }
+      }
+    ],
+    "boundaryTypes": [
+      241,
+      94,
+      376,
+      973,
+      507
+    ],
+    "audit": {
+      "finite": true,
+      "downhillErrors": 0,
+      "unsupportedVents": 0,
+      "topology": true,
+      "iceBudget": 1.0995889415363858e-09,
+      "waterBudget": 4.639836427123691e-15
+    }
+  },
+  "old": {
+    "physical": "2377e4fa",
+    "dry": 23625,
+    "above2500": 2112,
+    "above3500": 1073,
+    "plateaus": [
+      {
+        "cells": 510,
+        "level": 4072.002361059189,
+        "broad": 124.66692900657654
+      },
+      {
+        "cells": 713,
+        "level": 3885.097212769091,
+        "broad": 103.89969030767679
+      },
+      {
+        "cells": 472,
+        "level": 3919.431671410799,
+        "broad": 107.71463015675545
+      }
+    ],
+    "regions": [
+      {
+        "id": 0,
+        "kind": "red-plateau",
+        "i": 17139,
+        "center": {
+          "i": 17444,
+          "x": 44,
+          "y": 58
+        },
+        "axis": 2.2662338882769513,
+        "level": 2070.8522674955548,
+        "area": 585,
+        "statistics": {
+          "minHeight": 242.45811462402344,
+          "maxHeight": 4190.45556640625,
+          "meanHeight": 1652.780934547359,
+          "relief": 3947.9974517822266,
+          "exposedCells": 573,
+          "cliffCells": 285
+        }
+      },
+      {
+        "id": 1,
+        "kind": "red-plateau",
+        "i": 32022,
+        "center": {
+          "i": 30834,
+          "x": 234,
+          "y": 102
+        },
+        "axis": 2.53131107112447,
+        "level": 1903.2521141444454,
+        "area": 751,
+        "statistics": {
+          "minHeight": 280.2926940917969,
+          "maxHeight": 4045.490966796875,
+          "meanHeight": 1744.0101105020779,
+          "relief": 3765.198272705078,
+          "exposedCells": 737,
+          "cliffCells": 190
+        }
+      },
+      {
+        "id": 2,
+        "kind": "red-plateau",
+        "i": 31570,
+        "center": {
+          "i": 31872,
+          "x": 72,
+          "y": 106
+        },
+        "axis": 1.7540046300159042,
+        "level": 1986.0617196038509,
+        "area": 351,
+        "statistics": {
+          "minHeight": 423.2566223144531,
+          "maxHeight": 2045.21240234375,
+          "meanHeight": 1530.9752636336193,
+          "relief": 1621.9557800292969,
+          "exposedCells": 351,
+          "cliffCells": 188
+        }
+      },
+      {
+        "id": 3,
+        "kind": "folded-ranges",
+        "i": 33184,
+        "center": {
+          "i": 33184,
+          "x": 184,
+          "y": 110
+        },
+        "axis": 1.8939643117614426,
+        "level": 1500,
+        "area": 654,
+        "statistics": {
+          "minHeight": 649.6725463867188,
+          "maxHeight": 4660.21826171875,
+          "meanHeight": 2297.8328896618764,
+          "relief": 4010.5457153320312,
+          "exposedCells": 653,
+          "cliffCells": 363
+        },
+        "structure": {
+          "massifs": 5,
+          "summits": 13,
+          "branches": 3,
+          "minSummit": 3586.3188998773694,
+          "maxSummit": 4879.046807531267,
+          "minShoulder": 2.1
+        }
+      },
+      {
+        "id": 4,
+        "kind": "folded-ranges",
+        "i": 14042,
+        "center": {
+          "i": 14042,
+          "x": 242,
+          "y": 46
+        },
+        "axis": 2.571269905494161,
+        "level": 1500,
+        "area": 842,
+        "statistics": {
+          "minHeight": 153.0167999267578,
+          "maxHeight": 4676.5205078125,
+          "meanHeight": 1934.1421908380867,
+          "relief": 4523.503707885742,
+          "exposedCells": 809,
+          "cliffCells": 380
+        },
+        "structure": {
+          "massifs": 4,
+          "summits": 11,
+          "branches": 1,
+          "minSummit": 3727.8621895238757,
+          "maxSummit": 5391.580837313086,
+          "minShoulder": 2.1
+        }
+      },
+      {
+        "id": 5,
+        "kind": "volcanic",
+        "i": 16866,
+        "center": {
+          "i": 17466,
+          "x": 66,
+          "y": 58
+        },
+        "axis": 2.6946720287621053,
+        "level": 950,
+        "area": 304,
+        "statistics": {
+          "minHeight": 241.99693298339844,
+          "maxHeight": 1970.17041015625,
+          "meanHeight": 1001.6797305659244,
+          "relief": 1728.1734771728516,
+          "exposedCells": 294,
+          "cliffCells": 93
+        }
+      },
+      {
+        "id": 6,
+        "kind": "volcanic",
+        "i": 40316,
+        "center": {
+          "i": 40316,
+          "x": 116,
+          "y": 134
+        },
+        "axis": 1.598242347569646,
+        "level": 1703.0733398437499,
+        "area": 205,
+        "statistics": {
+          "minHeight": 235.0634307861328,
+          "maxHeight": 5500.3876953125,
+          "meanHeight": 1793.833400893793,
+          "relief": 5265.324264526367,
+          "exposedCells": 200,
+          "cliffCells": 156
+        }
+      },
+      {
+        "id": 7,
+        "kind": "karst",
+        "i": 24860,
+        "center": {
+          "i": 24860,
+          "x": 260,
+          "y": 82
+        },
+        "axis": 2.0352650815252886,
+        "level": 430,
+        "area": 175,
+        "statistics": {
+          "minHeight": 157.03350830078125,
+          "maxHeight": 1413.1390380859375,
+          "meanHeight": 645.2665327671596,
+          "relief": 1256.1055297851562,
+          "exposedCells": 175,
+          "cliffCells": 49
+        }
+      }
+    ],
+    "boundaryTypes": [
+      186,
+      79,
+      309,
+      907,
+      710
+    ],
+    "audit": {
+      "finite": true,
+      "downhillErrors": 0,
+      "unsupportedVents": 0,
+      "topology": true,
+      "iceBudget": 1.402478585698675e-09,
+      "waterBudget": 6.078596303080759e-15
+    }
+  },
+  "changedBoundaryClass": 315,
+  "changedCoast": 1032
+}

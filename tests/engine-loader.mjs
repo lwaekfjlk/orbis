@@ -9,4 +9,4 @@ export function loadEngine() { return new Function(code + '\nreturn {PoliticalLa
 export const defaults = { seed: 'Aereth-47', form: 'global', plates: 24, continents: 6, islands: 1.2, volcanism: .85, uplift: 1.2, sea: 0, aridity: .85, current: 1, erosion: .7, temperature: 0, glaciation: 1.2 };
 // Existing geometry fixtures describe the original terrain. New-world checks
 // explicitly use the application default, without rewriting historical hashes.
-export const fantasyDefaults = { ...defaults, landformVersion: 2 };
+export const fantasyDefaults = { ...defaults, landformVersion: 3 };

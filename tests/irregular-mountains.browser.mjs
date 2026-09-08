@@ -73,6 +73,7 @@ try {
     report.bundleSha256 = createHash('sha256').update(testedHtml).digest('hex');
     await page.setContent(testedHtml.toString('utf8'), {waitUntil: 'load', timeout: 240000});
     await page.evaluate(() => document.fonts.ready); await settled(); await assertReady();
+    await page.evaluate(() => buildWorld({...GEN_DEFAULTS,landformVersion:2})); await settled(); await assertReady();
     assert.equal(await page.evaluate('world.params.landformVersion'), 2);
     report.fantasy = await fingerprints();
     await page.screenshot({path: join(out, 'after/world.png')});

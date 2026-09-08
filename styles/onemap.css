@@ -62,7 +62,9 @@ body.onemap #omTimeControls #play:hover{background:#e6f4c8}
 body.onemap #omTimeControls #play[aria-pressed=true]{background:#f2dda1}
 body.onemap #omTimeControls #speed{width:52px;padding:6px 1px 6px 5px;background:#ffffff08;color:var(--ui-text);font-size:11px;height:34px;border:1px solid var(--ui-line)}
 body.onemap #omChrome option{color:#213c33;background:#f7f7ef}
-body.onemap #omRegenHost button{height:36px;padding:7px 10px;font-size:12px}
+body.onemap #omChrome #forgeButton{min-height:42px;padding:9px 16px;font-size:13px;font-weight:700;letter-spacing:.1px;color:#30382c;background:#ecd49d;border:1px solid #f7e7bd;box-shadow:0 2px 8px #071c2026}
+body.onemap #omChrome #forgeButton:hover{background:#f8e5b5;border-color:#fff0cc}
+body.onemap #omChrome #forgeButton:focus-visible{outline-color:#f8e5b5}
 body.onemap .om-camera{position:absolute;right:22px;bottom:24px;padding:4px;display:flex;flex-direction:column;border-radius:10px;pointer-events:auto}
 body.onemap .om-camera button{height:30px;width:32px;padding:0;font-size:20px}
 body.onemap .om-hint{position:absolute;left:24px;bottom:28px;max-width:270px;font-size:8px;line-height:1.85;letter-spacing:1.3px;color:#234840c9;text-shadow:0 1px 4px #e6f4e5;pointer-events:none}
@@ -165,7 +167,22 @@ body.onemap .om-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:r
 body.onemap[data-working=true] .om-tools,body.onemap[data-working=true] #omSelection{opacity:.5;pointer-events:none}
 body.onemap[data-working=true] .om-tools button,body.onemap[data-working=true] #omSelection button{pointer-events:none}
 @media(max-width:1150px){body.onemap .om-hint{display:none}body.onemap .om-event{max-width:420px}body.onemap #omSelection{bottom:146px}body.onemap .om-dock{bottom:18px}}
-@media(max-width:700px){body.onemap .om-header{inset:12px 12px auto;gap:8px}body.onemap .om-brandbar{padding:8px 10px;gap:6px;min-height:53px;max-width:calc(100vw - 143px)}body.onemap #omChrome .om-brand{gap:6px;font-size:11px;letter-spacing:2px}body.onemap #omChrome .om-github{width:32px;height:36px}body.onemap .om-brand svg{width:22px;height:22px}body.onemap .om-tools{gap:0;padding:4px}body.onemap #omChrome .om-tools .om-icon{width:32px;height:40px;padding:8px}body.onemap .om-dock{gap:7px;padding:8px 9px;bottom:max(12px,env(safe-area-inset-bottom));min-height:61px;border-radius:12px}body.onemap .om-date{padding:0 2px;min-width:41px}body.onemap .om-date b,body.onemap .om-date #year{font-size:23px}body.onemap #omTimeControls{gap:2px}body.onemap #omTimeControls button{font-size:11px;padding:6px 8px}body.onemap #omTimeControls #play{min-width:70px}body.onemap #omTimeControls #speed{width:43px;font-size:10px;padding-left:3px}body.onemap #step50{display:none!important}body.onemap #omRegenHost button{font-size:10px;padding:6px 7px}body.onemap .om-camera{right:12px;bottom:91px;padding:3px}body.onemap .om-camera button{width:31px;height:29px}body.onemap .om-popover,body.onemap .om-forge{right:12px;top:77px;width:calc(100vw - 24px);max-height:calc(100dvh - 167px)}body.onemap #omMorePanel{width:272px}body.onemap #omDrawer{inset:77px 12px 86px auto;width:calc(100vw - 24px);max-height:none}body.onemap #omSelection{left:12px;bottom:91px;max-width:calc(100vw - 76px);width:calc(100vw - 76px);min-width:0;padding:14px 17px}body.onemap .om-event{bottom:86px;max-width:calc(100vw - 90px);left:12px;transform:none;font-size:9px!important}body.onemap:has(#omSelection:not(.hidden)) .om-event{display:none!important}body.onemap #omSelection h3{font-size:19px}body.onemap #toast{bottom:83px}body.onemap .city-label{font-size:10px}}
+@media(max-width:700px){body.onemap .om-header{inset:12px 12px auto;gap:8px}body.onemap .om-brandbar{padding:8px 10px;gap:6px;min-height:53px;max-width:calc(100vw - 143px)}body.onemap #omChrome .om-brand{gap:6px;font-size:11px;letter-spacing:2px}body.onemap #omChrome .om-github{width:32px;height:36px}body.onemap .om-brand svg{width:22px;height:22px}body.onemap .om-tools{gap:0;padding:4px}body.onemap #omChrome .om-tools .om-icon{width:32px;height:40px;padding:8px}body.onemap .om-dock{gap:7px;padding:8px 9px;bottom:max(12px,env(safe-area-inset-bottom));min-height:61px;border-radius:12px}body.onemap .om-date{padding:0 2px;min-width:41px}body.onemap .om-date b,body.onemap .om-date #year{font-size:23px}body.onemap #omTimeControls{gap:2px}body.onemap #omTimeControls button{font-size:11px;padding:6px 8px}body.onemap #omTimeControls #play{min-width:70px}body.onemap #omTimeControls #speed{width:43px;font-size:10px;padding-left:3px}body.onemap #step50{display:none!important}body.onemap #omChrome #forgeButton{font-size:12px;padding:8px 11px}body.onemap .om-camera{right:12px;bottom:91px;padding:3px}body.onemap .om-camera button{width:31px;height:29px}body.onemap .om-popover,body.onemap .om-forge{right:12px;top:77px;width:calc(100vw - 24px);max-height:calc(100dvh - 167px)}body.onemap #omMorePanel{width:272px}body.onemap #omDrawer{inset:77px 12px 86px auto;width:calc(100vw - 24px);max-height:none}body.onemap #omSelection{left:12px;bottom:91px;max-width:calc(100vw - 76px);width:calc(100vw - 76px);min-width:0;padding:14px 17px}body.onemap .om-event{bottom:86px;max-width:calc(100vw - 90px);left:12px;transform:none;font-size:9px!important}body.onemap:has(#omSelection:not(.hidden)) .om-event{display:none!important}body.onemap #omSelection h3{font-size:19px}body.onemap #toast{bottom:83px}body.onemap .city-label{font-size:10px}}
+/* Keep the emphasized action and every time control usable on narrow phones. */
+@media(max-width:420px){
+ body.onemap .om-dock{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;width:calc(100vw - 24px);padding:9px 10px}
+ body.onemap .om-dock-divider{display:none}
+ body.onemap .om-date{grid-column:1;grid-row:1}
+ body.onemap #omTimeControls{grid-column:2;grid-row:1}
+ body.onemap #omRegenHost{grid-column:1 / -1;grid-row:2}
+ body.onemap #omChrome #forgeButton{width:100%;min-height:40px}
+ body.onemap .om-camera{bottom:137px}
+ body.onemap #omSelection{bottom:137px}
+ body.onemap .om-event{bottom:130px}
+ body.onemap #omDrawer{bottom:130px}
+ body.onemap .om-popover,body.onemap .om-forge{max-height:calc(100dvh - 210px)}
+ body.onemap #toast{bottom:130px}
+}
 @media(prefers-reduced-motion:reduce){body.onemap *{transition:none!important;scroll-behavior:auto!important}}
 /* Event text must stay legible over both snow and pale urban ground. */
 body.onemap #omChrome .om-event{background:rgba(23,40,40,.90);border:1px solid #dce6d129}

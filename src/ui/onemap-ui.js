@@ -333,7 +333,8 @@ window.OneMap = (() => {
         E('play').setAttribute('aria-pressed',String(playing));E('play').setAttribute('aria-label',playing?'Pause simulation':'Play simulation');
         E('play').textContent=playing?'Ⅱ Pause':'▶ Play';
         for(const id of ['play','step1','step10','step50','forgeButton'])E(id).disabled=blocked||!sim;
-        E('forgeButton').textContent=busy?'Generating…':simAdvancing?'Advancing…':'↻ Regenerate';
+        if(E('cmContext'))E('cmContext').disabled=blocked||!sim;
+        E('forgeButton').textContent=busy?'Creating…':simAdvancing?'Advancing…':'↻ Recreate';
         E('omYearHost').title=simAdvancing?'Advancing history':playing?'History is running':'Simulation paused';
     }
     function onBusy(value){document.body.dataset.working=String(value);if(value){closeMenus();closeDrawer();clearSelection();}onPlayback();}

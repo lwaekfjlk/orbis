@@ -1,0 +1,1835 @@
+{
+  "before": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "source": {
+    "params": {
+      "seed": "Aereth-47",
+      "form": "global",
+      "plates": 24,
+      "continents": 6,
+      "islands": 1.2,
+      "volcanism": 0.85,
+      "uplift": 1.2,
+      "sea": 0,
+      "aridity": 0.85,
+      "current": 1,
+      "erosion": 0.7,
+      "temperature": 0,
+      "glaciation": 1.2,
+      "landformVersion": 3
+    },
+    "fingerprints": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "high": []
+  },
+  "sites": [
+    {
+      "id": "dragon-ruins-13123",
+      "name": "The Obsidian Aerie",
+      "i": 13123,
+      "provinceId": null,
+      "kind": "dragon-ruin"
+    },
+    {
+      "id": "dragon-ruins-33234",
+      "name": "The Flint Spine",
+      "i": 33234,
+      "provinceId": null,
+      "kind": "dragon-ruin"
+    },
+    {
+      "id": "dragon-ruins-36078",
+      "name": "The Obsidian Maw",
+      "i": 36078,
+      "provinceId": null,
+      "kind": "dragon-ruin"
+    }
+  ],
+  "high": [],
+  "ruins": [
+    {
+      "id": "dragon-ruins-13123",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 22554,
+      "uploaded": true,
+      "onScreen": 6353,
+      "samples": 6353,
+      "width": 614.461318187482,
+      "height": 499.1584604844516,
+      "zoom": 240.55705195817424,
+      "meshes": [
+        {
+          "name": "ruin:dragon-ruins-13123:ring-0",
+          "count": 1044,
+          "min": [
+            41.319061279296875,
+            1.6370174884796143,
+            -25.613258361816406
+          ],
+          "max": [
+            41.39521408081055,
+            1.6540892124176025,
+            -25.55618667602539
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-1",
+          "count": 1566,
+          "min": [
+            41.41468811035156,
+            1.644173264503479,
+            -25.51249122619629
+          ],
+          "max": [
+            41.46083450317383,
+            1.6635819673538208,
+            -25.398664474487305
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-2",
+          "count": 1044,
+          "min": [
+            41.31475830078125,
+            1.6391123533248901,
+            -25.379335403442383
+          ],
+          "max": [
+            41.42164611816406,
+            1.6576253175735474,
+            -25.3020076751709
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-3",
+          "count": 1044,
+          "min": [
+            41.200103759765625,
+            1.642154574394226,
+            -25.360015869140625
+          ],
+          "max": [
+            41.2762565612793,
+            1.6609840393066406,
+            -25.30294418334961
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-4",
+          "count": 1044,
+          "min": [
+            41.134483337402344,
+            1.6449847221374512,
+            -25.47786521911621
+          ],
+          "max": [
+            41.179054260253906,
+            1.6636583805084229,
+            -25.403709411621094
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-5",
+          "count": 1566,
+          "min": [
+            41.17367172241211,
+            1.6385513544082642,
+            -25.614194869995117
+          ],
+          "max": [
+            41.28055953979492,
+            1.6595216989517212,
+            -25.536865234375
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:nest",
+          "count": 3210,
+          "min": [
+            41.21871566772461,
+            1.6392995119094849,
+            -25.523303985595703
+          ],
+          "max": [
+            41.343257904052734,
+            1.6716527938842773,
+            -25.39774513244629
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-0-west",
+          "count": 1122,
+          "min": [
+            41.17375564575195,
+            1.651231288909912,
+            -25.43927764892578
+          ],
+          "max": [
+            41.21039581298828,
+            1.765195369720459,
+            -25.382898330688477
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-0-east",
+          "count": 1122,
+          "min": [
+            41.19106674194336,
+            1.639782428741455,
+            -25.56167984008789
+          ],
+          "max": [
+            41.23335647583008,
+            1.753754734992981,
+            -25.509172439575195
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-1-west",
+          "count": 1122,
+          "min": [
+            41.22101593017578,
+            1.6512120962142944,
+            -25.43624496459961
+          ],
+          "max": [
+            41.25765609741211,
+            1.7524574995040894,
+            -25.379901885986328
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-1-east",
+          "count": 1122,
+          "min": [
+            41.23716735839844,
+            1.638031005859375,
+            -25.551103591918945
+          ],
+          "max": [
+            41.279457092285156,
+            1.689078688621521,
+            -25.498716354370117
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-2-west",
+          "count": 1122,
+          "min": [
+            41.26827621459961,
+            1.6490603685379028,
+            -25.43320655822754
+          ],
+          "max": [
+            41.30491638183594,
+            1.738906979560852,
+            -25.37690544128418
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-2-east",
+          "count": 1122,
+          "min": [
+            41.283267974853516,
+            1.6379337310791016,
+            -25.540525436401367
+          ],
+          "max": [
+            41.325557708740234,
+            1.7293449640274048,
+            -25.488054275512695
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:maw-west",
+          "count": 1194,
+          "min": [
+            41.380149841308594,
+            1.642855167388916,
+            -25.40847396850586
+          ],
+          "max": [
+            41.422447204589844,
+            1.7380707263946533,
+            -25.355167388916016
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:maw-east",
+          "count": 1194,
+          "min": [
+            41.40071487426758,
+            1.640670657157898,
+            -25.52790641784668
+          ],
+          "max": [
+            41.44301223754883,
+            1.7189584970474243,
+            -25.474239349365234
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:fallen-0",
+          "count": 972,
+          "min": [
+            41.17746353149414,
+            1.6430511474609375,
+            -25.328954696655273
+          ],
+          "max": [
+            41.21886444091797,
+            1.6709721088409424,
+            -25.28407859802246
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:fallen-1",
+          "count": 972,
+          "min": [
+            41.381168365478516,
+            1.6377458572387695,
+            -25.627975463867188
+          ],
+          "max": [
+            41.42372512817383,
+            1.6604514122009277,
+            -25.583099365234375
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:fallen-2",
+          "count": 972,
+          "min": [
+            41.41413879394531,
+            1.6468604803085327,
+            -25.4803524017334
+          ],
+          "max": [
+            41.456790924072266,
+            1.669714331626892,
+            -25.435476303100586
+          ]
+        }
+      ],
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 18,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-13123",
+        "part": "nest",
+        "x": 735.8425939317647,
+        "y": 613.8942476560364
+      },
+      "partFocus": {
+        "part": "nest",
+        "error": 0,
+        "zoom": 620.0000000000002
+      },
+      "exported": {
+        "bytes": 824064,
+        "meshes": 18,
+        "vertices": 22554
+      }
+    },
+    {
+      "id": "dragon-ruins-33234",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 24486,
+      "uploaded": true,
+      "onScreen": 7102,
+      "samples": 7102,
+      "width": 559.1153747851058,
+      "height": 528.0365543696792,
+      "zoom": 219.12487842591415,
+      "meshes": [
+        {
+          "name": "ruin:dragon-ruins-33234:ring-0",
+          "count": 1044,
+          "min": [
+            47.35345458984375,
+            2.461683750152588,
+            11.079075813293457
+          ],
+          "max": [
+            47.42839431762695,
+            2.486950635910034,
+            11.145459175109863
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:ring-1",
+          "count": 1566,
+          "min": [
+            47.462215423583984,
+            2.464644432067871,
+            11.064483642578125
+          ],
+          "max": [
+            47.57478713989258,
+            2.492642879486084,
+            11.124785423278809
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:ring-2",
+          "count": 1566,
+          "min": [
+            47.58091354370117,
+            2.4584152698516846,
+            11.131749153137207
+          ],
+          "max": [
+            47.64141845703125,
+            2.486741781234741,
+            11.241982460021973
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:ring-3",
+          "count": 1044,
+          "min": [
+            47.52812957763672,
+            2.459000825881958,
+            11.301468849182129
+          ],
+          "max": [
+            47.60306930541992,
+            2.482473611831665,
+            11.367852210998535
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:ring-4",
+          "count": 1044,
+          "min": [
+            47.381736755371094,
+            2.46158766746521,
+            11.322141647338867
+          ],
+          "max": [
+            47.457855224609375,
+            2.4811134338378906,
+            11.378854751586914
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:ring-5",
+          "count": 1044,
+          "min": [
+            47.315101623535156,
+            2.464169979095459,
+            11.20494556427002
+          ],
+          "max": [
+            47.3756103515625,
+            2.493664264678955,
+            11.315177917480469
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:nest",
+          "count": 2898,
+          "min": [
+            47.42524719238281,
+            2.4609251022338867,
+            11.140493392944336
+          ],
+          "max": [
+            47.548858642578125,
+            2.4953770637512207,
+            11.266125679016113
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-0-west",
+          "count": 1122,
+          "min": [
+            47.44191360473633,
+            2.457099437713623,
+            11.307647705078125
+          ],
+          "max": [
+            47.503414154052734,
+            2.5601694583892822,
+            11.346571922302246
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-0-east",
+          "count": 1122,
+          "min": [
+            47.378173828125,
+            2.463576555252075,
+            11.271575927734375
+          ],
+          "max": [
+            47.42699432373047,
+            2.5697996616363525,
+            11.321653366088867
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-1-west",
+          "count": 1122,
+          "min": [
+            47.46260452270508,
+            2.457202434539795,
+            11.260285377502441
+          ],
+          "max": [
+            47.52407455444336,
+            2.554119110107422,
+            11.299209594726562
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-1-east",
+          "count": 1122,
+          "min": [
+            47.398834228515625,
+            2.46925950050354,
+            11.224213600158691
+          ],
+          "max": [
+            47.44756317138672,
+            2.5224156379699707,
+            11.274155616760254
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-2-west",
+          "count": 1122,
+          "min": [
+            47.483299255371094,
+            2.4616262912750244,
+            11.212922096252441
+          ],
+          "max": [
+            47.544734954833984,
+            2.5543339252471924,
+            11.251847267150879
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-2-east",
+          "count": 1122,
+          "min": [
+            47.41949462890625,
+            2.4749844074249268,
+            11.176851272583008
+          ],
+          "max": [
+            47.468299865722656,
+            2.563498020172119,
+            11.226892471313477
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-3-west",
+          "count": 1122,
+          "min": [
+            47.50399398803711,
+            2.468167781829834,
+            11.165559768676758
+          ],
+          "max": [
+            47.56539535522461,
+            2.5547823905944824,
+            11.204484939575195
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:spine-3-east",
+          "count": 1122,
+          "min": [
+            47.440155029296875,
+            2.4736404418945312,
+            11.129488945007324
+          ],
+          "max": [
+            47.488948822021484,
+            2.556281566619873,
+            11.179509162902832
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:maw-west",
+          "count": 1194,
+          "min": [
+            47.55499267578125,
+            2.472097158432007,
+            11.124709129333496
+          ],
+          "max": [
+            47.609249114990234,
+            2.5682756900787354,
+            11.16875171661377
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:maw-east",
+          "count": 1194,
+          "min": [
+            47.4373893737793,
+            2.4634432792663574,
+            11.07159423828125
+          ],
+          "max": [
+            47.49359130859375,
+            2.5456807613372803,
+            11.115636825561523
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:fallen-0",
+          "count": 972,
+          "min": [
+            47.57954025268555,
+            2.4649157524108887,
+            11.336236953735352
+          ],
+          "max": [
+            47.63046646118164,
+            2.494565725326538,
+            11.376420021057129
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:fallen-1",
+          "count": 972,
+          "min": [
+            47.33393096923828,
+            2.459907054901123,
+            11.067937850952148
+          ],
+          "max": [
+            47.38485336303711,
+            2.485893726348877,
+            11.108121871948242
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-33234:fallen-2",
+          "count": 972,
+          "min": [
+            47.4888801574707,
+            2.468677043914795,
+            11.073817253112793
+          ],
+          "max": [
+            47.5398063659668,
+            2.4964640140533447,
+            11.11400032043457
+          ]
+        }
+      ],
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 20,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-33234",
+        "part": "nest",
+        "x": 730.1768407414363,
+        "y": 452.18560213005503
+      },
+      "partFocus": {
+        "part": "nest",
+        "error": 0,
+        "zoom": 588.0966388222045
+      },
+      "exported": {
+        "bytes": 894892,
+        "meshes": 20,
+        "vertices": 24486
+      }
+    },
+    {
+      "id": "dragon-ruins-36078",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 22554,
+      "uploaded": true,
+      "onScreen": 6353,
+      "samples": 6353,
+      "width": 628.8636210093472,
+      "height": 536.5710401578078,
+      "zoom": 247.20553118925204,
+      "meshes": [
+        {
+          "name": "ruin:dragon-ruins-36078:ring-0",
+          "count": 1566,
+          "min": [
+            -40.16073989868164,
+            1.6577303409576416,
+            16.541540145874023
+          ],
+          "max": [
+            -40.0532112121582,
+            1.6766771078109741,
+            16.616636276245117
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:ring-1",
+          "count": 1044,
+          "min": [
+            -40.05843734741211,
+            1.658897876739502,
+            16.634368896484375
+          ],
+          "max": [
+            -40.01300811767578,
+            1.676207184791565,
+            16.748079299926758
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:ring-2",
+          "count": 1044,
+          "min": [
+            -40.117427825927734,
+            1.6589312553405762,
+            16.77069854736328
+          ],
+          "max": [
+            -40.04342269897461,
+            1.6768405437469482,
+            16.838895797729492
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:ring-3",
+          "count": 1044,
+          "min": [
+            -40.26282501220703,
+            1.6632425785064697,
+            16.80109214782715
+          ],
+          "max": [
+            -40.18708801269531,
+            1.6819061040878296,
+            16.8551082611084
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:ring-4",
+          "count": 1566,
+          "min": [
+            -40.33705139160156,
+            1.6599379777908325,
+            16.648569107055664
+          ],
+          "max": [
+            -40.28938674926758,
+            1.6814045906066895,
+            16.762279510498047
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:ring-5",
+          "count": 1044,
+          "min": [
+            -40.30440139770508,
+            1.6619197130203247,
+            16.55775260925293
+          ],
+          "max": [
+            -40.23040008544922,
+            1.6810359954833984,
+            16.62594985961914
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:nest",
+          "count": 3210,
+          "min": [
+            -40.24057388305664,
+            1.6626791954040527,
+            16.646188735961914
+          ],
+          "max": [
+            -40.14085006713867,
+            1.6891815662384033,
+            16.74775505065918
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:spine-0-west",
+          "count": 1122,
+          "min": [
+            -40.29304122924805,
+            1.6655375957489014,
+            16.724538803100586
+          ],
+          "max": [
+            -40.257568359375,
+            1.781062364578247,
+            16.779470443725586
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:spine-0-east",
+          "count": 1122,
+          "min": [
+            -40.2838134765625,
+            1.6614201068878174,
+            16.600841522216797
+          ],
+          "max": [
+            -40.24431610107422,
+            1.7754541635513306,
+            16.654083251953125
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:spine-1-west",
+          "count": 1122,
+          "min": [
+            -40.24567794799805,
+            1.6678365468978882,
+            16.72454071044922
+          ],
+          "max": [
+            -40.210208892822266,
+            1.769168734550476,
+            16.779436111450195
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:spine-1-east",
+          "count": 1122,
+          "min": [
+            -40.23710250854492,
+            1.6616239547729492,
+            16.60844612121582
+          ],
+          "max": [
+            -40.197601318359375,
+            1.7112873792648315,
+            16.661561965942383
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:spine-2-west",
+          "count": 1122,
+          "min": [
+            -40.19831848144531,
+            1.66743004322052,
+            16.724546432495117
+          ],
+          "max": [
+            -40.16284942626953,
+            1.756784439086914,
+            16.779401779174805
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:spine-2-east",
+          "count": 1122,
+          "min": [
+            -40.19038772583008,
+            1.6621639728546143,
+            16.616050720214844
+          ],
+          "max": [
+            -40.15088653564453,
+            1.7514700889587402,
+            16.669254302978516
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:maw-west",
+          "count": 1194,
+          "min": [
+            -40.08539962768555,
+            1.6591731309890747,
+            16.74085235595703
+          ],
+          "max": [
+            -40.044307708740234,
+            1.7533940076828003,
+            16.793737411499023
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:maw-east",
+          "count": 1194,
+          "min": [
+            -40.07393264770508,
+            1.6583739519119263,
+            16.62138557434082
+          ],
+          "max": [
+            -40.032840728759766,
+            1.7707643508911133,
+            16.674636840820312
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:fallen-0",
+          "count": 972,
+          "min": [
+            -40.283504486083984,
+            1.6627732515335083,
+            16.833520889282227
+          ],
+          "max": [
+            -40.241233825683594,
+            1.6889780759811401,
+            16.87769317626953
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:fallen-1",
+          "count": 972,
+          "min": [
+            -40.100425720214844,
+            1.6575841903686523,
+            16.522035598754883
+          ],
+          "max": [
+            -40.05697250366211,
+            1.6820957660675049,
+            16.566207885742188
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-36078:fallen-2",
+          "count": 972,
+          "min": [
+            -40.05808639526367,
+            1.660187005996704,
+            16.66722297668457
+          ],
+          "max": [
+            -40.01403045654297,
+            1.68317711353302,
+            16.711397171020508
+          ]
+        }
+      ],
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 18,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-36078",
+        "part": "nest",
+        "x": 752.4289662924652,
+        "y": 599.6584319459379
+      },
+      "partFocus": {
+        "part": "nest",
+        "error": 0,
+        "zoom": 620.0000000000002
+      },
+      "exported": {
+        "bytes": 824064,
+        "meshes": 18,
+        "vertices": 22554
+      }
+    }
+  ],
+  "overviewPins": [
+    {
+      "id": "dragon-ruins-13123",
+      "kind": "dragon-ruin",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    },
+    {
+      "id": "dragon-ruins-33234",
+      "kind": "dragon-ruin",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    },
+    {
+      "id": "dragon-ruins-36078",
+      "kind": "dragon-ruin",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    }
+  ],
+  "chineseSearch": "dragon-ruins-13123",
+  "after": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "errors": [],
+  "history": {
+    "site": "dragon-ruins-13123",
+    "fixture": {
+      "kind": "critical-population saved simulation",
+      "provinceId": 529,
+      "name": "Snowwold",
+      "original": {
+        "urban": 2116.13612630911,
+        "rural": 3937.548985806468,
+        "total": 6053.685112115578
+      },
+      "urban": 649,
+      "rural": 5404.685112115578,
+      "total": 6053.685112115578,
+      "worldPopulation": 11212597.44675769,
+      "urbanSupport": 2932.033171824134,
+      "predictedUrbanTarget": 2404.637961945868,
+      "validated": true,
+      "populationBalanced": true
+    },
+    "before": {
+      "year": 400,
+      "key": "[\"dragon-ruins-13123\",223,43,0.72,-1.422669758121043,{\"version\":1,\"variant\":\"aerie\"},{\"format\":\"telluric-landmark-recipe\",\"version\":1,\"id\":\"dragon-ruins-13123\",\"style\":\"dragon-ruins\",\"seed\":\"Aereth-47/dragon-ruins/13123\",\"name\":\"The Obsidian Aerie\",\"material\":\"draconic\",\"faith\":\"ancestors\",\"culture\":\"Drake craft\",\"complexity\":2,\"crown\":\"native\",\"roofLanguage\":\"native\",\"variant\":0,\"wings\":2,\"roofPitch\":0.9388732841145248,\"ornament\":\"radial\",\"geography\":{\"freshwater\":0,\"coast\":false,\"lake\":false,\"cold\":true,\"dry\":true,\"forest\":false,\"elevation\":1520.11083984375,\"sourceCell\":13123,\"setting\":\"Cold desert\"},\"provenance\":\"A shattered stone ring encloses an ancient dragon nesting bowl and split shells. Broken spine arches rise above the abandoned clutch. Weathered stone survives here in cold desert, 1,520 m above sea level.\",\"provinceId\":null,\"kind\":\"dragon-ruins\",\"dragonRuins\":{\"version\":1,\"variant\":\"aerie\"},\"dragonRuinsVersion\":1},2,1,\"2/2\"]",
+      "lod": 2,
+      "landscapeKey": "2/2",
+      "camera": {
+        "target": [
+          41.29765886287625,
+          1.701106420947906,
+          -25.456026747721708
+        ],
+        "zoom": 240.55705195817424,
+        "azimuth": -3.0322234202643115,
+        "elevation": 0.88
+      }
+    },
+    "after": {
+      "year": 401,
+      "key": "[\"dragon-ruins-13123\",223,43,0.72,-1.422669758121043,{\"version\":1,\"variant\":\"aerie\"},{\"format\":\"telluric-landmark-recipe\",\"version\":1,\"id\":\"dragon-ruins-13123\",\"style\":\"dragon-ruins\",\"seed\":\"Aereth-47/dragon-ruins/13123\",\"name\":\"The Obsidian Aerie\",\"material\":\"draconic\",\"faith\":\"ancestors\",\"culture\":\"Drake craft\",\"complexity\":2,\"crown\":\"native\",\"roofLanguage\":\"native\",\"variant\":0,\"wings\":2,\"roofPitch\":0.9388732841145248,\"ornament\":\"radial\",\"geography\":{\"freshwater\":0,\"coast\":false,\"lake\":false,\"cold\":true,\"dry\":true,\"forest\":false,\"elevation\":1520.11083984375,\"sourceCell\":13123,\"setting\":\"Cold desert\"},\"provenance\":\"A shattered stone ring encloses an ancient dragon nesting bowl and split shells. Broken spine arches rise above the abandoned clutch. Weathered stone survives here in cold desert, 1,520 m above sea level.\",\"provinceId\":null,\"kind\":\"dragon-ruins\",\"dragonRuins\":{\"version\":1,\"variant\":\"aerie\"},\"dragonRuinsVersion\":1},2,1,\"2/3\"]",
+      "lod": 2,
+      "landscapeKey": "2/3",
+      "urban": 789.8647739641063,
+      "settled": true,
+      "replaced": true,
+      "detailsReplaced": true,
+      "meshOwnersCurrent": true,
+      "parts": [
+        {
+          "id": "nest",
+          "name": "The cracked nesting bowl"
+        },
+        {
+          "id": "spine-0-west",
+          "name": "Dragon-spine arch 1 west"
+        },
+        {
+          "id": "spine-0-east",
+          "name": "Dragon-spine arch 1 east"
+        },
+        {
+          "id": "spine-1-west",
+          "name": "Dragon-spine arch 2 west"
+        },
+        {
+          "id": "spine-1-east",
+          "name": "Dragon-spine arch 2 east"
+        },
+        {
+          "id": "spine-2-west",
+          "name": "Dragon-spine arch 3 west"
+        },
+        {
+          "id": "spine-2-east",
+          "name": "Dragon-spine arch 3 east"
+        },
+        {
+          "id": "maw-west",
+          "name": "The broken horned gateway west"
+        },
+        {
+          "id": "maw-east",
+          "name": "The broken horned gateway east"
+        },
+        {
+          "id": "fallen-0",
+          "name": "Fallen carved fragments 1"
+        },
+        {
+          "id": "fallen-1",
+          "name": "Fallen carved fragments 2"
+        },
+        {
+          "id": "fallen-2",
+          "name": "Fallen carved fragments 3"
+        }
+      ],
+      "camera": {
+        "target": [
+          41.29765886287625,
+          1.701106420947906,
+          -25.456026747721708
+        ],
+        "zoom": 240.55705195817424,
+        "azimuth": -3.0322234202643115,
+        "elevation": 0.88
+      }
+    },
+    "fingerprints": [
+      "73fe302b",
+      "a2436787",
+      "b007f61e"
+    ],
+    "mesh": {
+      "id": "dragon-ruins-13123",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 22554,
+      "uploaded": true,
+      "onScreen": 6353,
+      "samples": 6353,
+      "width": 614.461318187482,
+      "height": 499.1584604844516,
+      "zoom": 240.55705195817424,
+      "meshes": [
+        {
+          "name": "ruin:dragon-ruins-13123:ring-0",
+          "count": 1044,
+          "min": [
+            41.319061279296875,
+            1.6370174884796143,
+            -25.613258361816406
+          ],
+          "max": [
+            41.39521408081055,
+            1.6540892124176025,
+            -25.55618667602539
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-1",
+          "count": 1566,
+          "min": [
+            41.41468811035156,
+            1.644173264503479,
+            -25.51249122619629
+          ],
+          "max": [
+            41.46083450317383,
+            1.6635819673538208,
+            -25.398664474487305
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-2",
+          "count": 1044,
+          "min": [
+            41.31475830078125,
+            1.6391123533248901,
+            -25.379335403442383
+          ],
+          "max": [
+            41.42164611816406,
+            1.6576253175735474,
+            -25.3020076751709
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-3",
+          "count": 1044,
+          "min": [
+            41.200103759765625,
+            1.642154574394226,
+            -25.360015869140625
+          ],
+          "max": [
+            41.2762565612793,
+            1.6609840393066406,
+            -25.30294418334961
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-4",
+          "count": 1044,
+          "min": [
+            41.134483337402344,
+            1.6449847221374512,
+            -25.47786521911621
+          ],
+          "max": [
+            41.179054260253906,
+            1.6636583805084229,
+            -25.403709411621094
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:ring-5",
+          "count": 1566,
+          "min": [
+            41.17367172241211,
+            1.6385513544082642,
+            -25.614194869995117
+          ],
+          "max": [
+            41.28055953979492,
+            1.6595216989517212,
+            -25.536865234375
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:nest",
+          "count": 3210,
+          "min": [
+            41.21871566772461,
+            1.6392995119094849,
+            -25.523303985595703
+          ],
+          "max": [
+            41.343257904052734,
+            1.6716527938842773,
+            -25.39774513244629
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-0-west",
+          "count": 1122,
+          "min": [
+            41.17375564575195,
+            1.651231288909912,
+            -25.43927764892578
+          ],
+          "max": [
+            41.21039581298828,
+            1.765195369720459,
+            -25.382898330688477
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-0-east",
+          "count": 1122,
+          "min": [
+            41.19106674194336,
+            1.639782428741455,
+            -25.56167984008789
+          ],
+          "max": [
+            41.23335647583008,
+            1.753754734992981,
+            -25.509172439575195
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-1-west",
+          "count": 1122,
+          "min": [
+            41.22101593017578,
+            1.6512120962142944,
+            -25.43624496459961
+          ],
+          "max": [
+            41.25765609741211,
+            1.7524574995040894,
+            -25.379901885986328
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-1-east",
+          "count": 1122,
+          "min": [
+            41.23716735839844,
+            1.638031005859375,
+            -25.551103591918945
+          ],
+          "max": [
+            41.279457092285156,
+            1.689078688621521,
+            -25.498716354370117
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-2-west",
+          "count": 1122,
+          "min": [
+            41.26827621459961,
+            1.6490603685379028,
+            -25.43320655822754
+          ],
+          "max": [
+            41.30491638183594,
+            1.738906979560852,
+            -25.37690544128418
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:spine-2-east",
+          "count": 1122,
+          "min": [
+            41.283267974853516,
+            1.6379337310791016,
+            -25.540525436401367
+          ],
+          "max": [
+            41.325557708740234,
+            1.7293449640274048,
+            -25.488054275512695
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:maw-west",
+          "count": 1194,
+          "min": [
+            41.380149841308594,
+            1.642855167388916,
+            -25.40847396850586
+          ],
+          "max": [
+            41.422447204589844,
+            1.7380707263946533,
+            -25.355167388916016
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:maw-east",
+          "count": 1194,
+          "min": [
+            41.40071487426758,
+            1.640670657157898,
+            -25.52790641784668
+          ],
+          "max": [
+            41.44301223754883,
+            1.7189584970474243,
+            -25.474239349365234
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:fallen-0",
+          "count": 972,
+          "min": [
+            41.17746353149414,
+            1.6430511474609375,
+            -25.328954696655273
+          ],
+          "max": [
+            41.21886444091797,
+            1.6709721088409424,
+            -25.28407859802246
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:fallen-1",
+          "count": 972,
+          "min": [
+            41.381168365478516,
+            1.6377458572387695,
+            -25.627975463867188
+          ],
+          "max": [
+            41.42372512817383,
+            1.6604514122009277,
+            -25.583099365234375
+          ]
+        },
+        {
+          "name": "ruin:dragon-ruins-13123:fallen-2",
+          "count": 972,
+          "min": [
+            41.41413879394531,
+            1.6468604803085327,
+            -25.4803524017334
+          ],
+          "max": [
+            41.456790924072266,
+            1.669714331626892,
+            -25.435476303100586
+          ]
+        }
+      ],
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 18,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-13123",
+        "part": "nest",
+        "x": 735.8425939317647,
+        "y": 613.8942476560364
+      }
+    },
+    "exported": {
+      "bytes": 824064,
+      "meshes": 18,
+      "vertices": 22554
+    },
+    "closedCard": {
+      "fixture": {
+        "kind": "critical-population saved simulation",
+        "provinceId": 529,
+        "name": "Snowwold",
+        "original": {
+          "urban": 2116.13612630911,
+          "rural": 3937.548985806468,
+          "total": 6053.685112115578
+        },
+        "urban": 649,
+        "rural": 5404.685112115578,
+        "total": 6053.685112115578,
+        "worldPopulation": 11212597.44675769,
+        "urbanSupport": 2932.033171824134,
+        "predictedUrbanTarget": 2404.637961945868,
+        "validated": true,
+        "populationBalanced": true
+      },
+      "before": {
+        "year": 400,
+        "key": "[\"dragon-ruins-13123\",223,43,0.72,-1.422669758121043,{\"version\":1,\"variant\":\"aerie\"},{\"format\":\"telluric-landmark-recipe\",\"version\":1,\"id\":\"dragon-ruins-13123\",\"style\":\"dragon-ruins\",\"seed\":\"Aereth-47/dragon-ruins/13123\",\"name\":\"The Obsidian Aerie\",\"material\":\"draconic\",\"faith\":\"ancestors\",\"culture\":\"Drake craft\",\"complexity\":2,\"crown\":\"native\",\"roofLanguage\":\"native\",\"variant\":0,\"wings\":2,\"roofPitch\":0.9388732841145248,\"ornament\":\"radial\",\"geography\":{\"freshwater\":0,\"coast\":false,\"lake\":false,\"cold\":true,\"dry\":true,\"forest\":false,\"elevation\":1520.11083984375,\"sourceCell\":13123,\"setting\":\"Cold desert\"},\"provenance\":\"A shattered stone ring encloses an ancient dragon nesting bowl and split shells. Broken spine arches rise above the abandoned clutch. Weathered stone survives here in cold desert, 1,520 m above sea level.\",\"provinceId\":null,\"kind\":\"dragon-ruins\",\"dragonRuins\":{\"version\":1,\"variant\":\"aerie\"},\"dragonRuinsVersion\":1},2,1,\"2/4\"]",
+        "lod": 2,
+        "landscapeKey": "2/4",
+        "camera": {
+          "target": [
+            41.29765886287625,
+            1.701106420947906,
+            -25.456026747721708
+          ],
+          "zoom": 240.55705195817424,
+          "azimuth": -3.0322234202643115,
+          "elevation": 0.88
+        }
+      },
+      "after": {
+        "year": 401,
+        "key": "[\"dragon-ruins-13123\",223,43,0.72,-1.422669758121043,{\"version\":1,\"variant\":\"aerie\"},{\"format\":\"telluric-landmark-recipe\",\"version\":1,\"id\":\"dragon-ruins-13123\",\"style\":\"dragon-ruins\",\"seed\":\"Aereth-47/dragon-ruins/13123\",\"name\":\"The Obsidian Aerie\",\"material\":\"draconic\",\"faith\":\"ancestors\",\"culture\":\"Drake craft\",\"complexity\":2,\"crown\":\"native\",\"roofLanguage\":\"native\",\"variant\":0,\"wings\":2,\"roofPitch\":0.9388732841145248,\"ornament\":\"radial\",\"geography\":{\"freshwater\":0,\"coast\":false,\"lake\":false,\"cold\":true,\"dry\":true,\"forest\":false,\"elevation\":1520.11083984375,\"sourceCell\":13123,\"setting\":\"Cold desert\"},\"provenance\":\"A shattered stone ring encloses an ancient dragon nesting bowl and split shells. Broken spine arches rise above the abandoned clutch. Weathered stone survives here in cold desert, 1,520 m above sea level.\",\"provinceId\":null,\"kind\":\"dragon-ruins\",\"dragonRuins\":{\"version\":1,\"variant\":\"aerie\"},\"dragonRuinsVersion\":1},2,1,\"2/5\"]",
+        "lod": 2,
+        "landscapeKey": "2/5",
+        "urban": 789.8647739641063,
+        "settled": true,
+        "replaced": true,
+        "detailsReplaced": true,
+        "meshOwnersCurrent": true,
+        "parts": [
+          {
+            "id": "nest",
+            "name": "The cracked nesting bowl"
+          },
+          {
+            "id": "spine-0-west",
+            "name": "Dragon-spine arch 1 west"
+          },
+          {
+            "id": "spine-0-east",
+            "name": "Dragon-spine arch 1 east"
+          },
+          {
+            "id": "spine-1-west",
+            "name": "Dragon-spine arch 2 west"
+          },
+          {
+            "id": "spine-1-east",
+            "name": "Dragon-spine arch 2 east"
+          },
+          {
+            "id": "spine-2-west",
+            "name": "Dragon-spine arch 3 west"
+          },
+          {
+            "id": "spine-2-east",
+            "name": "Dragon-spine arch 3 east"
+          },
+          {
+            "id": "maw-west",
+            "name": "The broken horned gateway west"
+          },
+          {
+            "id": "maw-east",
+            "name": "The broken horned gateway east"
+          },
+          {
+            "id": "fallen-0",
+            "name": "Fallen carved fragments 1"
+          },
+          {
+            "id": "fallen-1",
+            "name": "Fallen carved fragments 2"
+          },
+          {
+            "id": "fallen-2",
+            "name": "Fallen carved fragments 3"
+          }
+        ],
+        "camera": {
+          "target": [
+            41.29765886287625,
+            1.701106420947906,
+            -25.456026747721708
+          ],
+          "zoom": 240.55705195817424,
+          "azimuth": -3.0322234202643115,
+          "elevation": 0.88
+        }
+      },
+      "stillHidden": true,
+      "pick": {
+        "id": "dragon-ruins-13123",
+        "part": "nest",
+        "x": 735.8425939317647,
+        "y": 613.8942476560364
+      },
+      "fingerprints": [
+        "73fe302b",
+        "a2436787",
+        "b007f61e"
+      ]
+    }
+  },
+  "highCityFixture": {
+    "source": {
+      "params": {
+        "seed": "Meridian-21",
+        "form": "rift",
+        "plates": 24,
+        "continents": 6,
+        "islands": 1.2,
+        "volcanism": 0.85,
+        "uplift": 1.2,
+        "sea": 0,
+        "aridity": 0.85,
+        "current": 1,
+        "erosion": 0.7,
+        "temperature": 0,
+        "glaciation": 1.2,
+        "landformVersion": 3
+      },
+      "fingerprints": [
+        "648c6ee8",
+        "fa190ebe",
+        "6f14f188"
+      ],
+      "high": [
+        {
+          "provinceId": 199,
+          "kind": "dragon",
+          "name": "Bowercairn · Dragon King's Aerie"
+        },
+        {
+          "provinceId": 407,
+          "kind": "holy",
+          "name": "Clearpit · High Sanctuary"
+        }
+      ]
+    },
+    "before": [
+      "648c6ee8",
+      "fa190ebe",
+      "6f14f188"
+    ],
+    "sites": [
+      {
+        "id": "site-199-high-citadel",
+        "name": "Bowercairn · Dragon King's Aerie",
+        "i": 20637,
+        "provinceId": 199,
+        "kind": "dragon"
+      },
+      {
+        "id": "site-407-high-citadel",
+        "name": "Clearpit · High Sanctuary",
+        "i": 35071,
+        "provinceId": 407,
+        "kind": "holy"
+      },
+      {
+        "id": "dragon-ruins-21107",
+        "name": "The Sable Aerie",
+        "i": 21107,
+        "provinceId": null,
+        "kind": "dragon-ruin"
+      },
+      {
+        "id": "dragon-ruins-20619",
+        "name": "The Cinder Spine",
+        "i": 20619,
+        "provinceId": null,
+        "kind": "dragon-ruin"
+      },
+      {
+        "id": "dragon-ruins-30339",
+        "name": "The Obsidian Maw",
+        "i": 30339,
+        "provinceId": null,
+        "kind": "dragon-ruin"
+      }
+    ],
+    "high": [
+      {
+        "id": 199,
+        "kind": "dragon",
+        "roles": [
+          "keep",
+          "watch",
+          "watch",
+          "roost",
+          "lodge",
+          "lodge",
+          "store",
+          "lodge",
+          "lodge",
+          "gate"
+        ],
+        "vertices": 88863,
+        "uploaded": true,
+        "onScreen": 603,
+        "samples": 603,
+        "width": 558.1783784941581,
+        "height": 521.2190658215707,
+        "zoom": 317.102427976066,
+        "meshes": [
+          {
+            "name": "cm:199:buildings",
+            "count": 45123,
+            "min": [
+              49.11034393310547,
+              4.1310577392578125,
+              -11.841270446777344
+            ],
+            "max": [
+              49.3194465637207,
+              4.257375717163086,
+              -11.649553298950195
+            ]
+          },
+          {
+            "name": "cm:199:roofs",
+            "count": 43740,
+            "min": [
+              49.107425689697266,
+              4.174493312835693,
+              -11.8411283493042
+            ],
+            "max": [
+              49.31918716430664,
+              4.266600131988525,
+              -11.65017318725586
+            ]
+          }
+        ],
+        "mounted": null,
+        "pick": {
+          "id": 199,
+          "building": "high-199-keep-0",
+          "x": 918.9594114778953,
+          "y": 504.7143346015149
+        }
+      },
+      {
+        "id": 407,
+        "kind": "holy",
+        "roles": [
+          "sanctuary",
+          "bell",
+          "bell",
+          "chapel",
+          "chapel",
+          "scriptorium",
+          "hospice",
+          "hospice",
+          "scriptorium",
+          "hospice",
+          "hospice",
+          "store",
+          "store",
+          "gate"
+        ],
+        "vertices": 268962,
+        "uploaded": true,
+        "onScreen": 603,
+        "samples": 603,
+        "width": 752.074634849323,
+        "height": 602.0181803575474,
+        "zoom": 389.52213674989457,
+        "meshes": [
+          {
+            "name": "cm:407:buildings",
+            "count": 224574,
+            "min": [
+              68.1098403930664,
+              3.7366676330566406,
+              14.433446884155273
+            ],
+            "max": [
+              68.33150482177734,
+              3.833561897277832,
+              14.633883476257324
+            ]
+          },
+          {
+            "name": "cm:407:roofs",
+            "count": 44388,
+            "min": [
+              68.11012268066406,
+              3.7640085220336914,
+              14.438401222229004
+            ],
+            "max": [
+              68.32998657226562,
+              3.84733247756958,
+              14.626887321472168
+            ]
+          }
+        ],
+        "mounted": null,
+        "pick": {
+          "id": 407,
+          "building": "high-407-sanctuary-0",
+          "x": 509.2751559828889,
+          "y": 521.5739655682444
+        }
+      }
+    ],
+    "overviewPins": [
+      {
+        "id": "site-199-high-citadel",
+        "kind": "dragon",
+        "svg": true,
+        "visible": true,
+        "hittable": true,
+        "w": 23,
+        "h": 23
+      },
+      {
+        "id": "site-407-high-citadel",
+        "kind": "holy",
+        "svg": true,
+        "visible": true,
+        "hittable": true,
+        "w": 23,
+        "h": 23
+      },
+      {
+        "id": "dragon-ruins-21107",
+        "kind": "dragon-ruin",
+        "svg": true,
+        "visible": true,
+        "hittable": true,
+        "w": 23,
+        "h": 23
+      },
+      {
+        "id": "dragon-ruins-20619",
+        "kind": "dragon-ruin",
+        "svg": true,
+        "visible": true,
+        "hittable": true,
+        "w": 23,
+        "h": 23
+      },
+      {
+        "id": "dragon-ruins-30339",
+        "kind": "dragon-ruin",
+        "svg": true,
+        "visible": true,
+        "hittable": true,
+        "w": 23,
+        "h": 23
+      }
+    ],
+    "after": [
+      "648c6ee8",
+      "fa190ebe",
+      "6f14f188"
+    ]
+  }
+}

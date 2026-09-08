@@ -26,9 +26,17 @@ function fixture({obscured=false}={}){
   cameraChanged(){}
   ground(){return 0;}
  }
+ // No ruins participate in these town-camera races. Keep the new sibling
+ // renderer inert so it cannot add a load or animation to the controlled clock.
+ class RuinLayer{
+  constructor(){this.models=new Map();}
+  visible(){return null;}
+  cameraChanged(){}
+  report(){return{models:0,failures:[]};}
+ }
  const context={window:{},document:{body:element(),getElementById:get,createElement:element,addEventListener(){}},renderer,
   world:{params:{seed:'test'}},sim:{provinces:[p],realms:[{alive:true}]},busy:false,simAdvancing:false,
-  ContinuousCityLayer:Layer,OneMap:{closeDrawer(){},closeMenus(){},clearSelection(){},scene:'world'},
+  ContinuousCityLayer:Layer,ContinuousRuinLayer:RuinLayer,OneMap:{closeDrawer(){},closeMenus(){},clearSelection(){},scene:'world'},
   CityEnvironment:{profile(){return{mountainous:false};}},
   AtlasSpace:{TOWN_ZOOM:16,DETAIL_ZOOM:60,MAX_ZOOM:620,point(w,x,y){return[x,0,y];},grid(x,z){return[x,z];},pickGround(){return obscured?{point:[2,1,3]}:null;}},
   installDepthRasterizer(){},rgb(){return[0,0,0];},mul4(){return[];},ortho(){return[];},lookAt(){return[];},
