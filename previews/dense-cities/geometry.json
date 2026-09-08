@@ -1,0 +1,360 @@
+{
+  "status": "final generator snapshot",
+  "method": "Single process, four generated cities from the same frozen baseline physical world/simulation. Timings of generator, collector, compound, streets and projection are nested, not additive. Actual ordinary compound structures are counted, not abstract building.components. CPU timing is diagnostic, not browser entry or frame timing.",
+  "runtime": "v23.6.0",
+  "sourceSHA256": "b98cd896fff6bec2909faf8896980b646ce7af0e6e12a824ce6e3506a3260938",
+  "report": [
+    {
+      "id": 216,
+      "name": "Corbinbelararhaven",
+      "cityFingerprint": "efbfde0d",
+      "buildings": 3452,
+      "denseInfill": 2481,
+      "totalMs": 4492.870334,
+      "times": {
+        "generateCity": 2766.0950000000003,
+        "streetMesh": 256.23087499999974,
+        "compound": 430.1232860000064,
+        "fortificationMeshes": 47.2431660000002,
+        "collector": 1337.3535410000004,
+        "frame": 3.9007910000000265,
+        "projection": 238.25562400000035
+      },
+      "counts": {
+        "generateCity": 1,
+        "streetMesh": 1,
+        "compound": 3450,
+        "fortificationMeshes": 1,
+        "collector": 1,
+        "frame": 1,
+        "projection": 8
+      },
+      "ordinaryHouses": 3564,
+      "ordinaryBlocks": 3446,
+      "streetStats": {
+        "edges": 14405,
+        "junctions": 14376,
+        "maxFragments": 101
+      },
+      "triangles": 843829,
+      "houseRatio": 3.290858725761773,
+      "triangleRatio": 1.9917128897490972,
+      "uploads": {
+        "cm:216:farms": {
+          "triangles": 498,
+          "bytes": 53784,
+          "conversionMs": 0.007083000000420725
+        },
+        "cm:216:streets": {
+          "triangles": 138135,
+          "bytes": 14918580,
+          "conversionMs": 0.010499999999410647
+        },
+        "cm:216:cityWalls": {
+          "triangles": 41112,
+          "bytes": 4440096,
+          "conversionMs": 0.010833000000275206
+        },
+        "cm:216:port": {
+          "triangles": 552,
+          "bytes": 59616,
+          "conversionMs": 0.005000000000109139
+        },
+        "cm:216:buildings": {
+          "triangles": 391550,
+          "bytes": 42287400,
+          "conversionMs": 0.009541999999783002
+        },
+        "cm:216:roofs": {
+          "triangles": 152446,
+          "bytes": 16464168,
+          "conversionMs": 0.008875000000443833
+        },
+        "cm:216:details": {
+          "triangles": 97084,
+          "bytes": 10485072,
+          "conversionMs": 0.015292000000044936
+        },
+        "cm:216:trees": {
+          "triangles": 22452,
+          "bytes": 2424816,
+          "conversionMs": 0.012832999999773165
+        },
+        "cm:216:vegetation": {
+          "triangles": 2466,
+          "bytes": 266328,
+          "conversionMs": 0.3150420000001759
+        },
+        "cm:216:silhouettes": {
+          "triangles": 48328,
+          "bytes": 5219424,
+          "conversionMs": 4.939374999999927
+        }
+      }
+    },
+    {
+      "id": 264,
+      "name": "Sarrelmont",
+      "cityFingerprint": "d3bd3501",
+      "buildings": 2789,
+      "denseInfill": 1915,
+      "totalMs": 4621.935667,
+      "times": {
+        "generateCity": 2863.84375,
+        "streetMesh": 161.4355000000005,
+        "compound": 569.4963300000327,
+        "fortificationMeshes": 44.52904099999978,
+        "collector": 1437.018083,
+        "frame": 3.1052080000008573,
+        "projection": 277.22933300000113
+      },
+      "counts": {
+        "generateCity": 1,
+        "streetMesh": 1,
+        "compound": 2786,
+        "fortificationMeshes": 1,
+        "collector": 1,
+        "frame": 1,
+        "projection": 8
+      },
+      "ordinaryHouses": 2832,
+      "ordinaryBlocks": 2783,
+      "streetStats": {
+        "edges": 11242,
+        "junctions": 11215,
+        "maxFragments": 101
+      },
+      "triangles": 1024346,
+      "houseRatio": 3.088331515812432,
+      "triangleRatio": 1.8905441968454817,
+      "uploads": {
+        "cm:264:farms": {
+          "triangles": 406,
+          "bytes": 43848,
+          "conversionMs": 0.006583000000318862
+        },
+        "cm:264:streets": {
+          "triangles": 117036,
+          "bytes": 12639888,
+          "conversionMs": 0.002999999998792191
+        },
+        "cm:264:cityWalls": {
+          "triangles": 47464,
+          "bytes": 5126112,
+          "conversionMs": 0.0029589999994641403
+        },
+        "cm:264:port": {
+          "triangles": 0,
+          "bytes": 0,
+          "conversionMs": 0.0006250000005820766
+        },
+        "cm:264:buildings": {
+          "triangles": 520142,
+          "bytes": 56175336,
+          "conversionMs": 0.0028750000001309672
+        },
+        "cm:264:roofs": {
+          "triangles": 231512,
+          "bytes": 25003296,
+          "conversionMs": 0.00316700000075798
+        },
+        "cm:264:details": {
+          "triangles": 43644,
+          "bytes": 4713552,
+          "conversionMs": 0.001374999999825377
+        },
+        "cm:264:trees": {
+          "triangles": 64142,
+          "bytes": 6927336,
+          "conversionMs": 0.0032920000012381934
+        },
+        "cm:264:vegetation": {
+          "triangles": 5514,
+          "bytes": 595512,
+          "conversionMs": 0.38395800000034797
+        },
+        "cm:264:silhouettes": {
+          "triangles": 39046,
+          "bytes": 4216968,
+          "conversionMs": 3.042083000000275
+        }
+      }
+    },
+    {
+      "id": 499,
+      "name": "Alflundenvik",
+      "cityFingerprint": "7087ea25",
+      "buildings": 2867,
+      "denseInfill": 2075,
+      "totalMs": 3150.1241659999996,
+      "times": {
+        "generateCity": 2052.4032079999997,
+        "streetMesh": 168.40270899999996,
+        "compound": 315.92174700005125,
+        "fortificationMeshes": 48.535415999998804,
+        "collector": 882.6159169999992,
+        "frame": 8.832374999999956,
+        "projection": 170.44241700000202
+      },
+      "counts": {
+        "generateCity": 1,
+        "streetMesh": 1,
+        "compound": 2865,
+        "fortificationMeshes": 1,
+        "collector": 1,
+        "frame": 1,
+        "projection": 8
+      },
+      "ordinaryHouses": 3029,
+      "ordinaryBlocks": 2861,
+      "streetStats": {
+        "edges": 12656,
+        "junctions": 12640,
+        "maxFragments": 111
+      },
+      "triangles": 634486,
+      "houseRatio": 3.1750524109014675,
+      "triangleRatio": 2.0622089036087012,
+      "uploads": {
+        "cm:499:farms": {
+          "triangles": 748,
+          "bytes": 80784,
+          "conversionMs": 0.002457999999023741
+        },
+        "cm:499:streets": {
+          "triangles": 119761,
+          "bytes": 12934188,
+          "conversionMs": 0.002999999998792191
+        },
+        "cm:499:cityWalls": {
+          "triangles": 42864,
+          "bytes": 4629312,
+          "conversionMs": 0.0033749999984138412
+        },
+        "cm:499:port": {
+          "triangles": 873,
+          "bytes": 94284,
+          "conversionMs": 0.0007500000010622898
+        },
+        "cm:499:buildings": {
+          "triangles": 301288,
+          "bytes": 32539104,
+          "conversionMs": 0.0028340000008029165
+        },
+        "cm:499:roofs": {
+          "triangles": 114292,
+          "bytes": 12343536,
+          "conversionMs": 0.002624999999170541
+        },
+        "cm:499:details": {
+          "triangles": 37330,
+          "bytes": 4031640,
+          "conversionMs": 0.0020000000004074536
+        },
+        "cm:499:trees": {
+          "triangles": 17330,
+          "bytes": 1871640,
+          "conversionMs": 0.002082999999402091
+        },
+        "cm:499:vegetation": {
+          "triangles": 4106,
+          "bytes": 443448,
+          "conversionMs": 0.2875830000011774
+        },
+        "cm:499:silhouettes": {
+          "triangles": 40138,
+          "bytes": 4334904,
+          "conversionMs": 2.68170900000041
+        }
+      }
+    },
+    {
+      "id": 267,
+      "name": "Saint Tuoneneli",
+      "cityFingerprint": "748a6e4a",
+      "buildings": 1596,
+      "denseInfill": 880,
+      "totalMs": 2403.8702079999985,
+      "times": {
+        "generateCity": 1575.3915420000012,
+        "streetMesh": 83.18162499999926,
+        "compound": 213.29035800002566,
+        "fortificationMeshes": 44.679416999999376,
+        "collector": 688.6784580000003,
+        "frame": 1.57287499999984,
+        "projection": 113.8616269999984
+      },
+      "counts": {
+        "generateCity": 1,
+        "streetMesh": 1,
+        "compound": 1593,
+        "fortificationMeshes": 1,
+        "collector": 1,
+        "frame": 1,
+        "projection": 8
+      },
+      "ordinaryHouses": 1719,
+      "ordinaryBlocks": 1589,
+      "streetStats": {
+        "edges": 5994,
+        "junctions": 5949,
+        "maxFragments": 51
+      },
+      "triangles": 495927,
+      "houseRatio": 2.0488676996424315,
+      "triangleRatio": 1.4614069880860117,
+      "uploads": {
+        "cm:267:farms": {
+          "triangles": 574,
+          "bytes": 61992,
+          "conversionMs": 0.0020000000004074536
+        },
+        "cm:267:streets": {
+          "triangles": 54946,
+          "bytes": 5934168,
+          "conversionMs": 0.0017090000001189765
+        },
+        "cm:267:cityWalls": {
+          "triangles": 36856,
+          "bytes": 3980448,
+          "conversionMs": 0.0018749999999272404
+        },
+        "cm:267:port": {
+          "triangles": 735,
+          "bytes": 79380,
+          "conversionMs": 0.00041600000076869037
+        },
+        "cm:267:buildings": {
+          "triangles": 193474,
+          "bytes": 20895192,
+          "conversionMs": 0.002500000000509317
+        },
+        "cm:267:roofs": {
+          "triangles": 121174,
+          "bytes": 13086792,
+          "conversionMs": 0.004249999999956344
+        },
+        "cm:267:details": {
+          "triangles": 71576,
+          "bytes": 7730208,
+          "conversionMs": 0.00204200000007404
+        },
+        "cm:267:trees": {
+          "triangles": 16592,
+          "bytes": 1791936,
+          "conversionMs": 0.001583000001119217
+        },
+        "cm:267:vegetation": {
+          "triangles": 4252,
+          "bytes": 459216,
+          "conversionMs": 0.5125420000003942
+        },
+        "cm:267:silhouettes": {
+          "triangles": 22344,
+          "bytes": 2413152,
+          "conversionMs": 1.4489579999990383
+        }
+      }
+    }
+  ]
+}

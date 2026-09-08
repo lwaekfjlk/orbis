@@ -141,11 +141,11 @@ test('actual-world biome relief remains bounded and repeated nearby samples stay
 
 test('survey extraction preserves two actual cities and leaves physical and simulated inputs untouched', () => {
     const expected = [
-        [299, 'Harthurst', '59388af6', '2c2bc49894608e8a67846ef9b637b4931797b56421606d3058042b026b37e739'],
-        [127, 'Longshaw', '196d91e4', 'd6fd90c2553f87438c893e7e0fba92c580af35ae8d17c32c516b690d2d5f807e']
+        [299, 'Avalfergalhaven', '91698ba6', '39cab6fdc152715e0f470857371b5447223971580120844e4725827040285c26'],
+        [127, 'Nidaveiknes', '9867d55e', 'b20e4d6f74a1b60801e7df77d2b97dce41afb410d43576e1de72c8f5ce1a1451']
     ];
-    // Baselines came from the parent commit's original generator. No cache or
-    // git checkout is required when this regression runs in CI.
+    // Dense-city baselines were independently identical before and after relief
+    // preparation. No cache or git checkout is required for this regression.
     for (const [id, name, fingerprint, checksum] of expected) {
         const p = sim.provinces[id], c = E.generateCity(world, sim, id), survey = E.citySurvey(sim, p);
         assert.equal(c.name, name); assert.equal(c.fingerprint, fingerprint);

@@ -2,10 +2,10 @@
   "version": 1,
   "checks": {
     "mixture": {
-      "town": "Scorchspire",
+      "town": "Ben Tiraran",
       "roster": 55,
-      "peoplesSeen": 7,
-      "maxDeviation": 0
+      "peoplesSeen": 3,
+      "maxDeviation": 0.0015
     },
     "parity": {
       "distinctSpeedsAcrossPeoples": 1,
@@ -34,14 +34,19 @@
       }
     },
     "pace": {
-      "compoundCrossingSeconds": 13.3,
-      "roundTripSeconds": 108,
+      "compoundCrossingSeconds": 24.8,
+      "roundTripSeconds": 143,
       "cellCrossingSeconds": 119.6,
-      "bodyLengthsPerSecond": 0.213
+      "bodyLengthsPerSecond": 0.207
+    },
+    "residentScale": {
+      "localHeight": 0.8250000000000001,
+      "originalLocalHeight": 1.5,
+      "smallestParcel": 1.1
     },
     "scale": {
       "buildingFootprint": 0.0178,
-      "mooredHull": 0.0129,
+      "mooredHull": 0.0126,
       "seaHull": 0.0227,
       "hullRatio": 1.8,
       "symbolInBuildings": 1.7

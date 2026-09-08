@@ -13,9 +13,35 @@ Landmark directory queries skip this pass entirely.
 
 Performance work also removes crowd and dossier rebuilding during camera motion,
 avoids duplicate nearby-road updates, caches unchanged label positions, and writes
-projected geometry directly into its final upload buffer. Building detail is
-retained. Degenerate polygons from overlapping narrow road strips are discarded
-before they can multiply during road clipping.
+projected geometry directly into its final upload buffer. Projection preserves
+the geometry chosen by the existing detail budget. Degenerate polygons from
+overlapping narrow road strips are discarded before they can multiply during
+road clipping.
+
+## Density checks
+
+The default world's 110 ordinary towns contain 93,534 building parcels, up from
+39,996 (2.34×). The former four largest cities were kept as fixed comparison
+fixtures; houses are counted from the actual building kit, not population or an
+abstract component estimate.
+
+| City | Houses before | Houses after | Change |
+| --- | ---: | ---: | ---: |
+| Corbinbelararhaven | 1,083 | 3,564 | 3.29× |
+| Sarrelmont | 917 | 2,832 | 3.09× |
+| Alflundenvik | 954 | 3,029 | 3.18× |
+| Saint Tuoneneli | 839 | 1,719 | 2.05× |
+
+All earlier homes and landmarks retain their footprint, height and doorway.
+The tests independently check the entire width of new lanes and entrances,
+including water edges, and connectivity to the market. Additional samples cover
+three smaller default towns and five population quantiles in a second world;
+their aggregate house counts rise by 2.32× and 2.29× respectively. Constrained
+individual sites vary: safe ground and access take precedence over forcing an
+identical multiplier into every settlement.
+
+The README gallery is reranked after infill. Its fourth city is now
+Camelelorport, and the four-panel image consists of direct application captures.
 
 ## Reproduce
 

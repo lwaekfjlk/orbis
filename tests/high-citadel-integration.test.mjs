@@ -61,14 +61,20 @@ test('both tiny high towns keep dedicated architecture at detail and regional LO
 });
 
 test('the directory publishes exact compact-town anchors, including sites below the city flag, with no eager full-city builds', () => {
-    // Keep real province IDs/realms, but enumerate only the two sites. This is a
-    // bounded directory integration test, not a survey of every ordinary wonder.
+    // Keep real province IDs/realms, but enumerate only the two high towns.
+    // Three independent dragon ruins remain in the world directory as well.
     const bounded = {...sim, provinces: sim.provinces.map(p => p.highCitadel ? p : {...p, city: false, settled: false})};
     const fullBefore = E.calls.full, entries = E.LandmarkBinding.inventory(world, bounded);
     assert.equal(E.calls.full, fullBefore);
-    assert.equal(entries.length, 2, 'generic palace, wonder or regional entries should not cover the dedicated site');
-    assert.equal(structuredClone(entries).length, 2);
-    for (const entry of entries) {
+    const high = entries.filter(entry => entry.highCitadel), ruins = entries.filter(entry => entry.dragonRuins);
+    assert.equal(high.length, 2, 'each dedicated high town must appear exactly once');
+    assert.deepEqual(high.map(entry => entry.provinceId).sort((a, b) => a - b), sites.map(p => p.id).sort((a, b) => a - b));
+    assert.equal(ruins.length, 3, 'independent dragon ruins remain available beside the high towns');
+    assert.equal(entries.length, high.length + ruins.length, 'generic palace, wonder or regional entries should not cover the dedicated site');
+    assert.ok(entries.every(entry => !!entry.highCitadel !== !!entry.dragonRuins), 'each entry must identify either a dedicated town or an independent ruin');
+    assert.equal(new Set(entries.map(entry => entry.id)).size, entries.length, 'directory identities must remain unique');
+    assert.equal(structuredClone(entries).length, 5);
+    for (const entry of high) {
         const row = rows.find(r => r.p.id === entry.provinceId), b = row.model.city.buildings.find(b => b.id === entry.buildingId);
         assert.ok(b?.landmark && ['keep', 'sanctuary'].includes(b.highRole));
         assert.equal(entry.recipe.buildingId, b.id); assert.deepEqual(entry.highCitadel, row.p.highCitadel);
@@ -192,12 +198,15 @@ test('continuous building overlay does not duplicate persistent world town label
     function element(id) { if (!nodes.has(id)) { const n = node(); n.id = id; nodes.set(id, n); } return nodes.get(id); }
     const document = {getElementById: element, createElement: node, addEventListener() {}, body: node()};
     class Layer { constructor() { this.models = new Map(); } bind() {} cameraChanged() {} }
+    // The production UI also binds independent ruins. Keep that sibling inert
+    // while exercising the real persistent-town/building-label ownership rules.
+    class RuinLayer { constructor() { this.models = new Map(); } bind() {} cameraChanged() {} visible() { return null; } report() { return {models: 0}; } }
     const r = {target: [0, 0, 0], zoom: 1, width: 1280, height: 720, canvas: {id: 'map'}, options: {}, visible() {}, onChange() {}, request() {}};
     const high = {id: 0, name: 'Unloaded Aerie', urbanPop: 650, settled: true, highCitadel: {kind: 'dragon', version: 1, elevation: 4096}};
     const ordinary = {id: 1, name: 'Unloaded Village', urbanPop: 700, settled: false};
     const state = {provinces: [high, ordinary], realms: []}, win = {};
-    const args = ['window', 'document', 'world', 'sim', 'renderer', 'ContinuousCityLayer', 'AtlasSpace', 'LandmarkBinding', 'OneMap', 'installDepthRasterizer', 'rgb', 'mul4', 'ortho', 'lookAt'];
-    Function(...args, read('src/ui/continuous-map.js'))(win, document, world, state, r, Layer, E.AtlasSpace, E.LandmarkBinding, {scene: 'world'}, () => {}, () => [], () => [], () => [], () => []);
+    const args = ['window', 'document', 'world', 'sim', 'renderer', 'ContinuousCityLayer', 'ContinuousRuinLayer', 'AtlasSpace', 'LandmarkBinding', 'LandmarkUI', 'OneMap', 'busy', 'simAdvancing', 'installDepthRasterizer', 'rgb', 'mul4', 'ortho', 'lookAt'];
+    Function(...args, read('src/ui/continuous-map.js'))(win, document, world, state, r, Layer, RuinLayer, E.AtlasSpace, E.LandmarkBinding, {registry: []}, {scene: 'world'}, false, false, () => {}, () => [], () => [], () => [], () => []);
     win.ContinuousMap.init(); win.ContinuousMap.onWorldUpdate();
     const labels = element('cmLabels'), metadata = JSON.stringify(high.highCitadel);
     assert.equal(win.ContinuousMap.layer.models.size, 0);

@@ -8,12 +8,13 @@ import {root,defaults} from './engine-loader.mjs';
 
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(file=>readFileSync(resolve(root,file),'utf8')).join('\n');
 const E=Function(source+`
-const full=generateCity,query=generateCityLandmark,context=CityEnvironment.context,infill=cityResidentialInfill;
-const calls={full:0,query:0,context:0,infill:0};
+const full=generateCity,query=generateCityLandmark,context=CityEnvironment.context,infill=cityResidentialInfill,originalStreetConnections=cityStreetConnections;
+const calls={full:0,query:0,context:0,infill:0,socketQueries:0};
 generateCity=(...args)=>{calls.full++;return full(...args)};
 generateCityLandmark=(...args)=>{calls.query++;return query(...args)};
 CityEnvironment.context=(...args)=>{calls.context++;return context(...args)};
 cityResidentialInfill=(...args)=>{calls.infill++;return infill(...args)};
+cityStreetConnections=(...args)=>{const connection=originalStreetConnections(...args);return Object.assign((...args)=>{calls.socketQueries++;return connection(...args)},connection)};
 return {generateWorld,createCivilization,generateCity,generateCityLandmark,LandmarkBinding,
 LandmarkCatalog,SacredCityKit,TownCityBinding,TownCatalog,wonderFor,physicalFingerprint,
 settlementFingerprint,politicalFingerprint,calls,
@@ -30,13 +31,14 @@ test.before(async()=>{
  baseline=E.createCivilization(w,{realms:18,historySeed:'First-dawn',highCitadelsVersion:0});
  // Candidate founding performs its own placement preflight. Directory counts
  // begin after both simulations are initialized on exactly the same geography.
- Object.assign(E.calls,{full:0,query:0,context:0,infill:0});
+ Object.assign(E.calls,{full:0,query:0,context:0,infill:0,socketQueries:0});
  before=fingerprints(w,s);inventory=E.LandmarkBinding.inventory(w,s);
 });
 
 test('the directory preserves the 152 current founding entries and adds two exact high cities and three independent dragon ruins',()=>{
  assert.equal(E.calls.full,0);assert.equal(E.calls.context,0);
  assert.equal(E.calls.infill,0,'indexing exact landmarks must not build the added residential courtyards');
+ assert(E.calls.socketQueries<=E.calls.query,'each placement query checks its landmark doorway without resolving every household entrance');
  assert.equal(E.calls.query,80,'78 ordinary candidates and two compact high cities receive exact placement queries');
  const ordinary=inventory.filter(site=>!site.highCitadel&&!site.dragonRuins),high=inventory.filter(site=>site.highCitadel);
  assert.equal(inventory.length,157);assert.equal(inventory.filter(site=>site.dragonRuins).length,3);assert.equal(ordinary.length,152);assert.equal(high.length,2);

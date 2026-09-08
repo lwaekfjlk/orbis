@@ -760,15 +760,16 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
     // Keep the established civic well and granary before filling smaller yards.
     // Resolve existing access before adding another row behind it. These are the
     // same exact sockets the final layout filter requires; reserve them first.
-    const doorway=cityStreetConnections(city),entrances=new Map();
+    const doorway=cityStreetConnections(city);
+    if (landmarkOnly) {
+        // Query the sacred doorway against the same complete obstacle set.
+        // Resolving every household entrance would not change this result.
+        const b=city.buildings.find(b=>b.sacred),path=b?doorway(b):null;
+        return {townRecipe:recipe,townProfile:profile,buildings:b&&path&&path.dist<12?[b]:[]};
+    }
+    const entrances=new Map();
     for(const b of city.buildings){const path=doorway(b);if(path&&path.dist<12)entrances.set(b.id,path);}
     city.buildings=city.buildings.filter(b=>entrances.has(b.id));
-    if (landmarkOnly) {
-        // Every surviving entrance below is reserved at its full width before
-        // infill. Later houses therefore cannot remove this exact sacred site.
-        const b=city.buildings.find(b=>b.sacred);
-        return {townRecipe:recipe,townProfile:profile,buildings:b?[b]:[]};
-    }
     // Fix the existing curtain and its external approaches before finer houses
     // occupy the interior. Infill clears these real road ribbons as well.
     if(typeof FortressPlan!=='undefined')FortressPlan.build(city);

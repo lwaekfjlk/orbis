@@ -49,6 +49,15 @@ test('appearance differs between peoples and nothing else does',()=>{
 test('townsfolk keep to their own town, on its streets and out of the water',()=>{
  assert(roster.length>=6&&roster.length<=96);
  const frame=E.AtlasSpace.cityFrame(w,town,city,1);
+ // The coarse reservation bitmap does not describe subcell courtyard lanes.
+ // Test the actual paved segments and door connectors at their real widths.
+ const segments=city.roads.flatMap(r=>r.points.slice(1).map((b,k)=>({a:r.points[k],b,
+  width:r.role==='courtyard-access'?r.halfWidth:city.townProfile.width*(r.kind==='arterial'?.67:r.kind==='street'?.5:.37)})))
+  .concat(city.connectors.map(c=>({...c,width:.08})));
+ const onStreet=p=>segments.some(({a,b,width})=>{
+  const dx=b.x-a.x,dz=b.z-a.z,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.z-a.z)*dz)/(dx*dx+dz*dz||1)));
+  return Math.hypot(p.x-a.x-t*dx,p.z-a.z-t*dz)<=width+1e-7;
+ });
  let onPaving=0,samples=0;
  for(const a of roster)for(const t of TIMES){
   const q=E.Folk.positionAt(a,t);
@@ -61,10 +70,13 @@ test('townsfolk keep to their own town, on its streets and out of the water',()=
   assert(Math.hypot(at[0]-town.x,at[1]-town.y)<city.span,'a figure stays inside its own settlement');
   samples++;
   // Walkers follow the street network; idlers hold the market square.
-  if(a.kind==='walker'&&city.road[k])onPaving++;
+  if(a.kind==='walker'){
+   assert(onStreet(q),`${a.id} leaves its paved street at time ${t}`);
+   onPaving++;
+  }
  }
  const walkers=roster.filter(a=>a.kind==='walker').length;
- assert(onPaving>walkers*TIMES.length*.5,'street walkers spend their time on the streets');
+ assert.equal(onPaving,walkers*TIMES.length,'every street walker stays on actual paving');
  report.checks.townsfolk={roster:roster.length,samples,walkers,idlers:roster.length-walkers};
 });
 
@@ -126,7 +138,7 @@ test('nobody skates across the map: motion is slow against the scenery it passes
  assert(crossing>=4,`a resident crosses a whole compound in ${crossing.toFixed(1)}s`);
  const trip=2*walker.route.len/walker.speed;
  assert(trip>=40,`a resident completes a round trip in ${trip.toFixed(0)}s; the street should not read as pacing`);
- assert(walker.speed/1.5<=.35,'a figure covers at most a third of its own height each second');
+ assert(walker.speed/walker.height<=.35,'a figure covers at most a third of its own height each second');
  const idler=roster.find(a=>a.kind==='idler');
  if(idler){
   const circuit=6.2831853*Math.max(.5,idler.radius)/idler.speed;
@@ -137,7 +149,22 @@ test('nobody skates across the map: motion is slow against the scenery it passes
  const hull=travellers.find(a=>a.scope==='sea');
  assert(1/hull.speed>=6,'shipping crosses a parent cell no faster than a cart');
  report.checks.pace={compoundCrossingSeconds:+crossing.toFixed(1),roundTripSeconds:+trip.toFixed(0),
-  cellCrossingSeconds:+(1/carter.speed).toFixed(1),bodyLengthsPerSecond:+(walker.speed/1.5).toFixed(3)};
+  cellCrossingSeconds:+(1/carter.speed).toFixed(1),bodyLengthsPerSecond:+(walker.speed/walker.height).toFixed(3)};
+});
+
+test('small back-court houses scale their residents once while ordinary towns retain their figure scale',()=>{
+ const homes=city.buildings.filter(b=>b.denseInfill);assert(homes.length>0,'exercise actual added back-court houses');
+ const height=Math.min(1.5,...homes.map(b=>Math.min(b.w,b.d)*.75));
+ assert(height<=.825+1e-9,'residents fit the 1.1-unit small-house parcels');
+ for(const a of roster)assert.equal(a.height,height);
+ const ordinary={...city,buildings:city.buildings.map(b=>({...b,denseInfill:false}))};
+ const earlier=E.Folk.roster(ordinary,town,{max:96});
+ for(let k=0;k<roster.length;k++){
+  assert.equal(earlier[k].height,1.5,'ordinary towns and high-city plans keep the original scale');
+  assert(Math.abs(roster[k].speed/roster[k].height-earlier[k].speed/earlier[k].height)<1e-12,'the smaller figure keeps its existing body-length walking pace');
+  assert.deepEqual(roster[k].look,earlier[k].look,'ancestry affects appearance, not the local scaling rule');
+ }
+ report.checks.residentScale={localHeight:height,originalLocalHeight:1.5,smallestParcel:height/.75};
 });
 
 test('a ship is a ship, not a district',()=>{
@@ -146,15 +173,17 @@ test('a ship is a ship, not a district',()=>{
  // single ship was fourteen buildings long against a town footprint of seventy.
  const S=E.AtlasRenderer.FOLK_SCALE;
  assert(S,'the folk renderer publishes its scale constants');
- const harbour=[town,...s.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)]
-  .map(p=>({p,c:p.id===town.id?city:E.generateCity(w,s,p.id)})).find(x=>x.c.port?.moorings.length);
+ let harbour;
+ for(const p of [town,...s.provinces.filter(p=>p.settled&&p.harbor>.4).sort((a,b)=>b.urbanPop-a.urbanPop)]){
+  const c=p.id===town.id?city:E.generateCity(w,s,p.id);
+  if(c.port?.moorings.length){harbour={p,c};break;}
+ }
  assert(harbour,'this world has a town with moored hulls to compare against');
  const frame=E.AtlasSpace.cityFrame(w,harbour.p,harbour.c,1);
- // A typical house, not whichever one happens to be first in the array: across eight
- // harbour towns that first house ranges 0.026 to 0.148 atlas units, so the ratio
- // below swung between 0.7 and 3.9 on nothing but which town got picked. Against the
- // median it sits at 1.7-2.4 everywhere.
- const blocks=harbour.c.buildings.filter(b=>!b.landmark).map(b=>b.w*frame.sx).sort((a,b)=>a-b);
+ // This is a regional map symbol, not the resident standing next to a small
+ // house. Keep its bound against the established town compounds, whose scale
+ // is unchanged by adding back-court homes; resident scale is checked above.
+ const blocks=harbour.c.buildings.filter(b=>!b.landmark&&!b.denseInfill).map(b=>b.w*frame.sx).sort((a,b)=>a-b);
  const block=blocks[blocks.length>>1];
  const moored=Math.max(...harbour.c.port.moorings.map(m=>m.length))*frame.sx;
  const shipLength=S.near*S.ship*S.hullLength;
@@ -211,11 +240,18 @@ test('a walking crowd never forces a shadow pass',()=>{
  r.target=[origin[0],0,origin[2]];
  r.continuousModels=new Map([[town.id,{p:town,city,frame:E.AtlasSpace.cityFrame(w,town,city,1),key:'k',heights:{}}]]);
  r.dirtyShadow=false;
- r.buildFolk(3.5);
+ const figureHeights=[],drawFigure=E.Geometry.prototype.figure;
+ E.Geometry.prototype.figure=function(...args){figureHeights.push(args[3]);return drawFigure.apply(this,args);};
+ try{r.buildFolk(3.5);}finally{E.Geometry.prototype.figure=drawFigure;}
  assert.equal(r.dirtyShadow,false,'rebuilding the crowd must leave the shadow map alone');
  assert.equal(r.meshes.folk.shadow,false,'figures are excluded from the shadow pass');
  assert.equal(r.meshes.caravans.shadow,false);
  assert(r.folkStats.residents>0,'a loaded town is populated');
+ const unit=r.continuousModels.get(town.id).frame.scale,localHeight=roster[0].height;
+ for(const height of figureHeights.slice(0,r.folkStats.residents)){
+  assert(height>=localHeight*unit*Math.min(...E.Folk.LOOKS.map(l=>l.height))-1e-12);
+  assert(height<=localHeight*unit*Math.max(...E.Folk.LOOKS.map(l=>l.height))+1e-12,'the renderer must use the smaller resident height, not the legacy constant');
+ }
  const detail=E.AtlasRenderer.FOLK_DETAIL,stats=r.folkStats;
  assert(stats.fullFigures<=detail.maxDetailed,'only the nearest visible people use detailed models');
  const triangleBudget=stats.fullFigures*detail.fullTriangles+stats.simpleFigures*detail.simpleTriangles+stats.travelling*detail.vehicleTriangles;

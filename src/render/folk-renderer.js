@@ -8,9 +8,9 @@
  * They do not cast shadows or invalidate the cached shadow map as the crowd walks.
  */
 (() => {
-    // A figure is 1.5 town-plan units tall. Buildings in the same plan are 1.5 to 4, so a
-    // person reads as a person beside them. Everything here is the atlas's own exaggerated
-    // scale; none of it is metric.
+    // Ordinary town figures are 1.5 plan units tall. Dense back-court rosters
+    // supply a smaller local height matched to their small house parcels.
+    // Everything uses the atlas's exaggerated scale; none of it is metric.
     //
     // SYMBOL is the regional-zoom marker height. It has to stay near one building, because
     // a town's whole footprint is only about 3.7 atlas units: a marker sized like a town
@@ -47,7 +47,7 @@
     // Phase measures distance travelled in body lengths. Roads use atlas-grid
     // distances; applying the town multiplier to them made legs almost motionless.
     function strideOf(agent, q, road = false) {
-        const distance = road ? q.stride * Math.sqrt(GRID_X * GRID_Z) / NOMINAL : q.stride / LOCAL_HEIGHT;
+        const distance = road ? q.stride * Math.sqrt(GRID_X * GRID_Z) / NOMINAL : q.stride / (agent.height ?? LOCAL_HEIGHT);
         return distance * Math.PI * 2 / 1.1 + agent.phase * Math.PI * 2;
     }
     function figure(r, g, detail, x, y, z, height, girth, angle, cloth, skin, accent, stride, moving = true, close = true) {
@@ -134,13 +134,13 @@
                 model.folk = Folk.roster(model.city, model.p, { max: 96 });
                 model.folkKey = model.key;
             }
-            const frame = model.frame, height = LOCAL_HEIGHT * frame.scale;
+            const frame = model.frame;
             const placed = model.folk.map(agent => {
                 const q = Folk.positionAt(agent, t), v = frame.vertex(q.x, q.y, q.z, null), a = frame.at(q.x, q.z);
                 return { agent, q, v, gx: a[0], gy: a[1] };
             });
             for (const { agent, q, v } of nearest(placed, centre[0], centre[1], radius, budget - drawn)) {
-                const l = agent.look, cloth = clothOf(agent.people, agent.tone);
+                const l = agent.look, height = (agent.height ?? LOCAL_HEIGHT) * frame.scale, cloth = clothOf(agent.people, agent.tone);
                 figure(r, g, detail, v[0], v[1], v[2], height * l.height, height * .30 * l.build, q.heading,
                     cloth, skinOf(agent.people, agent.tone), l.accent, strideOf(agent, q), q.moving);
                 drawn++;

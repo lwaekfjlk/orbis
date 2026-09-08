@@ -51,7 +51,9 @@ test('Overhangs and neighbouring buildings keep their own rigid transform, inclu
     if(a&&!range.footing)for(let j=0;j<3;j++){
      const t=k+j*9;
      if(local[t+1]<a.b.y-.015)continue;
-     assert(Math.abs(actual[cursor+j*9+1]-(a.y+(local[t+1]-a.b.y)*a.scale))<1e-8,`${name}/${a.b.id} tears away from its building`);
+     // The collector now returns the final GPU buffer, so compare the rigid
+     // transform at its actual Float32 upload precision, without a tolerance.
+     assert.equal(actual[cursor+j*9+1],Math.fround(a.y+(local[t+1]-a.b.y)*a.scale),`${name}/${a.b.id} tears away from its building`);
      if(Math.abs(local[t]-a.b.x)>a.b.w*.48||Math.abs(local[t+2]-a.b.z)>a.b.d*.48)overhangs++;
      checked++;
     }
