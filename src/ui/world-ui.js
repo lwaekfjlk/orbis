@@ -295,6 +295,10 @@ function realmNameOriginHTML(c) {
     const origin = RealmNames.describe(c);
     return origin ? `<p class="realm-name-origin"><strong>Name origin</strong><br>${escapeHTML(origin)}</p>` : '';
 }
+function placeNameOriginHTML(p) {
+    const origin = typeof PlaceNames !== 'undefined' ? PlaceNames.describe(p) : '';
+    return origin ? `<p class="realm-name-origin"><strong>Name &amp; tradition</strong><br>${escapeHTML(origin)}</p>` : '';
+}
 function renderInspector(forceRealm = false) {
     if (!forceRealm && !POLITICAL.includes(currentLayer) && selectedCell >= 0)
         return renderGeography(selectedCell, sim?.provinces[world.provinceId[selectedCell]]);
@@ -655,10 +659,24 @@ function positionLabels() {
         v.visibleAnchors=v.region?v.anchors.filter(a=>{const p=at(f,18,18,a);return p.left>=0&&p.left<=renderer.width&&p.top>=0&&p.top<=renderer.height;}).length:0;}
     measured.sort((a,b)=>Number(b.region)-Number(a.region)||(a.region&&b.region?a.visibleAnchors-b.visibleAnchors:0));
     const townBoxes=measured.filter(v=>v.feature.town).map(v=>at(v.feature,v.variants[0].width,v.variants[0].height)).filter(inside);
+    const townArea=measured.filter(v=>v.feature.town).reduce((sum,v)=>{
+        const b=at(v.feature,v.variants[0].width,v.variants[0].height);
+        return sum+(b.left>=0&&b.left<=renderer.width&&b.top>=0&&b.top<=renderer.height?b.w*b.h:0);
+    },0);
+    const countryArea=measured.filter(v=>v.region&&v.visibleAnchors).reduce((sum,v)=>sum+v.variants[0].width*v.variants[0].height,0);
+    const controlArea=obstacles.filter(b=>b.fixed).reduce((sum,b)=>sum+Math.max(0,Math.min(renderer.width,b.x+b.w)-Math.max(0,b.x))*Math.max(0,Math.min(renderer.height,b.y+b.h)-Math.max(0,b.y)),0);
+    // Leave packing room for towns, not just the countries processed first.
+    // Dense screens use the existing complete compact names or smaller full
+    // variant; a roomy desktop keeps the usual area-based country lettering.
+    const crowdedNames=townArea>0&&townArea+countryArea>Math.max(1,(renderer.width-16)*(renderer.height-30)-controlArea)*.68;
+    // Measured town buttons already include their CSS padding. Keep a smaller
+    // extra collision margin in a dense map without changing any printed text.
+    if(crowdedNames)for(const v of measured)if(v.feature.town){v.variants[0].width-=3;v.variants[0].height-=2;}
     const fit=(v,occupied,limit=1)=>{
         const {feature:f,variants,anchors}=v;
         let fitted=variants[0],box=at(f,fitted.width,fitted.height),show=false;
         const allowed=variants.filter(a=>a.kind!=='full'||a.scale<=limit);
+        if(v.region&&crowdedNames)allowed.sort((a,b)=>a.width*a.height*a.scale*a.scale-b.width*b.height*b.scale*b.scale);
         if(!f.minZoom||renderer.zoom>=f.minZoom)for(const variant of allowed.length?allowed:[variants.at(-1)]){
             // Prefer keeping both names when an alternative is available. This
             // is a preference, never a town's veto over the country's only place.
@@ -760,12 +778,45 @@ function positionLabels() {
         };
         let free=consider(0,0);
         const stepY=Math.max(12,Math.min(18,origin.h*.8)),stepX=stepY;
-        for(let ring=1;!free&&ring<=Math.ceil(Math.max(renderer.width,renderer.height)/stepY);ring++){
+        for(let ring=1;!free&&ring<=4;ring++){
             const offsets=[];
             for(let x=-ring;x<=ring;x++)offsets.push([x*stepX,-ring*stepY],[x*stepX,ring*stepY]);
             for(let y=1-ring;y<ring;y++)offsets.push([-ring*stepX,y*stepY],[ring*stepX,y*stepY]);
             offsets.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));
             for(const [dx,dy] of offsets)if(consider(dx,dy)){free=true;break;}
+        }
+        if(!free){
+            // A coarse ring can miss a whole row of narrow, usable gaps. Every
+            // rectangular vacancy reaches either a screen or obstacle edge:
+            // sweep those exact rows and fit the nearest open horizontal span.
+            const gap=1.25,minX=8,maxX=renderer.width-8-origin.w,minY=8,maxY=renderer.height-22-origin.h;
+            const rows=new Set([Math.max(minY,Math.min(maxY,origin.y)),minY,maxY,75]);
+            for(const b of boxes)for(const y of [b.y-origin.h-gap,b.y+b.h+gap])if(y>=minY&&y<=maxY)rows.add(y);
+            let nearest=null,distance=Infinity;
+            for(const y of [...rows].filter(y=>y>=minY&&y<=maxY).sort((a,b)=>Math.abs(a-origin.y)-Math.abs(b-origin.y))){
+                if(Math.abs(y-origin.y)>distance)break;
+                const spans=[];
+                if(y<75)spans.push([-Infinity,210]);
+                for(const b of nearby({x:minX-gap,y:y-gap,w:renderer.width-16+gap*2,h:origin.h+gap*2}))
+                    if(y<b.y+b.h+gap&&y+origin.h>b.y-gap)spans.push([b.x-origin.w-gap,b.x+b.w+gap]);
+                spans.sort((a,b)=>a[0]-b[0]);
+                let left=minX;
+                const open=right=>{
+                    if(left>right)return;
+                    // Filling from an edge leaves one continuous vacancy for
+                    // the next town instead of two unusably narrow fragments.
+                    const x=crowdedNames?(Math.abs(left-origin.x)<=Math.abs(right-origin.x)?left:right):Math.max(left,Math.min(right,origin.x)),d=Math.hypot(x-origin.x,y-origin.y);
+                    if(d<distance){nearest={x,y};distance=d;}
+                };
+                for(const [start,end] of spans){
+                    if(end<left)continue;
+                    if(start>maxX)break;
+                    open(Math.min(start,maxX));left=Math.max(left,end);
+                    if(left>maxX)break;
+                }
+                if(left<=maxX)open(maxX);
+            }
+            if(nearest)free=consider(nearest.x-origin.x,nearest.y-origin.y);
         }
         // On a very crowded imported map every name still remains available;
         // choose the least overlap if the surrounding screen is already full.

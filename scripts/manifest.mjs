@@ -1,6 +1,6 @@
 export const scripts = [
     'src/world/geography.js',
-    'src/civilization/realm-names.js', 'src/civilization/simulation.js',
+    'src/civilization/realm-names.js', 'src/civilization/place-names.js', 'src/civilization/simulation.js',
     'src/world/roads.js',
     'src/civilization/folk.js',
     'src/civilization/portrait.js',

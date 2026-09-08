@@ -1,0 +1,53 @@
+{
+  "baseCommit": "b8a7aff",
+  "countryCount": 28,
+  "townCount": 110,
+  "namingExample": {
+    "country": "Kingdom of Tuonela",
+    "source": "Tuonela",
+    "baseId": "finnish",
+    "faith": "Dawn Communion",
+    "saintTowns": [
+      "Saint Tuonaleli",
+      "Saint Tuonaelma",
+      "Saint Tuoninula",
+      "Saint Tuoniari",
+      "Saint Tuonoikki",
+      "Saint Tuoniaino",
+      "Saint Tuonoeli",
+      "Saint Tuonelina",
+      "Saint Tuonari",
+      "Saint Tuonanna",
+      "Saint Tuoneneli"
+    ]
+  },
+  "physical": "73fe302b",
+  "settlements": "b18c6a8",
+  "politics": "b007f61e",
+  "saveRoundTrip": true,
+  "mobileDossier": true,
+  "offline": true,
+  "pageErrors": [],
+  "completeLabels": {
+    "430": {
+      "countries": 28,
+      "towns": 110,
+      "overlaps": [],
+      "controlOrPinCovers": []
+    },
+    "1480": {
+      "countries": 28,
+      "towns": 110,
+      "overlaps": [],
+      "controlOrPinCovers": []
+    }
+  },
+  "checks": [
+    "npm run test:names (44 passed)",
+    "node --test tests/onemap.test.mjs (11 passed)",
+    "node tests/place-names.browser.mjs",
+    "node tests/full-realm-labels.browser.mjs",
+    "High-citadel platform/site, building-footing, street-mesh, subterranean and worker parity regression checks passed."
+  ],
+  "build": "dist/orbis-onemap.html"
+}

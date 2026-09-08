@@ -8,7 +8,7 @@ const source = readFileSync(new URL('../src/ui/onemap-ui.js', import.meta.url), 
 // Run the public OneMap API, including its real selection, drawer and keyboard
 // handlers. Only browser surfaces and the external realm renderer are replaced.
 function harness() {
-    const nodes = new Map(), listeners = new Map(), calls = { profiles: [], focus: [], pauses: 0 };
+    const nodes = new Map(), listeners = new Map(), calls = { profiles: [], focus: [], pauses: 0, placeOrigins: [], realmOrigins: [] };
     const document = { body: { dataset: {} }, activeElement: null,
         getElementById: node, querySelectorAll: () => [],
         addEventListener(type, handler) { listeners.set(type, handler); } };
@@ -48,7 +48,8 @@ function harness() {
         TownCatalog: { native: () => 'town' }, BIOME: [['Temperate forest']],
         CityEnvironment: { band: () => 'Mild upland' }, fmtPop: String,
         escapeHTML: value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'),
-        realmNameOriginHTML: () => '',
+        placeNameOriginHTML(p) { calls.placeOrigins.push(p); return p?.originMarkup || ''; },
+        realmNameOriginHTML(c) { calls.realmOrigins.push(c); return c?.originMarkup || ''; },
         pause() { calls.pauses++; context.playing = false; },
         renderRealmOverview(id) {
             const realm = sim.realms[id];
@@ -61,7 +62,7 @@ function harness() {
     document.activeElement = node('map');
     ui.bind();
     ui.onWorldUpdate(); // Establish the current world, just as startup does.
-    function resetCalls() { calls.profiles.length = 0; calls.focus.length = 0; calls.pauses = 0; }
+    function resetCalls() { calls.profiles.length = 0; calls.focus.length = 0; calls.pauses = 0; calls.placeOrigins.length = 0; calls.realmOrigins.length = 0; }
     resetCalls();
     return { ui, context, sim, node, calls, document, resetCalls,
         escape() { listeners.get('keydown')({ key: 'Escape', preventDefault() {}, stopImmediatePropagation() {} }); } };
@@ -154,6 +155,23 @@ test('Inspecting another town dismisses the realm overview and keeps the town se
     assert(h.node('omSelectionBody').innerHTML.includes('<h3>Stonefall</h3>'));
     assert(!h.node('omSelectionBody').innerHTML.includes('Annwn'));
     assert.deepEqual(h.calls.profiles, []);
+});
+
+test('A town card uses that town’s naming origin and a legacy town falls back to its realm', () => {
+    const h = harness(), p = h.sim.provinces[0], realm = h.sim.realms[0];
+    p.originMarkup = '<p>Stonefall shares its country’s naming tradition.</p>';
+    realm.originMarkup = '<p>Asgard is a place from Norse mythology.</p>';
+    h.ui.inspectWorld(p.i);
+    assert.equal(h.calls.placeOrigins.at(-1), p, 'the card passes the selected town to the place helper');
+    assert(h.node('omSelectionBody').innerHTML.includes(p.originMarkup));
+    assert(!h.node('omSelectionBody').innerHTML.includes(realm.originMarkup));
+    assert.deepEqual(h.calls.realmOrigins, [], 'a modern town does not substitute country provenance');
+    delete p.originMarkup;
+    h.resetCalls();
+    h.ui.onWorldUpdate();
+    assert.equal(h.calls.placeOrigins.at(-1), p);
+    assert.equal(h.calls.realmOrigins.at(-1), realm);
+    assert(h.node('omSelectionBody').innerHTML.includes(realm.originMarkup), 'legacy saves retain their available name explanation');
 });
 
 test('Inspecting empty ocean clears a realm overview even without a replacement place card', () => {

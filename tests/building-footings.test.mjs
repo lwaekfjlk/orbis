@@ -7,6 +7,10 @@ const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readF
 const browser={},E=Function('window',source+'\nreturn {generateWorld,createCivilization,generateCity,AtlasSpace,ArtisanCityKit,ContinuousCityLayer,createCityRenderer,GW,GH};')(browser);
 let worldPromise;
 const world=()=>worldPromise??=(async()=>{const w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'});browser.world=w;browser.sim=s;return{w,s};})();
+// These names identify historical geometry regressions; locate the same cells
+// even when a country's naming tradition changes the displayed town name.
+const sites={Glassbeck:[507,38505],Scorchspire:[349,29953],Longshaw:[127,15155],Birchgrove:[316,26352]};
+function site(s,name){const[id,cell]=sites[name],p=s.provinces[id];assert.equal(p.i,cell,name+' fixture moved');return p;}
 
 test('level ground never becomes a tall podium when a town footprint gets smaller',()=>{
  const w={height:new Float64Array(E.GW*E.GH).fill(100),lake:new Float64Array(E.GW*E.GH),ice:new Float64Array(E.GW*E.GH)},p={x:100,y:50};
@@ -27,7 +31,7 @@ test('level ground never becomes a tall podium when a town footprint gets smalle
 test('Glassbeck and Scorchspire houses read taller than their ordinary slope footings',async()=>{
  const {w,s}=await world();
  for(const name of['Glassbeck','Scorchspire']){
-  const p=s.provinces.find(p=>p.name===name),c=E.generateCity(w,s,p.id),f=E.AtlasSpace.cityFrame(w,p,c),ratios=[];
+  const p=site(s,name),c=E.generateCity(w,s,p.id),f=E.AtlasSpace.cityFrame(w,p,c),ratios=[];
   for(const b of c.buildings.filter(b=>b.type==='home'&&!b.landmark)){
    const a=f.anchors.get(b.id),m=E.ArtisanCityKit.compound(b,c,p,s.realms[p.owner]);
    ratios.push((a.y-a.low)/(f.scale*m.height));
@@ -41,7 +45,7 @@ test('Glassbeck and Scorchspire houses read taller than their ordinary slope foo
 
 const towns=new Map();
 async function town(name){if(towns.has(name))return towns.get(name);
- const {w,s}=await world(),p=s.provinces.find(p=>p.name===name),meshes={};
+ const {w,s}=await world(),p=site(s,name),meshes={};
  const layer=new E.ContinuousCityLayer({relief:1,upload(name,g){meshes[name]=g.data;}});layer.world=w;layer.sim=s;
  const model=layer.build(p),c=model.city,collector=E.createCityRenderer(null,()=>{},{collectOnly:true});collector.setCity(c,p,s.realms[p.owner],{});
  const result={p,model,c,collector,meshes};towns.set(name,result);return result;

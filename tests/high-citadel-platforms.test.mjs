@@ -38,6 +38,9 @@ test('default platform rules support one dragon and one holy city within their o
   assert(!old.settled&&old.urbanPop===0&&old.urbanSupport===0);assert.equal(p.owner,old.owner);assert(sim.realms[p.owner].alive);
   assert.equal(h.elevation,w.height[p.i]);assert(h.elevation>=3500);assert(E.HighCitadels.site(w,p));assert(E.HighCitadelPlan.viable(w,sim,p,h.kind));assert(w.human.waterCapacity[p.i]>=h.support);
   assert(p.urbanPop>=650&&p.urbanPop<=1100&&!p.city);assert.equal(h.sourceCell,p.i);assert.equal(p.highCitadel.originalName,old.name);
+  const culture=sim.realms[p.owner].namingCulture;
+  assert.equal(p.nameOrigin.baseId,culture.baseId);assert.equal(p.nameOrigin.realmId,p.owner);
+  assert.equal(p.nameOrigin.generatedName,p.name);assert(p.name.includes(culture.root),'the founded high city retains its country naming family');
  }
 });
 test('rural population and existing capacity fund the platforms exactly once',()=>{
@@ -88,8 +91,14 @@ test('version 0/1 saves on the new geography do not acquire version 2 cities whe
  const old=JSON.parse(JSON.stringify(ordinary));delete old.options.highCitadelsVersion;const restored=UI.reroll(w,old);assert.equal(restored.options.highCitadelsVersion,0);assert.equal(restored.settlementSignature,ordinary.settlementSignature);
 });
 test('version 2 JSON metadata validates and political replay preserves platform locations',()=>{
- const restored=JSON.parse(JSON.stringify(sim));assert.doesNotThrow(()=>UI.validateSimulation(restored,w));const next=UI.reroll(w,restored);assert.equal(next.settlementSignature,sim.settlementSignature);
- assert.deepEqual(next.provinces.filter(p=>p.highCitadel).map(p=>p.highCitadel),high().map(p=>p.highCitadel));
+ const restored=JSON.parse(JSON.stringify(sim));assert.doesNotThrow(()=>UI.validateSimulation(restored,w));assert.deepEqual(restored,sim,'loading preserves all names and historical metadata');const next=UI.reroll(w,restored);assert.equal(next.settlementSignature,sim.settlementSignature);
+ const platform=p=>{const{originalName,...geometryAndAccounting}=p.highCitadel;return geometryAndAccounting;};
+ const replayedHigh=next.provinces.filter(p=>p.highCitadel);
+ assert.deepEqual(replayedHigh.map(platform),high().map(platform));
+ // A political reroll starts another founding history, whose districts follow
+ // its new countries. Preserve every platform fact but use that history's name.
+ const replayedDistricts=E.createCivilization(w,{...next.options,highCitadelsVersion:0});
+ for(const p of replayedHigh)assert.equal(p.highCitadel.originalName,replayedDistricts.provinces[p.id].name);
  delete restored.options.highCitadelsVersion;assert.equal(E.HighCitadels.historyOptions(restored).highCitadelsVersion,2);assert.doesNotThrow(()=>UI.validateSimulation(restored,w));
  for(const change of[h=>{h.originalCell=-1;},h=>{h.originalCell=0;},h=>{h.sourceCell++;},h=>{h.populationCap=1101;},h=>{h.version=3;}]){const bad=structuredClone(sim);change(bad.provinces[scenario.ids[0]].highCitadel);assert.throws(()=>UI.validateSimulation(bad,w),/Invalid high citadel/);}
  const bad=structuredClone(sim);bad.provinces[scenario.ids[0]].x++;assert.throws(()=>UI.validateSimulation(bad,w),/Invalid high citadel platform/);

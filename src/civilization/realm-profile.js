@@ -94,6 +94,8 @@ const RealmProfile = (() => {
         else residents.push('No state tradition is recorded.');
         if (faiths.known) residents.push(`The ${faiths.known < population ? 'recorded resident' : 'resident'} faiths are ${mixtureText(faiths.shares)}.`);
         else residents.push('The religious mixture of its residents is not recorded.');
+        const placeNames = typeof PlaceNames !== 'undefined' ? PlaceNames.describeRealm(sim, c) : '';
+        if (placeNames) residents.push(placeNames);
 
         const relations = Object.values(sim.relations || {}), counterpart = id => realms.find(r => r?.id === id && r.alive !== false);
         const partners = flag => [...new Set(relations.filter(r => r && r[flag] && (r.a === c.id || r.b === c.id)).map(r => counterpart(r.a === c.id ? r.b : r.a)?.name).filter(Boolean))].sort();
