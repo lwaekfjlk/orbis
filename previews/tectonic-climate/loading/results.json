@@ -281,5 +281,5 @@
   "medianReadyMs": 12042.800000011921,
   "medianGenerationMs": 10588.09999999404,
   "bundleSha256": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f",
-  "note": "Final merged bundle including dragon ruins, complete country labels and v3 high-platform selection. One functional cold-load run; timings are not a comparative benchmark."
+  "note": "Merged #54 bundle with dragon ruins, complete country labels and v3 high-platform selection, before the navigation-only #55 merge. One functional cold-load run; timings are not a comparative benchmark."
 }

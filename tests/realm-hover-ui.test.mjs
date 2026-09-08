@@ -10,20 +10,25 @@ const labelsSource = source.slice(source.indexOf('function legendLabels()'), sou
 
 function harness(withProbes = false) {
     const listeners = new Map(), calls = { select: [], inspect: [], terrain: 0 };
-    const element = () => ({ children: [], dataset: {}, offsetWidth: 180, offsetHeight: 30,
+    const element = () => ({ children: [], dataset: {}, attributes: {}, offsetWidth: 180, offsetHeight: 30,
         style: { setProperty(name, value) { this[name] = value; } },
-        classList: { toggle() {} }, setAttribute() {},
+        classList: { toggle() {} },
+        setAttribute(name, value) { this.attributes[name] = value; },
+        getAttribute(name) { return this.attributes[name]; },
         set innerHTML(value) { this.html = value; this.children.length = 0; },
         get innerHTML() { return this.html || ''; },
         appendChild(child) { this.children.push(child); },
     });
     const createElement = () => {
         const e = element();
-        if (withProbes) e.querySelector = selector => ({
-            '.realmFullName': { offsetWidth: 580, offsetHeight: 44 },
-            '.realmCompactName': { offsetWidth: 240, offsetHeight: 20 },
-            '.realmMarker': { offsetWidth: 18, offsetHeight: 18 },
-        })[selector];
+        if (withProbes) {
+            const probes = {
+                '.realmFullName': { offsetWidth: 580, offsetHeight: 44 },
+                '.realmCompactName': { offsetWidth: 240, offsetHeight: 20 },
+                '.realmLeader': { style: {} },
+            };
+            e.querySelector = selector => probes[selector];
+        }
         return e;
     };
     const dom = { labels: element(), names: { checked: true }, compass: element() };
@@ -86,17 +91,19 @@ test('A late leave from the previous country cannot cancel the current country h
     assert.equal(h.renderer.focusRealm, 0);
 });
 
-test('Label rebuilds, hidden names, collision culling, local views and window blur clear hover', () => {
-    for (const reason of ['rebuild', 'names off', 'collision', 'local view', 'blur']) {
+test('Label rebuilds, hidden names, offscreen countries, local views and window blur clear hover', () => {
+    for (const reason of ['rebuild', 'names off', 'offscreen', 'local view', 'blur']) {
         const h = harness(), label = h.label(1);
         label.onpointerenter({ pointerType: 'mouse' });
         assert.equal(h.renderer.hoveredRealm, 1);
         if (reason === 'rebuild') h.context.makeLabels();
         if (reason === 'names off') { h.dom.names.checked = false; h.context.positionLabels(); }
-        if (reason === 'collision') {
-            h.context.sim.provinces[1].anchors[0].x = 300;
+        if (reason === 'offscreen') {
+            h.context.sim.provinces[1].anchors[0].x = -1000;
             h.context.positionLabels();
             assert.equal(label.style.opacity, '0');
+            assert.equal(label.style.pointerEvents, 'none');
+            assert.equal(label.tabIndex, -1);
         }
         if (reason === 'local view') {
             h.renderer.continuousLayer = {};
@@ -119,21 +126,28 @@ test('Label rebuilds, hidden names, collision culling, local views and window bl
     }
 });
 
-test('Busy, disabled and culled labels cannot start a country hover', () => {
-    for (const reason of ['busy', 'names off', 'culled']) {
+test('Busy, disabled and offscreen labels cannot start a country hover', () => {
+    for (const reason of ['busy', 'names off', 'offscreen']) {
         const h = harness(), label = h.label(1);
         if (reason === 'busy') h.context.busy = true;
         if (reason === 'names off') h.dom.names.checked = false;
-        if (reason === 'culled') { label.offsetWidth = 2000; h.context.positionLabels(); }
+        if (reason === 'offscreen') {
+            h.context.sim.provinces[1].anchors[0].x = -1000;
+            h.context.positionLabels();
+            assert.equal(label.style.opacity, '0');
+        }
         label.onpointerenter({ pointerType: 'mouse' });
         assert.equal(h.renderer.hoveredRealm, null, reason);
         assert.deepEqual(h.calls.select, []);
     }
 });
 
-test('Compact names and tiny-country markers retain the full country hover and click target', () => {
+test('Complete compact names and anchored callouts retain the country hover and click target', () => {
     const h = harness(true), label = h.label(1);
     assert.equal(label.dataset.labelVariant, 'compact', 'crowded full names should use the readable compact form');
+    assert.match(label.innerHTML, /class="realmFullName">Kingdom 1<\/em>/);
+    assert.match(label.innerHTML, /class="realmCompactName" aria-hidden="true">Kingdom 1<\/em>/);
+    assert.equal(label.getAttribute('aria-label'), 'Read about Kingdom 1');
     label.onpointerenter({ pointerType: 'mouse' });
     assert.equal(h.renderer.hoveredRealm, 1);
     label.onclick();
@@ -143,7 +157,11 @@ test('Compact names and tiny-country markers retain the full country hover and c
 
     h.context.sim.provinces[1].anchors[0].x = 22;
     h.context.positionLabels();
-    assert.equal(label.dataset.labelVariant, 'marker', 'an extremely narrow visible country keeps a marker on its own land');
+    assert.equal(label.dataset.labelVariant, 'compact', 'a narrow visible country keeps its complete printed name');
+    assert.equal(label.dataset.anchorCell, '1', 'the callout remains connected to an owned land cell');
+    assert.equal(label.querySelector('.realmLeader').style.display, 'block');
+    assert(parseFloat(label.querySelector('.realmLeader').style.width) > 0, 'offset lettering needs a visible connection to its land');
+    assert.equal(label.style.opacity, '1');
     assert.match(label.title, /Kingdom 1/);
     assert.equal(label.tabIndex, 0);
     assert.equal(label.style.pointerEvents, 'auto');
