@@ -1,0 +1,215 @@
+{
+  "commit": "99d4bfb",
+  "bundle": "dist/orbis-onemap.html",
+  "bundleSHA256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
+  "viewport": {
+    "width": 1480,
+    "height": 980
+  },
+  "panelClip": {
+    "x": 0,
+    "y": 90,
+    "width": 1480,
+    "height": 790
+  },
+  "panelMethod": "Direct browser page.screenshot clip, same camera as full screenshot; no bitmap postprocessing",
+  "offline": true,
+  "sites": [
+    {
+      "id": "dragon-ruins-13123",
+      "name": "The Obsidian Aerie",
+      "i": 13123,
+      "x": 223,
+      "y": 43,
+      "provinceId": null,
+      "dragonRuins": {
+        "version": 1,
+        "variant": "aerie"
+      },
+      "seed": "Aereth-47",
+      "form": "global",
+      "landformVersion": 3,
+      "highCitadelsVersion": 2,
+      "year": 400,
+      "camera": {
+        "zoom": 240.55705195817424,
+        "elevation": 0.88,
+        "azimuth": -3.0322234202643115,
+        "target": [
+          41.29765886287625,
+          1.701106420947906,
+          -25.456026747721708
+        ]
+      },
+      "vertices": 22554,
+      "samples": 11143,
+      "onScreen": 11143,
+      "uploaded": true,
+      "bounds": {
+        "minX": 432.56020521891514,
+        "maxX": 1047.0211291478881,
+        "minY": 297.30443577427707,
+        "maxY": 796.9168135579548
+      },
+      "parts": 18,
+      "ready": true,
+      "canvas": "map",
+      "file": "dragon-ruins-aerie.png",
+      "panel": "dragon-ruins-aerie-panel.png"
+    },
+    {
+      "id": "dragon-ruins-33234",
+      "name": "The Flint Spine",
+      "i": 33234,
+      "x": 234,
+      "y": 110,
+      "provinceId": null,
+      "dragonRuins": {
+        "version": 1,
+        "variant": "spine"
+      },
+      "seed": "Aereth-47",
+      "form": "global",
+      "landformVersion": 3,
+      "highCitadelsVersion": 2,
+      "year": 400,
+      "camera": {
+        "zoom": 219.12487842591415,
+        "elevation": 0.88,
+        "azimuth": 0.5411216163280352,
+        "target": [
+          47.478260869565226,
+          2.513449577734847,
+          11.221669234082526
+        ]
+      },
+      "vertices": 24486,
+      "samples": 12310,
+      "onScreen": 12310,
+      "uploaded": true,
+      "bounds": {
+        "minX": 458.8255239345017,
+        "maxX": 1017.9352584083972,
+        "minY": 271.41904456813677,
+        "maxY": 800.6366365613769
+      },
+      "parts": 20,
+      "ready": true,
+      "canvas": "map",
+      "file": "dragon-ruins-spine.png",
+      "panel": "dragon-ruins-spine-panel.png"
+    },
+    {
+      "id": "site-199-high-citadel",
+      "name": "Sarrlororford",
+      "i": 20637,
+      "x": 237,
+      "y": 68,
+      "provinceId": 199,
+      "highCitadel": {
+        "version": 2,
+        "kind": "dragon",
+        "originalName": "Sarrlororford",
+        "originalCell": 19739,
+        "sourceCell": 20637,
+        "founded": 400,
+        "elevation": 4179.572265625,
+        "grade": 0.41945886547912076,
+        "maximumGrade": 0.8142442057749035,
+        "surveySpan": 2.16,
+        "terrainSpan": 0.648,
+        "populationCap": 1100,
+        "support": 1466.6666666666667,
+        "ruralSupportBefore": 8609.940161514281,
+        "ruralSupportAfter": 7143.2734948476145
+      },
+      "seed": "Meridian-21",
+      "form": "rift",
+      "landformVersion": 3,
+      "highCitadelsVersion": 2,
+      "year": 400,
+      "camera": {
+        "zoom": 317.102427976066,
+        "elevation": 0.82,
+        "azimuth": 0.492072610032458,
+        "target": [
+          49.214027310332696,
+          4.198999758394217,
+          -11.742419575124966
+        ]
+      },
+      "vertices": 88863,
+      "samples": 1005,
+      "onScreen": 1005,
+      "uploaded": true,
+      "bounds": {
+        "minX": 508.4449233994201,
+        "maxX": 1059.5890475697888,
+        "minY": 272.334689076481,
+        "maxY": 818.5789408662185
+      },
+      "parts": 10,
+      "ready": true,
+      "canvas": "map",
+      "file": "dragon-city-bowercairn.png",
+      "panel": "dragon-city-bowercairn-panel.png"
+    },
+    {
+      "id": "site-407-high-citadel",
+      "name": "Corbinastrelfort",
+      "i": 35071,
+      "x": 271,
+      "y": 116,
+      "provinceId": 407,
+      "highCitadel": {
+        "version": 2,
+        "kind": "holy",
+        "originalName": "Corbinastrelfort",
+        "originalCell": 35067,
+        "sourceCell": 35071,
+        "founded": 400,
+        "elevation": 3741.468505859375,
+        "grade": 0.5252867238096672,
+        "maximumGrade": 0.6421707018322415,
+        "surveySpan": 2.16,
+        "terrainSpan": 0.648,
+        "populationCap": 849,
+        "support": 1132,
+        "ruralSupportBefore": 5598.482597801089,
+        "ruralSupportAfter": 4466.482597801089
+      },
+      "seed": "Meridian-21",
+      "form": "rift",
+      "landformVersion": 3,
+      "highCitadelsVersion": 2,
+      "year": 400,
+      "camera": {
+        "zoom": 389.52213674989457,
+        "elevation": 0.82,
+        "azimuth": -0.4094406275076119,
+        "target": [
+          68.21983278472098,
+          3.7921708721011447,
+          14.533665098500439
+        ]
+      },
+      "vertices": 268962,
+      "samples": 1006,
+      "onScreen": 1006,
+      "uploaded": true,
+      "bounds": {
+        "minX": 362.6202324060205,
+        "maxX": 1114.8328216246364,
+        "minY": 189.80110109740963,
+        "maxY": 804.6965405579567
+      },
+      "parts": 14,
+      "ready": true,
+      "canvas": "map",
+      "file": "holy-city-clearpit.png",
+      "panel": "holy-city-clearpit-panel.png"
+    }
+  ],
+  "pageerrors": [],
+  "chrome": "152.0.7977.76"
+}

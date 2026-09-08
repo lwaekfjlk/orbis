@@ -1,0 +1,136 @@
+{
+  "bundleSha256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
+  "viewport": [
+    1480,
+    980
+  ],
+  "panelClip": {
+    "x": 0,
+    "y": 90,
+    "width": 1480,
+    "height": 790
+  },
+  "before": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "stories": [
+    {
+      "id": 421,
+      "name": "Ath Annaber",
+      "i": 32653,
+      "narrator": "Randath Maredis",
+      "people": "Humans",
+      "title": "The Matter of Ath Annaber",
+      "full": "story-421.png",
+      "panel": "story-421-panel.png",
+      "camera": {
+        "target": [
+          58.28433118499023,
+          1.3930641278210798,
+          9.932764073395626
+        ],
+        "zoom": 86.40000000000002,
+        "azimuth": 0.982793723247329,
+        "elevation": 0.72
+      },
+      "chapterHeadings": [
+        "The Coming",
+        "The Founding",
+        "The Trial",
+        "The Deed",
+        "What Remains"
+      ]
+    },
+    {
+      "id": 289,
+      "name": "Sarrnavgalbourne",
+      "i": 24255,
+      "narrator": "Dharmora Orureh",
+      "people": "Hornkin",
+      "title": "The Sarrnavgalbourne Telling",
+      "full": "story-289.png",
+      "panel": "story-289-panel.png",
+      "camera": {
+        "target": [
+          59.065775087305326,
+          0.7403138044223231,
+          -5.0987980986998815
+        ],
+        "zoom": 86.40000000000002,
+        "azimuth": -2.691592653589793,
+        "elevation": 0.72
+      },
+      "chapterHeadings": [
+        "The Coming",
+        "The Founding",
+        "The Trial",
+        "The Deed",
+        "What Remains"
+      ]
+    },
+    {
+      "id": 484,
+      "name": "Tapiopiirkoski",
+      "i": 36497,
+      "narrator": "Dorokstone Vorundek",
+      "people": "Stonekin",
+      "title": "Vashai Sarnridun and The Dragonwell",
+      "full": "story-484.png",
+      "panel": "story-484-panel.png",
+      "camera": {
+        "target": [
+          26.477146324763524,
+          0.6333754127720426,
+          17.3481292756018
+        ],
+        "zoom": 86.40000000000002,
+        "azimuth": -2.6915926535897934,
+        "elevation": 0.72
+      },
+      "chapterHeadings": [
+        "The Coming",
+        "The Founding",
+        "The Trial",
+        "The Deed",
+        "What Remains"
+      ]
+    },
+    {
+      "id": 365,
+      "name": "Vainojuurniemi",
+      "i": 30096,
+      "narrator": "Lyrariel Ithemesae",
+      "people": "Sylvans",
+      "title": "What Vainojuurniemi Remembers",
+      "full": "story-365.png",
+      "panel": "story-365-panel.png",
+      "camera": {
+        "target": [
+          -30.272017554835138,
+          0.5493215137035006,
+          5.8509225716911795
+        ],
+        "zoom": 86.40000000000002,
+        "azimuth": -2.6915926535897934,
+        "elevation": 0.72
+      },
+      "chapterHeadings": [
+        "The Coming",
+        "The Founding",
+        "The Trial",
+        "The Deed",
+        "What Remains"
+      ]
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "after": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "passed": true
+}

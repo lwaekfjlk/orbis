@@ -35,9 +35,9 @@
 
 ## 城市生长在原有地形上
 
-![斜视角下的 Oakfield：住宅、街道、城墙与水岸](previews/orbis/city.png)
+![四座城市的2×2拼图：海岸、河谷、山麓和林冠聚落](previews/readme/grids/cities-grid.png)
 
-*Oakfield：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
+*从左到右、从上到下：Camelastrbelhaven 海岸城市、Ath Annaber 河谷城镇、Tapiokylinkoski 山麓城市、Sarrnavgalbourne 林冠聚落。*
 
 逐步放大，就能看到同一片土地上的房屋、城墙、神殿、王宫与港口。近处地形会变得更细致，气候也会影响地表、植被和建筑外观。点击建筑可查看说明，**Details** 面板还可导出 GLB 格式的城镇三维模型，模型不含周围地形。
 
@@ -49,13 +49,15 @@
 
 点击专属符号，或打开搜索即可前往，也支持搜索 **龙城**、**圣城**和 **龙族遗迹**。遗迹可以逐部件查看，并导出三维模型。[查看龙族遗址说明](docs/DRAGON_SITES.md)。
 
-![龙族遗迹：破损石环与龙脊拱架](previews/orbis/dragon-ruins.png)
+![龙王城、圣城与两处龙族遗迹的2×2拼图](previews/readme/grids/sites-grid.png)
+
+*上排：Sarrlororford 龙王城、Corbinastrelfort 高山圣城。下排：Obsidian Aerie 与 Flint Spine 两处龙族遗迹。*
 
 ## 居民、国家与故事
 
-![地图旁的城市故事面板，包含居民讲述者的肖像与叙事](previews/orbis/story.png)
+![四座城市的故事面板组成2×2拼图，每格包含居民肖像、叙事和城市实景](previews/readme/grids/stories-grid.png)
 
-*居民 Randath Maredis the Unhoused 讲述 Oakfield 的故事。每个章节都会附上所依据的世界数据或历史记录。*
+*四位居民分别讲述 Ath Annaber、Sarrnavgalbourne、Tapiopiirkoski 和 Vainojuurniemi 的故事。每个章节都附有所依据的世界数据或历史记录。*
 
 世界中生活着七个族群。新建国家以一个族群为主，同时保留少数族群；迁徙与政治事件可以改变人口构成。国名来自多个神话传统，国家概览会解释名称出处。
 
