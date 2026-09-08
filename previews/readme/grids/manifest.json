@@ -1,0 +1,119 @@
+{
+  "sourceCommit": "99d4bfbf1a2e3448c1a2cbca5c919534ea4a2068",
+  "bundleSha256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
+  "method": "Each source panel is a direct browser screenshot of the running offline application. The four unchanged panel files are laid out with HTML/CSS and the resulting grid is captured as one PNG.",
+  "panelDimensions": [
+    1480,
+    790
+  ],
+  "grids": [
+    {
+      "id": "cities",
+      "output": "cities-grid.png",
+      "columns": 2,
+      "rows": 2,
+      "panels": [
+        {
+          "source": "panels/city-257-panel.png",
+          "sourceSha256": "c05c5ce96ee48b21204087976b4241fd54a11d1e2550dbb1f6142fbc7dca6716",
+          "title": "Camelastrbelhaven",
+          "subtitle": "Coastal city",
+          "position": 1
+        },
+        {
+          "source": "panels/city-421-panel.png",
+          "sourceSha256": "f1fde4f4019a774abfc7d8376dd910c88b852c899eff6e9a8beda1b642b1c6cd",
+          "title": "Ath Annaber",
+          "subtitle": "River city",
+          "position": 2
+        },
+        {
+          "source": "panels/city-413-panel.png",
+          "sourceSha256": "fe337124c94746b595a6af1c7a5dc98eff5d8a21310032ff162dc1ac411874fa",
+          "title": "Tapiokylinkoski",
+          "subtitle": "Foothill city",
+          "position": 3
+        },
+        {
+          "source": "panels/city-289-panel.png",
+          "sourceSha256": "49cf957920209eb8223de43425a59d5429d135e41c40d3fa9eed920c8764e9bc",
+          "title": "Sarrnavgalbourne",
+          "subtitle": "Canopy settlement",
+          "position": 4
+        }
+      ]
+    },
+    {
+      "id": "sites",
+      "output": "sites-grid.png",
+      "columns": 2,
+      "rows": 2,
+      "panels": [
+        {
+          "source": "panels/dragon-city-bowercairn-panel.png",
+          "sourceSha256": "be77ef510298e098dc9d3095608fc93b62b7697f5028f5da69a665efe87a52ac",
+          "title": "Sarrlororford",
+          "subtitle": "Dragon King\u2019s Aerie",
+          "position": 1
+        },
+        {
+          "source": "panels/holy-city-clearpit-panel.png",
+          "sourceSha256": "703ce196fb033dc18688ed9c4e10a00690fe45395f4cc10807a1000f1dec6c82",
+          "title": "Corbinastrelfort",
+          "subtitle": "High Sanctuary",
+          "position": 2
+        },
+        {
+          "source": "panels/dragon-ruins-aerie-panel.png",
+          "sourceSha256": "cafd7589379527da6d42f6a1a52425d78c0f4d2bd6cc01a5c2364acc57313b30",
+          "title": "The Obsidian Aerie",
+          "subtitle": "Ancient dragon ruins",
+          "position": 3
+        },
+        {
+          "source": "panels/dragon-ruins-spine-panel.png",
+          "sourceSha256": "911b455b04c3abffca087094841557f54ec8af34b43b2a264b9a14bb29aee32d",
+          "title": "The Flint Spine",
+          "subtitle": "Ancient dragon ruins",
+          "position": 4
+        }
+      ]
+    },
+    {
+      "id": "stories",
+      "output": "stories-grid.png",
+      "columns": 2,
+      "rows": 2,
+      "panels": [
+        {
+          "source": "panels/story-421-panel.png",
+          "sourceSha256": "fb38ed11fd881b2ba3f1838b79617fb7080129bb92f020283b41f1d9f341d426",
+          "title": "Ath Annaber",
+          "subtitle": "Randath Maredis \u00b7 Humans",
+          "position": 1
+        },
+        {
+          "source": "panels/story-289-panel.png",
+          "sourceSha256": "8bbf9a4e8ad68ef77252923fc15e03b856cc9a20b70674d023ad7d19a9ce1e09",
+          "title": "Sarrnavgalbourne",
+          "subtitle": "Dharmora Orureh \u00b7 Hornkin",
+          "position": 2
+        },
+        {
+          "source": "panels/story-484-panel.png",
+          "sourceSha256": "f8976a9acfd1b3f0d6a0215c28c1ea1ef92dbccb76bac18773e6b8386db32f88",
+          "title": "Tapiopiirkoski",
+          "subtitle": "Dorokstone Vorundek \u00b7 Stonekin",
+          "position": 3
+        },
+        {
+          "source": "panels/story-365-panel.png",
+          "sourceSha256": "b013e18e0f305f6a3eb90bbdd5ad1d6b824d6706c7841f6538ebe9be5330e7ac",
+          "title": "Vainojuurniemi",
+          "subtitle": "Lyrariel Ithemesae \u00b7 Sylvans",
+          "position": 4
+        }
+      ]
+    }
+  ]
+}

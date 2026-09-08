@@ -1,0 +1,37 @@
+{
+  "sourceCommit": "99d4bfbf1a2e3448c1a2cbca5c919534ea4a2068",
+  "bundleSha256": "de8b69a6f79305a76fedbc79d7b42e84e7dd563d014be02591500c6dd5b3c5d8",
+  "grids": [
+    {
+      "id": "cities",
+      "file": "cities-grid.png",
+      "panels": 4,
+      "rows": 2,
+      "columns": 2,
+      "width": 1600,
+      "height": 1020,
+      "sha256": "a94414a337ced1e596a39ac00e3a1aa2b17d1172ebe9d6677c4a546d00b0f2f6"
+    },
+    {
+      "id": "sites",
+      "file": "sites-grid.png",
+      "panels": 4,
+      "rows": 2,
+      "columns": 2,
+      "width": 1600,
+      "height": 1020,
+      "sha256": "22aea90a63f40cb35d7f1a20d8268567288544105a4a3f04991adf091dc67de0"
+    },
+    {
+      "id": "stories",
+      "file": "stories-grid.png",
+      "panels": 4,
+      "rows": 2,
+      "columns": 2,
+      "width": 1600,
+      "height": 1020,
+      "sha256": "bd36b14ed9d015f5429ef6f4bab078fa881aa7cf7230c78660c12b304a6371bb"
+    }
+  ],
+  "errors": []
+}

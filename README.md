@@ -35,9 +35,9 @@ Search for a named landform to find it. Recreate to explore the new terrain; old
 
 ## Cities belong to the landscape
 
-![An oblique view of Oakfield, showing houses, streets, walls and the waterfront](previews/orbis/city.png)
+![Four city views in a 2×2 collage: coast, river valley, foothills and a canopy settlement](previews/readme/grids/cities-grid.png)
 
-*Oakfield: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
+*Left to right, top to bottom: coastal Camelastrbelhaven, riverside Ath Annaber, Tapiokylinkoski in the foothills and Sarrnavgalbourne's canopy settlement.*
 
 Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 
@@ -49,13 +49,15 @@ A coiled dragon totem marks a Dragon King Citadel; a sacred sun seal marks a Hig
 
 Click a special symbol or open Search to visit. Searches for **龙城**, **圣城** and **龙族遗迹** work too. Ruins can be explored part by part and exported as a 3D model. [Explore the dragon sites](docs/DRAGON_SITES.md).
 
-![Ancient dragon ruins with broken stone rings and spine arches](previews/orbis/dragon-ruins.png)
+![A 2×2 collage of a dragon citadel, a holy city and two ancient dragon ruins](previews/readme/grids/sites-grid.png)
+
+*Top: Sarrlororford's Dragon King's Aerie and Corbinastrelfort's High Sanctuary. Bottom: the Obsidian Aerie and the Flint Spine ruins.*
 
 ## People, countries and stories
 
-![A town's resident narrator and illustrated city story beside the map](previews/orbis/story.png)
+![Four city story panels in a 2×2 collage, each with its resident narrator and town](previews/readme/grids/stories-grid.png)
 
-*Randath Maredis the Unhoused introduces Oakfield. Each story chapter includes the world or historical facts behind it.*
+*Residents tell the stories of Ath Annaber, Sarrnavgalbourne, Tapiopiirkoski and Vainojuurniemi. Each chapter includes the world or historical facts behind it.*
 
 Seven peoples inhabit the atlas. New countries form around a majority people while retaining minority communities; migration and political events can change that mix. Names draw on mythological traditions, and national overviews explain their origins.
 
