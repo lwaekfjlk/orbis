@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {loadEngine, defaults, root} from './engine-loader.mjs';
+import {labelLayouts} from './label-layout-reference.mjs';
 
 const E=loadEngine(),read=p=>readFileSync(root+'/'+p,'utf8');
 const source=read('src/ui/world-ui.js');
@@ -10,7 +11,7 @@ const RealmProfile=Function(read('src/civilization/realm-profile.js')+';return R
 const world=await E.generateWorld(defaults),sim=E.createCivilization(world);
 const before=[E.physicalFingerprint(world),E.settlementFingerprint(sim),E.politicalFingerprint(sim)];
 
-function harness({state=sim,worldData=world,width=1280,height=800,projected=false,pins=[]}={}){
+function harness({state=sim,worldData=world,width=1280,height=800,projected=false,pins=[],labelCode=labelsSource}={}){
     const calls={inspect:[],focus:[]},r=Object.create(E.AtlasRenderer.prototype);
     Object.assign(r,{world:worldData,sim:state,width,height,zoom:1,azimuth:.018,elevation:1.19,target:[0,0,0],relief:1,selected:-1,
         hoveredRealm:null,setHoveredRealm(id){this.hoveredRealm=id;},request(){}});
@@ -34,12 +35,15 @@ function harness({state=sim,worldData=world,width=1280,height=800,projected=fals
         POLITICAL:['realms','faiths','peoples','diplomacy','wealth','magic'],RealmNames:E.RealmNames,RealmProfile,
         PoliticalLand:E.PoliticalLand,AtlasSpace:E.AtlasSpace,cell:(x,y)=>Math.round(y)*E.GW+Math.round(x),escapeHTML:String,
         inspectCell(i){calls.inspect.push(i);},selectRealm(){},LandmarkBinding:{highCitadelLabel:p=>p.highCitadel.kind==='dragon'?'Dragon King Citadel':'High Holy City'}};
-    const api=Function(...Object.keys(args),labelsSource+`;return {make(layer){currentLayer=layer;makeLabels();},position:positionLabels,items:()=>labelItems};`)(...Object.values(args));
+    const api=Function(...Object.keys(args),labelCode+`;return {make(layer){currentLayer=layer;makeLabels();},position:positionLabels,items:()=>labelItems};`)(...Object.values(args));
     return{...api,r,dom,calls,win,document:args.document};
 }
 const towns=h=>h.items().filter(v=>v.feature.town);
 const screenVisible=(r,p)=>{const [x,y]=r.screen(p.x,p.y,0);return x>=0&&x<=r.width&&y>=0&&y<=r.height;};
-const rectangle=({element:e})=>({x:parseFloat(e.style.left)-(e.offsetWidth+6)/2,y:parseFloat(e.style.top)-(e.offsetHeight+4),w:e.offsetWidth+6,h:e.offsetHeight+4});
+// Measure the visible button. The layout's extra collision margin is smaller
+// on dense screens; adding the old fixed margin falsely failed these same
+// baseline positions even though the actual names stayed inside the viewport.
+const rectangle=({element:e})=>({x:parseFloat(e.style.left)-e.offsetWidth/2,y:parseFloat(e.style.top)-e.offsetHeight,w:e.offsetWidth,h:e.offsetHeight});
 const overlaps=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 
 test('all 104 default settlements retain their complete names in overview and thematic layers',()=>{
@@ -80,6 +84,16 @@ test('the actual default world fits town lettering within desktop and narrow ove
             for(let j=0;j<i;j++)if(overlaps(b,rectangle(visible[j])))count++;
         }
         assert.equal(count,0,width+'px overview should have enough room for all 104 town names');
+    }
+});
+
+test('the default world retains every previous label position across three viewport widths',()=>{
+    const {position,referencePosition}=labelLayouts(source),referenceLabels=labelsSource.replace(position,referencePosition);
+    const snapshot=h=>h.items().map(({feature:f,element:e})=>({name:f.name,style:JSON.parse(JSON.stringify(e.style)),dataset:e.dataset,title:e.title,tabIndex:e.tabIndex}));
+    for(const [width,height] of [[1480,980],[639,914],[430,900]]){
+        const fast=harness({width,height}),old=harness({width,height,labelCode:referenceLabels});
+        fast.make('realms');old.make('realms');
+        assert.deepEqual(snapshot(fast),snapshot(old),`${width}px default map must preserve complete names, positions, leaders and keyboard access`);
     }
 });
 

@@ -31,12 +31,12 @@ window.ContinuousMap = (() => {
   renderer.buildTerrainAsync=function(yieldFrame){return layer.buildTerrainAsync(yieldFrame);};
   installDepthRasterizer(renderer);renderer.renderQuality=1;renderer.backgroundColor=rgb('#79999d');renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));
   const visible=renderer.visible;renderer.visible=function(name){const site=ruins.visible(name);if(site!==null)return site;const v=layer.visible(name);return v===null?visible.call(this,name):v;};
-  const prior=renderer.onChange;renderer.onChange=()=>{onCamera();prior();};
+  const prior=renderer.onChange;renderer.onChange=()=>{if(onCamera())prior();};
   const el=document.createElement('div');el.id='cmLabels';E('stage').appendChild(el);
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
   const btn=document.createElement('button');btn.id='cmContext';btn.type='button';btn.className='cm-context';btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5L7 12L14 19M7 12H21"/></svg><span>Back to world</span>';btn.title='Return to the whole world (H)';btn.onclick=async()=>{if(ready()&&await home())renderer.canvas.focus({preventScroll:true});};E('omChrome').appendChild(btn);
-  layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();refreshPlaceDetails();};
-  ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();refreshPlaceDetails();};
+  layer.onChange=()=>{lastCamera='';window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();refreshPlaceDetails();renderer.request();};
+  ruins.onChange=()=>{lastCamera='';window.__ruins=ruins.report();refreshRuinSelection();updateTitle();refreshPlaceDetails();renderer.request();};
   bindCamera();
   E('omHome').onclick=()=>ready()&&home();
   E('camera').onchange=()=>{if(!ready())return;cancel();renderer.elevation={relief:1.19,overhead:1.555,diorama:.65}[E('camera').value];renderer.request();};
@@ -47,7 +47,7 @@ window.ContinuousMap = (() => {
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')startFolk();});
  }
  function beforeWorldBuild(){cancel();ruins?.reset();window.__ruinReady=false;window.__ruinFocus=null;if(layer)layer.reset(null,null);lastWorld=null;lastCamera='';selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
- function onWorldUpdate(){if(!enabled||!world||!sim)return;layer.bind(world,sim);ruins.bind(world,sim,LandmarkUI.registry.filter(s=>s.dragonRuins));if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
+ function onWorldUpdate(){if(!enabled||!world||!sim)return;lastCamera='';layer.bind(world,sim);ruins.bind(world,sim,LandmarkUI.registry.filter(s=>s.dragonRuins));if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
   makePins();updateTitle();renderer.request();layer.cameraChanged();ruins.cameraChanged();
   refreshPlaceDetails();
  }
@@ -80,10 +80,15 @@ window.ContinuousMap = (() => {
   document.body.dataset.detail=r.zoom>=AtlasSpace.TOWN_ZOOM?'local':'atlas';
   window.__ruins=ruins.report();
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
-  window.__folk={...(r.folkStats||{}),walking,software:!!r.software,reducedMotion:reducedMotion(),roads:r.roadStats||null};
  }
- function onCamera(){if(!enabled||!world||busy)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4),renderer.width,renderer.height].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();ruins.cameraChanged();restFolk();}
+ function onCamera(){if(!enabled||!world||busy)return false;
   startFolk();
+  window.__folk={...(renderer.folkStats||{}),walking,software:!!renderer.software,reducedMotion:reducedMotion(),roads:renderer.roadStats||null};
+  const sig=[renderer.zoom,...renderer.target,renderer.azimuth,renderer.elevation,renderer.width,renderer.height,renderer.layer,E('names').checked,renderer.options.legends].join('/');
+  // Walking figures change their mesh, not any name's size, anchor or occlusion.
+  // Data notifications clear this key; fonts and the names toggle also lay out
+  // world labels directly, so a still camera never leaves their changes stale.
+  if(sig===lastCamera)return false;lastCamera=sig;layer.cameraChanged();ruins.cameraChanged();restFolk();
   const at=AtlasSpace.grid(renderer.target[0],renderer.target[2]),nearRuin=renderer.zoom>=AtlasSpace.DETAIL_ZOOM?[...ruins.models.values()].find(m=>Math.hypot(m.site.x-at[0],m.site.y-at[1])<2):null;
   const nearHigh=!nearRuin&&renderer.zoom>=AtlasSpace.DETAIL_ZOOM?[...layer.models.values()].find(m=>m.p.highCitadel&&Math.hypot(m.p.x-at[0],m.p.y-at[1])<2):null;
   const siteBounds=nearRuin?.bounds||(nearHigh?layer.townView(nearHigh)?.bounds:null);
@@ -95,9 +100,10 @@ window.ContinuousMap = (() => {
   }
   else if(renderer.zoom>=AtlasSpace.TOWN_ZOOM*1.67){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
-  positionPins();updateTitle();
+  positionPins();updateTitle();return true;
  }
- function cancel(){animation++;moving=false;rotationGoal=null;}
+ function setMoving(value){moving=value;renderer.cameraAnimating=value;}
+ function cancel(){animation++;setMoving(false);rotationGoal=null;}
  function rotate90(){
   if(!ready())return Promise.resolve(false);
   // Keep an unwrapped goal so every click adds a full quarter turn, even when
@@ -105,7 +111,7 @@ window.ContinuousMap = (() => {
   const r=renderer,start=r.azimuth,goal=(rotationGoal??start)+Math.PI/2;
   cancel();
   if(reducedMotion()){r.azimuth=goal;r.request();return Promise.resolve(true);}
-  rotationGoal=goal;moving=true;
+  rotationGoal=goal;setMoving(true);
   const token=animation,time=performance.now(),duration=420*(goal-start)/(Math.PI/2);
   return new Promise(resolve=>{
    function frame(now){
@@ -114,13 +120,13 @@ window.ContinuousMap = (() => {
     // Orbit in place: do not overwrite zoom, elevation, target or selection.
     r.azimuth=lerp(start,goal,a);r.request();
     if(t<1)requestAnimationFrame(frame);
-    else{moving=false;rotationGoal=null;layer.cameraChanged();ruins.cameraChanged();resolve(true);}
+    else{setMoving(false);rotationGoal=null;layer.cameraChanged();ruins.cameraChanged();resolve(true);}
    }
    requestAnimationFrame(frame);
   });
  }
- function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));moving=true;
-  return new Promise(resolve=>{function frame(now){if(token!==animation||busy){if(token===animation)moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
+ function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));setMoving(true);
+  return new Promise(resolve=>{function frame(now){if(token!==animation||busy){if(token===animation)setMoving(false);resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{setMoving(false);layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
  }
  // Show two facades and the roof. In mountains keep the peak behind the town:
  // a fixed compass bearing can put the entire town behind a foreground hillside.

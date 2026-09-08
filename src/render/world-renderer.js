@@ -221,16 +221,46 @@ class AtlasRenderer {
         gl.depthFunc(gl.LEQUAL);
         gl.disable(gl.CULL_FACE);
     }
-    upload(name, geometry, shadow = true, unlit = 0, alpha = 1) { const gl = this.gl; if (this.meshes[name]) {
-        gl.deleteBuffer(this.meshes[name].buffer);
-        gl.deleteVertexArray(this.meshes[name].vao);
-    } const vertices = geometry.data instanceof Float32Array ? geometry.data : new Float32Array(geometry.data);
+    upload(name, geometry, shadow = true, unlit = 0, alpha = 1, dynamic = false) {
+        const gl = this.gl, old = this.meshes[name];
+        const vertices = geometry.data instanceof Float32Array ? geometry.data : new Float32Array(geometry.data);
+        if (dynamic) {
+            // Moving figures keep their vertex layout and GPU allocation. The CPU
+            // view still contains only current vertices, for picking and export.
+            let buffer = old?.dynamic ? old.buffer : null, vao = old?.dynamic ? old.vao : null;
+            let capacity = old?.dynamic ? old.capacity : 0;
+            if (old && !old.dynamic) { gl.deleteBuffer(old.buffer); gl.deleteVertexArray(old.vao); }
+            if (vertices.byteLength) {
+                const create = !buffer;
+                if (create) { buffer = gl.createBuffer(); vao = gl.createVertexArray(); }
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                if (vertices.byteLength > capacity) {
+                    capacity = Math.max(vertices.byteLength, capacity * 2);
+                    gl.bufferData(gl.ARRAY_BUFFER, capacity, gl.DYNAMIC_DRAW);
+                }
+                gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
+                if (create) {
+                    gl.bindVertexArray(vao);
+                    for (let i = 0; i < 3; i++) {
+                        gl.enableVertexAttribArray(i);
+                        gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 36, i * 12);
+                    }
+                    gl.bindVertexArray(null);
+                }
+            }
+            // Empty meshes need no allocation or write, including the inactive
+            // folk/caravan band; count=0 makes old capacity unreachable to draws.
+            this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha, dynamic: true, capacity };
+            if (shadow || old?.shadow) this.dirtyShadow = true;
+            return;
+        }
+        if (old) { gl.deleteBuffer(old.buffer); gl.deleteVertexArray(old.vao); }
     // Transferred worker buffers already have the GPU format. Keep that same
     // array for picking and export instead of copying the entire mesh twice.
     const buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW); for (let i = 0; i < 3; i++) {
         gl.enableVertexAttribArray(i);
         gl.vertexAttribPointer(i, 3, gl.FLOAT, false, 36, i * 12);
-    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha }; this.dirtyShadow = true; }
+    } gl.bindVertexArray(null); this.meshes[name] = { buffer, vao, vertices, count: vertices.length / 9, shadow, unlit, alpha }; if (shadow || old?.shadow) this.dirtyShadow = true; }
     clear() { const gl = this.gl; for (const m of Object.values(this.meshes)) {
         gl.deleteBuffer(m.buffer);
         gl.deleteVertexArray(m.vao);
@@ -682,6 +712,7 @@ class SoftwareAtlasRenderer extends AtlasRenderer {
     constructor(canvas, onChange) { super(canvas, onChange, true); this.ctx = canvas.getContext('2d', { alpha: false }); this.software = true; if (!this.ctx)
         throw Error('No supported canvas rendering context is available.'); }
     upload(name, geometry, shadow = true, unlit = 0, alpha = 1) {
+        const old = this.meshes[name];
         const vertices = new Float32Array(geometry.data), styles = [], triCount = vertices.length / 27;
         const sun = norm([-.65, 1, -.48]);
         for (let t = 0; t < triCount; t++) {
@@ -699,7 +730,7 @@ class SoftwareAtlasRenderer extends AtlasRenderer {
             styles.push(`rgb(${c[0]},${c[1]},${c[2]})`);
         }
         this.meshes[name] = { vertices, styles, count: vertices.length / 9, shadow, unlit, alpha };
-        this.dirtyShadow = true;
+        if (shadow || old?.shadow) this.dirtyShadow = true;
     }
     clear() { this.meshes = {}; this.dirtyShadow = true; }
     *shadowFieldSteps(w) {

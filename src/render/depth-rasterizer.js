@@ -4,7 +4,7 @@
  */
 function installDepthRasterizer(r){
  if(!r.software)return r;
- r.upload=function(name,g,shadow=true,unlit=0,alpha=1){this.meshes[name]={vertices:g.data instanceof Float32Array?g.data:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};this.dirtyShadow=true;};
+ r.upload=function(name,g,shadow=true,unlit=0,alpha=1){const old=this.meshes[name];this.meshes[name]={vertices:g.data instanceof Float32Array?g.data:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};if(shadow||old?.shadow)this.dirtyShadow=true;};
  const hidden=document.createElement('canvas'),ctx=hidden.getContext('2d',{alpha:false});let width=0,height=0,image=null,depth=null,shadow=null,shadowKey='';const S=1024;
  let sun=norm([-.65,1,-.48]);
  function projected(v,k,m,W,H){return[(m[0]*v[k]+m[4]*v[k+1]+m[8]*v[k+2]+m[12]+1)*W*.5,(1-m[1]*v[k]-m[5]*v[k+1]-m[9]*v[k+2]-m[13])*H*.5,m[2]*v[k]+m[6]*v[k+1]+m[10]*v[k+2]+m[14]]}

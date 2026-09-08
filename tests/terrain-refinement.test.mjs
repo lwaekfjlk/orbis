@@ -14,7 +14,7 @@ function cameraFixture(t, zoom = 20) {
     t.mock.timers.enable({ apis: ['setTimeout'] });
     E.setBusy(false);
     const world = { name: 'first world' }, sim = { provinces: [], realms: [] };
-    const calls = { roads: [], terrain: [], environment: [], stream: [], atlasRoads: 0, lines: 0, rivers: [], requests: 0 };
+    const calls = { roads: [], terrain: [], environment: [], stream: [], atlasRoads: 0, lines: 0, rivers: [], requests: 0, modelChanges: 0 };
     const r = Object.create(E.AtlasRenderer.prototype);
     Object.assign(r, { world, sim, width: 1000, height: 700, zoom, target: [0, 0, 0],
         azimuth: .018, elevation: 1.19, relief: 1, layer: 'relief', meshes: {}, options: {},
@@ -22,7 +22,7 @@ function cameraFixture(t, zoom = 20) {
         buildRoads() { calls.atlasRoads++; }, buildLines() { calls.lines++; this.buildRivers(); },
         buildRivers() { calls.rivers.push(this.zoom); layer.lastRiverKey=E.RiverDetail.key(layer); } });
     const layer = new E.ContinuousCityLayer(r);
-    Object.assign(layer, { world, sim, natural: zoom >= E.AtlasSpace.TOWN_ZOOM });
+    Object.assign(layer, { world, sim, natural: zoom >= E.AtlasSpace.TOWN_ZOOM, onChange() { calls.modelChanges++; } });
     const snapshot = () => ({ world: layer.world, zoom: r.zoom, target: r.target.slice(), width: r.width, height: r.height });
     r.buildTerrain = () => { calls.terrain.push(snapshot()); layer.lastTerrainKey = layer.terrainKey(); };
     layer.buildEnvironment = () => { calls.environment.push(snapshot()); layer.lastEnvironmentKey = layer.environmentKey(); };
@@ -91,6 +91,18 @@ test('rapid camera events coalesce to the final view and unchanged views do not 
     layer.cameraChanged(); clock.tick(300);
     assert.equal(calls.terrain.length, 1, 'an unchanged refinement key does not enqueue more terrain work');
     assert.equal(calls.environment.length, environmentBuilds);
+    assert.equal(calls.modelChanges, 0, 'camera events are not town-model or data changes');
+});
+
+test('crossing between atlas and town views schedules geometry without notifying model listeners', t => {
+    const { r, layer, calls, clock } = cameraFixture(t, 1);
+    for (const zoom of [1, 20, 200, 1]) {
+        r.zoom = zoom; layer.cameraChanged(); clock.tick(300);
+    }
+    assert.equal(calls.modelChanges, 0, 'neither distant nor close camera changes may refresh open stories or model-driven UI');
+    assert.equal(calls.atlasRoads, 2, 'entering and leaving the town band still reseats the road overlays');
+    assert.equal(calls.roads.length, 2, 'near roads continue following the close camera');
+    assert.equal(calls.stream.length, 2, 'close camera changes still schedule town streaming');
 });
 
 test('replacing the world cancels every deferred camera callback before a new world is bound', t => {
@@ -113,6 +125,7 @@ test('replacing the world cancels every deferred camera callback before a new wo
     assert.equal(calls.terrain.length, 1, 'the old callback cannot cause a duplicate rebuild');
     assert.equal(calls.stream.length, 1);
     assert.equal(calls.stream[0].world, nextWorld);
+    assert.equal(calls.modelChanges, 0, 'cancelled camera work cannot emit a stale model notification');
 });
 
 test('a world becoming busy during debounce suppresses mesh work until the camera can resume', t => {
@@ -142,4 +155,38 @@ test('a world reset cancels pending river refinement and the river toggle stays 
     const replacement={name:'new world'};r.world=replacement;layer.bind(replacement,{provinces:[],realms:[]});clock.tick(300);
     assert.equal(calls.rivers.length,0,'a stale river callback cannot run after reset');
     r.options.rivers=false;assert.equal(layer.visible('rivers'),false);r.options.rivers=true;assert.equal(layer.visible('rivers'),true);
+});
+
+for (const held of ['interacting', 'cameraAnimating']) test(`${held} postpones geometry and streaming until the gesture ends`, t => {
+    const { r, layer, calls, clock } = cameraFixture(t, 20);
+    r[held] = true; r.zoom = 200; layer.cameraChanged(); clock.tick(600);
+    const counts = () => ['terrain', 'environment', 'rivers', 'roads', 'stream'].map(name => calls[name].length);
+    assert.deepEqual(counts(), [0, 0, 0, 0, 0], 'a long held gesture must not run expensive work between its slow frames');
+    r[held] = false; clock.tick(350);
+    assert.deepEqual(counts(), [1, 1, 1, 1, 1], 'releasing the gesture permits each scheduled job to run once');
+    assert.equal(calls.modelChanges, 0);
+    r[held] = true; r.zoom = 320; r.target[0] += E.AtlasSpace.X * 8; layer.cameraChanged(); clock.tick(50);
+    const replacement = { name: 'replacement during a gesture' }; r.world = replacement;
+    layer.bind(replacement, { provinces: [], realms: [] }); r[held] = false; clock.tick(1000);
+    assert.deepEqual(counts(), [1, 1, 1, 1, 1], 'reset cancels held terrain, scatter, river, road and streaming jobs');
+});
+
+test('an active gesture still performs the essential atlas-to-town ground handover immediately', t => {
+    const { r, layer, calls } = cameraFixture(t, 1);
+    r.interacting = true; r.zoom = 20; layer.cameraChanged();
+    assert.equal(layer.natural, true);
+    assert.equal(calls.terrain.length, 1); assert.equal(calls.environment.length, 1);
+    assert.equal(calls.atlasRoads, 1); assert.equal(calls.lines, 1);
+    assert.equal(calls.roads.length, 0, 'additional near-road refinement can wait until release');
+    assert.equal(calls.modelChanges, 0);
+});
+
+test('settled roads request a frame even when a still crowd and unchanged ground need no redraw', t => {
+    const { r, layer, calls, clock } = cameraFixture(t, 20);
+    r.interacting = true; layer.cameraChanged(); clock.tick(600);
+    assert.equal(calls.requests, 0);
+    r.interacting = false; clock.tick(350);
+    assert.equal(calls.roads.length, 1);
+    assert.equal(calls.terrain.length + calls.environment.length + calls.rivers.length, 0);
+    assert.equal(calls.requests, 1, 'the deferred road upload must become visible without relying on a crowd animation');
 });

@@ -14,12 +14,23 @@ class ContinuousRuinLayer {
  key(site,lod){return JSON.stringify([site.id,site.x,site.y,site.span,site.angle,site.dragonRuins,site.recipe,lod,this.r.relief??1,typeof LandscapeRelief==='undefined'?'none':LandscapeRelief.key(this.world)]);}
  remove(id){const m=this.models.get(id);if(!m)return;for(const name of m.meshNames){const mesh=this.r.meshes[name];if(mesh&&this.r.gl){if(mesh.buffer)this.r.gl.deleteBuffer(mesh.buffer);if(mesh.vao)this.r.gl.deleteVertexArray(mesh.vao);}delete this.r.meshes[name];this.meshOwners.delete(name);}this.models.delete(id);this.r.dirtyShadow=true;}
  visible(name){if(!name.startsWith('ruin:'))return null;const entry=this.meshOwners.get(name);return !!entry&&this.world===this.r.world&&this.r.zoom>=AtlasSpace.TOWN_ZOOM&&(entry.part.role!=='roof'||this.r.continuousRoofs!==false);}
- cameraChanged(){clearTimeout(this.timer);if(!this.world||this.world!==this.r.world||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;this.timer=setTimeout(()=>this.stream(),180);}
+ cameraChanged(){clearTimeout(this.timer);this.timer=null;if(!this.world||this.world!==this.r.world||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;
+  const epoch=this.epoch,settle=()=>{
+   this.timer=null;
+   if(epoch!==this.epoch||!this.world||this.world!==this.r.world||this.r.zoom<AtlasSpace.TOWN_ZOOM||(typeof busy!=='undefined'&&busy))return;
+   // A slow frame can outlast the debounce while a drag or camera flight is
+   // still active. Keep this independent from the town layer's stream timer.
+   if(this.r.interacting||this.r.cameraAnimating){this.timer=setTimeout(settle,180);return;}
+   this.stream();
+  };this.timer=setTimeout(settle,180);
+ }
  async stream(){
   if(!this.world||this.world!==this.r.world||this.r.zoom<AtlasSpace.TOWN_ZOOM)return;
   const r=this.r,epoch=this.epoch,at=AtlasSpace.grid(r.target[0],r.target[2]),lod=r.zoom>=AtlasSpace.DETAIL_ZOOM?2:1;
   const near=[...this.sites.values()].map(site=>({site,d:Math.hypot(site.x-at[0],site.y-at[1])})).filter(v=>v.d<18).sort((a,b)=>a.d-b.d||String(a.site.id).localeCompare(String(b.site.id)));
-  for(const {site} of near){if(epoch!==this.epoch||r.zoom<AtlasSpace.TOWN_ZOOM)return;const q=r.screen(site.x,site.y,0);if(q[0]<-120||q[0]>r.width+120||q[1]<-120||q[1]>r.height+120)continue;await this.ensure(site.id,{lod});}
+  for(const {site} of near){if(epoch!==this.epoch||this.world!==r.world||r.zoom<AtlasSpace.TOWN_ZOOM||(typeof busy!=='undefined'&&busy))return;
+   if(r.interacting||r.cameraAnimating){this.cameraChanged();return;}
+   const q=r.screen(site.x,site.y,0);if(q[0]<-120||q[0]>r.width+120||q[1]<-120||q[1]>r.height+120)continue;await this.ensure(site.id,{lod});}
  }
  async ensure(id,{lod=this.r.zoom>=AtlasSpace.DETAIL_ZOOM?2:1}={}){
   if(!this.world||this.world!==this.r.world)return null;const site=this.sites.get(id);if(!site)return null;

@@ -784,11 +784,36 @@ function positionLabels() {
     // Move lettering around its settlement rather than dropping a name when it
     // collides. The small leader keeps an offset label tied to the actual town.
     // A spatial index keeps crowded overview placement cheap while panning.
-    const buckets=new Map(),bucketSize=48;
-    const cells=b=>{const out=[];for(let y=Math.floor(b.y/bucketSize);y<=Math.floor((b.y+b.h)/bucketSize);y++)for(let x=Math.floor(b.x/bucketSize);x<=Math.floor((b.x+b.w)/bucketSize);x++)out.push(x+','+y);return out;};
-    const remember=b=>{for(const key of cells(b)){if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(b);}};
+    const buckets=new Map(),bucketSize=48,entries=new WeakMap(),found=[],townOffsets=new Map();
+    const wideMin=Math.floor((8-1.25)/bucketSize),wideMax=Math.floor((renderer.width-8+1.25)/bucketSize);
+    let query=0;
+    const remember=b=>{
+        const x0=Math.floor(b.x/bucketSize),x1=Math.floor((b.x+b.w)/bucketSize),y1=Math.floor((b.y+b.h)/bucketSize);
+        let entry=entries.get(b);if(!entry){entry={box:b,first:Math.max(wideMin,x0),seen:0};entries.set(b,entry);}
+        for(let y=Math.floor(b.y/bucketSize);y<=y1;y++){
+            let row=buckets.get(y);if(!row){row={columns:new Map(),wide:[]};buckets.set(y,row);}
+            for(let x=x0;x<=x1;x++){let column=row.columns.get(x);if(!column){column=[];row.columns.set(x,column);}column.push(entry);}
+            if(x1>=wideMin&&x0<=wideMax){
+                // A full-width row used to revisit a wide label in every bucket.
+                // Keep the same first-bucket/insertion order without those repeats.
+                let at=row.wide.length;while(at>0&&row.wide[at-1].first>entry.first)at--;
+                row.wide.splice(at,0,entry);
+            }
+        }
+    };
     for(const b of boxes)remember(b);
-    const nearby=b=>{const found=new Set();for(const key of cells(b))for(const other of buckets.get(key)||[])found.add(other);return found;};
+    const nearby=(b,wide=false)=>{
+        found.length=0;const mark=++query,x0=Math.floor(b.x/bucketSize),x1=Math.floor((b.x+b.w)/bucketSize),y1=Math.floor((b.y+b.h)/bucketSize);
+        for(let y=Math.floor(b.y/bucketSize);y<=y1;y++){
+            const row=buckets.get(y);if(!row)continue;
+            if(wide&&x0===wideMin&&x1===wideMax){
+                for(const entry of row.wide)if(entry.seen!==mark){entry.seen=mark;found.push(entry.box);}
+            }else for(let x=x0;x<=x1;x++){
+                const column=row.columns.get(x);if(column)for(const entry of column)if(entry.seen!==mark){entry.seen=mark;found.push(entry.box);}
+            }
+        }
+        return found;
+    };
     const fitTown=v=>{
         const fitted=v.variants[0],origin=at(v.feature,fitted.width,fitted.height);
         if(!Number.isFinite(origin.left+origin.top)||origin.left<0||origin.left>renderer.width||origin.top<0||origin.top>renderer.height)
@@ -809,11 +834,14 @@ function positionLabels() {
         };
         let free=consider(0,0);
         const stepY=Math.max(12,Math.min(18,origin.h*.8)),stepX=stepY;
+        let rings=townOffsets.get(stepY);if(!rings){rings=[];townOffsets.set(stepY,rings);}
         for(let ring=1;!free&&ring<=4;ring++){
-            const offsets=[];
-            for(let x=-ring;x<=ring;x++)offsets.push([x*stepX,-ring*stepY],[x*stepX,ring*stepY]);
-            for(let y=1-ring;y<ring;y++)offsets.push([-ring*stepX,y*stepY],[ring*stepX,y*stepY]);
-            offsets.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));
+            let offsets=rings[ring];
+            if(!offsets){offsets=[];
+                for(let x=-ring;x<=ring;x++)offsets.push([x*stepX,-ring*stepY],[x*stepX,ring*stepY]);
+                for(let y=1-ring;y<ring;y++)offsets.push([-ring*stepX,y*stepY],[ring*stepX,y*stepY]);
+                offsets.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));rings[ring]=offsets;
+            }
             for(const [dx,dy] of offsets)if(consider(dx,dy)){free=true;break;}
         }
         if(!free){
@@ -828,7 +856,7 @@ function positionLabels() {
                 if(Math.abs(y-origin.y)>distance)break;
                 const spans=[];
                 if(y<75)spans.push([-Infinity,210]);
-                for(const b of nearby({x:minX-gap,y:y-gap,w:renderer.width-16+gap*2,h:origin.h+gap*2}))
+                for(const b of nearby({x:minX-gap,y:y-gap,w:renderer.width-16+gap*2,h:origin.h+gap*2},true))
                     if(y<b.y+b.h+gap&&y+origin.h>b.y-gap)spans.push([b.x-origin.w-gap,b.x+b.w+gap]);
                 spans.sort((a,b)=>a[0]-b[0]);
                 let left=minX;
