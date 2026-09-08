@@ -194,6 +194,7 @@ function refreshAll(rebuild = true) {
     if (rebuild) {
         renderer.sim = sim;
         renderer.focusRealm = selectedRealm;
+        renderer.prepareTerritory();
         renderer.buildTerrain();
         renderer.buildCivilization();
     }
@@ -210,7 +211,7 @@ function refreshAll(rebuild = true) {
     $('simStatus').textContent = playing ? 'History is advancing' : 'Paused · changes are reproducible';
     const audit = auditCivilization(sim, world);
     window.__audit = audit;
-    $('auditText').textContent = `Year ${sim.year}: invalid owners ${audit.invalidOwners}; invalid population mixtures ${audit.badShares}; invalid capital ownership ${audit.badCapitals}; political water claims ${audit.waterClaims}; sea-route land crossings ${audit.routeErrors}; finite realm values ${audit.finiteRealms ? 'PASS' : 'FAIL'}. Basin storage residual ${world.waterBudgetError.toExponential(2)}. These checks concern internal consistency, not scientific validation.`;
+    $('auditText').textContent = `Year ${sim.year}: invalid owners ${audit.invalidOwners}; invalid population mixtures ${audit.badShares}; invalid capital ownership ${audit.badCapitals}; inhabited province cells on water ${audit.waterClaims}; sea-route land crossings ${audit.routeErrors}; finite realm values ${audit.finiteRealms ? 'PASS' : 'FAIL'}. Basin storage residual ${world.waterBudgetError.toExponential(2)}. Inland lake territory is derived separately from inhabited provinces. These checks concern internal consistency, not scientific validation.`;
     renderRealmList();
     renderChronicle();
     renderPower();
@@ -231,10 +232,19 @@ function renderRealmList() {
     $('realmList').querySelectorAll('[data-realm]').forEach(b => b.onclick = () => selectRealm(+b.dataset.realm));
 }
 function selectRealm(id, focus = false) { const c = sim?.realms[id]; if (!c?.alive)
-    return; selectedRealm = id; selectedCell = sim.provinces[c.capital].i; renderer.focusRealm = id; renderer.select(selectedCell); renderRealmList(); renderInspector(); if (focus) {
+    return;
+    const repaint = renderer.focusRealm !== id && renderer.hoveredRealm == null;
+    selectedRealm = id; selectedCell = sim.provinces[c.capital].i; renderer.focusRealm = id; renderer.select(selectedCell); renderRealmList(); renderInspector(); if (focus) {
     const p = sim.provinces[c.capital];
     renderer.focus(p.x, p.y);
-} makeLabels(); showLocation(selectedCell); window.CityUI?.offerCity(sim.provinces[c.capital]); window.OneMap?.inspectRealm(id); }
+} makeLabels();
+    // A sidebar or keyboard selection has no preceding hover to clear. Refresh
+    // the selected territory immediately, including the country's inland water.
+    if (repaint) {
+        if (renderer.continuousLayer?.recolorTerrain) renderer.continuousLayer.recolorTerrain();
+        else renderer.buildTerrain();
+    }
+    showLocation(selectedCell); window.CityUI?.offerCity(sim.provinces[c.capital]); window.OneMap?.inspectRealm(id); }
 function mixtureHTML(values, defs) { const sorted = values.map((v, k) => ({ v, k })).sort((a, b) => b.v - a.v); return `<div class="stacked">${values.map((v, k) => `<span style="width:${v * 100}%;background:${defs[k].color}" title="${escapeHTML(defs[k].name)}: ${(v * 100).toFixed(1)}%"></span>`).join('')}</div><div class="breaklabels">${sorted.slice(0, 4).map(({ v, k }) => `<span><i style="background:${defs[k].color}"></i>${escapeHTML(defs[k].name)} ${Math.round(v * 100)}%</span>`).join('')}<span>+ ${Math.round(sorted.slice(4).reduce((a, v) => a + v.v, 0) * 100)}% others</span></div>`; }
 function realmNameOriginHTML(c) {
     const origin = RealmNames.describe(c);
@@ -317,7 +327,7 @@ else
 function renderGeography(i, p = null) {
     if (!world || i < 0)
         return;
-    const w = world, b = w.basins[w.lakeId[i]], target = w.basins[w.basinTarget[i]], country = p ? sim.realms[p.owner] : null, feature = w.features.find(f => f.i === i), plate = w.plates[w.plate[i]], isFjord = w.fjord[i] > 0;
+    const w = world, b = w.basins[w.lakeId[i]], target = w.basins[w.basinTarget[i]], country = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(w, sim, i).realm : p ? sim.realms[p.owner] : null, feature = w.features.find(f => f.i === i), plate = w.plates[w.plate[i]], isFjord = w.fjord[i] > 0;
     const title = feature?.name || b?.name || (isFjord ? 'Glacial fjord' : BIOME[w.biome[i]][0]);
     let cause = feature?.text || '';
     if (!cause) {
@@ -439,9 +449,15 @@ function makeLabels() {
     labelItems = [];
     if (!world || !sim)
         return;
+    const capitals = new Set(sim.realms.filter(c => c.alive).map(c => c.capital));
+    // Settlement labels describe the inhabited map, independently of whether a
+    // town is large enough to stream a detailed city model.
+    const towns = sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop || a.id - b.id)
+        .map(p => ({ x:p.x, y:p.y, i:p.i, provinceId:p.id, name:p.name, highCitadel:p.highCitadel,
+            kind:capitals.has(p.id)?'CAPITAL':(p.settlementType || 'town').toUpperCase(), town:true }));
     let list = [];
     if (currentLayer === 'settlements')
-        list = sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop).map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase() + ' / ' + fmtPop(p.urbanPop), town: true }));
+        list = towns;
     else if (currentLayer === 'potential')
         list = world.continents;
     else if (currentLayer === 'plates')
@@ -460,9 +476,7 @@ function makeLabels() {
             return { x: anchor.x, y: anchor.y, i: anchor.i, name: RealmNames.fullName(c), shortName:c.name, realm: c.id, anchors, area,
                 labelSize: 14 + 10 * Math.sqrt(area / largest) };
         });
-        for (const c of realms)
-            for (const p of sim.provinces.filter(p => p.owner === c.id && p.settled).sort((a, b) => b.urbanPop - a.urbanPop).slice(0, 4))
-                list.push({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.id === c.capital ? 'CAPITAL' : '', town: true, minZoom: p.id === c.capital ? 0 : 2 });
+        list.push(...towns);
         if(typeof PoliticalLand!=='undefined')list.push(...PoliticalLand.labels(world,sim));
     }
     else if (currentLayer === 'relief')
@@ -471,8 +485,7 @@ function makeLabels() {
         // towns; putting them ahead of the continents cost three continent names.
         list = [...world.continents,
             ...legendLabels(),
-            ...sim.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop)
-                .map(p => ({ x: p.x, y: p.y, i: p.i, name: p.name, kind: p.settlementType.toUpperCase(), town: true })),
+            ...towns,
             ...world.features];
     else if (currentLayer === 'water')
         list = world.features.filter(f => f.id.startsWith('lake') || f.id.startsWith('fjord') || f.id === 'wetland');
@@ -480,9 +493,11 @@ function makeLabels() {
         list = world.features.filter(f => ['glacier', 'alpine'].includes(f.id)).concat(world.continents.filter(c => Math.abs(world.lat[c.i]) > 60));
     else
         list = [...world.continents, ...legendLabels(), ...world.features];
+    // Thematic colours change the map's subject, not the names of its towns.
+    if (!list.some(f => f.town)) list = [...list, ...towns];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel' : '') + (f.wilderness ? ' wildernessLabel' : '');
+        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wilderness ? ' wildernessLabel' : '');
         b.innerHTML = f.realm != null
             ? `<em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
             : `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
@@ -500,9 +515,17 @@ function makeLabels() {
             };
         }
         b.title = 'Inspect ' + f.name + (f.kind ? ' · ' + f.kind : '');
+        if (f.town) {
+            b.dataset.provinceId = f.provinceId;
+            if (f.highCitadel && typeof LandmarkBinding !== 'undefined')
+                b.title = f.name + ' · ' + LandmarkBinding.highCitadelLabel(f) + ' · ' + Math.round(f.highCitadel.elevation).toLocaleString() + ' m';
+            b.ondblclick = e => { e.stopPropagation(); window.ContinuousMap?.focusTown(f.provinceId); };
+        }
         b.onclick = () => { if (f.realm != null) {
             selectRealm(f.realm);
         }
+        else if (f.town && window.ContinuousMap?.active && (f.highCitadel || renderer.zoom >= AtlasSpace.TOWN_ZOOM))
+            window.ContinuousMap.focusTown(f.provinceId);
         else
             inspectCell(f.i); };
         $('labels').appendChild(b);
@@ -513,15 +536,24 @@ function makeLabels() {
 function positionLabels() {
     if (!renderer || !world)
         return;
+    // Also runs directly for the names toggle and font loading, outside the
+    // renderer callback. Restore each pin's current camera/layer visibility
+    // before deciding whether country lettering needs its space this time.
+    if(typeof window!=='undefined')window.LandmarkUI?.positionWorldPins();
     $('labels').classList.toggle('hidden', !$('names').checked);
-    if (!$('names').checked || (renderer.continuousLayer && renderer.zoom >= AtlasSpace.TOWN_ZOOM)) {
+    if (!$('names').checked) {
         renderer.setHoveredRealm(null);
         return;
     }
+    const local = renderer.continuousLayer && renderer.zoom >= AtlasSpace.TOWN_ZOOM;
+    if (local) renderer.setHoveredRealm(null);
     const boxes = [];
     // All three country forms remain measurable. Batch these reads before any
     // placement writes; a camera frame must not relayout once per candidate.
-    const measured = labelItems.map(item => {
+    const measured = labelItems.filter(({element:e,feature:f}) => {
+        if (local && !f.town) { e.style.opacity='0'; e.style.pointerEvents='none'; e.tabIndex=-1; return false; }
+        return true;
+    }).map(item => {
         const {element:e,feature:f}=item,region=f.realm!=null,full=e.querySelector?.('.realmFullName');
         const variants=[];
         if(region&&full){
@@ -537,18 +569,28 @@ function positionLabels() {
     const overlaps = (a, b, gap = 0) => a.x < b.x+b.w+gap && a.x+a.w > b.x-gap && a.y < b.y+b.h+gap && a.y+a.h > b.y-gap;
     const screenPositions=new Map();
     const at = (f, width, height, anchor = f) => {
-        if(!screenPositions.has(anchor))screenPositions.set(anchor,renderer.screen(anchor.x,anchor.y,f.legend?1.9:.6));
+        if(!screenPositions.has(anchor))screenPositions.set(anchor,renderer.screen(anchor.x,anchor.y,f.town?0:f.legend?1.9:.6));
         const [x,y] = screenPositions.get(anchor);
         return { x:x-width/2, y:y-(f.realm != null ? height/2 : height), w:width, h:height, left:x, top:y, anchor:anchor.i };
     };
     const inside = b => b.x >= 8 && b.x+b.w <= renderer.width-8 && b.y >= 8 && b.y+b.h <= renderer.height-22 && !(b.x < 210 && b.y < 75);
+    const obstacles=[],labelRect=$('labels').getBoundingClientRect?.();
+    // Pins are siblings of this layer and can otherwise cover a perfectly
+    // fitted name. Convert viewport DOM bounds back to map-local coordinates.
+    if(labelRect&&typeof document!=='undefined')for(const selector of local?['#cmLabels .cm-building-pin']:['#worldLandmarkPins .world-landmark-pin']){
+        for(const pin of document.querySelectorAll(selector)){
+            if(pin.style.display==='none'||pin.style.visibility==='hidden'||pin.style.opacity==='0')continue;
+            const b=pin.getBoundingClientRect();
+            if(b.width&&b.height)obstacles.push({x:b.left-labelRect.left-2,y:b.top-labelRect.top-2,w:b.width+4,h:b.height+4,pin});
+        }
+    }
     // Countries answer the primary political question. Town names use the space
     // left over, rather than reserving a capital-sized hole in every small realm.
     // A constrained island gets its turn before a large country with many anchors.
     for(const v of measured){const f=v.feature;v.anchors=v.region?(f.anchors?.length?f.anchors:[f]):[f];
         v.visibleAnchors=v.region?v.anchors.filter(a=>inside(at(f,18,18,a))).length:0;}
     measured.sort((a,b)=>Number(b.region)-Number(a.region)||(a.region&&b.region?a.visibleAnchors-b.visibleAnchors:0));
-    const townBoxes=measured.filter(v=>v.feature.town&&(!v.feature.minZoom||renderer.zoom>=v.feature.minZoom)).map(v=>at(v.feature,v.variants[0].width,v.variants[0].height)).filter(inside);
+    const townBoxes=measured.filter(v=>v.feature.town).map(v=>at(v.feature,v.variants[0].width,v.variants[0].height)).filter(inside);
     const fit=(v,occupied,limit=1)=>{
         const {feature:f,variants,anchors}=v;
         let fitted=variants[0],box=at(f,fitted.width,fitted.height),show=false;
@@ -616,9 +658,67 @@ function positionLabels() {
             if(candidate.count>layout.count||(candidate.count===layout.count&&candidate.named>layout.named))layout=candidate;
         }
     }
-    boxes.push(...layout.occupied);
+    // An optional monument icon cannot veto a small country's only anchor.
+    // Restore it next placement, then suppress only icons intersecting a chosen
+    // country label. Towns subsequently avoid all the icons that remain.
+    if(!local)for(let i=obstacles.length-1;i>=0;i--)if(layout.occupied.some(b=>overlaps(obstacles[i],b))){
+        obstacles[i].pin.style.display='none';obstacles.splice(i,1);
+    }
+    boxes.push(...obstacles,...layout.occupied);
+    // Move lettering around its settlement rather than dropping a name when it
+    // collides. The small leader keeps an offset label tied to the actual town.
+    // A spatial index keeps crowded overview placement cheap while panning.
+    const buckets=new Map(),bucketSize=48;
+    const cells=b=>{const out=[];for(let y=Math.floor(b.y/bucketSize);y<=Math.floor((b.y+b.h)/bucketSize);y++)for(let x=Math.floor(b.x/bucketSize);x<=Math.floor((b.x+b.w)/bucketSize);x++)out.push(x+','+y);return out;};
+    const remember=b=>{for(const key of cells(b)){if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(b);}};
+    for(const b of boxes)remember(b);
+    const nearby=b=>{const found=new Set();for(const key of cells(b))for(const other of buckets.get(key)||[])found.add(other);return found;};
+    const fitTown=v=>{
+        const fitted=v.variants[0],origin=at(v.feature,fitted.width,fitted.height);
+        if(!Number.isFinite(origin.left+origin.top)||origin.left<0||origin.left>renderer.width||origin.top<0||origin.top>renderer.height)
+            return{box:origin,fitted,show:false};
+        const candidate=(dx,dy)=>{
+            const x=Math.max(8,Math.min(renderer.width-8-origin.w,origin.x+dx));
+            let y=Math.max(8,Math.min(renderer.height-22-origin.h,origin.y+dy));
+            if(x<210&&y<75)y=75;
+            return{...origin,x,y,left:x+origin.w/2,top:y+origin.h};
+        };
+        let best=null,bestCost=Infinity;
+        const consider=(dx,dy)=>{
+            const b=candidate(dx,dy);let overlap=0;
+            for(const a of nearby(b))if(overlaps(b,a,1))overlap+=(Math.min(b.x+b.w,a.x+a.w+1)-Math.max(b.x,a.x-1))*(Math.min(b.y+b.h,a.y+a.h+1)-Math.max(b.y,a.y-1));
+            const cost=overlap*1e5+Math.hypot(b.left-origin.left,b.top-origin.top);
+            if(cost<bestCost){best=b;bestCost=cost;}
+            return overlap===0;
+        };
+        let free=consider(0,0);
+        const stepY=Math.max(12,Math.min(18,origin.h*.8)),stepX=stepY;
+        for(let ring=1;!free&&ring<=24;ring++){
+            const offsets=[];
+            for(let x=-ring;x<=ring;x++)offsets.push([x*stepX,-ring*stepY],[x*stepX,ring*stepY]);
+            for(let y=1-ring;y<ring;y++)offsets.push([-ring*stepX,y*stepY],[ring*stepX,y*stepY]);
+            offsets.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));
+            for(const [dx,dy] of offsets)if(consider(dx,dy)){free=true;break;}
+        }
+        // On a very crowded imported map every name still remains available;
+        // choose the least overlap if the surrounding screen is already full.
+        remember(best);boxes.push(best);
+        return{box:best,fitted,show:true,origin};
+    };
+    // Towns use the remaining space before optional geographic annotations.
+    const townPlacements=new Map();
+    // Long and distinctive names have fewer nearby fits. Give them their place
+    // before the small labels, instead of pushing the smallest high cities away
+    // from their mountains merely because the population sort put them last.
+    const townOrder=measured.filter(v=>v.feature.town).sort((a,b)=>Number(!!b.feature.highCitadel)-Number(!!a.feature.highCitadel)||b.variants[0].width-a.variants[0].width);
+    for(const v of townOrder)townPlacements.set(v,fitTown(v));
     for (const v of measured) {
-        const {element:e,feature:f,region}=v,{box,fitted,show}=region?layout.placements.get(v):fit(v,boxes);
+        const {element:e,feature:f,region}=v,{box,fitted,show,origin}=region?layout.placements.get(v):f.town?townPlacements.get(v):fit(v,boxes);
+        if(f.town&&origin){
+            const dx=origin.left-box.left,dy=origin.top-box.top;
+            const values={'--town-anchor-x':dx+'px','--town-anchor-y':dy+'px','--town-leader-length':Math.hypot(dx,dy)+'px','--town-leader-angle':Math.atan2(dy,dx)+'rad'};
+            for(const [key,value] of Object.entries(values))if(e.style.setProperty)e.style.setProperty(key,value);else e.style[key]=value;
+        }
         if(region&&e.querySelector?.('.realmFullName')){
             e.dataset.labelVariant=fitted.kind;
             if(Number.isInteger(box.anchor))e.dataset.anchorCell=String(box.anchor);

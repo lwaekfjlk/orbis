@@ -30,7 +30,7 @@ window.ContinuousMap = (() => {
   renderer.buildTerrain=function(){return layer.buildTerrain();};
   installDepthRasterizer(renderer);renderer.renderQuality=1;renderer.backgroundColor=rgb('#79999d');renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));
   const visible=renderer.visible;renderer.visible=function(name){const v=layer.visible(name);return v===null?visible.call(this,name):v;};
-  const prior=renderer.onChange;renderer.onChange=()=>{prior();onCamera();};
+  const prior=renderer.onChange;renderer.onChange=()=>{onCamera();prior();};
   const el=document.createElement('div');el.id='cmLabels';E('stage').appendChild(el);
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
   const btn=document.createElement('button');btn.id='cmContext';btn.className='cm-context glass';btn.textContent='Wider setting';btn.title='Pull back in the same map';btn.onclick=wider;E('omChrome').appendChild(btn);
@@ -53,7 +53,7 @@ window.ContinuousMap = (() => {
   const mode=r.zoom<AtlasSpace.TOWN_ZOOM?'WORLD ATLAS':r.zoom<AtlasSpace.TOWN_ZOOM*3.33?'REGION & TOWNS':r.zoom<AtlasSpace.DETAIL_ZOOM*3.06?'TOWN & LANDSCAPE':'BUILDING DETAIL';
   E('omSceneLabel').textContent=mode+' · ONE CONTINUOUS MAP';E('omPlaceName').textContent=near?nearest.p.name:'The Manyfold World';
   E('cmContext').style.display=r.zoom>AtlasSpace.TOWN_ZOOM*1.04?'block':'none';
-  E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.city).length} towns · scroll towards a town`;
+  E('cmStatus').textContent=layer.loading?`Assembling ${layer.preparing||'nearby town'} · the map remains here`:near?`${LandmarkBinding.highCitadelLabel(nearest.p)||nearest.city.siteEnvironment.label} · ${Math.round(nearest.city.siteEnvironment.minElevation).toLocaleString()}–${Math.round(nearest.city.siteEnvironment.maxElevation).toLocaleString()} model m`:`${sim.realms.filter(c=>c.alive).length} realms · ${sim.provinces.filter(p=>p.settled).length} towns · scroll towards a town`;
   E('omHint').textContent='SCROLL TO APPROACH · SHIFT-DRAG TO ORBIT · CLICK A BUILDING';
   document.body.dataset.detail=r.zoom>=AtlasSpace.TOWN_ZOOM?'local':'atlas';
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
@@ -156,11 +156,9 @@ window.ContinuousMap = (() => {
   E('inspector').querySelectorAll('[data-cm-building]').forEach(el=>el.onclick=()=>focusBuilding(p.id,el.dataset.cmBuilding));bindSaga(E('inspector'),p);E('inspector').querySelectorAll('[data-cm-project]').forEach(el=>el.onclick=async()=>{pause();const result=startCityProject(sim,world,p.id,el.dataset.cmProject);toast(result.message);refreshAll();await layer.ensure(p.id);details(layer.models.get(p.id));});
  }
  function makePins(){if(!enabled||!world||!sim)return;
-  const towns=sim.provinces.filter(p=>p.settled&&p.urbanPop>=650).sort((a,b)=>Number(!!b.highCitadel)-Number(!!a.highCitadel));
-  // Membership must invalidate the label cache even when no city mesh has been
-  // loaded. Retiring or newly eligible towns otherwise leave stale click targets.
-  const sig=world.params.seed+'/'+JSON.stringify(towns.map(p=>[p.id,p.name,p.highCitadel||null]))+'/'+[...layer.models.values()].map(m=>m.p.id+':'+m.key).join('/');if(sig===lastPins)return;lastPins=sig;const node=E('cmLabels');node.replaceChildren();pins=[];
-  for(const p of towns){const button=document.createElement('button');button.className='cm-pin cm-town-pin';button.textContent=(p.highCitadel?(p.highCitadel.kind==='dragon'?'♜ ':'✧ '):'')+p.name;button.title=p.highCitadel?LandmarkBinding.highCitadelLabel(p)+' · '+Math.round(p.highCitadel.elevation).toLocaleString()+' m':p.name;button.onclick=()=>focusTown(p.id);node.appendChild(button);pins.push({button,town:p});}
+  // World labels retain every settlement through the camera transition and
+  // expose the same town focus action. This overlay adds only building names.
+  const sig=world.params.seed+'/'+[...layer.models.values()].map(m=>m.p.id+':'+m.key).join('/');if(sig===lastPins)return;lastPins=sig;const node=E('cmLabels');node.replaceChildren();pins=[];
   for(const m of layer.models.values())for(const b of m.city.buildings.filter(b=>b.landmark)){const a=m.frame.anchors.get(b.id),h=(m.heights[b.id]||b.h)*a.scale,button=document.createElement('button');button.className='cm-pin cm-building-pin';button.textContent=b.name;button.onclick=()=>{select({model:m,building:b,anchor:a});focusBuilding(m.p.id,b.id);};node.appendChild(button);pins.push({button,point:[a.x,a.y+h+.012,a.z],model:m,building:b});}
  }
  function positionPins(){if(!enabled||!world)return;const r=renderer,show=r.zoom>=AtlasSpace.TOWN_ZOOM&&E('names').checked;E('cmLabels').style.display=show?'block':'none';if(!show)return;const boxes=[];
@@ -168,7 +166,7 @@ window.ContinuousMap = (() => {
   // all reads, so the bundled lettering participates in the collision layout.
   for(const v of pins)v.button.style.display='block';
   const measured=pins.map(v=>({...v,w:v.button.offsetWidth,h:v.button.offsetHeight}));
-  for(const v of measured){let point;if(v.town){point=AtlasSpace.point(world,v.town.x,v.town.y,r.relief);point[1]+=.06;}else point=v.point;const q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height,box={x:x-v.w/2-4,y:y-v.h-3,w:v.w+8,h:v.h+6};let valid=box.x>8&&box.x+box.w<r.width-8&&box.y>105&&y<r.height-140&&(v.town?r.zoom<AtlasSpace.DETAIL_ZOOM*2.11:r.zoom>=AtlasSpace.DETAIL_ZOOM*1.11);if(valid&&boxes.some(a=>box.x<a.x+a.w&&box.x+box.w>a.x&&box.y<a.y+a.h&&box.y+box.h>a.y))valid=false;
+  for(const v of measured){const point=v.point,q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height,box={x:x-v.w/2-4,y:y-v.h-3,w:v.w+8,h:v.h+6};let valid=box.x>8&&box.x+box.w<r.width-8&&box.y>105&&y<r.height-140&&r.zoom>=AtlasSpace.DETAIL_ZOOM*1.11;if(valid&&boxes.some(a=>box.x<a.x+a.w&&box.x+box.w>a.x&&box.y<a.y+a.h&&box.y+box.h>a.y))valid=false;
    // Do not put labels through an intervening mountain face.
    if(valid){const floor=AtlasSpace.pickGround(r,x,y);if(floor){const d=dot(sub(floor.point,point),r.dir);if(d<-.035)valid=false;}}
    v.button.style.display=valid?'block':'none';v.button.style.left=x+'px';v.button.style.top=y+'px';if(valid)boxes.push(box);

@@ -156,10 +156,12 @@ test('A small country keeps its only owned label position when a town competes f
     assert.equal(realm.element.style.opacity, '1', 'a town label must not erase its country');
     assert.equal(realm.element.style.pointerEvents, 'auto');
     assert.equal(realm.element.style.left, '300px', 'the country remains on its own valid anchor');
-    assert.equal(city.element.style.opacity, '0', 'town lettering yields rather than overlapping the country name');
-    assert.equal(city.element.tabIndex,-1,'invisible text is not a keyboard trap');
-    assert.equal(city.element.style.left, '300px');
-    assert.equal(city.element.style.top, '220px');
+    assert.equal(city.element.style.opacity, '1', 'town lettering moves into the available space');
+    assert.equal(city.element.tabIndex,0,'every visible town remains accessible');
+    const x=parseFloat(city.element.style.left),y=parseFloat(city.element.style.top);
+    assert(x+58<=177||x-58>=423||y<=202||y-28>=238,'town and country names must not overlap');
+    assert.equal(x+parseFloat(city.element.style['--town-anchor-x']),300);
+    assert.equal(y+parseFloat(city.element.style['--town-anchor-y']),220,'the leader retains the original settlement location');
 });
 
 function measuredRealm(id,x,y,{full=180,compact=80,rows=2,anchors=[{x,y,i:id}],labelSize=20}={}){
@@ -272,13 +274,13 @@ test('Formal realm names use recognizable state forms and preserve custom names'
     assert.equal(E.RealmNames.fullName(null), '');
 });
 
-test('World overview leaves space for realm names and reveals minor town labels on approach', () => {
+test('World overview and approach both retain minor town names beside realm names', () => {
     const town = mapLabel({ name: 'Mossford', town: true, minZoom: 2, x: 300, y: 220 }, 80, 24);
     const realm = mapLabel({ name: 'Kingdom of Asgard', realm: 0, x: 300, y: 220,
         anchors: [{ x: 300, y: 220 }, { x: 550, y: 220 }] }, 150, 32);
     positionMapLabels([realm, town], 1);
-    assert.equal(town.element.style.opacity, '0');
-    assert.equal(realm.element.style.left, '300px');
+    assert.equal(town.element.style.opacity, '1');
+    assert.equal(realm.element.style.left, '550px');
     positionMapLabels([realm, town], 2);
     assert.equal(town.element.style.opacity, '1');
     assert.equal(realm.element.style.left, '550px');
