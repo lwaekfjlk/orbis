@@ -136,6 +136,13 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         if (!net)
             return;
         const key = `${net.signature}/${this.relief}/${this.continuousLayer ? 1 : 0}`;
+        // Borders can change without a settlement moving or a road being rerouted.
+        // Refresh their buildings independently of the cached road network.
+        const postKey = `${key}/${s.provinces.map(p => p.owner).join(',')}/${s.realms.map(c => c.alive ? 1 : 0).join('')}/${this.continuousLayer?.natural ? 1 : 0}/${this.continuousLayer?.lastLandscapeKey || ''}`;
+        if (this.frontierPostKey !== postKey || !this.meshes?.frontierPosts) {
+            this.buildFrontierPosts();
+            this.frontierPostKey = postKey;
+        }
         // setWorld clears GPU/software meshes even when the replacement seed
         // reproduces the same network. A matching key alone cannot restore it.
         if (this.roadKey === key && ['roads','bridges','ports','seaLanes','frontierPosts'].every(name => this.meshes?.[name]))
@@ -172,7 +179,6 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.upload('bridges', decks, true);
         this.upload('ports', ports, true);
         this.upload('seaLanes', lanes, false, .72, .6);
-        this.buildFrontierPosts();
         this.roadStats = { ...net.stats, roadTriangles: roads.data.length / 27, portTriangles: ports.data.length / 27 };
         // The atlas uses the cartographic ribbons above. Build the detailed band
         // when the camera reaches it, and invalidate it when the network changes.
@@ -191,34 +197,52 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
      */
     AtlasRenderer.prototype.buildFrontierPosts = function () {
         const w = this.world, s = this.sim, g = new Geometry();
-        if (!w || !s || !s.administrationGraph)
+        if (!w || !s)
             return;
+        const dry = at => Number.isInteger(at) && at >= 0 && at < w.height.length && w.height[at] > 0 && !(w.lake?.[at] > 0);
         const best = new Map();
         for (let a = 0; a < s.provinces.length; a++)
-            for (const e of s.administrationGraph[a]) {
+            for (const e of s.administrationGraph?.[a] || []) {
                 if (e.to < a)
                     continue;
                 const oa = s.provinces[a].owner, ob = s.provinces[e.to].owner;
-                if (oa < 0 || ob < 0 || oa === ob)
+                if (oa < 0 || ob < 0 || oa === ob || !s.realms[oa]?.alive || !s.realms[ob]?.alive || !e.crossing?.every(dry))
                     continue;
                 const key = oa < ob ? oa + ':' + ob : ob + ':' + oa;
                 if (!best.has(key) || e.cost < best.get(key).cost)
                     best.set(key, { cost: e.cost, at: e.crossing[0] });
             }
         const stone = rgb('#a89e8c'), dark = rgb('#6d6555'), roof = rgb('#7a6a58');
+        // This is a building at every camera distance, not an enlarged map marker.
+        // Its 4.08-unit footprint and 5.82-unit height match ordinary town defenses,
+        // including the compact high cities. Streaming and population never set scale.
+        const unit = AtlasSpace.TOWN_UNIT, scale = 12 * unit, half = .17 * scale;
+        let count = 0;
         for (const { at } of best.values()) {
             const x = at % GW, y = at / GW | 0;
-            if (w.height[at] <= 0)
-                continue;
-            const ground = this.ground(x, y), base = this.coord(x, y, ground);
+            const heights = [];
+            for (const dx of [-half, 0, half]) for (const dz of [-half, 0, half]) {
+                const gx = x + dx / AtlasSpace.X, gy = y + dz / AtlasSpace.Z;
+                if (gx < 0 || gx > GW - 1 || gy < 0 || gy > GH - 1 || !dry(Math.round(gy) * GW + Math.round(gx))) continue;
+                const h = this.ground(gx, gy);if (Number.isFinite(h) && h >= 0) heights.push(h);
+            }
+            if (heights.length !== 9) continue;
+            const top = Math.max(...heights), low = Math.min(...heights);
+            // A small rigid footing may meet the slope; a cliff may not become a
+            // tower-sized pedestal. Leave unsuitable crossings unbuilt.
+            if (top - low > 2 * unit) continue;
+            const base = this.coord(x, y, top);
+            if (top > low) g.box(base[0], low, base[2], half, half, top - low, dark);
             // A shoulder of rubble, a square tower, a dark opening and a cap.
-            g.box(base[0], base[1], base[2], .17, .17, .05, dark);
-            g.box(base[0], base[1] + .04, base[2], .11, .11, .30, stone);
-            g.box(base[0], base[1] + .12, base[2] + .056, .035, .035, .07, dark);
-            g.box(base[0], base[1] + .34, base[2], .155, .155, .045, roof);
-            g.cone(base[0], base[1] + .385, base[2], .085, 0, .10, roof, 4);
+            const box = (dy, rx, rz, h, color, dz = 0) => g.box(base[0], base[1] + dy * scale, base[2] + dz * scale, rx * scale, rz * scale, h * scale, color);
+            box(0, .17, .17, .05, dark);
+            box(.04, .11, .11, .30, stone);
+            box(.12, .035, .035, .07, dark, .111);
+            box(.34, .155, .155, .045, roof);
+            g.cone(base[0], base[1] + .385 * scale, base[2], .085 * scale, 0, .10 * scale, roof, 4);
+            count++;
         }
-        this.frontierPosts = best.size;
+        this.frontierPosts = count;
         this.upload('frontierPosts', g, true);
     };
     const ACCESS_CACHE = new WeakMap();
