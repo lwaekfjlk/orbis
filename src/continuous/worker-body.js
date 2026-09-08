@@ -2,7 +2,24 @@
 self.window=self;self.requestAnimationFrame=()=>0;
 let loadedWorld=null,indexedSim=null,indexToken=null;
 const pack=value=>typeof value==='function'?undefined:ArrayBuffer.isView(value)?value:Array.isArray(value)?value.map(pack):value&&typeof value==='object'?Object.fromEntries(Object.entries(value).filter(([,v])=>typeof v!=='function').map(([k,v])=>[k,pack(v)])):value;
-self.onmessage=e=>{const{id,world:w,sim:s,pid,relief,kind,token,key}=e.data;try{
+self.onmessage=async e=>{const{id,world:w,sim:s,pid,relief,kind,token,key}=e.data;
+ if(kind==='world-build'){
+  let payload;
+  try{
+   const world=await generateWorld(e.data.params,async text=>self.postMessage({id,kind,progress:text}));
+   self.postMessage({id,kind,progress:'08 / Founding towns and trade routes'});
+   payload={world,sim:createCivilization(world,e.data.options)};
+  }catch(error){self.postMessage({id,kind,error:error.message,stack:error.stack,failure:'generation'});return;}
+  try{
+   // This worker is disposable. Transfer only its newly generated buffers;
+   // existing parent worlds and saves are never sent here or detached.
+   const buffers=new Set(),seen=new Set();
+   function visit(v){if(!v||typeof v!=='object'||seen.has(v))return;seen.add(v);if(ArrayBuffer.isView(v))buffers.add(v.buffer);else if(v instanceof ArrayBuffer)buffers.add(v);else Object.values(v).forEach(visit);}
+   visit(payload);self.postMessage({id,kind,payload},[...buffers]);
+  }catch(error){self.postMessage({id,kind,error:error.message,stack:error.stack,failure:'transport'});}
+  return;
+ }
+ try{
  if(kind==='landmark-index'){
   if(w){loadedWorld=w;indexedSim=s;indexToken=token;}
   const p=indexedSim?.provinces[pid];

@@ -128,11 +128,12 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
             g.box(p[0], p[1], p[2], width * .55, width * .95, Math.max(.05, top - p[1]), rgb('#9d9384'));
         }
     }
-    AtlasRenderer.prototype.buildRoads = function () {
+    AtlasRenderer.prototype.roadBuildSteps = function* () {
         const w = this.world, s = this.sim;
         if (!w || !s || typeof RoadNetwork === 'undefined')
             return;
         const net = RoadNetwork.ensure(w, s);
+        yield;
         if (!net)
             return;
         const key = `${net.signature}/${this.relief}/${this.continuousLayer ? 1 : 0}`;
@@ -142,6 +143,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         if (this.frontierPostKey !== postKey || !this.meshes?.frontierPosts) {
             this.buildFrontierPosts();
             this.frontierPostKey = postKey;
+            yield;
         }
         // setWorld clears GPU/software meshes even when the replacement seed
         // reproduces the same network. A matching key alone cannot restore it.
@@ -150,7 +152,9 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.roadKey = key;
         this.roadNetwork = net;
         const roads = new Geometry(), decks = new Geometry(), ports = new Geometry(), lanes = new Geometry();
+        let roadIndex = 0;
         for (const road of net.roads) {
+            if (roadIndex++ % 12 === 0) yield;
             const style = CLASS_STYLE[road.cls] || CLASS_STYLE.trail;
             if (style.casing)
                 ribbon(this, roads, road.path, style.width * 1.42, rgb(style.casing), LIFT - .006);
@@ -160,6 +164,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         }
         for (const port of net.ports)
             quay(this, ports, w, port);
+        yield;
         // A faint standing hint of the shipping the civilization model already computes.
         // The diplomacy layer draws its own trade lanes; this one steps aside there.
         // Dashes step along each leg by DISTANCE. A lane is now a handful of long straight
@@ -175,15 +180,22 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
                     lanes.line(this.coord(lerp(x0, x1, u), lerp(y0, y1, u), .055), this.coord(lerp(x0, x1, v), lerp(y0, y1, v), .055), .032, rgb('#b7cbc8'));
                 }
             }
-        this.upload('roads', roads, false, .22);
-        this.upload('bridges', decks, true);
-        this.upload('ports', ports, true);
-        this.upload('seaLanes', lanes, false, .72, .6);
+        yield;
+        this.upload('roads', roads, false, .22); yield;
+        this.upload('bridges', decks, true); yield;
+        this.upload('ports', ports, true); yield;
+        this.upload('seaLanes', lanes, false, .72, .6); yield;
         this.roadStats = { ...net.stats, roadTriangles: roads.data.length / 27, portTriangles: ports.data.length / 27 };
         // The atlas uses the cartographic ribbons above. Build the detailed band
         // when the camera reaches it, and invalidate it when the network changes.
         this.nearRoadKey = null;
         if (this.zoom >= AtlasSpace.TOWN_ZOOM) this.buildNearRoads(true);
+    };
+    AtlasRenderer.prototype.buildRoads = function () {
+        for (const step of this.roadBuildSteps()) {}
+    };
+    AtlasRenderer.prototype.buildRoadsAsync = async function (yieldFn = () => new Promise(resolve => setTimeout(resolve, 0))) {
+        for (const step of this.roadBuildSteps()) await yieldFn();
     };
     /** The same roads again, seated on the ground rather than above it, for the band
      * where a town's own streets are drawn. Only the stretches the camera can see are
@@ -415,6 +427,13 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
     AtlasRenderer.prototype.buildCivilization = function () {
         priorBuild.call(this);
         this.buildRoads();
+        if (typeof this.buildFolk === 'function')
+            this.buildFolk(this.folkClock || 0);
+    };
+    const priorBuildAsync = AtlasRenderer.prototype.buildCivilizationAsync;
+    AtlasRenderer.prototype.buildCivilizationAsync = async function (yieldFn = () => new Promise(resolve => setTimeout(resolve, 0))) {
+        await priorBuildAsync.call(this, yieldFn);
+        await this.buildRoadsAsync(yieldFn);
         if (typeof this.buildFolk === 'function')
             this.buildFolk(this.folkClock || 0);
     };

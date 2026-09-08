@@ -55,14 +55,18 @@ async function defaultReference() {
 }
 const reference=baseline?null:await defaultReference();
 const instrumentation = `
-window.__loadProbe={start:performance.now(),fullCities:0,siteQueries:0,terrainBuilds:0};
+window.__loadProbe={start:performance.now(),fullCities:0,siteQueries:0,terrainBuilds:0,mainWorldBuilds:0,mainCivilizations:0,longTasks:[]};
+new PerformanceObserver(list=>__loadProbe.longTasks.push(...list.getEntries().map(e=>({start:e.startTime,duration:e.duration})))).observe({type:'longtask',buffered:true});
+const probeWorld=generateWorld;generateWorld=function(...args){__loadProbe.mainWorldBuilds++;return probeWorld(...args);};
+const probeCivilization=createCivilization;createCivilization=function(...args){__loadProbe.mainCivilizations++;return probeCivilization(...args);};
 window.__meshSignature=${meshSignature.toString()};
 const probeGenerate=generateCity;generateCity=function(...args){__loadProbe.fullCities++;return probeGenerate(...args);};
 if(typeof generateCityLandmark==='function'){const probeQuery=generateCityLandmark;generateCityLandmark=function(...args){__loadProbe.siteQueries++;return probeQuery(...args);};}
 const probePreload=SacredCityKit.preload;
 if(probePreload)SacredCityKit.preload=function(...args){const job=probePreload(...args);let done=false,frames=0;function frame(){if(!done){frames++;requestAnimationFrame(frame);}}requestAnimationFrame(frame);job.promise=job.promise.then(result=>{done=true;__loadProbe.index={...result,frames};return result;});return job;};
-const probeTerrain=ContinuousCityLayer.prototype.buildTerrain;
-ContinuousCityLayer.prototype.buildTerrain=function(...args){__loadProbe.terrainBuilds++;return probeTerrain.apply(this,args);};
+const terrainEntry=ContinuousCityLayer.prototype.terrainSteps?'terrainSteps':'buildTerrain';
+const probeTerrain=ContinuousCityLayer.prototype[terrainEntry];
+ContinuousCityLayer.prototype[terrainEntry]=function(...args){__loadProbe.terrainBuilds++;return probeTerrain.apply(this,args);};
 `;
 const html = original.replace('/** One renderer and one atlas canvas.', instrumentation + '/** One renderer and one atlas canvas.');
 assert.notEqual(html, original, 'bootstrap instrumentation was not installed');
@@ -92,6 +96,9 @@ for (let run = 0; run < runs; run++) {
   const result = await page.evaluate(() => ({
    readyMs: performance.now() - __loadProbe.start, generationMs: window.lastGenerationMs,
    fullCities: __loadProbe.fullCities, terrainBuilds: __loadProbe.terrainBuilds,
+   mainWorldBuilds: __loadProbe.mainWorldBuilds, mainCivilizations: __loadProbe.mainCivilizations,
+   longTasks: __loadProbe.longTasks,
+   blockingMs: __loadProbe.longTasks.reduce((sum,e)=>sum+Math.max(0,e.duration-50),0),
    siteQueries: __loadProbe.siteQueries, index: __loadProbe.index,
    directory: LandmarkUI.registry.length, sacredSites: LandmarkUI.registry.filter(s => s.recipe.sacred).length,
    fingerprints: [physicalFingerprint(world), settlementFingerprint(sim), politicalFingerprint(sim)],
@@ -108,6 +115,8 @@ for (let run = 0; run < runs; run++) {
   if (!baseline) {
    assert.equal(result.landformVersion,3,'cold-load benchmark booted the legacy terrain fixture');
    assert.deepEqual(await page.evaluate('JSON.parse(JSON.stringify(LandmarkUI.registry))'),reference.directory,'worker index differs from independent source queries');
+   assert.equal(result.mainWorldBuilds, 0, 'startup generated geography on the UI thread');
+   assert.equal(result.mainCivilizations, 0, 'startup founded its civilization on the UI thread');
    assert.equal(result.fullCities, 0, 'startup generated complete cities for its directory');
    assert.equal(result.siteQueries, 0, 'startup ran its site queries on the UI thread');
    assert.equal(result.index.status, 'complete'); assert(result.index.frames > 2, 'landmark queries blocked animation frames');
@@ -143,8 +152,8 @@ for (let run = 0; run < runs; run++) {
     await page.evaluate('window.__beforeFailureWorld=world;window.__beforeFailureSim=sim');
     // Force attachment failure only inside this isolated test page.
     await page.evaluate(async () => {
-     const previous = renderer.buildCivilization;
-     renderer.buildCivilization = function() {renderer.buildCivilization = previous; throw Error('TEST attachment failure');};
+     const previous = renderer.buildCivilizationAsync;
+     renderer.buildCivilizationAsync = async function() {renderer.buildCivilizationAsync = previous; throw Error('TEST attachment failure');};
      await buildWorld({...GEN_DEFAULTS, seed:'Loading-recovery'});
     });
     await stable(); await page.waitForTimeout(350); await stable();

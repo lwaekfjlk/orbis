@@ -35,6 +35,7 @@ export const scripts = [
     'src/ui/landmark-ui.js',
     'src/ui/onemap-ui.js',
     'src/continuous/generated-worker.js',
+    'src/continuous/world-builder.js',
     'src/continuous/ruin-layer.js',
     'src/ui/continuous-map.js',
     'src/bootstrap.js',

@@ -1,0 +1,255 @@
+{
+  "gpu": {
+    "overview": {
+      "terrain": {
+        "count": 321150,
+        "vertices": "735a325d41480cb7294dab7b6f9f766abc293f3be82d2f138d6316bf86d86016"
+      },
+      "trees": {
+        "count": 78936,
+        "vertices": "23788b0de7f3cf19bd1071b3927afa542d23c22e6c7695b61b635409b225d2c8"
+      },
+      "volcanoes": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "dunes": {
+        "count": 7920,
+        "vertices": "14048e850181a3282670e3734614217d08f109fae609e457358cf2d095c55cbb"
+      },
+      "smoke": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "rivers": {
+        "count": 11160,
+        "vertices": "1a9c5bd4971982ff7aa662d208b6ad5dab60528f2c89ea047eaa05732cd6d87e"
+      },
+      "borders": {
+        "count": 13146,
+        "vertices": "a5d88e5ec243478b3a519ffddf0ef0297f7f3b426ee4c145e7e197ae3e2a2d97"
+      },
+      "arrows": {
+        "count": 216,
+        "vertices": "304dbc0a8126cb0e84420f8a8e67c60683f2457d3a82948fe58d19c597d4e441"
+      },
+      "currents": {
+        "count": 963,
+        "vertices": "189cb9ddf10574574a8c64bccd88dd2d2ff9cd8759c7b8caefbcddddfc1c74ef"
+      },
+      "wind": {
+        "count": 1782,
+        "vertices": "2b5031cac4bb6375205fc83060b8b9c4e9170e4863c2fd02ebe0a9c652608335"
+      },
+      "iceflow": {
+        "count": 5124,
+        "vertices": "29c25d634890b8fae0787c80ae8f3bedf4ec88606d36b48c4c9d2a68b35fd680"
+      },
+      "icefloes": {
+        "count": 4770,
+        "vertices": "3dfbe0f6972489023ad15571ff2c48f9c95ded8b3beef2dcfc5ab3246972c181"
+      },
+      "legends": {
+        "count": 756,
+        "vertices": "cfdf1b4ca19d6cd14722809b1567e58b4e93f0b6b869b5a432347e4f11b83e79"
+      },
+      "settlements": {
+        "count": 8940,
+        "vertices": "44d9650fa3fc59bd0cf689ebd6c4897fb43b9ae91a10c1ab49dabeb8b232ee12"
+      },
+      "frontiers": {
+        "count": 12078,
+        "vertices": "cf77e507c0f0cef1f00f5bbf5e3087618cfde0f0849c583a492aaa3c2a4c94a5"
+      },
+      "tradeRoutes": {
+        "count": 1488,
+        "vertices": "cfebdfbf5bfeedff9c255a589ae8117766b018566c7fdfed67a3d5101a734893"
+      },
+      "pactLines": {
+        "count": 1728,
+        "vertices": "a913ef6676de88b2f753370a94b907ac406764dea6557b37c898de7f3e8d11f4"
+      },
+      "warLines": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "reeds": {
+        "count": 1512,
+        "vertices": "5c73a294ec4db45dd5212ec6ed4dfeeebf7ae9c9a3f7f5ee16dcd5c8a143438d"
+      },
+      "roads": {
+        "count": 113112,
+        "vertices": "c90872548953d90a9afa09531f3ca36fbeb039bff6a9d414da05a65fa01c4f4d"
+      },
+      "bridges": {
+        "count": 12738,
+        "vertices": "726858ec5d98664ebd347ab8252d1fe0f80814060e45dfbcc5d60c6ee20ef00d"
+      },
+      "ports": {
+        "count": 24144,
+        "vertices": "9c1e3f6ebad1ff89fa37fd73e663817fb13c0c30ae79595fd752c18d53e30e7c"
+      },
+      "seaLanes": {
+        "count": 12702,
+        "vertices": "4a1c2cc1a437f6238a918a59ed32e4160e1a34f6f91b029b8292bd30241c8d53"
+      },
+      "frontierPosts": {
+        "count": 2508,
+        "vertices": "008e5ff983ba49c0a057eb398a821d3fa675987e0de09ac3da546bbe76019f53"
+      },
+      "folk": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "caravans": {
+        "count": 71862,
+        "vertices": "3e2544fd30651342e0cb564ca71e9f01e4b51a0b05bf20470b2ad655fb01b6da"
+      }
+    },
+    "regional": {
+      "folk": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "caravans": "65e87b34b43d86ce57783ba2fa4bba5d125e3cfe65dd5241fa28233731557174",
+      "count": 8172
+    }
+  },
+  "software": {
+    "overview": {
+      "terrain": {
+        "count": 321150,
+        "vertices": "735a325d41480cb7294dab7b6f9f766abc293f3be82d2f138d6316bf86d86016",
+        "styles": "f30b2fa525c029c1b1e92498c97eb7eb190a523430a4540aaf2ba00c7c959927"
+      },
+      "trees": {
+        "count": 78936,
+        "vertices": "23788b0de7f3cf19bd1071b3927afa542d23c22e6c7695b61b635409b225d2c8",
+        "styles": "279a5513542d7d1134a2c8646f0af5f9dbdad1e804c887c371129c6a0e7c841c"
+      },
+      "volcanoes": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "styles": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "dunes": {
+        "count": 7920,
+        "vertices": "14048e850181a3282670e3734614217d08f109fae609e457358cf2d095c55cbb",
+        "styles": "374bbb85af9cb45006881584f945c1021ce8d82011af5959b3d3d0a3d356799a"
+      },
+      "smoke": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "styles": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "rivers": {
+        "count": 11160,
+        "vertices": "1a9c5bd4971982ff7aa662d208b6ad5dab60528f2c89ea047eaa05732cd6d87e",
+        "styles": "46b07d2345a45857d9e7a62c1b4ae5b7e3c63e28b80ffd3a2c13b4fe09c415ff"
+      },
+      "borders": {
+        "count": 13146,
+        "vertices": "a5d88e5ec243478b3a519ffddf0ef0297f7f3b426ee4c145e7e197ae3e2a2d97",
+        "styles": "57ff57914373b0d62303ac36893229e265474450f9dc96693d3095ce2d6c5519"
+      },
+      "arrows": {
+        "count": 216,
+        "vertices": "304dbc0a8126cb0e84420f8a8e67c60683f2457d3a82948fe58d19c597d4e441",
+        "styles": "ab82179e57a4e7e5f1f489b095a65e6d02cc7853252dbdcaabfa91560a225efa"
+      },
+      "currents": {
+        "count": 963,
+        "vertices": "189cb9ddf10574574a8c64bccd88dd2d2ff9cd8759c7b8caefbcddddfc1c74ef",
+        "styles": "6d74ef5aa5986a7d185b6f9287d544e761a54b25a972e6dc293985977ddda7eb"
+      },
+      "wind": {
+        "count": 1782,
+        "vertices": "2b5031cac4bb6375205fc83060b8b9c4e9170e4863c2fd02ebe0a9c652608335",
+        "styles": "1e15dd28e8e53cb10fa5e3a69db7295fffc81d116f7a84414238fe15f19dbd3e"
+      },
+      "iceflow": {
+        "count": 5124,
+        "vertices": "29c25d634890b8fae0787c80ae8f3bedf4ec88606d36b48c4c9d2a68b35fd680",
+        "styles": "5ca6093516b956e2f43b3c1bb2a22c3f6b354357eb2096d50b3174be523e75b2"
+      },
+      "icefloes": {
+        "count": 4770,
+        "vertices": "3dfbe0f6972489023ad15571ff2c48f9c95ded8b3beef2dcfc5ab3246972c181",
+        "styles": "36f08000527375b1d25c67faabca10319403a84eb8da01ce4f9927f5a64765d3"
+      },
+      "legends": {
+        "count": 756,
+        "vertices": "cfdf1b4ca19d6cd14722809b1567e58b4e93f0b6b869b5a432347e4f11b83e79",
+        "styles": "d81c0619ce25724dfa36418336a817f7195baa1cf3ca913ccd7ff72045c6c8f8"
+      },
+      "settlements": {
+        "count": 8940,
+        "vertices": "44d9650fa3fc59bd0cf689ebd6c4897fb43b9ae91a10c1ab49dabeb8b232ee12",
+        "styles": "1ebfc49426aba1682682c49996c993a5858117df8559a79c8810bc1bb02e7310"
+      },
+      "frontiers": {
+        "count": 12078,
+        "vertices": "cf77e507c0f0cef1f00f5bbf5e3087618cfde0f0849c583a492aaa3c2a4c94a5",
+        "styles": "f7cdc07889ad7acaa8fb5a42a81356bf38921a6868d13dfa76452f793fefda6e"
+      },
+      "tradeRoutes": {
+        "count": 1488,
+        "vertices": "cfebdfbf5bfeedff9c255a589ae8117766b018566c7fdfed67a3d5101a734893",
+        "styles": "8ca1c545742a8e55f8096779884d45c08b7e1f3ea303d8ee16a504f449e6e72a"
+      },
+      "pactLines": {
+        "count": 1728,
+        "vertices": "a913ef6676de88b2f753370a94b907ac406764dea6557b37c898de7f3e8d11f4",
+        "styles": "168c3ff64ad7609919fbd32c5e5f5f00f0c36d1c702195185e120e6326a7b6a1"
+      },
+      "warLines": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "styles": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "reeds": {
+        "count": 1512,
+        "vertices": "5c73a294ec4db45dd5212ec6ed4dfeeebf7ae9c9a3f7f5ee16dcd5c8a143438d",
+        "styles": "5b6a828125d4363c28946b1b7f7397fde6d71e3d6461d3293ace6b54dcbff30b"
+      },
+      "roads": {
+        "count": 113112,
+        "vertices": "c90872548953d90a9afa09531f3ca36fbeb039bff6a9d414da05a65fa01c4f4d",
+        "styles": "1f241cbc042564aff45bd9e8f2b12d7349fd86c8493a72fee1173f55fb65ba3b"
+      },
+      "bridges": {
+        "count": 12738,
+        "vertices": "726858ec5d98664ebd347ab8252d1fe0f80814060e45dfbcc5d60c6ee20ef00d",
+        "styles": "f4f1f6ded9a00f802cd902f97ceb5e0fb26d1350f9a738253704ccba7c98d257"
+      },
+      "ports": {
+        "count": 24144,
+        "vertices": "9c1e3f6ebad1ff89fa37fd73e663817fb13c0c30ae79595fd752c18d53e30e7c",
+        "styles": "6fc4848618f3e475b34d5ec18d9f2b797fa0e76f799b564b6cdd24e3a4378910"
+      },
+      "seaLanes": {
+        "count": 12702,
+        "vertices": "4a1c2cc1a437f6238a918a59ed32e4160e1a34f6f91b029b8292bd30241c8d53",
+        "styles": "151a6303afdf216205715d46fb8ddf25659b50b560d79b0b2da196e660376f25"
+      },
+      "frontierPosts": {
+        "count": 2508,
+        "vertices": "008e5ff983ba49c0a057eb398a821d3fa675987e0de09ac3da546bbe76019f53",
+        "styles": "1e26e944d9b49bceae52ad998bc2524f393c2eed03aa4aefec067cae9b80250c"
+      },
+      "folk": {
+        "count": 0,
+        "vertices": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "styles": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "caravans": {
+        "count": 11280,
+        "vertices": "548195633ea7874e669d80f701f9c960899edde1821d3f45a4d544d5d4a7b887",
+        "styles": "c12ac447548b18095853fc9b1e3445b0fa31f8717fc50b8cdaf2f1392f8caac7"
+      }
+    },
+    "regional": {
+      "folk": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "caravans": "ef15c9797553e457acecf68497c46dc2731ef3644bee83d2d0f2afc9a452c295",
+      "count": 6036
+    },
+    "shadow": "d337d826bee54aab1340b9184530c6fed847b3f6eeed07a94d83146ac6dc5672"
+  }
+}

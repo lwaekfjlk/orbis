@@ -1,0 +1,440 @@
+{
+  "baselineCommit": "49021ed",
+  "implementationCommit": "4f5b0e2",
+  "productSha256": "e31d974ceb27f53062e884f4eaa2528faab01e6abe565f8579be472079a899ce",
+  "environment": {
+    "browser": "152.0.7977.76",
+    "viewport": [
+      1480,
+      980
+    ],
+    "renderer": "SwiftShader WebGL2",
+    "offline": true,
+    "runsPerVersion": 1
+  },
+  "method": "Separate cold browser profiles on the same host, standalone HTML, CPU profiler and buffered Long Tasks observer active in both. readyMs runs from bootstrap until the first stable rendered frame. blockingMs sums max(0, task.duration - 50). Durations are local observations, not device-independent thresholds; rAF intervals include browser/GPU startup and are reported separately.",
+  "before": {
+    "generationMs": 12460.5,
+    "readyMs": 13724.199999988079,
+    "blockingMs": 2846,
+    "long": [
+      {
+        "start": 5037.5,
+        "duration": 657
+      },
+      {
+        "start": 6736.5999999940395,
+        "duration": 496
+      },
+      {
+        "start": 3822.7999999821186,
+        "duration": 435
+      },
+      {
+        "start": 5695.5,
+        "duration": 392
+      },
+      {
+        "start": 4685,
+        "duration": 352
+      },
+      {
+        "start": 1361,
+        "duration": 240
+      },
+      {
+        "start": 6367.299999982119,
+        "duration": 196
+      },
+      {
+        "start": 13826,
+        "duration": 175
+      },
+      {
+        "start": 1605.2999999821186,
+        "duration": 124
+      },
+      {
+        "start": 6178.299999982119,
+        "duration": 118
+      },
+      {
+        "start": 3709.7999999821186,
+        "duration": 111
+      },
+      {
+        "start": 6088.5999999940395,
+        "duration": 89
+      },
+      {
+        "start": 1735.9000000059605,
+        "duration": 88
+      },
+      {
+        "start": 6297.5999999940395,
+        "duration": 69
+      },
+      {
+        "start": 14001.90000000596,
+        "duration": 54
+      }
+    ],
+    "maxFrame": 2116.6000000000004,
+    "over50Frames": 16,
+    "fingerprints": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "meshes": {
+      "terrain": 321150,
+      "trees": 78936,
+      "volcanoes": 0,
+      "dunes": 7920,
+      "smoke": 0,
+      "rivers": 11160,
+      "borders": 13146,
+      "arrows": 216,
+      "currents": 963,
+      "wind": 1782,
+      "iceflow": 5124,
+      "icefloes": 4770,
+      "legends": 756,
+      "settlements": 8940,
+      "frontiers": 12078,
+      "tradeRoutes": 1488,
+      "pactLines": 1728,
+      "warLines": 0,
+      "reeds": 1512,
+      "roads": 113112,
+      "bridges": 12738,
+      "ports": 24144,
+      "seaLanes": 12702,
+      "frontierPosts": 2508,
+      "folk": 0,
+      "caravans": 71862
+    },
+    "errors": []
+  },
+  "after": {
+    "generationMs": 11621.59999999404,
+    "readyMs": 12831.90000000596,
+    "blockingMs": 545,
+    "long": [
+      {
+        "start": 1415.1000000238419,
+        "duration": 330
+      },
+      {
+        "start": 6261.5,
+        "duration": 184
+      },
+      {
+        "start": 13140.800000011921,
+        "duration": 168
+      },
+      {
+        "start": 6048.300000011921,
+        "duration": 63
+      }
+    ],
+    "maxFrame": 2133.2,
+    "over50Frames": 17,
+    "fingerprints": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "meshes": {
+      "terrain": 321150,
+      "trees": 78936,
+      "volcanoes": 0,
+      "dunes": 7920,
+      "smoke": 0,
+      "rivers": 11160,
+      "borders": 13146,
+      "arrows": 216,
+      "currents": 963,
+      "wind": 1782,
+      "iceflow": 5124,
+      "icefloes": 4770,
+      "legends": 756,
+      "settlements": 8940,
+      "frontiers": 12078,
+      "tradeRoutes": 1488,
+      "pactLines": 1728,
+      "warLines": 0,
+      "reeds": 1512,
+      "roads": 113112,
+      "bridges": 12738,
+      "ports": 24144,
+      "seaLanes": 12702,
+      "frontierPosts": 2508,
+      "folk": 0,
+      "caravans": 0
+    },
+    "errors": []
+  },
+  "blockingReductionPercent": 80.9,
+  "nodeTests": {
+    "worldBuilder": 5,
+    "mapTerrainRoadsFolkAndAttachment": 57,
+    "failed": 0
+  },
+  "browserRegressionBeforeUpstreamCardMerge": {
+    "passed": true,
+    "productSha256": "5a4c7364c4a48a0aab75ecd97e7e39f5b2185f9548b2695192ace6859d88665d",
+    "defaultFingerprints": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "typedWorldFields": 62,
+    "city": {
+      "id": 529,
+      "name": "Saint Midulrik",
+      "buildings": 214,
+      "triangles": 564727,
+      "worker": true,
+      "sourceFloatMeshesMatch": true
+    },
+    "scenarios": [
+      {
+        "name": "initial real-worker startup",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "native same-seed Recreate",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "replacement async-attachment failure preserves prior town view",
+        "success": false,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "replacement actual-worker generation error is not swallowed",
+        "success": false,
+        "progress": [
+          0,
+          0
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 0,
+        "actualGenerationErrors": 1,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "legacy v6 save restore through file chooser",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "Worker unavailable / full UI fallback",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 1,
+        "mainSim": 1,
+        "actualWorkerResults": 0,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      },
+      {
+        "name": "first-start actual-worker error",
+        "success": false,
+        "progress": [
+          0,
+          0
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 0,
+        "actualGenerationErrors": 1,
+        "ready": false,
+        "overlayVisible": true
+      },
+      {
+        "name": "native Try again after actual-worker error",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      }
+    ],
+    "constructorFallback": true,
+    "legacy": {
+      "implicitLandformVersion": 0,
+      "fingerprints": [
+        "440ae5d0",
+        "e6aee7b8",
+        "d8ba763d"
+      ]
+    },
+    "errors": [],
+    "externalRequests": []
+  },
+  "finalBundleIntegration": {
+    "passed": true,
+    "productSha256": "e31d974ceb27f53062e884f4eaa2528faab01e6abe565f8579be472079a899ce",
+    "defaultFingerprints": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "typedWorldFields": 62,
+    "city": {
+      "id": 529,
+      "name": "Saint Midulrik",
+      "buildings": 214,
+      "triangles": 564727,
+      "worker": true,
+      "sourceFloatMeshesMatch": true
+    },
+    "scenarios": [
+      {
+        "name": "initial real-worker startup",
+        "success": true,
+        "progress": [
+          0,
+          0,
+          9,
+          18,
+          27,
+          36,
+          45,
+          55,
+          64,
+          73,
+          82,
+          91,
+          100
+        ],
+        "mainWorld": 0,
+        "mainSim": 0,
+        "actualWorkerResults": 1,
+        "actualGenerationErrors": 0,
+        "ready": true,
+        "overlayVisible": false
+      }
+    ],
+    "finalIntegrationAfterMain66": true,
+    "errors": [],
+    "externalRequests": []
+  },
+  "baselineBundleSha256": "b612d99f9e66c83c9c842be8387c767771e25a8a9fd8ceb7eb0d553a2afb815c"
+}
