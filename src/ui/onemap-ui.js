@@ -219,7 +219,9 @@ window.OneMap = (() => {
         if(world.height[i]<=0&&!f&&!b){clearSelection();return;}
         selection={kind:'world',i};
         const title=p?.settled?p.name:f?.name||b?.name||BIOME[world.biome[i]][0];
-        const subtitle=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
+        const status=typeof PoliticalLand!=='undefined'?PoliticalLand.status(world,sim,i):null;
+        const geography=f?.legend?f.text:[BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
+        const subtitle=status&&!status.realm&&status.kind!=='water'?PoliticalLand.description(world,sim,i)+' '+geography:geography;
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});
         // Clicking a settlement is met by somebody who lives there. The saga is theirs to
@@ -234,7 +236,7 @@ window.OneMap = (() => {
             :'';
         const kicker=f?.legend?'LEGENDARY PLACE · '+f.kind
             :told?`${(realm?.name||'FREE COMMUNITIES').toUpperCase()} · ${told.title.toUpperCase()}`
-            :realm?.name||'NATURAL WORLD';
+            :realm?.name||(status&&status.kind!=='water'?status.label:'NATURAL WORLD');
         selectionCard(kicker,title,subtitle,buttons,media,realm);
     }
     async function readSaga(id){

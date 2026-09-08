@@ -12,6 +12,9 @@ body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6d
 body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
 body.onemap .maplabel em{font:italic 15px Georgia,serif}
 body.onemap .maplabel.realmLabel em{font:400 var(--realm-label-size,18px)/1.35 var(--realm-lettering);letter-spacing:0;color:#443c2d}
+body.onemap .maplabel.realmLabel .realmCompactName{font-size:clamp(11px,calc(var(--realm-label-size,18px) * .8),17px)}
+body.onemap .maplabel.wildernessLabel em{font:italic 11.5px/1.3 Georgia,serif;color:#566054;letter-spacing:.1px}
+body.onemap .maplabel.wildernessLabel small{font:6px/1.3 ui-monospace,monospace;letter-spacing:1px;color:#657064}
 body.onemap .maplabel.townLabel em{font:italic 10.5px/1.3 var(--town-lettering);letter-spacing:.1px}
 body.onemap .maplabel.legendLabel{color:#5a3d10;text-shadow:0 1px 3px #fffbe8,0 0 10px #f4dda3c4}
 body.onemap .maplabel.legendLabel em{font:17px Georgia,serif;letter-spacing:.7px}

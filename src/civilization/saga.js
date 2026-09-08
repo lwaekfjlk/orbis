@@ -17,8 +17,8 @@ const Saga = (() => {
     const cached = new WeakMap();
     // Sound registers, not ranks. Each people names its children differently; none of
     // these syllables carries a virtue, and heroes are drawn from whoever actually lives
-    // in the province. `mid` is usually empty: it exists to widen the space enough that a
-    // town's hero and some realm's warlord stop landing on the same name.
+    // in the province. Given and family names use independent hashes: a concentrated
+    // homeland needs room for many distinct people who share the same sound register.
     const VOICES = [
         { lead: ['Ald', 'Bren', 'Cor', 'Hal', 'Mar', 'Ost', 'Rand', 'Wen'], mid: ['', '', '', 'e', 'be', 'ho'], tail: ['ric', 'wyn', 'mund', 'gar', 'dis', 'ath'] },
         { lead: ['Aeli', 'Ithe', 'Lyra', 'Neve', 'Sila', 'Thali', 'Ysse'], mid: ['', '', '', 'va', 'me', 'nu'], tail: ['ndel', 'riel', 'wyn', 'ath', 'lien', 'sae'] },
@@ -35,8 +35,10 @@ const Saga = (() => {
     function personOf(p, salt, peopleIndex) {
         const k = peopleIndex ?? Folk.pick(p.people, roll(p, salt));
         const v = VOICES[k] || VOICES[0];
+        const given = pickFrom(v.lead, roll(p, salt + 11)) + pickFrom(v.mid, roll(p, salt + 17)) + pickFrom(v.tail, roll(p, salt + 23));
+        const family = pickFrom(v.lead, roll(p, salt + 67)) + pickFrom(v.mid, roll(p, salt + 73)) + pickFrom(v.tail, roll(p, salt + 79));
         return { people: k, peopleName: PEOPLES[k].name, color: PEOPLES[k].color,
-            name: pickFrom(v.lead, roll(p, salt + 11)) + pickFrom(v.mid, roll(p, salt + 17)) + pickFrom(v.tail, roll(p, salt + 23)),
+            name: `${given} ${family}`,
             rank: pickFrom(RANKS, roll(p, salt + 31)) };
     }
     /** A conqueror belongs to the REALM, not to the town that fell. Seeding this from the

@@ -45,7 +45,8 @@ test('Realm area counts weighted, owned dry land exactly once, including zero-va
 test('Profile facts, geography, residents, economy and diplomacy follow source data', () => {
     const { world, sim } = fixture(), p = Profile.create(world, sim, 0);
     assert.equal(p.title, 'Kingdom of Asgard');
-    assert.deepEqual(p.facts, { area: 6, areaShare: 6 / 15, areaRank: 1, provinceCount: 2, townCount: 2, population: 400, capital: 'High Seat' });
+    assert.deepEqual(p.facts, { area: 6, areaShare: 6 / 15, areaRank: 1, provinceCount: 2, townCount: 2, population: 400, capital: 'High Seat', primaryPeople: 'Sylvans', primaryPeopleShare: .75 });
+    assert.match(section(p, 'Peoples and faiths'), /Sylvans form the majority/);
     assert.match(section(p, 'Origins and identity'), /founded in year 400/);
     assert.match(section(p, 'Origins and identity'), /Norse mythology/);
     assert.match(section(p, 'Land and climate'), /Thaloria/);
@@ -83,7 +84,7 @@ test('Each introduction reflects changed borders, people, capital, faith and dip
     sim.events.push({ year: 420, actors: [0], type: 'capital', text: 'Asgard moves its capital to Green Fields.' });
     const after = Profile.create(world, sim, 0);
     assert.notDeepEqual(after, before);
-    assert.deepEqual(after.facts, { area: 3, areaShare: 3 / 15, areaRank: 2, provinceCount: 1, townCount: 1, population: 600, capital: 'Green Fields' });
+    assert.deepEqual(after.facts, { area: 3, areaShare: 3 / 15, areaRank: 2, provinceCount: 1, townCount: 1, population: 600, capital: 'Green Fields', primaryPeople: 'Sylvans', primaryPeopleShare: 1 });
     assert.match(section(after, 'Peoples and faiths'), /Veil of Stars is the state tradition/);
     assert.match(section(after, 'Peoples and faiths'), /Sylvans \(100%\)/);
     assert.match(section(after, 'Land and climate'), /generally arid/);

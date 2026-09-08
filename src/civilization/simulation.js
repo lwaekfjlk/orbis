@@ -488,7 +488,22 @@ function initializeCulturalOrigins(sim) {
         }
         weights[Math.floor(rng() * weights.length)] += .10;
         fw[Math.floor(rng() * fw.length)] += .10;
-        p.people = cNormalize(weights);
+        // Long-distance exchange supplies minorities, not a nearly uniform ancestry mix
+        // everywhere. A local homeland follows the nearest historical origin along the
+        // unchanged market network. Isolated communities use geographical proximity;
+        // random noise must not give each neighboring island district a different home.
+        let home = people[0]?.identity || 0, nearest = Infinity;
+        for (const o of people) {
+            const source = sim.provinces[o.province];
+            const d = Number.isFinite(o.dist[p.id]) ? o.dist[p.id] : 10000 + Math.hypot(p.x - source.x, p.y - source.y);
+            if (d < nearest) {
+                nearest = d;
+                home = o.identity;
+            }
+        }
+        const mixed = cNormalize(weights);
+        p.culturalHome = home;
+        p.people = mixed.map((v, k) => .25 * v + (k === home ? .75 : 0));
         p.faith = cNormalize(fw);
     }
 }
@@ -619,7 +634,7 @@ function localPoliticalDifference(a, b) {
 }
 function formPolities(sim, w) {
     const before = settlementFingerprint(sim), rng = random32(seedHash(sim.seed + ' / politics / ' + (sim.options.politySeed || 'First-councils')));
-    const frag = clamp(sim.options.realms || 18, 8, 30), consolidation = 64 * Math.pow(18 / frag, .75);
+    const frag = clamp(sim.options.realms || 18, 8, 30), consolidation = 144 * Math.pow(18 / frag, .75);
     buildAdministrationGraph(sim, w);
     const candidates = sim.provinces.filter(p => p.city).map(p => {
         p.localAutonomy = clamp(.40 + rng() * .38 + p.harbor * .12 + p.siteLake * .10, .35, .93);
@@ -651,8 +666,36 @@ function formPolities(sim, w) {
         centers.push({ p, ambition, dist: administrationDistances(sim, p.id, consolidation * 3.5 * Math.min(4.5, Math.max(1, ambition))) });
         p.foundingDependency = -1;
     }
-    sim.foundingModel = { name: 'Local councils and bounded administration', consolidation, autonomousTowns: centers.length, candidateTowns: candidates.length, usesContinentQuotas: false, usesSeaTradeForSovereignty: false, settlementsBefore: before };
-    for (const { p, ambition } of centers) {
+    // A settled island or an inhabited valley cut off from every city still has a
+    // government. Use its existing village or household center; never create a city
+    // to supply a capital, and never use shipping lanes as annexation shortcuts.
+    const visited = new Set();
+    for (const p of sim.provinces) {
+        if (visited.has(p.id))
+            continue;
+        const todo = [p.id], ids = [];
+        visited.add(p.id);
+        while (todo.length) {
+            const id = todo.pop();
+            ids.push(id);
+            for (const e of sim.administrationGraph[id])
+                if (!visited.has(e.to)) {
+                    visited.add(e.to);
+                    todo.push(e.to);
+                }
+        }
+        if (centers.some(c => ids.includes(c.p.id)))
+            continue;
+        const ps = ids.map(id => sim.provinces[id]);
+        if (!ps.some(q => q.settled) && ps.reduce((sum, q) => sum + q.pop, 0) < 10000)
+            continue;
+        const capital = ps.sort((a, b) => Number(b.settled) - Number(a.settled) || b.pop - a.pop || a.id - b.id)[0];
+        capital.localAutonomy = .8;
+        capital.foundingDependency = -1;
+        centers.push({ p: capital, ambition: 1, local: true });
+    }
+    sim.foundingModel = { name: 'Connected sovereignty and local administration', consolidation, autonomousTowns: centers.filter(c => c.p.city).length, candidateTowns: candidates.length, usesContinentQuotas: false, usesSeaTradeForSovereignty: false, settlementsBefore: before };
+    const found = (p, ambition = 1, local = false) => {
         const id = sim.realms.length, { gov, type } = chooseInstitution(p, sim, rng), name = p.name;
         const titles = [`Kingdom of ${name}`, `Sanctuary of ${name}`, `${name} Collegium`, `${name} Confederacy`, `${name} Merchant League`, `${name} Holds`, `Republic of ${name}`, `${name} City League`];
         const policy = gov === 2 ? 'Scholarship' : gov === 4 ? 'Prosperity' : rng() < .20 ? 'Expansion' : rng() < .4 ? 'Concord' : 'Prosperity';
@@ -664,57 +707,144 @@ function formPolities(sim, w) {
         const commandRange = 35 * Math.pow(18 / frag, .28) * (.90 + .15 * Math.sqrt(p.urbanPop / 45000)) * ambition;
         const adminBudget = (9 + 3.6 * Math.sqrt(p.urbanPop / 1000)) * Math.pow(18 / frag, .3) * ambition;
         sim.realms.push({ id, name, title: titles[gov], color: REALM_COLORS[id % REALM_COLORS.length], capital: p.id, gov, faith: cDominant(p.faith), originPeople: cDominant(p.people), archetype: type,
-            identity: `The existing ${p.settlementType.toLowerCase()} of ${p.name} retained its own political center. It draws on ${type === 'granary' ? 'farms and local markets' : type === 'lake' ? 'freshwater shores and lake commerce' : type === 'maritime' ? 'ports and coastal commerce' : type === 'forge' ? 'highland workshops and mineral resources' : type === 'forest' ? 'forest livelihoods and farms' : type === 'wetland' ? 'wetland livelihoods and navigable valleys' : 'its local production and exchange network'}. Neighboring towns can remain independent; trade does not confer sovereignty. Its ${GOVERNMENTS[gov].toLowerCase()} is a sampled institutional history, not a geographical destiny.`,
-            reach: .88 + rng() * .30, tolerance: .45 + rng() * .50, ambition: .25 + rng() * .55, policy, tech: .8 + p.dev * .22 + p.ore * .15, arcana: .55 + p.mana * .90 + (gov === 2 ? .40 : 0), wealthSeed: 1, treasury: 10, army: 1, navy: 0, stability: 70 + rng() * 17, warWeariness: 0, alive: true, founded: 400, provinces: [], population: 0, power: 0, imports: 0, commandRange, adminBudget, adminUsed: 0, localAutonomy: p.localAutonomy });
-    }
-    // A claim must grow from a held neighbor. Rival capital cells are locked at founding.
-    // Separate (realm, district) travel states avoid invalid source-dependent Dijkstra pruning.
-    const n = sim.provinces.length, dist = new Float64Array(n * sim.realms.length).fill(Infinity), parentOf = new Int32Array(n * sim.realms.length).fill(-1), heap = new MinHeap();
+            identity: `The existing ${p.settlementType.toLowerCase()} of ${p.name} retained its own political center. It draws on ${type === 'granary' ? 'farms and local markets' : type === 'lake' ? 'freshwater shores and lake commerce' : type === 'maritime' ? 'ports and coastal commerce' : type === 'forge' ? 'highland workshops and mineral resources' : type === 'forest' ? 'forest livelihoods and farms' : type === 'wetland' ? 'wetland livelihoods and navigable valleys' : 'its local production and exchange network'}. Connected outlying communities govern locally beyond the capital's direct administrative reach. Trade does not confer sovereignty. Its ${GOVERNMENTS[gov].toLowerCase()} is a sampled institutional history, not a geographical destiny.`,
+            reach: .88 + rng() * .30, tolerance: .45 + rng() * .50, ambition: .25 + rng() * .55, policy, tech: .8 + p.dev * .22 + p.ore * .15, arcana: .55 + p.mana * .90 + (gov === 2 ? .40 : 0), wealthSeed: 1, treasury: 10, army: 1, navy: 0, stability: 70 + rng() * 17, warWeariness: 0, alive: true, founded: 400, provinces: [], population: 0, power: 0, imports: 0, commandRange, adminBudget, adminUsed: 0, localAutonomy: p.localAutonomy, foundingSource: local ? 'local-council' : 'town', autonomousProvinces: 0 });
+        return sim.realms[id];
+    };
+    for (const { p, ambition, local } of centers)
+        found(p, ambition, local);
+    // Sovereignty grows through held land. Administrative range and budget describe
+    // the directly governed core; they must not strand a dependent town outside any
+    // polity. More distant provinces retain their own local administration.
+    const n = sim.provinces.length, states = [], heap = new MinHeap();
     for (const p of sim.provinces) {
         p.owner = -1;
         p.adminDistance = null;
         p.adminParent = -1;
         p.adminUpkeep = 0;
+        p.administration = null;
+        p.claimDistance = null;
+        p.localCommunity = -1;
     }
-    for (const c of sim.realms) {
+    const seedClaim = c => {
         const p = sim.provinces[c.capital];
+        const state = { dist: new Float64Array(n).fill(Infinity), parent: new Int32Array(n).fill(-1), travel: new Float64Array(n).fill(Infinity), pending: new Map(), population: p.pop, homeland: p.pop * p.people[c.originPeople] };
+        states[c.id] = state;
         p.owner = c.id;
-        p.adminDistance = 0;
-        dist[c.id * n + p.id] = 0;
-    }
+        p.adminDistance = p.claimDistance = 0;
+        p.administration = 'direct';
+        state.dist[p.id] = state.travel[p.id] = 0;
+    };
+    for (const c of sim.realms)
+        seedClaim(c);
     const extend = (c, p, d) => {
+        const state = states[c.id];
         for (const e of sim.administrationGraph[p.id]) {
             const q = sim.provinces[e.to];
             if (q.owner >= 0)
                 continue;
-            const dissimilarity = localPoliticalDifference(sim.provinces[c.capital], q), v = d + e.cost * (1 + .18 * dissimilarity) / c.reach, key = c.id * n + q.id;
-            if (v < c.commandRange && v < dist[key]) {
-                dist[key] = v;
-                parentOf[key] = p.id;
-                heap.push(key, v);
+            const dissimilarity = localPoliticalDifference(sim.provinces[c.capital], q);
+            const travel = e.cost * (1 + .18 * dissimilarity) / c.reach;
+            // Shared local institutions ease territorial consolidation. The identical
+            // rule applies to every people; it grants no ancestry a military bonus.
+            const v = d + travel + e.cost * 4 * (1 - q.people[c.originPeople]) / c.reach;
+            if (v < state.dist[q.id]) {
+                state.dist[q.id] = v;
+                state.parent[q.id] = p.id;
+                state.travel[q.id] = p.adminDistance + travel;
+                heap.push(c.id * n + q.id, v);
             }
+        }
+    };
+    const canJoin = (c, state, p) => state.homeland + p.pop * p.people[c.originPeople] >= .525 * (state.population + p.pop);
+    const growClaims = () => {
+        while (heap.length) {
+            const [key, d] = heap.pop(), cid = Math.floor(key / n), pid = key % n;
+            const c = sim.realms[cid], p = sim.provinces[pid], state = states[cid];
+            if (d > state.dist[pid] + 1e-8 || p.owner >= 0)
+                continue;
+            const parent = state.parent[pid];
+            if (parent < 0 || sim.provinces[parent].owner !== cid)
+                continue;
+            // Retain a recognizable founding homeland and actual minorities. A mixed
+            // border district can join after more homeland communities have joined;
+            // it is reconsidered, rather than silently discarded by an early cutoff.
+            if (!canJoin(c, state, p)) {
+                state.pending.set(pid, d);
+                continue;
+            }
+            p.owner = cid;
+            p.claimDistance = d;
+            p.adminDistance = state.travel[pid];
+            p.adminParent = parent;
+            p.adminUpkeep = (.58 + p.altitude / 3500 + p.wet * .50 + Math.max(0, .30 - p.fresh) * 2) * (1 + p.adminDistance / 34);
+            const direct = sim.provinces[parent].administration === 'direct' && p.adminDistance < c.commandRange && c.adminUsed + p.adminUpkeep <= c.adminBudget;
+            p.administration = direct ? 'direct' : 'local';
+            if (direct)
+                c.adminUsed += p.adminUpkeep;
+            else
+                c.autonomousProvinces++;
+            state.population += p.pop;
+            state.homeland += p.pop * p.people[c.originPeople];
+            for (const [id, distance] of state.pending) {
+                const q = sim.provinces[id];
+                if (q.owner >= 0)
+                    state.pending.delete(id);
+                else if (canJoin(c, state, q)) {
+                    state.pending.delete(id);
+                    heap.push(cid * n + id, distance);
+                }
+            }
+            extend(c, p, d);
         }
     };
     for (const c of sim.realms)
         extend(c, sim.provinces[c.capital], 0);
-    while (heap.length) {
-        const [key, d] = heap.pop(), cid = Math.floor(key / n), pid = key % n, c = sim.realms[cid], p = sim.provinces[pid];
-        if (d > dist[key] + 1e-8 || p.owner >= 0)
-            continue;
-        // Find an already-owned supporting edge. No jumping across another country's land.
-        const parent = parentOf[key];
-        if (parent < 0 || sim.provinces[parent].owner !== cid)
-            continue;
-        const upkeep = (.58 + p.altitude / 3500 + p.wet * .50 + Math.max(0, .30 - p.fresh) * 2) * (1 + d / 34);
-        if (c.adminUsed + upkeep > c.adminBudget)
-            continue;
-        p.owner = cid;
-        p.adminDistance = d;
-        p.adminUpkeep = upkeep;
-        p.adminParent = parent;
-        c.adminUsed += upkeep;
-        extend(c, p, d);
+    growClaims();
+    // A town that cannot join any neighboring homeland remains a real local polity.
+    // Found it at the existing settlement, then grow only through still-unclaimed
+    // adjacent land. This also preserves continuity of every already-founded realm.
+    for (;;) {
+        const p = sim.provinces.filter(q => q.owner < 0 && q.settled).sort((a, b) => b.pop - a.pop || a.id - b.id)[0];
+        if (!p)
+            break;
+        p.localAutonomy = .8;
+        p.foundingDependency = -1;
+        const c = found(p, 1, true);
+        seedClaim(c);
+        extend(c, p, 0);
+        growClaims();
     }
+    // Small isolated household communities are not empty wilderness and do not need
+    // fabricated cities or dozens of extra kingdoms. Record their genuine local
+    // councils separately so map inspection can distinguish them from uninhabited ice.
+    sim.localCommunities = [];
+    const unclaimed = new Set();
+    for (const p of sim.provinces) {
+        if (p.owner >= 0 || unclaimed.has(p.id))
+            continue;
+        const todo = [p.id], provinces = [];
+        unclaimed.add(p.id);
+        while (todo.length) {
+            const id = todo.pop();
+            provinces.push(id);
+            for (const e of sim.administrationGraph[id])
+                if (sim.provinces[e.to].owner < 0 && !unclaimed.has(e.to)) {
+                    unclaimed.add(e.to);
+                    todo.push(e.to);
+                }
+        }
+        const population = provinces.reduce((sum, id) => sum + sim.provinces[id].pop, 0);
+        if (population <= 0)
+            continue;
+        const capital = provinces.slice().sort((a, b) => sim.provinces[b].pop - sim.provinces[a].pop || a - b)[0];
+        const id = sim.localCommunities.length;
+        sim.localCommunities.push({ id, name: `${sim.provinces[capital].name} community`, government: 'Local household council', capital, provinces, founded: sim.year, foundingPopulation: population });
+        for (const pid of provinces)
+            sim.provinces[pid].localCommunity = id;
+    }
+    sim.foundingModel.autonomousTowns = sim.realms.filter(c => sim.provinces[c.capital].city).length;
+    sim.foundingModel.localPolities = sim.realms.filter(c => c.foundingSource === 'local-council').length;
     for (const c of sim.realms)
         c.foundingProvinces = sim.provinces.filter(p => p.owner === c.id).length;
     nameRealms(sim);

@@ -8,7 +8,7 @@ const E = loadEngine();
 const source = readFileSync(new URL('../src/ui/world-ui.js', import.meta.url), 'utf8');
 const labelsSource = source.slice(source.indexOf('function legendLabels()'), source.indexOf('function makeGeoJumps()'));
 
-function harness() {
+function harness(withProbes = false) {
     const listeners = new Map(), calls = { select: [], inspect: [], terrain: 0 };
     const element = () => ({ children: [], dataset: {}, offsetWidth: 180, offsetHeight: 30,
         style: { setProperty(name, value) { this[name] = value; } },
@@ -17,6 +17,15 @@ function harness() {
         get innerHTML() { return this.html || ''; },
         appendChild(child) { this.children.push(child); },
     });
+    const createElement = () => {
+        const e = element();
+        if (withProbes) e.querySelector = selector => ({
+            '.realmFullName': { offsetWidth: 580, offsetHeight: 44 },
+            '.realmCompactName': { offsetWidth: 240, offsetHeight: 20 },
+            '.realmMarker': { offsetWidth: 18, offsetHeight: 18 },
+        })[selector];
+        return e;
+    };
     const dom = { labels: element(), names: { checked: true }, compass: element() };
     const sim = {
         realms: [0, 1].map(id => ({ id, alive: true, capital: id, strength: 10, title: `Kingdom ${id}` })),
@@ -36,7 +45,7 @@ function harness() {
         realmLabelAnchors: held => held.flatMap(p => p.anchors),
         escapeHTML: String, fmtPop: String,
         selectRealm(id) { calls.select.push(id); }, inspectCell(i) { calls.inspect.push(i); },
-        document: { createElement: element, fonts: { addEventListener() {} } },
+        document: { createElement, fonts: { addEventListener() {} } },
         window: { addEventListener(type, callback) { listeners.set(type, callback); } },
     };
     runInNewContext(labelsSource, context, { filename: 'src/ui/world-ui.js:labels' });
@@ -120,4 +129,29 @@ test('Busy, disabled and culled labels cannot start a country hover', () => {
         assert.equal(h.renderer.hoveredRealm, null, reason);
         assert.deepEqual(h.calls.select, []);
     }
+});
+
+test('Compact names and tiny-country markers retain the full country hover and click target', () => {
+    const h = harness(true), label = h.label(1);
+    assert.equal(label.dataset.labelVariant, 'compact', 'crowded full names should use the readable compact form');
+    label.onpointerenter({ pointerType: 'mouse' });
+    assert.equal(h.renderer.hoveredRealm, 1);
+    label.onclick();
+    assert.deepEqual(h.calls.select, [1]);
+    label.onpointerleave();
+    assert.equal(h.renderer.hoveredRealm, null);
+
+    h.context.sim.provinces[1].anchors[0].x = 22;
+    h.context.positionLabels();
+    assert.equal(label.dataset.labelVariant, 'marker', 'an extremely narrow visible country keeps a marker on its own land');
+    assert.match(label.title, /Kingdom 1/);
+    assert.equal(label.tabIndex, 0);
+    assert.equal(label.style.pointerEvents, 'auto');
+    label.onpointerenter({ pointerType: 'mouse' });
+    assert.equal(h.renderer.hoveredRealm, 1);
+    label.onclick();
+    assert.deepEqual(h.calls.select, [1, 1]);
+    label.onpointercancel();
+    assert.equal(h.renderer.hoveredRealm, null);
+    assert.deepEqual(h.calls.inspect, [], 'fallback forms never become a settlement click');
 });

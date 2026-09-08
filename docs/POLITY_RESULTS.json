@@ -1,0 +1,416 @@
+{
+  "baselineCommit": "deab85a",
+  "seed": "Aereth-47",
+  "year": 400,
+  "before": {
+    "fingerprints": {
+      "physical": "440ae5d0",
+      "settlement": "6b6c5ea8",
+      "political": "aaa577eb"
+    },
+    "cellCounts": {
+      "dry": 23087,
+      "noProvince": 5875,
+      "noProvinceCold": 3374,
+      "noProvinceIce": 3870,
+      "noProvinceHabitable": 108,
+      "unownedProvince": 4569,
+      "owned": 12643
+    },
+    "areaPercent": {
+      "dry": 100,
+      "noProvince": 14.7717,
+      "noProvinceCold": 7.7695,
+      "noProvinceIce": 9.1886,
+      "noProvinceHabitable": 0.4481,
+      "unownedProvince": 20.7343,
+      "owned": 64.494
+    },
+    "settlements": {
+      "provinces": 619,
+      "populated": 549,
+      "over1000": 463,
+      "over3000": 390,
+      "settled": 102,
+      "towns": 88,
+      "population": 11802983,
+      "urbanPopulation": 3347879
+    },
+    "unclaimed": {
+      "provinces": 265,
+      "populated": 202,
+      "over1000": 141,
+      "over3000": 93,
+      "settled": 23,
+      "towns": 12,
+      "population": 1824164,
+      "urbanPopulation": 408093
+    },
+    "unclaimedPopulationPercent": 15.4551,
+    "realms": 34,
+    "withoutMajority": 31,
+    "majorityDistribution": {
+      "0": 0.2343,
+      "1": 0.9094,
+      "0.1": 0.2416,
+      "0.25": 0.2855,
+      "0.5": 0.3491,
+      "0.75": 0.4193,
+      "0.9": 0.4925
+    },
+    "disconnected": 0
+  },
+  "after": {
+    "fingerprints": {
+      "physical": "440ae5d0",
+      "settlement": "6b6c5ea8",
+      "political": "d8ba763d"
+    },
+    "cellCounts": {
+      "dry": 23087,
+      "noProvince": 5875,
+      "noProvinceCold": 3374,
+      "noProvinceIce": 3870,
+      "noProvinceHabitable": 108,
+      "unownedProvince": 411,
+      "owned": 16801
+    },
+    "areaPercent": {
+      "dry": 100,
+      "noProvince": 14.7717,
+      "noProvinceCold": 7.7695,
+      "noProvinceIce": 9.1886,
+      "noProvinceHabitable": 0.4481,
+      "unownedProvince": 1.2706,
+      "owned": 83.9577
+    },
+    "settlements": {
+      "provinces": 619,
+      "populated": 549,
+      "over1000": 463,
+      "over3000": 390,
+      "settled": 102,
+      "towns": 88,
+      "population": 11802983,
+      "urbanPopulation": 3347879
+    },
+    "unclaimed": {
+      "provinces": 117,
+      "populated": 56,
+      "over1000": 19,
+      "over3000": 2,
+      "settled": 0,
+      "towns": 0,
+      "population": 51044,
+      "urbanPopulation": 0
+    },
+    "unclaimedPopulationPercent": 0.4325,
+    "realms": 22,
+    "withoutMajority": 0,
+    "majorityDistribution": {
+      "0": 0.6201,
+      "1": 0.9731,
+      "0.1": 0.6873,
+      "0.25": 0.7944,
+      "0.5": 0.8206,
+      "0.75": 0.8462,
+      "0.9": 0.8639
+    },
+    "disconnected": 0
+  },
+  "additionalSeeds": [
+    {
+      "seed": "Sovereignty-regression-1",
+      "realms": 19,
+      "settled": 93,
+      "minMajority": 0.5289085608964385,
+      "unclaimedPopulation": 0.005613385645870795,
+      "areaNoState": 0.016382010351071986,
+      "localCommunities": 47,
+      "unclaimedPopProvinces": 53,
+      "physical": "620d6610",
+      "settlement": "436ded16",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-regression-2",
+      "realms": 25,
+      "settled": 107,
+      "minMajority": 0.5261220858902512,
+      "unclaimedPopulation": 0.004892170324575996,
+      "areaNoState": 0.01229894339695981,
+      "localCommunities": 40,
+      "unclaimedPopProvinces": 47,
+      "physical": "eccd4881",
+      "settlement": "6d780244",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-regression-3",
+      "realms": 23,
+      "settled": 108,
+      "minMajority": 0.5303612822741014,
+      "unclaimedPopulation": 0.0043225874292346,
+      "areaNoState": 0.012071490877937938,
+      "localCommunities": 35,
+      "unclaimedPopProvinces": 45,
+      "physical": "2b1c6985",
+      "settlement": "e97e6305",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-islands",
+      "realms": 18,
+      "settled": 110,
+      "minMajority": 0.538366146113808,
+      "unclaimedPopulation": 0.005884219965115205,
+      "areaNoState": 0.01445654643215659,
+      "localCommunities": 47,
+      "unclaimedPopProvinces": 54,
+      "physical": "778b333d",
+      "settlement": "94307fd9",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-cold",
+      "realms": 19,
+      "settled": 92,
+      "minMajority": 0.6925957328727441,
+      "unclaimedPopulation": 0.0025744550877490184,
+      "areaNoState": 0.013166555644714693,
+      "localCommunities": 23,
+      "unclaimedPopProvinces": 26,
+      "physical": "7bdbe040",
+      "settlement": "99c548b8",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-rift",
+      "realms": 19,
+      "settled": 113,
+      "minMajority": 0.525793591711902,
+      "unclaimedPopulation": 0.004348573560469482,
+      "areaNoState": 0.022206780849804205,
+      "localCommunities": 42,
+      "unclaimedPopProvinces": 61,
+      "physical": "b1177bc5",
+      "settlement": "6e3b8098",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-continental",
+      "realms": 24,
+      "settled": 109,
+      "minMajority": 0.5276587384086499,
+      "unclaimedPopulation": 0.004562304056269794,
+      "areaNoState": 0.011890932093702405,
+      "localCommunities": 39,
+      "unclaimedPopProvinces": 48,
+      "physical": "059aee9b",
+      "settlement": "2ca464b2",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    },
+    {
+      "seed": "Sovereignty-regression-8",
+      "realms": 20,
+      "settled": 96,
+      "minMajority": 0.5278403361504073,
+      "unclaimedPopulation": 0.007170074488336409,
+      "areaNoState": 0.011353566065823328,
+      "localCommunities": 42,
+      "unclaimedPopProvinces": 46,
+      "physical": "23323543",
+      "settlement": "e1ce62eb",
+      "bad": {
+        "invalidOwners": 0,
+        "badShares": 0,
+        "badPop": 0,
+        "badCapitals": 0,
+        "waterClaims": 0,
+        "routeErrors": 0,
+        "finiteRealms": true,
+        "year": 400
+      }
+    }
+  ],
+  "browser": {
+    "viewport": [
+      1480,
+      980
+    ],
+    "mobileViewport": [
+      430,
+      900
+    ],
+    "before": {
+      "countries": 34,
+      "visible": 9,
+      "full": 0,
+      "compact": 0,
+      "markers": 0,
+      "wilderness": 0
+    },
+    "after": {
+      "countries": 22,
+      "visible": 22,
+      "full": 22,
+      "compact": 0,
+      "markers": 0,
+      "wilderness": 9
+    },
+    "mobile": {
+      "countries": 22,
+      "visible": 22,
+      "full": 4,
+      "compact": 8,
+      "markers": 10,
+      "wilderness": 2
+    },
+    "offline": true,
+    "countryHover": true,
+    "realmOverview": true,
+    "unclaimedInspection": true,
+    "mobileApproach": true,
+    "worldUnchanged": true,
+    "legacy": {
+      "countries": 34,
+      "visible": 34,
+      "full": 32,
+      "compact": 2,
+      "markers": 0,
+      "wilderness": 6
+    },
+    "legacyRestorationPreservedHistory": true,
+    "mobileMarkerClick": true,
+    "mobileNonOverlap": true
+  },
+  "integrationMain": "4c29f0f",
+  "loading": {
+    "renderer": "Chromium with SwiftShader",
+    "viewport": [
+      1480,
+      980
+    ],
+    "offline": true,
+    "runs": [
+      {
+        "readyMs": 14394.89999999106,
+        "generationMs": 11823.59999999404,
+        "fullCities": 0,
+        "terrainBuilds": 1,
+        "siteQueries": 0,
+        "index": {
+          "status": "complete",
+          "completed": 78,
+          "total": 78,
+          "frames": 6
+        },
+        "directory": 152,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "d8ba763d"
+        ],
+        "software": false,
+        "nearRoadVertices": 0,
+        "settledTerrainBuilds": 1,
+        "cities": [
+          {
+            "id": 507,
+            "readyMs": 4041.4000000059605,
+            "buildings": 515,
+            "triangles": 253181,
+            "worker": true
+          },
+          {
+            "id": 349,
+            "readyMs": 4149.79999999702,
+            "buildings": 499,
+            "triangles": 215252,
+            "worker": true
+          }
+        ],
+        "regeneration": true,
+        "failureRecovery": true,
+        "noWorkerFallback": true
+      }
+    ],
+    "medianReadyMs": 14394.89999999106,
+    "note": "A correctness smoke run concurrent with Node regressions; this is not a controlled timing comparison."
+  },
+  "verification": {
+    "nodeSuite": {
+      "passed": 395,
+      "failed": 0,
+      "note": "Complete suite after main terrain integration; final mobile placement change separately revalidated with focused label/hover tests and offline Chromium."
+    },
+    "finalLabelAndHoverTests": {
+      "passed": 20,
+      "failed": 0
+    }
+  }
+}
