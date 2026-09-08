@@ -8,7 +8,7 @@ const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 // remain intact. The layer uses its actual cameraChanged method, including timers.
 const ui=read('src/ui/continuous-map.js').replace('function refreshPlaceDetails(){','function refreshPlaceDetails(){ __calls.details++;');
 const cityLayer=read('src/continuous/city-layer.js');
-const cameraChanged=cityLayer.slice(cityLayer.indexOf(' cameraChanged(){'),cityLayer.indexOf(' async stream(){'));
+const cameraChanged=cityLayer.slice(cityLayer.indexOf(' deferCamera('),cityLayer.indexOf(' async stream(){'));
 function fixture({walking=false}={}){
  const calls={folk:0,roads:0,details:0,measures:0,picks:0,requests:0,stream:0},elements=new Map(),timers=new Map(),frames=[],fontListeners=new Map();
  let now=0,nextTimer=0;

@@ -8,7 +8,9 @@ const Profile=Function('PoliticalLand','RealmNames','PEOPLES','FAITHS','GOVERNME
 const ui=readFileSync(root+'/src/ui/onemap-ui.js','utf8');
 // Execute the production handler with a minimal card sink, so the status-versus-
 // legacy-owner decision is checked as behavior rather than by matching source text.
-const inspectBody=ui.slice(ui.indexOf('    function inspectWorld(i){'),ui.indexOf('    async function readSaga(id){'));
+const inspectStart=ui.indexOf('    function inspectWorld('),inspectEnd=ui.indexOf('    async function readSaga(');
+assert(inspectStart>=0&&inspectEnd>inspectStart,'the real location-card handler must be present');
+const inspectBody=ui.slice(inspectStart,inspectEnd);
 function fixture(){
     const w={height:new Float32Array([100,100,100,-100]),lake:new Float32Array([-1,-1,130,-1]),provinceId:new Int32Array([0,-1,-1,-1]),biome:new Uint8Array(4),temp:new Float32Array(4),arid:new Float32Array(4),features:[],basins:[],lakeId:new Int32Array(4).fill(-1)};
     const s={realms:[{id:0,alive:true,name:'Asgard',capital:0}],provinces:[{id:0,owner:0,pop:100,settled:false,cells:[0]}]};
@@ -17,9 +19,10 @@ function fixture(){
 function inspector(w,s,politics){
     if(arguments.length<3)politics=E.PoliticalLand;
     const cards=[];
-    const run=Function('world','sim','PoliticalLand','BIOME','CityEnvironment','selectionCard','clearSelection','openDrawer','closeDrawer',
-        'let busy=false,scene="world",drawer=null,selection=null;'+inspectBody+';return inspectWorld;')
-        (w,s,politics,E.BIOME,E.CityEnvironment,(kicker,title,subtitle,buttons,media,realm)=>cards.push({kicker,title,subtitle,buttons,media,realm}),()=>{},()=>{},()=>{});
+    const cardBody={scrollTop:0,querySelector(){return null;}};
+    const run=Function('world','sim','PoliticalLand','BIOME','CityEnvironment','selectionCard','clearSelection','openDrawer','closeDrawer','E','LandmarkUI',
+        'let busy=false,scene="world",drawer=null,drawerContext=null,selection=null;'+inspectBody+';return inspectWorld;')
+        (w,s,politics,E.BIOME,E.CityEnvironment,(kicker,title,subtitle,buttons,media,realm)=>cards.push({kicker,title,subtitle,buttons,media,realm}),()=>{},()=>{},()=>{},id=>{assert.equal(id,'omSelectionBody');return cardBody;},{registry:[]});
     return {run,cards};
 }
 

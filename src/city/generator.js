@@ -102,13 +102,28 @@ function cityParcelEvery(city, q, width, depth, test) {
             if (!test(city.index(q.x + dx, q.z + dz))) return false;
     return true;
 }
+/** Coarse street nodes stay in their original order. A refined gate may paint a
+ * nearby survey cell without passing through its center: use its actual points
+ * unless a regular street also owns that center. Courtyard paths are exact too. */
+function cityStreetSources(city, coarse, exact) {
+    const gates=(city.roads||[]).filter(r=>r.role==='gate-approach'&&r.refined);
+    let gateCells,regularCells;
+    if(gates.length){
+        gateCells=new Set();regularCells=new Set();
+        for(const r of gates)for(const p of r.points)gateCells.add(city.index(p.x,p.z));
+        for(const r of city.roads)if(r.role!=='courtyard-access'&&!(r.role==='gate-approach'&&r.refined))
+            for(const i of r.nodes)regularCells.add(i);
+    }
+    for(let k=0;k<city.road.length;k++)if(city.road[k]&&(!gateCells?.has(k)||regularCells.has(k)))coarse(k);
+    for(const r of city.roads||[])if(r.role==='courtyard-access'||r.role==='gate-approach'&&r.refined)
+        for(const p of r.points)exact(p);
+}
 /** Find the actual dry, unobstructed doorway used by the final layout filter. */
 function cityStreetConnections(city) {
     const roadGrid = cityGrid(12), blockGrid = cityGrid(8);
     const add = b => blockGrid.add(b, b.x-b.w/2-.09, b.z-b.d/2-.09, b.x+b.w/2+.09, b.z+b.d/2+.09);
     const addRoad = points => {for(const p of points){const q={...p,i:city.index(p.x,p.z)};roadGrid.add(q,q.x,q.z,q.x,q.z);}};
-    for (let k=0;k<city.road.length;k++) if (city.road[k]) { const q = {i:k,...city.xy(k)}; roadGrid.add(q, q.x, q.z, q.x, q.z); }
-    for(const road of city.roads||[])if(road.role==='courtyard-access')addRoad(road.points);
+    cityStreetSources(city,k=>{const q={i:k,...city.xy(k)};roadGrid.add(q,q.x,q.z,q.x,q.z);},p=>{const q={...p,i:city.index(p.x,p.z)};roadGrid.add(q,q.x,q.z,q.x,q.z);});
     for (const b of city.buildings) add(b);
     const connection = (b, limit=12) => {
         const candidates=[];
@@ -179,8 +194,7 @@ function cityCourtyardAccess(city,hull) {
     const clear=(a,b)=>dryLane(a,b)&&!blocks.near(Math.min(a.x,b.x)-clearance,Math.min(a.z,b.z)-clearance,Math.max(a.x,b.x)+clearance,Math.max(a.z,b.z)+clearance).some(p=>citySegmentBox(a,b,p.x-p.w/2-clearance,p.z-p.d/2-clearance,p.x+p.w/2+clearance,p.z+p.d/2+clearance));
     const queue=new MinHeap();
     const seed=p=>{const k=index(p.x,p.z);for(const j of[k,k-1,k+1,k-nx,k+nx]){if(j<0||j>=size||occupied[j]||Math.abs(j%nx-k%nx)>1||!clear(p,xy(j)))continue;const d=Math.hypot(p.x-xy(j).x,p.z-xy(j).z);if(d<distance[j]){distance[j]=d;parent[j]=-2;roots.set(j,p);queue.push(j,distance[j]);}}};
-    for(let i=0;i<city.road.length;i++)if(city.road[i])seed({...city.xy(i),i});
-    for(const road of city.roads)if(road.role==='courtyard-access')for(const p of road.points)seed({...p,i:city.index(p.x,p.z)});
+    cityStreetSources(city,i=>seed({...city.xy(i),i}),p=>seed({...p,i:city.index(p.x,p.z)}));
     while(queue.length){const[k,d]=queue.pop();if(d!==distance[k])continue;const x=k%nx,z=Math.floor(k/nx),a=xy(k);
         for(const[dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,zz=z+dz,j=zz*nx+xx;if(xx<0||xx>=nx||zz<0||zz>=nz||occupied[j])continue;const nd=d+step;if(nd>=distance[j])continue;
             // Every parcel side is >=1.1, four times this orthogonal step. An edge

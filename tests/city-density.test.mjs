@@ -8,7 +8,7 @@ import {root} from './engine-loader.mjs';
 
 const baseline=JSON.parse(readFileSync(resolve(root,'tests/fixtures/city-density-baseline.json'),'utf8'));
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFileSync(resolve(root,f),'utf8')).join('\n');
-const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,auditCity,ArtisanCityKit,physicalFingerprint,settlementFingerprint,politicalFingerprint};')();
+const E=Function(source+'\nreturn {generateWorld,createCivilization,generateCity,auditCity,ArtisanCityKit,physicalFingerprint,settlementFingerprint,politicalFingerprint,cityCourtyardAccess,cityStreetConnections,cityStreetSources};')();
 const digest=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const geometry=b=>[b.id,b.x,b.z,b.w,b.d,b.h,b.y,b.angle||0,b.streetSocket,b.module,b.infill];
 const houses=b=>b.infill?1:Math.max(1,Math.round(b.w/2.7))*Math.max(1,Math.round(b.d/2.7));
@@ -106,4 +106,24 @@ test('all new courtyard streets and homes remain connected to the market',()=>{
         for(const node of graph.keys())assert(seen.has(node),city.name+' has an isolated courtyard lane');
         for(const b of city.buildings)assert(seen.has(b.streetSocket),city.name+' has an isolated house');
     }
+});
+
+test('courtyard lanes and doorways meet the actual refined gate surface, not its rounded survey cell',()=>{
+    const n=111,city={n,width:176,depth:176,buildings:[],roads:[],streetGradeCap:1.2,townProfile:{width:.65},road:new Uint8Array(n*n),water:new Uint8Array(n*n),atlasSlope:new Float32Array(n*n),environment:{ice:new Uint8Array(n*n),snow:new Float32Array(n*n)}};
+    city.xy=k=>({x:(k%n/(n-1)-.5)*city.width,z:(Math.floor(k/n)/(n-1)-.5)*city.depth});
+    city.index=(x,z)=>Math.round((z/city.depth+.5)*(n-1))*n+Math.round((x/city.width+.5)*(n-1));
+    const gate={kind:'arterial',role:'gate-approach',refined:true,points:[-3.2,-1.6,0,1.6,3.2].map(z=>({x:.8,z})),nodes:[]};
+    for(const p of gate.points){const i=city.index(p.x,p.z);city.road[i]=1;gate.nodes.push(i);}city.roads.push(gate);
+    const house={x:4,z:0,w:1.1,d:1.1},hull=[{x:-6,z:-6},{x:6,z:-6},{x:6,z:6},{x:-6,z:6}];
+    const lane=E.cityCourtyardAccess(city,hull).route(house),door=E.cityStreetConnections(city)(house);
+    assert(lane&&door);
+    for(const end of[lane.path.at(-1),door.b])assert(gate.points.some(p=>Math.hypot(p.x-end.x,p.z-end.z)<1e-9),'new access must end on an actual gate point');
+    const rounded=city.xy(city.index(.8,0)),gap=rounded.x-.8-city.townProfile.width*.67-.12;
+    assert(gap>.24,'this fixture must expose a visible gap between complete paved surfaces');
+    // If a regular street owns the same grid center, its old socket is genuine
+    // and must remain first in the original ascending survey-node order.
+    const other=city.index(1.6,1.6),shared=city.index(.8,0);
+    city.road[other]=1;city.roads.push({kind:'street',nodes:[shared,other],points:[city.xy(shared),city.xy(other)]});
+    const coarse=[];E.cityStreetSources(city,i=>coarse.push(i),()=>{});
+    assert.deepEqual(coarse,[shared,other].sort((a,b)=>a-b));
 });
