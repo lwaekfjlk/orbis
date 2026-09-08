@@ -44,7 +44,7 @@ window.ContinuousMap = (() => {
   // A backgrounded tab must not keep rebuilding a crowd nobody is looking at.
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')startFolk();});
  }
- function beforeWorldBuild(){cancel();if(layer)layer.reset(null,null);lastWorld=null;selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
+ function beforeWorldBuild(){cancel();if(layer)layer.reset(null,null);lastWorld=null;lastCamera='';selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
  function onWorldUpdate(){if(!enabled||!world||!sim)return;layer.bind(world,sim);if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
   makePins();updateTitle();renderer.request();layer.cameraChanged();if(selection&&OneMap.panel==='detail')details(selection.model,selection.building,false);
  }
@@ -59,7 +59,7 @@ window.ContinuousMap = (() => {
   window.__continuousCamera={zoom:r.zoom,target:r.target.slice(),canvas:r.canvas.id,scene:OneMap.scene};
   window.__folk={...(r.folkStats||{}),walking,software:!!r.software,reducedMotion:reducedMotion(),roads:r.roadStats||null};
  }
- function onCamera(){if(!enabled||!world)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4),renderer.width,renderer.height].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
+ function onCamera(){if(!enabled||!world||busy)return;const sig=[renderer.zoom.toFixed(4),...renderer.target.map(a=>a.toFixed(5)),renderer.azimuth.toFixed(4),renderer.elevation.toFixed(4),renderer.width,renderer.height].join('/');if(sig!==lastCamera){lastCamera=sig;layer.cameraChanged();restFolk();}
   startFolk();
   if(renderer.zoom>=AtlasSpace.TOWN_ZOOM*1.67){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}

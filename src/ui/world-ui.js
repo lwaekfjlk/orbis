@@ -61,6 +61,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
     window.__generationReport = null;
     $('loadingTitle').textContent = 'A world taking shape.';
     $('spinner').classList.remove('hidden');
+    let landmarkPreload = null;
     try {
         focusedContinent = null;
         const start = performance.now(), w = await generateWorld({ ...GEN_DEFAULTS, ...params }, stageProgress);
@@ -78,6 +79,8 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
             await stageProgress('09 / Independent local centers and bounded administration');
         }
         validateSimulation(next, w);
+        // Independent site queries can run while the atlas attaches its meshes.
+        landmarkPreload = typeof SacredCityKit !== 'undefined' ? SacredCityKit.preload(w, next) : null;
         await stageProgress('10 / Attaching towns, realms and borders to the map');
         world = w;
         sim = next;
@@ -88,15 +91,22 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         diplomacyTarget = -1;
         resetWorldPresentation();
         renderer.sim = sim;
-        renderer.setWorld(world);
-        renderer.buildCivilization();
         renderer.reset();
         renderer.focusRealm = selectedRealm;
-        window.lastGenerationMs = performance.now() - start;
+        // Reset the streaming layer before attaching geometry. Resetting it in
+        // refreshAll would invalidate the terrain that setWorld just uploaded.
+        window.ContinuousMap?.layer?.bind(world, sim);
+        renderer.setWorld(world);
+        renderer.buildCivilization();
         window.__generationReport = generationReport(world, sim);
+        await stageProgress('11 / Locating landmarks and their town entrances');
+        if (landmarkPreload) await landmarkPreload.promise;
         refreshAll(false);
         makeGeoJumps();
         document.querySelectorAll('[data-layer]').forEach(b => { b.classList.toggle('active', b.dataset.layer === currentLayer); b.setAttribute('aria-selected', String(b.dataset.layer === currentLayer)); });
+        // Include the directory and UI attachment: until those finish the map
+        // still has its loading screen and cannot accept input.
+        window.lastGenerationMs = performance.now() - start;
         setBusy(false);
         renderer.request();
         window.__ready = true;
@@ -105,6 +115,7 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
         return window.__generationReport;
     }
     catch (e) {
+        landmarkPreload?.cancel();
         console.error(e);
         lastError = e.message;
         // Keep the previous inhabited world usable if any generation stage fails.
@@ -121,8 +132,9 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
                 renderer.sim = sim; renderer.focusRealm = selectedRealm;
                 for (const id of ['settlements', 'frontiers']) $(id).checked = renderer.options[id] !== false;
                 $('names').checked = previous.names;
-                renderer.setWorld(world); renderer.buildCivilization();
                 Object.assign(renderer, previous.camera);
+                window.ContinuousMap?.layer?.bind(world, sim);
+                renderer.setWorld(world); renderer.buildCivilization();
                 refreshAll(false); makeGeoJumps();
                 document.querySelectorAll('[data-layer]').forEach(b => {
                     b.classList.toggle('active', b.dataset.layer === currentLayer);

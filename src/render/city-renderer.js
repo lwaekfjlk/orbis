@@ -199,6 +199,11 @@ function createCityRenderer(canvas, onChange, config = {}) {
         const own = (b, start, metadata={}) => { for (const [name,g] of Object.entries(ownedMeshes))
             if (g.data.length > start[name]) this.buildingRanges[name].push({id:b.id,start:start[name],end:g.data.length,...metadata}); };
         const dry = c.siteEnvironment.aridity<.6&&c.siteEnvironment.temperature>=16;
+        const elevation = (x, z) => this.ground(x, z);
+        // The atlas already meshes its own shared surface. A continuous-city
+        // collector only needs the assemblies placed on it; standalone scenes
+        // and exports retain their complete local terrain and context by default.
+        if (config.includeTerrain !== false) {
         // Seasonal snow lies on the town's ground as well as on its roofs, from the
         // same cold-season field. Town scene only: the atlas keeps its annual-mean
         // palette, because a world map is not a picture of one particular winter.
@@ -211,7 +216,6 @@ function createCityRenderer(canvas, onChange, config = {}) {
             for(const i of ids)cover+=CityEnvironment.localClimate(grid,i).cover/ids.length;
             return cover>.05?colorMix(col,snowTone,clamp(cover*.85)):col;
         };
-        const elevation = (x, z) => this.ground(x, z);
         for (let y = 0; y < c.n - 1; y++)
             for (let x = 0; x < c.n - 1; x++) {
                 const k = y * c.n + x, k1 = k + 1, k2 = k + c.n, k3 = k2 + 1, pts = [k, k1, k2, k3].map(i => { const q = c.xy(i); return [q.x, c.height[i], q.z]; }), wet = c.water[k] + c.water[k1] + c.water[k2] + c.water[k3] >= 2;
@@ -238,6 +242,7 @@ function createCityRenderer(canvas, onChange, config = {}) {
         };
         sides(outer,contextSides);sides(c,townSlab);
         this.upload('contextTerrain',contextTerrain,true);this.upload('contextWater',contextWater,false,.4);this.upload('contextSides',contextSides,true);this.upload('townSlab',townSlab,true);
+        }
         this.streetStats = cityStreetMesh(c, elevation, roads, details);
         for (const f of c.farms) {
             const colors = ['#b8b87d', '#bfb789', '#9ca678'];
@@ -383,13 +388,15 @@ function createCityRenderer(canvas, onChange, config = {}) {
         }
         // The standalone city view and its GLB export use the collected terrain.
         // Cut their actual mesh too; the continuous atlas clips its own surface.
-        if(this.excavations.length&&typeof ExcavationTerrain!=='undefined'){
+        if(config.includeTerrain!==false&&this.excavations.length&&typeof ExcavationTerrain!=='undefined'){
             const holes=this.excavations.map(h=>({...ExcavationTerrain.prepare(h.outline,h.floorY,h.buildingId),groundY:c.buildings.find(b=>b.id===h.buildingId)?.y})).filter(h=>h.outline),cut=new Geometry();
             for(let i=0;i<terrain.data.length;i+=27)ExcavationTerrain.triangle(cut,terrain.data.slice(i,i+9),terrain.data.slice(i+9,i+18),terrain.data.slice(i+18,i+27),holes);
             terrain.data=cut.data;
         }
-        this.upload('terrain', terrain, true);
-        this.upload('water', sea, false, .4);
+        if (config.includeTerrain !== false) {
+            this.upload('terrain', terrain, true);
+            this.upload('water', sea, false, .4);
+        }
         this.upload('farms', farms, false);
         this.upload('streets', roads, false);
         this.upload('cityWalls', walls, true);

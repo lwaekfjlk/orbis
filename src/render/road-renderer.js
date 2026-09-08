@@ -136,7 +136,9 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         if (!net)
             return;
         const key = `${net.signature}/${this.relief}/${this.continuousLayer ? 1 : 0}`;
-        if (this.roadKey === key)
+        // setWorld clears GPU/software meshes even when the replacement seed
+        // reproduces the same network. A matching key alone cannot restore it.
+        if (this.roadKey === key && ['roads','bridges','ports','seaLanes','frontierPosts'].every(name => this.meshes?.[name]))
             return;
         this.roadKey = key;
         this.roadNetwork = net;
@@ -172,7 +174,10 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         this.upload('seaLanes', lanes, false, .72, .6);
         this.buildFrontierPosts();
         this.roadStats = { ...net.stats, roadTriangles: roads.data.length / 27, portTriangles: ports.data.length / 27 };
-        this.buildNearRoads(true);
+        // The atlas uses the cartographic ribbons above. Build the detailed band
+        // when the camera reaches it, and invalidate it when the network changes.
+        this.nearRoadKey = null;
+        if (this.zoom >= AtlasSpace.TOWN_ZOOM) this.buildNearRoads(true);
     };
     /** The same roads again, seated on the ground rather than above it, for the band
      * where a town's own streets are drawn. Only the stretches the camera can see are
@@ -297,6 +302,7 @@ Geometry.prototype.obb = function (x, y, z, rx, ry, rz, angle, color, top = null
         }return runs;
     }
     AtlasRenderer.prototype.buildNearRoads = function (force = false) {
+        if (!force && this.zoom < AtlasSpace.TOWN_ZOOM) return;
         const net = this.roadNetwork;
         if (!net)
             return;

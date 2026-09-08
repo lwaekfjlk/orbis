@@ -5,6 +5,7 @@
 const SacredCityKit = (() => {
  const TAU=Math.PI*2;
  const siteCache=new WeakMap();
+ let preloadSequence=0,activePreload=null;
  const THEMES={
   sun:{wall:'#e2dfce',trim:'#fff1d5',roof:'#24496b',metal:'#cfaa50',wood:'#615449',dark:'#2c3745',glass:'#ffc26b',ground:'#b5b2a1',leaf:'#506b48',water:'#71b4bf'},
   stars:{wall:'#d4dce0',trim:'#f1e7d8',roof:'#354467',metal:'#b6bad1',wood:'#5b5267',dark:'#263346',glass:'#7ed9ec',ground:'#9fa8a6',leaf:'#477d70',water:'#8ed9e8'},
@@ -445,13 +446,88 @@ const SacredCityKit = (() => {
   const model=k.finish();model.signature=LandmarkCatalog.signature(recipe)+'/great-sanctuary-2';model.recipe={...recipe,sacred:true,sacredVersion:1};return model;
  }
  function miniature(recipe,b){return ArtisanCityKit.meshAt(build(recipe,{lod:1}),b);}
+ function siteKey(w,s,p){return p.id+'/'+TownCatalog.signature(TownCatalog.resolve(w,s,p))+'/'+(p.detailSupport??p.urbanSupport);}
+ // Only results for the same world object and current recipe can enter its cache.
+ // The worker also checks this key against its cloned world/simulation snapshot.
+ function hydrateSite(w,s,p,key,entry){
+  const recipe=TownCatalog.resolve(w,s,p);
+  if(siteKey(w,s,p)!==key)return false;
+  if(entry!==null){
+   const b=entry?.buildings?.[0],wonder=wonderFor(recipe.style,p.detailSupport??p.urbanSupport,p);
+   if(JSON.stringify(entry?.townRecipe)!==JSON.stringify(recipe)||JSON.stringify(entry?.townProfile)!==JSON.stringify(TownCatalog.styles.find(t=>t.id===recipe.style))||!Array.isArray(entry?.buildings)||entry.buildings.length!==1||!b||b.sacred!==true||b.type!=='temple'||b.wonder!==wonder?.id||typeof b.id!=='string'||!['x','z','w','d','h','y','angle','terrainFall','footingLimit'].every(field=>Number.isFinite(b[field]))||b.w<=0||b.d<=0||b.h<=0)return false;
+  }
+  let cache=siteCache.get(w);if(!cache){cache=new Map();siteCache.set(w,cache)}
+  if(!cache.has(key))cache.set(key,entry);return true;
+ }
+ /** Prewarm the exact directory without holding the main thread. Unsupported or
+  * failed workers leave misses for the existing synchronous query; no candidates
+  * are published until their real placement and doorway checks have completed. */
+ function preload(w,s){
+  activePreload?.cancel();
+  const token=++preloadSequence,workers=[],queue=[];let closed=false,next=0,completed=0,url=null,timer=null,finish;
+  const done=new Promise(resolve=>{finish=status=>{if(!closed){closed=true;resolve(status)}}});
+  const cleanup=()=>{
+   if(timer!==null){clearTimeout(timer);timer=null;}
+   for(const worker of workers.splice(0)){worker.onmessage=worker.onerror=worker.onmessageerror=null;try{worker.terminate()}catch(_){}}
+   if(url!==null){try{URL.revokeObjectURL(url)}catch(_){}url=null;}
+  };
+  const job={promise:null,cancel(){finish('cancelled');cleanup()}};activePreload=job;
+  job.promise=(async()=>{
+   let status='failed';
+   try{
+    const cache=siteCache.get(w);
+    for(const p of s.provinces){if(!p.city)continue;const recipe=TownCatalog.resolve(w,s,p);
+     if(wonderFor(recipe.style,p.detailSupport??p.urbanSupport,p)){const key=siteKey(w,s,p);if(!cache?.has(key))queue.push({pid:p.id,key});}
+    }
+    if(!queue.length)return{status:'complete',completed,total:0};
+    if(typeof window==='undefined'||!window.Worker||!window.TELLURIC_TOWN_WORKER)return{status:'unavailable',completed,total:queue.length};
+    url=URL.createObjectURL(new Blob([window.TELLURIC_TOWN_WORKER],{type:'application/javascript'}));
+    timer=setTimeout(()=>finish('failed'),30000);
+    const dispatch=lane=>{
+     if(closed)return;
+     if(next>=queue.length){if(completed===queue.length)finish('complete');return;}
+     const at=next++,item=queue[at];lane.current={...item,id:at+1};
+     const data={kind:'landmark-index',token,...lane.current};
+     if(!lane.bound){data.world=w;data.sim=s;lane.bound=true;}
+     // Clone parent buffers. Transferring them would detach the visible world's
+     // terrain/simulation while it is being attached to the atlas renderer.
+     try{lane.worker.postMessage(data)}catch(_){finish('failed')}
+    };
+    for(let i=0;i<Math.min(2,queue.length)&&!closed;i++){
+     const worker=new window.Worker(url),lane={worker,bound:false,current:null};workers.push(worker);
+     worker.onerror=worker.onmessageerror=e=>{e?.preventDefault?.();finish('failed')};
+     worker.onmessage=e=>{
+      if(closed||activePreload!==job)return;
+      try{
+       const data=e.data,item=lane.current;if(!item)return;const p=s.provinces[item.pid];
+       if(data?.error||data?.kind!=='landmark-index'||data.token!==token||data.id!==item?.id||data.pid!==item.pid||data.key!==item.key||!p||!hydrateSite(w,s,p,item.key,data.payload)){finish('failed');return;}
+       lane.current=null;completed++;dispatch(lane);
+      }catch(_){finish('failed')}
+     };
+     dispatch(lane);
+    }
+    status=await done;
+   }catch(_){status='failed'}
+   finally{
+    closed=true;cleanup();
+    if(activePreload===job)activePreload=null;
+   }
+   return{status,completed,total:queue.length};
+  })();
+  return job;
+ }
  function site(w,s,p){
   const r=TownCatalog.resolve(w,s,p);if(!wonderFor(r.style,p.detailSupport??p.urbanSupport,p))return null;
   let cache=siteCache.get(w);if(!cache){cache=new Map();siteCache.set(w,cache)}
-  const key=p.id+'/'+TownCatalog.signature(r)+'/'+(p.detailSupport??p.urbanSupport);let entry=cache.get(key);
-  if(entry===undefined){const c=generateCity(w,s,p.id),b=c.buildings.find(b=>b.sacred);entry=b?{townRecipe:c.townRecipe,townProfile:c.townProfile,buildings:[b]}:null;cache.set(key,entry)}
+  const key=siteKey(w,s,p);let entry=cache.get(key);
+  if(entry===undefined){const c=generateCityLandmark(w,s,p.id);entry=c.buildings.length?c:null;cache.set(key,entry)}
   if(!entry)return null;const recipe=TownCityBinding.resolve(w,s,p,entry,'temple');
-  return{id:recipe.id,name:recipe.name,recipe,provinceId:p.id,i:p.i,x:p.x,y:p.y,priority:p.urbanPop*2.5,kind:(wonderFor(r.style,p.detailSupport??p.urbanSupport,p)?.name||'Wonder')+' · in-town 3D',building:entry.buildings[0]};
+  const site={id:recipe.id,name:recipe.name,recipe,provinceId:p.id,i:p.i,x:p.x,y:p.y,priority:p.urbanPop*2.5,kind:(wonderFor(r.style,p.detailSupport??p.urbanSupport,p)?.name||'Wonder')+' · in-town 3D'};
+  // Pins use the town's world coordinates. Explicit local-building access still
+  // returns its final frontage, seat and LOD; cloning/searching the directory
+  // must never materialize every town merely by enumerating its metadata.
+  Object.defineProperty(site,'building',{get(){if(!entry.building)entry.building=generateCity(w,s,p.id).buildings.find(b=>b.sacred);return entry.building;}});
+  return site;
  }
- return{build,miniature,pointed,lancet,statue,rose,palette,site,wonderIds:Object.freeze(['cathedral',...Object.keys(WONDERS)]),version:3};
+ return{build,miniature,pointed,lancet,statue,rose,palette,site,siteKey,preload,wonderIds:Object.freeze(['cathedral',...Object.keys(WONDERS)]),version:3};
 })();
