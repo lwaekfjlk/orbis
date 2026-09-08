@@ -7,7 +7,7 @@
 
 **[在线体验](https://haofeiyu.me/telluric/)** · [English](README.md)
 
-![世界全景：国家名称、聚落和标示清晰的荒野](previews/fantasy-landforms/after/world.png)
+![世界全景：国家名称、聚落和标示清晰的荒野](previews/tectonic-climate/after/world.png)
 
 *默认世界 Aereth-47。点击国名可查看疆域、人口与历史；国内湖泊纳入周边国家，开放荒野保留明确标示。*
 
@@ -25,19 +25,19 @@
 
 ## 地貌各有性格
 
-![赭红砂岩台地被深峡谷切开](previews/fantasy-landforms/after/diagnostic-0-red-plateau.png)
+![赭红砂岩台地被深峡谷切开](previews/tectonic-climate/exploration/after/diagnostic-0-red-plateau.png)
 
 *红土台地与峡谷崖壁。此图关闭了树木、城镇和国界图层，便于观察地形本身。*
 
-世界中会出现红层台地、玄武岩火山口、高峰错落、山脊分叉的群山和石灰岩峰林。它们的起伏会改变河流、气候与聚落选址。平缓高地保留土壤和植被，陡壁露出对应岩色，寒冷地区才覆盖雪冰。
+世界中会出现红层台地、玄武岩火山口、高峰错落、山脊分叉的群山和石灰岩峰林。它们的起伏会改变河流、气候与聚落选址。板块挤压塑造高地，季节风把海洋热量与水汽带入陆地。湿润坡地保留森林和草甸，干燥高地保留土色，露岩与冰雪有各自的表面。
 
-可以搜索地貌名称来定位。重新生成世界即可体验新地形；旧存档保留原来的地理和历史。[查看地貌说明](docs/FANTASY_LANDFORMS.md)与[山系、气候对照](docs/MOUNTAINS_AND_CLIMATE.md)。
+可以搜索地貌名称来定位。重新生成世界即可体验新地形；旧存档保留原来的地理和历史。[查看地貌说明](docs/FANTASY_LANDFORMS.md)与[板块、气候与颜色对照](docs/TECTONICS_AND_LANDCOVER.md)。
 
 ## 城市生长在原有地形上
 
-![斜视角下的 Whitebeck：住宅、街道、城墙与水岸](previews/fantasy-landforms/after/city.png)
+![斜视角下的 Oakfield：住宅、街道、城墙与水岸](previews/tectonic-climate/exploration/after/city.png)
 
-*Whitebeck：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
+*Oakfield：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
 
 逐步放大，就能看到同一片土地上的房屋、城墙、神殿、王宫与港口。近处地形会变得更细致，气候也会影响地表、植被和建筑外观。点击建筑可查看说明，**Details** 面板还可导出 GLB 格式的城镇三维模型，模型不含周围地形。
 

@@ -7,7 +7,7 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and marked wildness](previews/fantasy-landforms/after/world.png)
+![World overview with named countries, settlements and marked wildness](previews/tectonic-climate/after/world.png)
 
 *The default world, Aereth-47. Click a country name to see its territory, population and history. Domestic lakes belong to their surrounding countries; open wildness remains clearly marked.*
 
@@ -25,19 +25,19 @@ Use **Play** or the year-step buttons to advance history. **Regenerate** creates
 
 ## A world with distinct landforms
 
-![Red sandstone tablelands divided by deep canyons](previews/fantasy-landforms/after/diagnostic-0-red-plateau.png)
+![Red sandstone tablelands divided by deep canyons](previews/tectonic-climate/exploration/after/diagnostic-0-red-plateau.png)
 
 *Red tablelands and canyon walls. Tree, town and border layers are switched off to show the terrain.*
 
-Explore red-rock mesas, basalt calderas, irregular mountain massifs and branching ridges and limestone towers. Their slopes change the rivers, climate and places people can settle. Flat highlands retain soil and vegetation; exposed cliffs show their rock, with snow and ice where the climate supports them.
+Explore red-rock mesas, basalt calderas, irregular mountain massifs, branching ridges and limestone towers. Their slopes change the rivers, climate and places people can settle. Plate compression shapes the uplands; seasonal winds carry ocean heat and moisture inland. Wet slopes retain forests and meadows, dry highlands keep their earth colours, and exposed cliffs and ice have distinct surfaces.
 
-Search for a named landform to find it. Regenerate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md) and [mountain–climate comparisons](docs/MOUNTAINS_AND_CLIMATE.md).
+Search for a named landform to find it. Regenerate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md) and [tectonics, climate and colour comparisons](docs/TECTONICS_AND_LANDCOVER.md).
 
 ## Cities belong to the landscape
 
-![An oblique view of Whitebeck, showing houses, streets, walls and the waterfront](previews/fantasy-landforms/after/city.png)
+![An oblique view of Oakfield, showing houses, streets, walls and the waterfront](previews/tectonic-climate/exploration/after/city.png)
 
-*Whitebeck: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
+*Oakfield: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
 
 Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 

@@ -1,0 +1,256 @@
+{
+  "sourceSha256": "60bb8a64d94287c3d6ce2fe226e3a6d1c014f202d210845a592ce8d7cdc0d2be",
+  "version": 3,
+  "units": {
+    "temperature": "Model degrees Celsius; uncalibrated",
+    "rain": "Relative model index",
+    "vapor": "Relative model index",
+    "waterBudget": "Sum of model grid column water; not calibrated physical volume"
+  },
+  "limitations": [
+    "Wind is a prescribed seasonal latitude pattern, not a three-dimensional pressure solution.",
+    "Ocean circulation uses a boundary-constrained streamfunction and relative wind-stress curl, not deep salinity dynamics.",
+    "Cloud conversion, fallout and re-evaporation operate in uncalibrated model time steps."
+  ],
+  "sources": [
+    {
+      "title": "Smith and Barstad (2004), A Linear Theory of Orographic Precipitation",
+      "url": "https://journals.ametsoc.org/view/journals/atsc/61/12/1520-0469_2004_061_1377_altoop_2.0.co_2.xml"
+    },
+    {
+      "title": "NOAA: Can the ocean freeze?",
+      "url": "https://oceanservice.noaa.gov/facts/oceanfreeze.html"
+    }
+  ],
+  "controlledMountain": {
+    "parameters": {
+      "seed": "Aereth-47",
+      "form": "global",
+      "plates": 24,
+      "continents": 6,
+      "islands": 1.2,
+      "volcanism": 0.85,
+      "uplift": 1.2,
+      "sea": 0,
+      "aridity": 0.85,
+      "current": 1,
+      "erosion": 0.7,
+      "temperature": 0,
+      "glaciation": 1.2,
+      "landformVersion": 3
+    },
+    "order": [
+      "flat",
+      "4 km mountain"
+    ],
+    "crestTemperature": [
+      4.914969431029426,
+      -17.974533610873753
+    ],
+    "windwardRain": [
+      0.5086649654385371,
+      1.485534324668921
+    ],
+    "leeRain": [
+      0.31236485032397404,
+      0.05165468873188497
+    ],
+    "leeVapor": [
+      0.509161324877488,
+      0.14290884490075864
+    ]
+  },
+  "waterBudgets": {
+    "flat": [
+      {
+        "season": -1,
+        "initialWater": 66246.16771245003,
+        "finalWater": 62465.81860786276,
+        "evaporatedWater": 198000.32281202785,
+        "precipitatedWater": 201780.80401022782,
+        "residual": 0.13209361271583475,
+        "relativeError": 4.998878602083025e-7
+      },
+      {
+        "season": 1,
+        "initialWater": 66246.16964030266,
+        "finalWater": 62465.564909667104,
+        "evaporatedWater": 198007.3589799043,
+        "precipitatedWater": 201788.09636742348,
+        "residual": 0.13265688362298533,
+        "relativeError": 5.020061011697738e-7
+      }
+    ],
+    "mountain": [
+      {
+        "season": -1,
+        "initialWater": 66246.16771245003,
+        "finalWater": 60391.66517218836,
+        "evaporatedWater": 197084.2693709532,
+        "precipitatedWater": 202938.90417659993,
+        "residual": 0.1322653850656934,
+        "relativeError": 5.022791384491634e-7
+      },
+      {
+        "season": 1,
+        "initialWater": 66246.16964030266,
+        "finalWater": 60391.30322530588,
+        "evaporatedWater": 197091.26699146116,
+        "precipitatedWater": 202946.26607150616,
+        "residual": 0.13266504820785485,
+        "relativeError": 5.03783472280723e-7
+      }
+    ],
+    "currentDisabled": [
+      {
+        "season": -1,
+        "initialWater": 66287.66081118584,
+        "finalWater": 62498.40228408043,
+        "evaporatedWater": 198499.254974433,
+        "precipitatedWater": 202288.63794923975,
+        "residual": 0.12444770135334693,
+        "relativeError": 4.6999188379120796e-7
+      },
+      {
+        "season": 1,
+        "initialWater": 66287.66081118584,
+        "finalWater": 62498.44320122027,
+        "evaporatedWater": 198499.13040418806,
+        "precipitatedWater": 202288.47252634185,
+        "residual": 0.1245121882238891,
+        "relativeError": 4.702356475274955e-7
+      }
+    ],
+    "generatedWorld": [
+      {
+        "season": -1,
+        "initialWater": 64895.00575968623,
+        "finalWater": 62620.76883317394,
+        "evaporatedWater": 231345.97543267827,
+        "precipitatedWater": 233620.28553511575,
+        "residual": 0.07317592517938465,
+        "relativeError": 2.4701486230856007e-7
+      },
+      {
+        "season": 1,
+        "initialWater": 64863.584568709135,
+        "finalWater": 61039.27798588011,
+        "evaporatedWater": 244524.14574297427,
+        "precipitatedWater": 248348.51597561437,
+        "residual": 0.06364981108345091,
+        "relativeError": 2.0572829769082574e-7
+      }
+    ]
+  },
+  "seasonalCoast": {
+    "latitude": 30,
+    "seaTemperatures": [
+      8,
+      26
+    ],
+    "order": [
+      "cold west / warm east",
+      "warm west / cold east"
+    ],
+    "westerlyTemperature": [
+      9.189213752746582,
+      12.051126480102539
+    ],
+    "easterlyTemperature": [
+      21.35391616821289,
+      19.383224487304688
+    ],
+    "upwindSourceX": [
+      119,
+      141
+    ]
+  },
+  "oceanTransport": {
+    "coastalTemperatureChange": 0.19277405913844203,
+    "interiorTemperatureChange": 0.008590929123298768,
+    "oceanMinimumTemperature": -1.7999999523162842,
+    "freezingCells": 3290,
+    "terrainUnchanged": true
+  },
+  "generatedWorld": {
+    "parameters": {
+      "continents": 6,
+      "islands": 1.2,
+      "temperature": 0,
+      "glaciation": 1.2,
+      "seed": "Aereth-47",
+      "form": "global",
+      "plates": 24,
+      "volcanism": 0.85,
+      "uplift": 1.2,
+      "sea": 0,
+      "aridity": 0.85,
+      "current": 1,
+      "erosion": 0.7,
+      "landformVersion": 3
+    },
+    "desertAreaFraction": 0.34420249318285423,
+    "forestAreaFraction": 0.22863929904655816,
+    "dryHighlandCells": 1998
+  },
+  "generatedMountainInterventions": [
+    {
+      "range": 3,
+      "name": "The Thousandfold Ranges",
+      "order": [
+        "500 m foothills",
+        "generated mountains"
+      ],
+      "samples": {
+        "crest": 419,
+        "windward": 150,
+        "lee": 588
+      },
+      "crestTemperature": [
+        20.076513840076746,
+        10.264186786296545
+      ],
+      "windwardRain": [
+        0.633185507444044,
+        1.4325938802802314
+      ],
+      "leeRain": [
+        0.11471762264489921,
+        0.055231253229725996
+      ],
+      "leeVapor": [
+        0.3239937169464672,
+        0.2541204223751414
+      ]
+    },
+    {
+      "range": 4,
+      "name": "The Dragonback Marches",
+      "order": [
+        "500 m foothills",
+        "generated mountains"
+      ],
+      "samples": {
+        "crest": 265,
+        "windward": 109,
+        "lee": 276
+      },
+      "crestTemperature": [
+        8.184916361322943,
+        -0.8162181620327932
+      ],
+      "windwardRain": [
+        0.19694392075505826,
+        0.6164227577797864
+      ],
+      "leeRain": [
+        0.2591496822471685,
+        0.10892144658693882
+      ],
+      "leeVapor": [
+        0.29485508405428,
+        0.2257962408003168
+      ]
+    }
+  ]
+}

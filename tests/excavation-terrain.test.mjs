@@ -49,6 +49,21 @@ test('visible terrain opens only at detail LOD and eviction/reset restore the or
  layer.models.set(3,model);layer.buildTerrain();layer.reset(w,{});assert.deepEqual(r.meshes.terrain.data,original,'reset restores terrain even when the same world object is retained');
  assert.deepEqual(w.height,height);assert.deepEqual(w.lake,lake);assert.deepEqual(w.ice,ice);
 });
+test('batch reset never remeshes discarded worlds and closes retained openings once',()=>{
+ for(const destination of ['clear','replace','retain']){
+  const{layer,r,w,model}=terrainFixture(),calls=[];
+  layer.models.set(4,{...model,p:{...model.p,id:4},excavations:[square(.8,0,.2,-3,8)]});
+  r.buildTerrain=()=>calls.push({world:r.world,openings:layer.activeExcavations().length,models:layer.models.size});
+  r.buildRivers=()=>calls.push({riverWorld:r.world});
+  const next=destination==='retain'?w:destination==='replace'?{...w,height:w.height.slice()}:null;
+  layer.reset(next,next?{}:null);
+  assert.equal(layer.world,next);assert.equal(layer.models.size,0);assert.equal(layer.lastRiverKey,null);
+  assert.deepEqual(calls,destination==='retain'?[{world:w,openings:0,models:0}]:[],
+   destination+' reset rebuilt terrain or rivers during batch removal');
+ }
+ const{layer,r,w}=terrainFixture(),calls=[];r.buildTerrain=()=>calls.push({world:r.world,openings:layer.activeExcavations().length});
+ layer.remove(3);assert.deepEqual(calls,[{world:w,openings:0}],'ordinary eviction still closes its opening immediately');
+});
 test('terrain keys and ground queries distinguish multiple loaded openings and leave exterior heights alone',()=>{
  const{layer,r,hole}=terrainFixture(),outside=E.AtlasSpace.grid(2,2),expected=E.AtlasSpace.coarseSurface(r.world,...outside);assert.equal(layer.ground(...outside),expected);
  const key=layer.terrainKey(),other=square(.8,.7,.16,-4,8);layer.models.get(3).excavations.push(other);assert.notEqual(layer.terrainKey(),key);assert.equal(layer.ground(...E.AtlasSpace.grid(.8,.7)),-4);assert.equal(layer.ground(...E.AtlasSpace.grid(0,0)),hole.floorY);assert.equal(layer.lowestFloor,-4);

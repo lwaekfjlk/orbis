@@ -1,4 +1,4 @@
-// Compare the irregular mountain default against the published version-1 ranges
+// Compare the v3 terrain and land cover against the published version-2 map
 // at exactly the same camera, and restore both versions through the real save UI.
 // PLAYWRIGHT_MODULE / CHROMIUM_PATH select an existing browser installation.
 import assert from 'node:assert/strict';
@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {dirname, join, resolve} from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const out = resolve(process.env.MOUNTAIN_OUTPUT || join(root, 'previews/mountain-climate'));
+const out = resolve(process.env.MOUNTAIN_OUTPUT || join(root, 'previews/tectonic-climate'));
 const {chromium} = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const profile = await mkdtemp(join(tmpdir(), 'telluric-fantasy-browser-'));
 const child = spawn(process.env.CHROMIUM_PATH || chromium.executablePath(), [
@@ -73,13 +73,27 @@ try {
     report.bundleSha256 = createHash('sha256').update(testedHtml).digest('hex');
     await page.setContent(testedHtml.toString('utf8'), {waitUntil: 'load', timeout: 240000});
     await page.evaluate(() => document.fonts.ready); await settled(); await assertReady();
-    await page.evaluate(() => buildWorld({...GEN_DEFAULTS,landformVersion:2})); await settled(); await assertReady();
-    assert.equal(await page.evaluate('world.params.landformVersion'), 2);
+    assert.equal(await page.evaluate('world.params.landformVersion'), 3);
     report.fantasy = await fingerprints();
     await page.screenshot({path: join(out, 'after/world.png')});
-    const regions = await page.evaluate(() => world.landformRegions.filter(r => r.type === 3).map(r => ({id:r.id,name:r.name,center:r.center,rx:r.rx,ry:r.ry,statistics:r.statistics})));
-    assert(regions.length >= 2);
-    await startDiagnostic();
+    const regions = await page.evaluate(() => {
+        const regions=world.landformRegions.filter(r=>r.type===3).map(r=>({id:r.id,name:r.name,center:r.center,rx:r.rx,ry:r.ry,statistics:r.statistics}));
+        for(const [name,predicate] of [
+            ['wet-highland',i=>world.height[i]>1300&&world.height[i]<2900&&world.arid[i]>1&&world.temp[i]>0&&world.temp[i]<16&&world.ice[i]<1],
+            ['dry-tableland',i=>world.height[i]>900&&world.landform[i]===1&&world.arid[i]<.7&&world.ice[i]<1]
+        ]) {
+            const candidates=[];for(let i=0;i<GN;i++)if(world.lake[i]<0&&predicate(i))candidates.push(i);
+            const score=i=>{let count=0;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const x=i%GW+dx,y=Math.floor(i/GW)+dy;if(x>=0&&x<GW&&y>=0&&y<GH&&predicate(y*GW+x))count++;}return count*100+(world.dist[i]||0);};
+            const scores=new Map(candidates.map(i=>[i,score(i)]));
+            candidates.sort((a,b)=>scores.get(b)-scores.get(a));
+            if(candidates.length){const i=candidates[0];regions.push({id:name,name,center:{x:i%GW,y:Math.floor(i/GW)},rx:10,ry:8,cell:{height:world.height[i],temp:world.temp[i],arid:world.arid[i],biome:world.biome[i]}});}
+        }
+        return regions;
+    });
+    assert(regions.filter(r=>typeof r.id==='number').length >= 2);
+    for(const id of ['wet-highland','dry-tableland'])assert(regions.some(r=>r.id===id),'missing representative '+id);
+    await startDiagnostic(); await settled();
+    await page.screenshot({path:join(out,'after/world-terrain.png')});
     report.cameras = [];
     for (const region of regions) {
         const camera = await page.evaluate(r => {
@@ -95,9 +109,11 @@ try {
     }
     if(process.env.MOUNTAIN_COMPARE !== '0') {
         const newSave = await page.evaluate(() => JSON.stringify(makeSave()));
-        await page.evaluate(() => buildWorld({...GEN_DEFAULTS,landformVersion:1})); await settled(); await assertReady();
-        assert.equal((await fingerprints()).physical,'cc113c81');
+        await page.evaluate(() => buildWorld({...GEN_DEFAULTS,landformVersion:2})); await settled(); await assertReady();
+        assert.equal((await fingerprints()).physical,'2377e4fa');
         await startDiagnostic();
+        await page.locator('#omHome').click(); await settled();
+        await page.screenshot({path:join(out,'before/world-terrain.png')});
         for(const region of report.cameras) {
             await page.evaluate(camera => {setLayer('relief');ContinuousMap.cancel();ContinuousMap.layer.focusId=null;Object.assign(renderer,camera,{target:camera.target.slice()});renderer.request();},region.camera);
             await settled(); await assertReady();
@@ -105,20 +121,20 @@ try {
             await page.screenshot({path:join(out,'before',`range-${region.id}.png`)});
         }
         await page.evaluate(() => advance(1)); await settled();
-        const v1Save = await page.evaluate(() => JSON.stringify(makeSave()));
-        await page.evaluate(saved=>loadSimulation(new File([saved],'version2.json',{type:'application/json'})),newSave); await settled();
-        assert.equal(await page.evaluate('world.params.landformVersion'),2);
+        const v2Save = await page.evaluate(() => JSON.stringify(makeSave()));
+        await page.evaluate(saved=>loadSimulation(new File([saved],'version3.json',{type:'application/json'})),newSave); await settled();
+        assert.equal(await page.evaluate('world.params.landformVersion'),3);
         assert.deepEqual(await page.evaluate('JSON.parse(JSON.stringify(sim))'),JSON.parse(newSave).simulation);
-        await page.evaluate(saved=>loadSimulation(new File([saved],'version1.json',{type:'application/json'})),v1Save); await settled();
-        assert.equal(await page.evaluate('world.params.landformVersion'),1);
-        assert.equal((await fingerprints()).physical,'cc113c81');
-        assert.deepEqual(await page.evaluate('JSON.parse(JSON.stringify(sim))'),JSON.parse(v1Save).simulation);
-        report.savedVersions = [1,2];
+        await page.evaluate(saved=>loadSimulation(new File([saved],'version2.json',{type:'application/json'})),v2Save); await settled();
+        assert.equal(await page.evaluate('world.params.landformVersion'),2);
+        assert.equal((await fingerprints()).physical,'2377e4fa');
+        assert.deepEqual(await page.evaluate('JSON.parse(JSON.stringify(sim))'),JSON.parse(v2Save).simulation);
+        report.savedVersions = [2,3];
     }
     assert.deepEqual(errors,[]); assert.deepEqual(requests,[]);
     report.errors=errors;report.externalRequests=requests;
     await writeFile(join(out,'results.json'),JSON.stringify(report,null,2)+'\n');
-    console.log('PASS irregular mountain comparison',out);
+    console.log('PASS tectonic climate and land cover comparison',out);
 } finally {
     if (browser) await browser.close();
     try { process.kill(-child.pid, 'SIGKILL'); } catch {}

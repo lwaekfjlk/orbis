@@ -1,0 +1,216 @@
+{
+  "fixture": "Frozen default v2 world generated before changes; same physical/climate arrays; change only params.landformVersion 2 → 3",
+  "method": "Gray: HSV saturation < 0.15. Green: G-R > .018 and G-B > .035. Cell counts, with world area reported separately. near sample uses actual atlas grade at parent vertex plus city-layer parent seasonal snow mix. rockMix is diagnostic of original v2 code, before seasonal snow masking.",
+  "scope": "Representative cell-centre/vertex material samples, not raster screenshot pixel counts. Includes city-layer seasonal parent snow preblend; shader lighting and mesh averaging not included.",
+  "source": [
+    "src/city/environment.js",
+    "src/continuous/landscape-color.js"
+  ],
+  "table": {
+    "allLand": {
+      "cells": 23038,
+      "grayFar": [
+        4908,
+        1782
+      ],
+      "grayNear": [
+        10261,
+        8728
+      ],
+      "greenFar": [
+        4179,
+        4079
+      ],
+      "greenNear": [
+        2600,
+        3352
+      ]
+    },
+    "permanentSnowIce": {
+      "cells": 6121,
+      "grayFar": [
+        1429,
+        1429
+      ],
+      "grayNear": [
+        4329,
+        4329
+      ],
+      "greenFar": [
+        0,
+        0
+      ],
+      "greenNear": [
+        0,
+        0
+      ]
+    },
+    "iceFreeLand": {
+      "cells": 16917,
+      "grayFar": [
+        3479,
+        353
+      ],
+      "grayNear": [
+        5932,
+        4399
+      ],
+      "greenFar": [
+        4179,
+        4079
+      ],
+      "greenNear": [
+        2600,
+        3352
+      ]
+    },
+    "littleSeasonalSnow": {
+      "cells": 12420,
+      "grayFar": [
+        714,
+        181
+      ],
+      "grayNear": [
+        1662,
+        237
+      ],
+      "greenFar": [
+        3365,
+        3453
+      ],
+      "greenNear": [
+        2591,
+        3327
+      ]
+    },
+    "iceFreeHighlands": {
+      "cells": 4807,
+      "grayFar": [
+        1596,
+        213
+      ],
+      "grayNear": [
+        2792,
+        1950
+      ],
+      "greenFar": [
+        647,
+        714
+      ],
+      "greenNear": [
+        263,
+        575
+      ]
+    },
+    "wetHighlandsLittleSnow": {
+      "cells": 762,
+      "grayFar": [
+        95,
+        6
+      ],
+      "grayNear": [
+        274,
+        14
+      ],
+      "greenFar": [
+        462,
+        575
+      ],
+      "greenNear": [
+        263,
+        560
+      ]
+    },
+    "biome 12 Alpine meadow": {
+      "cells": 188,
+      "grayFar": [
+        107,
+        2
+      ],
+      "grayNear": [
+        150,
+        41
+      ],
+      "greenFar": [
+        11,
+        38
+      ],
+      "greenNear": [
+        0,
+        31
+      ]
+    },
+    "dryHighlands": {
+      "cells": 3013,
+      "grayFar": [
+        1098,
+        143
+      ],
+      "grayNear": [
+        1924,
+        1380
+      ],
+      "greenFar": [
+        19,
+        0
+      ],
+      "greenNear": [
+        0,
+        0
+      ]
+    }
+  },
+  "fieldSemantics": {
+    "vegetation": "Fraction of summer substrate carrying biome-supported plant cover. Moisture, temperature and physical exposure affect it.",
+    "soil": "Unvegetated soil/earth fraction, 1-vegetation-rock; dry plateaus retain soil hues.",
+    "rock": "Exposed mineral fraction, from physical neighbour relief and biome cover. Not renderer slope.",
+    "rugged": "Smooth qualitative exposure proxy for max neighbour height difference 300–1700m; not a measured slope or calibrated distance.",
+    "relief": "Maximum absolute height difference to dry land four-neighbours, metres. Water boundaries use local height."
+  },
+  "priority": "Water, permanent snow, glaciers override substrate; all fractions are zero on protected cells. Seasonal snow is independent of summer land cover. Shared color/cache logic does not mutate world fields.",
+  "tests": {
+    "new": 9,
+    "targetedFinal": 33,
+    "environmentEarlier": 8,
+    "oldColorFloat64Digests": [
+      "5470be6d206d9493287cc796542c586c19d77c658a632ddd95f50a43507f5a4a",
+      "b9f959910c962fc2095731735a03ad2f03d6ca4ebf096f3a9fd7ad032f32abd8",
+      "b9f959910c962fc2095731735a03ad2f03d6ca4ebf096f3a9fd7ad032f32abd8"
+    ]
+  },
+  "fixtureParams": {
+    "seed": "Aereth-47",
+    "form": "global",
+    "plates": 24,
+    "continents": 6,
+    "islands": 1.2,
+    "volcanism": 0.85,
+    "uplift": 1.2,
+    "sea": 0,
+    "aridity": 0.85,
+    "current": 1,
+    "erosion": 0.7,
+    "temperature": 0,
+    "glaciation": 1.2,
+    "landformVersion": 2
+  },
+  "fixtureBaseCommit": "efdca8d",
+  "fixtureBinarySHA256": "d23c977b102fa7e603e51109afb1dbc32088c1f8bd6cb6092597064ab8efc6c2",
+  "sourceSHA256": {
+    "src/city/environment.js": "75ee4326fb650838984fc94aca3d16ad8cc58948e7094398ef0e971d05903cab",
+    "src/continuous/landscape-color.js": "62bc5e549e9a7e1b102d00ed8a3e82ff363b66e33d3584ef040bbd1e4dba2209",
+    "tests/landcover-colors.test.mjs": "c50e1a269008ba0f06cce19d14010175afbd65625205e8df75a7acd56cf3b5f5"
+  },
+  "definitions": {
+    "gray": "HSV saturation (maxRGB-minRGB)/maxRGB < 0.15",
+    "green": "G-R > 0.018 and G-B > 0.035; warm dry grass can remain yellow rather than count as green.",
+    "iceFree": "Dry land except ice > 25 and permanent snow/glacier biomes",
+    "wetHighlandsLittleSnow": "height > 1200m, arid > .7, annual temp > -1C, model seasonal cover < .2",
+    "dryHighlands": "height > 1200m, arid < .35",
+    "tablePairs": "Every pair is [original v2 colors, new v3 colors on unchanged v2 physical/climate fields]"
+  },
+  "rawReports": {
+    "before": "/tmp/telluric-landcover-audit/before.json",
+    "after": "/tmp/telluric-landcover-audit/after-colors.json"
+  }
+}

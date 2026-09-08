@@ -1,0 +1,285 @@
+{
+  "renderer": "Chromium with SwiftShader",
+  "viewport": [
+    1480,
+    980
+  ],
+  "offline": true,
+  "runs": [
+    {
+      "readyMs": 11981.100000023842,
+      "generationMs": 10831,
+      "fullCities": 0,
+      "terrainBuilds": 1,
+      "siteQueries": 0,
+      "index": {
+        "status": "complete",
+        "completed": 92,
+        "total": 92,
+        "frames": 18
+      },
+      "directory": 170,
+      "sacredSites": 79,
+      "fingerprints": [
+        "73fe302b",
+        "b18c6a8",
+        "b007f61e"
+      ],
+      "landformVersion": 3,
+      "software": false,
+      "nearRoadVertices": 0,
+      "settledTerrainBuilds": 1,
+      "cities": [
+        {
+          "id": 421,
+          "readyMs": 2878,
+          "name": "Oakfield",
+          "buildings": 299,
+          "cityFingerprint": "bd34682a",
+          "triangles": 261741,
+          "worker": true,
+          "meshes": {
+            "cm:421:buildings": {
+              "count": 431850,
+              "words": 3886650,
+              "bits": [
+                1763746781,
+                4165236836
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:cityWalls": {
+              "count": 94980,
+              "words": 854820,
+              "bits": [
+                2227519328,
+                4088361564
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:details": {
+              "count": 71574,
+              "words": 644166,
+              "bits": [
+                3624473545,
+                670144600
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:farms": {
+              "count": 618,
+              "words": 5562,
+              "bits": [
+                2533805457,
+                3810206109
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:port": {
+              "count": 0,
+              "words": 0,
+              "bits": [
+                2166136261,
+                2654435769
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:roofs": {
+              "count": 122778,
+              "words": 1105002,
+              "bits": [
+                2967320741,
+                1671104076
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:silhouettes": {
+              "count": 12558,
+              "words": 113022,
+              "bits": [
+                3406485603,
+                3843520240
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:streets": {
+              "count": 22497,
+              "words": 202473,
+              "bits": [
+                3999639557,
+                3597746635
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:trees": {
+              "count": 40926,
+              "words": 368334,
+              "bits": [
+                859169176,
+                3145361175
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:421:vegetation": {
+              "count": 61974,
+              "words": 557766,
+              "bits": [
+                4256870996,
+                3775992260
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            }
+          }
+        },
+        {
+          "id": 289,
+          "readyMs": 2206.7000000178814,
+          "name": "Whitewatch",
+          "buildings": 235,
+          "cityFingerprint": "5f0da80d",
+          "triangles": 259808,
+          "worker": true,
+          "meshes": {
+            "cm:289:buildings": {
+              "count": 533424,
+              "words": 4800816,
+              "bits": [
+                2901167960,
+                316605670
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:cityWalls": {
+              "count": 101748,
+              "words": 915732,
+              "bits": [
+                4155789757,
+                3292009189
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:details": {
+              "count": 65835,
+              "words": 592515,
+              "bits": [
+                2996347528,
+                2544882889
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:farms": {
+              "count": 234,
+              "words": 2106,
+              "bits": [
+                3091224222,
+                2844015222
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:port": {
+              "count": 0,
+              "words": 0,
+              "bits": [
+                2166136261,
+                2654435769
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:roofs": {
+              "count": 41910,
+              "words": 377190,
+              "bits": [
+                1383527660,
+                4003344234
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:silhouettes": {
+              "count": 9870,
+              "words": 88830,
+              "bits": [
+                1621384072,
+                2597191887
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:streets": {
+              "count": 20247,
+              "words": 182223,
+              "bits": [
+                2511485618,
+                4094517997
+              ],
+              "shadow": false,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:trees": {
+              "count": 16026,
+              "words": 144234,
+              "bits": [
+                3750474527,
+                1523810006
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            },
+            "cm:289:vegetation": {
+              "count": 62850,
+              "words": 565650,
+              "bits": [
+                260289489,
+                4237700340
+              ],
+              "shadow": true,
+              "unlit": 0,
+              "alpha": 1
+            }
+          }
+        }
+      ],
+      "regeneration": true,
+      "failureRecovery": true,
+      "noWorkerFallback": true
+    }
+  ],
+  "medianReadyMs": 11981.100000023842,
+  "medianGenerationMs": 10831,
+  "bundleSha256": "c964a1e1c1703d4c2d836945f2487f443af546c818282d7e1938adead990dbf7",
+  "note": "One functional run, not a controlled speed comparison. Includes exact source/Worker/fallback mesh comparisons, regeneration and failed-generation recovery."
+}

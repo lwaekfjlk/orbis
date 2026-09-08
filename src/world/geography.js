@@ -38,6 +38,57 @@ const BIOME = [
 const BOUNDARY = { 1: 'Continental collision', 2: 'Subduction margin', 3: 'Oceanic island arc', 4: 'Divergent boundary', 5: 'Transform boundary' };
 const PLATE_NAMES = ['Aurelian', 'Vesper', 'Boreal', 'Nacre', 'Cinder', 'Thalassic', 'Orison', 'Sable', 'Pelagic', 'Veyran', 'Crown', 'Morrow', 'Istrian', 'Eldwyn', 'Lacuna', 'Umbra', 'Nival', 'Caldera', 'Serene', 'Brass', 'Halcyon', 'Mistral', 'Tamar', 'Astral', 'Coralline', 'Meridian', 'Fallow', 'Caelian', 'Ember', 'Obsidian'];
 const nextFrame = () => new Promise(r => setTimeout(r, 0));
+// Normal to the same warped, weighted distance field that assigns plate cells.
+// Its positive direction is from A's side (distance A < B) towards B's side.
+function plateNormalV3(A, B, x, y, seed, ox, oy) {
+    const difference = (x, y) => {
+        const xx = x + noise(x * .032 + ox, y * .032 + oy, seed + 80) * 4.1;
+        const yy = y + noise(x * .032 - oy, y * .032 + ox, seed + 180) * 4.1;
+        return ((xx - A.x) ** 2 + (yy - A.y) ** 2) / A.scale ** 2 - ((xx - B.x) ** 2 + (yy - B.y) ** 2) / B.scale ** 2;
+    };
+    const dx = difference(x + .05, y) - difference(x - .05, y), dy = difference(x, y + .05) - difference(x, y - .05);
+    const length = Math.hypot(dx, dy);
+    if (length > 1e-12) return { nx: dx / length, ny: dy / length };
+    const fallback = Math.hypot(B.x - A.x, B.y - A.y);
+    return { nx: (B.x - A.x) / fallback, ny: (B.y - A.y) / fallback };
+}
+function plateCrustV3(w, id, x, y, nx, ny, sign, fallback) {
+    // Near a curved margin or triple junction, a long normal can cross a third
+    // plate. Only inspect crust that actually belongs to the requested side.
+    for (const distance of [6, 4, 2, 1]) {
+        const i = cell(Math.round(x + nx * distance * sign), Math.round(y + ny * distance * sign));
+        if (w.plate[i] === id) return w.crust[i];
+    }
+    return w.crust[fallback];
+}
+function compressionFieldV3(collision) {
+    const field = new Float32Array(GN);
+    // Crustal thickening spans neighbouring cells instead of copying the narrow
+    // suture. A normalized spatial average supplies one shared regional support.
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+        let total = 0, weight = 0;
+        for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+            const xx = x + dx, yy = y + dy;if (xx < 0 || xx >= GW || yy < 0 || yy >= GH) continue;
+            const a = 1 / (1 + (dx * dx + dy * dy) / 8);
+            total += collision[yy * GW + xx] * a;weight += a;
+        }
+        field[y * GW + x] = total / weight;
+    }
+    return field;
+}
+function compressionRiseV3(w, i, amplitude) {
+    return amplitude * Math.max(0, w.params.uplift) / 1.2 * Math.sqrt(Math.max(0, w.compressionSupport[i]));
+}
+function compressionAxisV3(w, x, y, fallback) {
+    let xx = 0, xy = 0, weight = 0;
+    for (const b of w.boundaries) {
+        if (b.type !== 1) continue;
+        const d2 = (x - b.x) ** 2 + (y - b.y) ** 2;if (d2 > 196) continue;
+        const a = b.closing * Math.exp(-d2 / 64);
+        xx += a * (b.nx * b.nx - b.ny * b.ny);xy += a * 2 * b.nx * b.ny;weight += a;
+    }
+    return weight ? .5 * Math.atan2(xy, xx) + Math.PI / 2 : fallback;
+}
 async function generateWorld(p, progress = async () => { }) {
     p = { continents: 6, islands: 1.2, temperature: 0, glaciation: 1.2, ...p };
     const s = seedHash(p.seed), arr = () => new Float32Array(GN);
@@ -169,8 +220,12 @@ async function generateWorld(p, progress = async () => { }) {
                 const j = i + dx + dy * GW;
                 if (w.plate[i] === w.plate[j])
                     continue;
-                const A = w.plates[w.plate[i]], B = w.plates[w.plate[j]], dn = Math.hypot(B.x - A.x, B.y - A.y), nx = (B.x - A.x) / dn, ny = (B.y - A.y) / dn;
-                const closing = (A.vx - B.vx) * nx + (A.vy - B.vy) * ny, shear = Math.abs(-(A.vx - B.vx) * ny + (A.vy - B.vy) * nx), aLand = w.crust[cell(Math.round(x - nx * 6), Math.round(y - ny * 6))] > -.02, bLand = w.crust[cell(Math.round(x + nx * 6), Math.round(y + ny * 6))] > -.02;
+                const A = w.plates[w.plate[i]], B = w.plates[w.plate[j]], dn = Math.hypot(B.x - A.x, B.y - A.y);
+                const normal = p.landformVersion >= 3 ? plateNormalV3(A, B, x + dx * .5, y + dy * .5, s, ox, oy) : { nx: (B.x - A.x) / dn, ny: (B.y - A.y) / dn };
+                const { nx, ny } = normal;
+                const closing = (A.vx - B.vx) * nx + (A.vy - B.vy) * ny, shear = Math.abs(-(A.vx - B.vx) * ny + (A.vy - B.vy) * nx);
+                const aLand = (p.landformVersion >= 3 ? plateCrustV3(w, A.id, x + dx * .5, y + dy * .5, nx, ny, -1, i) : w.crust[cell(Math.round(x - nx * 6), Math.round(y - ny * 6))]) > -.02;
+                const bLand = (p.landformVersion >= 3 ? plateCrustV3(w, B.id, x + dx * .5, y + dy * .5, nx, ny, 1, j) : w.crust[cell(Math.round(x + nx * 6), Math.round(y + ny * 6))]) > -.02;
                 let type = 5, override = -1;
                 if (closing > .18) {
                     if (aLand && bLand)
@@ -204,8 +259,10 @@ async function generateWorld(p, progress = async () => { }) {
                 }
                 else if (b.type === 2 || b.type === 3) {
                     const side = cross * (b.override === b.a ? -1 : 1);
-                    w.arc[i] = Math.max(w.arc[i], Math.exp(-((side - 3.8) ** 2) / 8) * alongF * strength);
-                    w.trench[i] = Math.max(w.trench[i], Math.exp(-((side + 1.7) ** 2) / 2.5) * alongF * strength);
+                    if (p.landformVersion < 3 || p.landformVersion == null || w.plate[i] === b.override)
+                        w.arc[i] = Math.max(w.arc[i], Math.exp(-((side - 3.8) ** 2) / 8) * alongF * strength);
+                    if (p.landformVersion < 3 || p.landformVersion == null || (w.plate[i] === b.a || w.plate[i] === b.b) && w.plate[i] !== b.override)
+                        w.trench[i] = Math.max(w.trench[i], Math.exp(-((side + 1.7) ** 2) / 2.5) * alongF * strength);
                 }
                 else if (b.type === 4) {
                     w.rift[i] = Math.max(w.rift[i], Math.exp(-d2 / 9) * strength);
@@ -214,6 +271,7 @@ async function generateWorld(p, progress = async () => { }) {
                     w.fault[i] = Math.max(w.fault[i], Math.exp(-d2 / 1.7) * clamp(b.shear / 1.6));
             }
     }
+    if (p.landformVersion >= 3) w.compressionSupport = compressionFieldV3(w.collision);
     // Narrow ridged uplift + broader crustal thickening, rather than white-noise peaks.
     for (let y = 0; y < GH; y++)
         for (let x = 0; x < GW; x++) {
@@ -429,13 +487,73 @@ function drainage(w) {
     Object.assign(w, { down, order, filled, dist, nearest });
 }
 function windAt(lat, season) { const rel = lat - season * 6, a = Math.abs(rel), s = Math.sign(rel) || 1, g30 = (1 + Math.tanh((a - 30) / 4)) / 2, g60 = (1 + Math.tanh((a - 60) / 4)) / 2; return [-.84 + 1.9 * g30 - 1.6 * g60, s * (.28 * (1 - g30) - .23 * (g30 - g60) + .14 * g60)]; }
+// Version 3 keeps a qualitative, boundary-constrained surface circulation. Its
+// forcing now comes from the same seasonal wind stress as atmospheric transport.
+// Grid y points south, so minus d(tau_x)/dy drives the streamfunction convention.
+function oceanWindStress(w) {
+    const stress = new Float32Array(GH + 1), force = new Float32Array(GH + 1);
+    let maximum = 1e-9;
+    for (let y = 0; y <= GH; y++) {
+        const lat = 86 - y * 172 / GH;
+        for (const season of [-1, 1]) {
+            const wind = windAt(lat, season);
+            stress[y] += .5 * wind[0] * Math.hypot(wind[0], wind[1]);
+        }
+    }
+    for (let y = 1; y < GH; y++) {
+        force[y] = -(stress[y + 1] - stress[y - 1]) * .5;
+        maximum = Math.max(maximum, Math.abs(force[y]));
+    }
+    for (let y = 1; y < GH; y++) force[y] *= .030 / maximum;
+    return {stress, force};
+}
+// Thermal memory follows a small upwind sector, with a weaker local coast term.
+// Long overland paths and intervening high barriers attenuate that memory; this
+// does not claim to resolve three-dimensional flow around a mountain.
+function maritimeSources(w, season) {
+    const temperature = new Float32Array(GN), anomaly = new Float32Array(GN), influence = new Float32Array(GN), source = new Int32Array(GN).fill(-1), fetch = new Float32Array(GN).fill(40);
+    const angles = [-.30, 0, .30];
+    for (let i = 0; i < GN; i++) {
+        if (w.height[i] <= 0) { temperature[i] = w.sst[i]; anomaly[i] = w.seaAnomaly[i]; influence[i] = 1; source[i] = i; fetch[i] = 0; continue; }
+        const x = i % GW, y = i / GW | 0, near = w.nearest[i], wind = windAt(w.lat[i], season), length = Math.hypot(wind[0], wind[1]);
+        const local = near >= 0 ? .22 * Math.exp(-w.dist[i] / 9) : 0;
+        let weight = local, heat = local * (near >= 0 ? w.sst[near] : 0), seaA = local * (near >= 0 ? w.seaAnomaly[near] : 0), best = 0;
+        for (const angle of angles) {
+            const c = Math.cos(angle), s = Math.sin(angle), dx = -(wind[0] * c - wind[1] * s) / length, dy = -(wind[0] * s + wind[1] * c) / length;
+            let barrier = 0;
+            for (let step = 1; step <= 36; step++) {
+                const yy = Math.round(y + dy * step);
+                if (yy < 0 || yy >= GH) break;
+                const j = cell(Math.round(x + dx * step), yy);
+                if (w.height[j] <= 0) {
+                    const value = .26 * Math.exp(-step / 16 - barrier / 6000);
+                    weight += value; heat += value * w.sst[j]; seaA += value * w.seaAnomaly[j];
+                    if (value > best) { best = value; source[i] = j; fetch[i] = step; }
+                    break;
+                }
+                barrier = Math.max(barrier, w.height[j] - w.height[i]);
+            }
+        }
+        influence[i] = weight;
+        temperature[i] = weight ? heat / weight : 29 - 47 * Math.sin(w.lat[i] * Math.PI / 180) ** 2 + w.params.temperature;
+        anomaly[i] = weight ? seaA / weight : 0;
+    }
+    return {temperature, anomaly, influence, source, fetch};
+}
 function ocean(w) {
+    const coupled = w.params.landformVersion >= 3;
     const h = w.height, at = (x, y) => y * GW + wrap(x), V = GW * (GH + 1), psi = new Float32Array(V), free = new Uint8Array(V), force = new Float32Array(GH + 1);
     for (let y = 1; y < GH; y++) {
         force[y] = .030 * Math.sin((86 - y * 172 / GH) * Math.PI / 60);
         for (let x = 0; x < GW; x++)
             if (h[cell(x - 1, y - 1)] <= 0 && h[cell(x, y - 1)] <= 0 && h[cell(x - 1, y)] <= 0 && h[cell(x, y)] <= 0)
                 free[at(x, y)] = 1;
+    }
+    if (coupled) {
+        const forcing = oceanWindStress(w);
+        force.set(forcing.force);
+        w.oceanWindStress = forcing.stress;
+        w.oceanForcing = forcing.force;
     }
     for (let k = 0; k < 150; k++)
         for (let y = 1; y < GH; y++)
@@ -478,9 +596,26 @@ function ocean(w) {
                 up += Math.max(0, -ey);
             if (y > 0 && h[i - GW] > 0)
                 up += Math.max(0, ey);
+            if (coupled) {
+                up = 0;
+                for (const season of [-1, 1]) {
+                    const seasonalWind = windAt(w.lat[i], season), sx = -hem * seasonalWind[1], sy = hem * seasonalWind[0];
+                    let seasonalUp = 0;
+                    if (h[cell(x + 1, y)] > 0) seasonalUp += Math.max(0, -sx);
+                    if (h[cell(x - 1, y)] > 0) seasonalUp += Math.max(0, sx);
+                    if (y < GH - 1 && h[i + GW] > 0) seasonalUp += Math.max(0, -sy);
+                    if (y > 0 && h[i - GW] > 0) seasonalUp += Math.max(0, sy);
+                    up += seasonalUp * .5;
+                }
+            }
             cold[i] = Math.min(4, up * 4) * w.params.current;
         }
     let t = new Float32Array(eq), next = new Float32Array(GN);
+    const freezing = coupled ? new Float32Array(GN) : null;
+    if (coupled) for (let i = 0; i < GN; i++) if (h[i] <= 0 && t[i] < -1.8) {
+        freezing[i] = -1.8 - t[i];
+        t[i] = -1.8;
+    }
     for (let step = 0; step < 165; step++) {
         for (let y = 0; y < GH; y++)
             for (let x = 0; x < GW; x++) {
@@ -496,6 +631,13 @@ function ocean(w) {
                     if (h[j] <= 0)
                         diff += t[j] - T;
                 next[i] = T + .60 * (adv + .035 * w.params.current * diff + .018 * (eq[i] - cold[i] - T));
+                if (coupled) {
+                    // Cold energy forms sea ice instead of supercooling a liquid
+                    // surface. Later positive heat first melts that stored ice.
+                    const energy = next[i] + 1.8 - freezing[i];
+                    freezing[i] = Math.max(0, -energy);
+                    next[i] = Math.max(-1.8, energy - 1.8);
+                }
             }
         const old = t;
         t = next;
@@ -505,17 +647,22 @@ function ocean(w) {
     for (let i = 0; i < GN; i++)
         anomaly[i] = h[i] <= 0 ? t[i] - eq[i] : 0;
     Object.assign(w, { sst: t, seaAnomaly: anomaly, ou: u, ov: v });
+    if (coupled) w.oceanIcePotential = Float32Array.from(freezing, energy => clamp(energy / 3));
 }
 async function climate(w, progress) {
-    const h = w.height, temps = [], rains = [], runoffs = [];
+    const coupled = w.params.landformVersion >= 3;
+    const h = w.height, temps = [], rains = [], runoffs = [], seasonalWinds = [], marineSeasons = [], waterBudgets = [];
     let mainU, mainV;
     for (const season of [-1, 1]) {
         const temp = new Float32Array(GN), u = new Float32Array(GN), v = new Float32Array(GN), cap = new Float32Array(GN), cond = new Float32Array(GN), pet = new Float32Array(GN), soil = new Float32Array(GN).fill(.5), rain = new Float32Array(GN), runoff = new Float32Array(GN);
         let q = new Float32Array(GN), next = new Float32Array(GN);
+        const marine = coupled ? maritimeSources(w, season) : null, descent = coupled ? new Float32Array(GN) : null;
+        let cloud = coupled ? new Float32Array(GN) : null, nextCloud = coupled ? new Float32Array(GN) : null;
+        let initialWater = 0, evaporatedWater = 0, precipitatedWater = 0;
         for (let y = 0; y < GH; y++)
             for (let x = 0; x < GW; x++) {
-                const i = cell(x, y), lat = w.lat[i], sn = Math.sin(lat * Math.PI / 180), mar = Math.exp(-w.dist[i] / 9), near = w.nearest[i], seaA = near >= 0 ? w.seaAnomaly[near] : 0;
-                temp[i] = h[i] > 0 ? (29 - 47 * sn * sn + w.params.temperature) * (1 - .36 * mar) + .36 * mar * (near >= 0 ? w.sst[near] : 29 - 47 * sn * sn + w.params.temperature) - .0058 * h[i] + season * sn * (3 + 12 * (1 - mar)) : w.sst[i] + season * sn * 2;
+                const i = cell(x, y), lat = w.lat[i], sn = Math.sin(lat * Math.PI / 180), mar = coupled ? marine.influence[i] : Math.exp(-w.dist[i] / 9), near = w.nearest[i], seaA = coupled ? marine.anomaly[i] : near >= 0 ? w.seaAnomaly[near] : 0;
+                temp[i] = h[i] > 0 ? (29 - 47 * sn * sn + w.params.temperature) * (1 - .36 * mar) + .36 * mar * (coupled ? marine.temperature[i] : near >= 0 ? w.sst[near] : 29 - 47 * sn * sn + w.params.temperature) - .0058 * h[i] + season * sn * (3 + 12 * (1 - mar)) : w.sst[i] + season * sn * 2;
                 const wind = windAt(lat, season);
                 u[i] = wind[0];
                 v[i] = wind[1];
@@ -524,8 +671,9 @@ async function climate(w, progress) {
                 cap[i] = Math.max(.12, 2.3 * Math.exp(.035 * (temp[i] - 20)));
                 pet[i] = .010 * clamp((temp[i] + 15) / 35, .1, 1.7) * w.params.aridity;
                 q[i] = h[i] <= 0 ? cap[i] : .4;
-                const rel = lat - season * 6, base = .003 + .049 * Math.exp(-((rel / 11) ** 2)) + .020 * Math.exp(-(((Math.abs(rel) - 53) / 11) ** 2)), dzx = (Math.max(0, h[cell(x + 1, y)]) - Math.max(0, h[cell(x - 1, y)])) * .5, dzy = (Math.max(0, h[cell(x, y + 1)]) - Math.max(0, h[cell(x, y - 1)])) * .5, lift = Math.max(0, (u[i] * dzx + v[i] * dzy) / 1000);
+                const rel = lat - season * 6, base = .003 + .049 * Math.exp(-((rel / 11) ** 2)) + .020 * Math.exp(-(((Math.abs(rel) - 53) / 11) ** 2)), dzx = (Math.max(0, h[cell(x + 1, y)]) - Math.max(0, h[cell(x - 1, y)])) * .5, dzy = (Math.max(0, h[cell(x, y + 1)]) - Math.max(0, h[cell(x, y - 1)])) * .5, vertical = (u[i] * dzx + v[i] * dzy) / 1000, lift = Math.max(0, vertical);
                 cond[i] = (base + lift * .24) * clamp(1 + seaA * .085 * mar, .4, 1.2);
+                if (coupled) { descent[i] = Math.max(0, -vertical); initialWater += q[i]; }
             }
         for (let step = 0; step < 220; step++) {
             for (let y = 0; y < GH; y++)
@@ -534,8 +682,24 @@ async function climate(w, progress) {
                     let vapor = Math.max(0, q[i] - .46 * (ur * (ur > 0 ? q[i] : q[r]) - ul * (ul > 0 ? q[l] : q[i]) + vd * (vd > 0 ? q[i] : q[s]) - vn * (vn > 0 ? q[n] : q[i])));
                     const evap = h[i] <= 0 ? .12 * Math.max(0, cap[i] - vapor) : Math.min(soil[i], pet[i] * clamp(soil[i]));
                     vapor += evap;
-                    const p = Math.min(vapor * .85, vapor * cond[i] + Math.max(0, vapor - cap[i]) * .43);
-                    next[i] = vapor - p;
+                    const condensed = Math.min(vapor * .85, vapor * cond[i] + Math.max(0, vapor - cap[i]) * .43);
+                    let p = condensed;
+                    if (coupled) {
+                        let carried = Math.max(0, cloud[i] - .46 * (ur * (ur > 0 ? cloud[i] : cloud[r]) - ul * (ul > 0 ? cloud[l] : cloud[i]) + vd * (vd > 0 ? cloud[i] : cloud[s]) - vn * (vn > 0 ? cloud[n] : cloud[i])));
+                        carried += condensed;
+                        vapor -= condensed;
+                        // Condensation is not instantaneous rainfall. Cloud water
+                        // travels with the same wind, partly evaporates into dry
+                        // descending air, and then falls out over a finite time.
+                        const recycled = Math.min(carried, Math.max(0, cap[i] - vapor) * descent[i] * .10);
+                        vapor += recycled; carried -= recycled;
+                        p = carried * .36;
+                        nextCloud[i] = carried - p;
+                        next[i] = vapor;
+                        evaporatedWater += evap;
+                        precipitatedWater += p;
+                    }
+                    else next[i] = vapor - p;
                     let out = 0;
                     if (h[i] > 0) {
                         soil[i] = Math.max(0, soil[i] + p - evap);
@@ -550,6 +714,7 @@ async function climate(w, progress) {
             const old = q;
             q = next;
             next = old;
+            if (coupled) { const oldCloud = cloud; cloud = nextCloud; nextCloud = oldCloud; }
             if (step === 110)
                 await nextFrame();
         }
@@ -558,6 +723,15 @@ async function climate(w, progress) {
         runoffs.push(runoff);
         mainU = u;
         mainV = v;
+        if (coupled) {
+            let finalWater = 0;
+            for (let i = 0; i < GN; i++) finalWater += q[i] + cloud[i];
+            const residual = finalWater - initialWater - evaporatedWater + precipitatedWater;
+            waterBudgets.push({season, initialWater, finalWater, evaporatedWater, precipitatedWater, residual,
+                relativeError: Math.abs(residual) / Math.max(1, initialWater + evaporatedWater)});
+            seasonalWinds.push({u, v});
+            marineSeasons.push(marine);
+        }
     }
     const temp = new Float32Array(GN), rain = new Float32Array(GN), arid = new Float32Array(GN), flow = new Float64Array(GN), biome = new Uint8Array(GN), shadow = new Float32Array(GN), cause = new Uint8Array(GN), lake = new Float32Array(GN).fill(-1);
     let totalYield = 0;
@@ -569,13 +743,25 @@ async function climate(w, progress) {
             arid[i] = rain[i] / ((.33 + Math.max(0, temp[i] + 5) * .032) * w.params.aridity);
             flow[i] = h[i] > 0 ? (runoffs[0][i] + runoffs[1][i]) * .5 * w.area[i] : 0;
             totalYield += flow[i];
-            const wu = (windAt(w.lat[i], 0))[0], wv = (windAt(w.lat[i], 0))[1], len = Math.hypot(wu, wv);
             let barrier = 0;
-            if (h[i] > 0)
-                for (let k = 2; k <= 26; k++) {
+            if (coupled) {
+                for (const winds of seasonalWinds) {
+                    const wu = winds.u[i], wv = winds.v[i], len = Math.hypot(wu, wv);
+                    let seasonalBarrier = 0;
+                    if (h[i] > 0 && len > 1e-8) for (let k = 2; k <= 26; k++) {
+                        const j = cell(Math.round(x - wu / len * k), Math.round(y - wv / len * k));
+                        seasonalBarrier = Math.max(seasonalBarrier, (h[j] - h[i]) * Math.exp(-k / 24));
+                    }
+                    barrier += seasonalBarrier * .5;
+                }
+            }
+            else {
+                const wu = (windAt(w.lat[i], 0))[0], wv = (windAt(w.lat[i], 0))[1], len = Math.hypot(wu, wv);
+                if (h[i] > 0) for (let k = 2; k <= 26; k++) {
                     const j = cell(Math.round(x - wu / len * k), Math.round(y - wv / len * k));
                     barrier = Math.max(barrier, (h[j] - h[i]) * Math.exp(-k / 24));
                 }
+            }
             shadow[i] = clamp(barrier / 2800);
             if (h[i] > 0) {
                 const t = temp[i], a = arid[i], seasonality = Math.abs(rains[0][i] - rains[1][i]) / (rain[i] + .1);
@@ -611,7 +797,7 @@ async function climate(w, progress) {
                     }
                 }
                 biome[i] = b;
-                const near = w.nearest[i], cold = near >= 0 ? Math.max(0, -w.seaAnomaly[near]) * Math.exp(-w.dist[i] / 5) / 3 : 0, sub = Math.exp(-(((Math.abs(w.lat[i]) - 29) / 11) ** 2)) * .58, inland = clamp(w.dist[i] / 30) * .55, sh = shadow[i] * 1.4;
+                const near = w.nearest[i], cold = coupled ? marineSeasons.reduce((sum, m) => sum + Math.max(0, -m.anomaly[i]) * m.influence[i] / 6, 0) : near >= 0 ? Math.max(0, -w.seaAnomaly[near]) * Math.exp(-w.dist[i] / 5) / 3 : 0, sub = Math.exp(-(((Math.abs(w.lat[i]) - 29) / 11) ** 2)) * .58, inland = clamp(w.dist[i] / 30) * .55, sh = shadow[i] * 1.4;
                 cause[i] = sh > Math.max(sub, cold, inland) ? 1 : cold > Math.max(sub, inland) ? 3 : inland > sub ? 4 : 2;
             }
         }
@@ -622,6 +808,16 @@ async function climate(w, progress) {
             flow[d] += flow[i];
     }
     Object.assign(w, { temp, rain, arid, flow, biome, shadow, cause, lake, windU: mainU, windV: mainV, riverThreshold: Math.max(6, totalYield / 560), totalYield, seasonTemp: temps, seasonRain: rains });
+    if (coupled) {
+        w.seasonWindU = seasonalWinds.map(winds => winds.u);
+        w.seasonWindV = seasonalWinds.map(winds => winds.v);
+        w.windU = Float32Array.from(mainU, (value, i) => (value + seasonalWinds[0].u[i]) * .5);
+        w.windV = Float32Array.from(mainV, (value, i) => (value + seasonalWinds[0].v[i]) * .5);
+        w.maritimeSource = marineSeasons.map(m => m.source);
+        w.maritimeInfluence = marineSeasons.map(m => m.influence);
+        w.maritimeAnomaly = marineSeasons.map(m => m.anomaly);
+        w.climateWaterBudgets = waterBudgets;
+    }
 }
 // Ice is stored mass, not a white low-temperature biome. Each uncalibrated model
 // step adds snow, removes potential melt, and conservatively sends ice downhill.
@@ -632,6 +828,7 @@ async function cryosphere(w, progress) {
     for (let i = 0; i < GN; i++) {
         if (h[i] <= 0) {
             seaIce[i] = .5 * (clamp((-w.sst[i] - 2 - 1.8) / 3) + clamp((-w.sst[i] + 2 - 1.8) / 3));
+            if (w.params.landformVersion >= 3) seaIce[i] = Math.max(seaIce[i], w.oceanIcePotential?.[i] || 0);
             continue;
         }
         let snow = 0, melt = 0;
@@ -1002,6 +1199,8 @@ function sculptHydrology(w) {
         }
     uplands.sort((a, b) => b.score - a.score);
     for (const c of uplands) {
+        if (w.params.landformVersion >= 3 && w.params.uplift <= 0)
+            break;
         if (w.plateaus.some(a => Math.hypot(a.x - c.x, a.y - c.y) < 30))
             continue;
         if (w.depressions.some(a => Math.hypot(a.x - c.x, a.y - c.y) < 18))
@@ -1012,7 +1211,7 @@ function sculptHydrology(w) {
             return 1 + .26 * noise(Math.cos(a) * 2.1 + c.x * .04, Math.sin(a) * 2.1 + c.y * .04, w.seed + 525)
                 + .11 * noise(Math.cos(a) * 4.9, Math.sin(a) * 4.9, w.seed + 526);
         };
-        const level = clamp(2950 + c.broad * 9, 2950, 4500);
+        const level = w.params.landformVersion >= 3 ? w.base[c.i] + compressionRiseV3(w, c.i, 2400) : clamp(2950 + c.broad * 9, 2950, 4500);
         let raised = 0;
         for (let yy = Math.floor(c.y - ry * 1.5); yy <= c.y + ry * 1.5; yy++)
             for (let xx = Math.floor(c.x - rx * 1.5); xx <= c.x + rx * 1.5; xx++) {
@@ -1027,7 +1226,7 @@ function sculptHydrology(w) {
                 // subdued, so the interior keeps only a fraction of whatever rises
                 // above the roof.
                 const top = level + fbm(xx * .13, yy * .13, w.seed + 524, 3) * 165;
-                const inside = clamp((1 - r) * 2.2);
+                const inside = clamp((1 - r) * 2.2) * (w.params.landformVersion >= 3 ? clamp(w.compressionSupport[i] / Math.max(.12, w.compressionSupport[c.i])) : 1);
                 const roofed = top + Math.max(0, h[i] - top) * .26;
                 const planed = lerp(h[i], roofed, inside);
                 if (Math.abs(planed - h[i]) > 1) {
@@ -1047,6 +1246,8 @@ function sculptHydrology(w) {
  * All lengths are parent-grid cells; even narrow shoulders span several cells. */
 function mountainBeltV2(w, r, original, catchment) {
     const rnd = random32(seedHash(w.params.seed + ' / mountain-belt-v2 / ' + r.center.i));
+    const tectonic = w.params.landformVersion >= 3, gain = tectonic ? Math.max(0, w.params.uplift) / 1.2 : 1;
+    const at = (u, v) => cell(r.center.x + u * Math.cos(r.axis) - v * Math.sin(r.axis), r.center.y + u * Math.sin(r.axis) + v * Math.cos(r.axis));
     const massifs = [], nodes = [], count = 4 + (rnd() > .55 ? 1 : 0);
     for (let j = 0; j < count; j++) {
         const u = (-.72 + 1.44 * (j + .18 + rnd() * .64) / count) * r.rx;
@@ -1060,7 +1261,8 @@ function mountainBeltV2(w, r, original, catchment) {
                 const u = massif.u + Math.cos(a) * massif.along * radius;
                 const v = massif.v + Math.sin(a) * massif.across * radius;
                 if (Math.hypot(u / (r.rx * .83), v / (r.ry * .8)) > 1 || nodes.some(n => Math.hypot(n.u - u, n.v - v) < 3.8)) continue;
-                nodes.push({ u, v, height: 3500 + rnd() * 2000, width: 2.1 + rnd() * 1.5 });
+                const height = 3500 + rnd() * 2000, width = 2.1 + rnd() * 1.5, i = at(u, v);
+                nodes.push({ u, v, height: tectonic ? w.base[i] + compressionRiseV3(w, i, height - 1000) : height, width });
                 break;
             }
         }
@@ -1094,13 +1296,16 @@ function mountainBeltV2(w, r, original, catchment) {
         }
     r.mountainStructure = { massifs: massifs.length, summits: nodes.length, branches: degree.filter(n => n >= 3).length,
         minSummit: Math.min(...nodes.map(n => n.height)), maxSummit: Math.max(...nodes.map(n => n.height)), minShoulder: 2.1 };
+    if (tectonic) r.mountainStructure.tectonicSupport = nodes.map(n => ({ i: at(n.u, n.v), base: w.base[at(n.u, n.v)], compression: w.compressionSupport[at(n.u, n.v)], summit: n.height }));
     return (i, x, y, u, v) => {
-        const base = Math.max(260, Math.min(2100, original[i] * .34 + r.level * .38 + noise(x * .065, y * .065, w.seed + 7292) * 260));
+        if (tectonic && gain === 0) return original[i];
+        const support = tectonic ? Math.sqrt(Math.max(0, w.compressionSupport[i])) : 1;
+        const base = tectonic ? w.base[i] + compressionRiseV3(w, i, 850) : Math.max(260, Math.min(2100, original[i] * .34 + r.level * .38 + noise(x * .065, y * .065, w.seed + 7292) * 260));
         let foothills = 0;
         for (const m of massifs) {
             const du = u - m.u, dv = v - m.v, c = Math.cos(m.angle), s = Math.sin(m.angle);
             const distance = ((du * c + dv * s) / m.along) ** 2 + ((-du * s + dv * c) / m.across) ** 2;
-            foothills = Math.max(foothills, m.height * Math.exp(-distance * .8));
+            foothills = Math.max(foothills, m.height * Math.exp(-distance * .8) * gain * support);
         }
         let height = base + foothills, influence = 0;
         for (const edge of edges) for (let k = 1; k < edge.points.length; k++) {
@@ -1109,17 +1314,18 @@ function mountainBeltV2(w, r, original, catchment) {
             const along = lerp(a.t, b.t, t), width = lerp(edge.a.width, edge.b.width, along);
             const distance = Math.hypot(u - lerp(a.u, b.u, t), v - lerp(a.v, b.v, t));
             const shoulder = Math.pow(Math.max(0, 1 - distance / (width * 1.6)), 1.5);
-            const crest = lerp(edge.a.height, edge.b.height, along) - edge.saddle * 4 * along * (1 - along);
+            const crest = lerp(edge.a.height, edge.b.height, along) - edge.saddle * 4 * along * (1 - along) * gain * support;
             height = Math.max(height, lerp(base + foothills * .4, crest, shoulder));
             influence = Math.max(influence, shoulder);
         }
-        height += fbm(x * .17, y * .17, w.seed + 7293, 3) * 260 * influence;
+        height += fbm(x * .17, y * .17, w.seed + 7293, 3) * 260 * influence * gain * support;
         let incision = 0;
         for (const c of channels) {
             const d2 = ((x - c.x) ** 2 + (y - c.y) ** 2) / (c.width * c.width);
             if (d2 < 9) incision = Math.max(incision, c.depth * Math.exp(-d2));
         }
-        return Math.max(base, height - incision);
+        const sculpted = Math.max(base, height - incision * gain * support);
+        return tectonic ? lerp(original[i], sculpted, clamp(w.compressionSupport[i] / .12)) : sculpted;
     };
 }
 
@@ -1228,7 +1434,8 @@ function sculptLandforms(w) {
         if (mesaContinents.has(continent) || !free(c, 19))
             continue;
         const rx = clamp(w.dist[c.i] * .82, 12, 20), ry = rx * .76, axis = hash2(c.x, c.y, w.seed + 7212) * Math.PI;
-        const level = 1850 + hash2(c.x, c.y, w.seed + 7213) * 520;
+        const gain = w.params.landformVersion >= 3 ? Math.max(0, w.params.uplift) / 1.2 : 1;
+        const level = w.params.landformVersion >= 3 ? w.base[c.i] + (1000 + hash2(c.x, c.y, w.seed + 7213) * 520) * gain : 1850 + hash2(c.x, c.y, w.seed + 7213) * 520;
         const r = make(c, 1, 'red-plateau', ['The Vermilion Tablelands', 'The Copper Labyrinth', 'The Painted Stair'][mesaContinents.size], rx, ry, axis, level,
             'A broad roof of uplifted red sediment stands above branching river canyons. Resistant beds form the mesas and escarpments; the older drainage cuts through their layered walls.');
         let channels = [];
@@ -1254,6 +1461,7 @@ function sculptLandforms(w) {
             channels = channels.filter(p => catchment[p.i] >= channelThreshold);
         }
         paint(r, (i, x, y, u) => {
+            if (w.params.landformVersion >= 3 && gain === 0) return original[i];
             const roof = level + u * 4 + noise(x * .09, y * .09, w.seed + 7214) * 95;
             let distance = 8;
             for (const p of channels)
@@ -1263,7 +1471,8 @@ function sculptLandforms(w) {
             // its edge. An inherited downhill surface keeps the connected channel
             // floors below the roof without cutting a chain of arbitrary deep pits.
             const floor = Math.max(80, Math.min(level - 800, w.filled[i] + 45));
-            return lerp(roof, floor, cut);
+            const sculpted = lerp(roof, floor, cut);
+            return w.params.landformVersion >= 3 ? lerp(original[i], sculpted, Math.min(1, gain)) : sculpted;
         });
         r.channelCells = channels.map(p => p.i);
         mesaContinents.add(continent);
@@ -1280,7 +1489,8 @@ function sculptLandforms(w) {
         const continent = w.continentalProvinceId[c.i];
         if (foldContinents.has(continent) || !free(c, 16))
             continue;
-        const b = w.boundaries[w.boundaryId[c.i]], axis = b ? Math.atan2(b.ny, b.nx) + Math.PI / 2 : Math.PI / 2;
+        const b = w.boundaries[w.boundaryId[c.i]], nearestAxis = b ? Math.atan2(b.ny, b.nx) + Math.PI / 2 : Math.PI / 2;
+        const axis = w.params.landformVersion >= 3 ? compressionAxisV3(w, c.x, c.y, nearestAxis) : nearestAxis;
         const rx = 24 + hash2(c.x, c.y, w.seed + 7222) * 7, ry = 10 + hash2(c.x, c.y, w.seed + 7223) * 2.5;
         if (!clearBelt(c, rx, ry, axis))
             continue;
