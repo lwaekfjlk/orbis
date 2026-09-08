@@ -151,8 +151,10 @@ class ContinuousCityLayer {
   this.normals=n;this.normalWorld=w;this.normalRelief=r.relief;return n;
  }
  // This renders the whole world, not a circular/square platform beneath the town.
- buildTerrain(){const r=this.r,w=r.world;if(!w)return;this.prepareLandscape();const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p);
-  const field=this.normalField(),tess=this.tessellation(),box=this.viewBox(),openings=this.activeExcavations();
+ buildTerrain(){for(const step of this.terrainSteps()){} }
+ async buildTerrainAsync(yieldFn=()=>new Promise(resolve=>setTimeout(resolve,0))){for(const step of this.terrainSteps())await yieldFn();}
+ *terrainSteps(){const r=this.r,w=r.world;if(!w)return;this.prepareLandscape();yield;const g=new Geometry(),near=this.natural,areas=[...this.models.values()].map(m=>m.p);
+  const field=this.normalField(),tess=this.tessellation(),box=this.viewBox(),openings=this.activeExcavations();yield;
   const emit=openings.length?(a,b,c)=>ExcavationTerrain.triangle(g,a,b,c,openings):(a,b,c)=>g.smoothTri(a,b,c);
   // Only visible cells receive the finest level. A coarse collar and cached town
   // surroundings keep panning continuous without subdividing the entire world.
@@ -169,13 +171,14 @@ class ContinuousCityLayer {
   // terrain while the pointer still rests on a country name.
   try{r.hoveredRealm=null;
    for(let i=0;i<GN;i++){let c=r.palette(i);if(near&&w.height[i]>0){c=CityEnvironment.cellColor(w,i);const cover=CityEnvironment.cellCover(w,i);if(cover>.05)c=colorMix(c,SEASON_SNOW,clamp(cover*.80));}colors.set(c,i*3);}
-  }finally{r.hoveredRealm=hovered;}
+  }finally{r.hoveredRealm=hovered;}yield;
   // 256 also represents the centre of a 1/128 cell, used by boundary stitching.
   // Fine and coarse neighbours share these vertices, colours and shading normals.
   const vertices=new Map();
   const vertex=(x,y)=>{const k=Math.round(x*256)*(GH*256+1)+Math.round(y*256);let a=vertices.get(k);if(a)return a;
-   const p=AtlasSpace.point(w,x,y,r.relief);
-   if(!near)p[1]=AtlasSpace.coarseSurface(w,x,y,r.relief);
+   // The overview replaces the detailed height with its original coarse face.
+   // Construct that position directly instead of sampling and discarding relief.
+   const p=near?AtlasSpace.point(w,x,y,r.relief):[(x/(GW-1)-.5)*MAP_X,AtlasSpace.coarseSurface(w,x,y,r.relief),(y/(GH-1)-.5)*MAP_Z];
    const detail=near&&typeof LandscapeRelief!=='undefined'?LandscapeRelief.gradient(w,x,y,r.relief):[0,0];
    const ax=Math.min(GW-1,Math.floor(x)),ay=Math.min(GH-1,Math.floor(y)),u=x-ax,v=y-ay;
    const i0=cell(ax,ay)*3,i1=cell(ax+1,ay)*3,i2=cell(ax,ay+1)*3,i3=cell(ax+1,ay+1)*3;
@@ -187,7 +190,7 @@ class ContinuousCityLayer {
    const base=[channel(0),channel(1),channel(2)],color=near&&typeof LandscapeColor!=='undefined'?LandscapeColor.sample(w,x,y,base,{slope:Math.hypot(normalX,normalZ)/Math.max(.05,ny),normal:[normalX/l,ny/l,normalZ/l],relief:r.relief}):base;
    a=[p[0],p[1],p[2],normalX/l,ny/l,normalZ/l,...color];vertices.set(k,a);return a;
   };
-  for(let y=0;y<GH-1;y++)for(let x=0;x<GW-1;x++){
+  for(let y=0;y<GH-1;y++){for(let x=0;x<GW-1;x++){
    const n=levels[y*GW+x],left=x?levels[y*GW+x-1]:n,right=x<GW-2?levels[y*GW+x+1]:n,top=y?levels[(y-1)*GW+x]:n,bottom=y<GH-2?levels[(y+1)*GW+x]:n;
    const s=n+1,V=[];
    for(let j=0;j<s;j++)for(let i=0;i<s;i++)V.push(vertex(x+i/n,y+j/n));
@@ -201,7 +204,7 @@ class ContinuousCityLayer {
      const center=vertex(x+(i+.5)/n,y+(j+.5)/n);for(let k=0;k<edge.length;k++)emit(center,edge[k],edge[(k+1)%edge.length]);
     }else if((x+y)%2){emit(V[a],V[c],V[b]);emit(V[b],V[c],V[d]);}else{emit(V[a],V[c],V[d]);emit(V[a],V[d],V[b]);}
    }
-  }
+  }if((y&15)===15)yield;}
   const surfaceVertices=g.data.length/9;
   const c=rgb('#4d859e'),a=-MAP_X/2,b=MAP_X/2,n=-MAP_Z/2,s=MAP_Z/2,R=500;
   g.quad([-R,-.015,-R],[-R,-.015,n],[R,-.015,n],[R,-.015,-R],c);g.quad([-R,-.015,s],[-R,-.015,R],[R,-.015,R],[R,-.015,s],c);g.quad([-R,-.015,n],[-R,-.015,s],[a,-.015,s],[a,-.015,n],c);g.quad([b,-.015,n],[b,-.015,s],[R,-.015,s],[R,-.015,n],c);

@@ -292,11 +292,13 @@ test('A harbour symbol and a ship stay symbols, and give way to the real thing',
  // layer uses, so a renderer with no city layer tells the same story.
  r.zoom=2;assert(r.visible('ports'),'the symbol belongs on the regional map');
  r.zoom=E.AtlasSpace.TOWN_ZOOM;assert(!r.visible('ports'),'and must be gone once the real harbour is drawn');
- r.zoom=6;
  // A hull and a cart reach vehicle() with the same size; their factors have to agree.
- r.buildFolk(0);
+ // Traffic is only visible in the town band. Centre the real camera on a ship,
+ // instead of relying on the old overview's invisible traveller allocation.
  const boats=E.Folk.travellers(r.roadNetwork,s,{density:1}).filter(a=>a.kind==='boat');
  assert(boats.length>4,'this world sails');
+ const ship=E.Folk.travellerAt(boats[0],0);
+ r.zoom=E.AtlasSpace.TOWN_ZOOM;r.target=E.AtlasSpace.point(w,ship.x,ship.y);r.buildFolk(0);
  let seen=null;
  for(const a of boats){const q=E.Folk.travellerAt(a,0),at=r.coord(q.x,q.y,r.ground(q.x,q.y));
   const m=extent(meshes.caravans.data,at[0],at[2],.9);if(m&&(!seen||m.n>seen.n))seen=m;}

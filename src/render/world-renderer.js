@@ -491,7 +491,19 @@ class AtlasRenderer {
         this.territoryInlandWater = territory?.inlandWater || null;
         return this.territoryOwners;
     }
-    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.prepareTerritory(); this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
+    *worldBuildSteps(w) {
+        this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.prepareTerritory();
+        yield 'buildTerrain'; yield 'buildSymbols'; yield 'buildLines'; yield 'buildIce'; yield 'buildLegends';
+    }
+    setWorld(w) { for (const stage of this.worldBuildSteps(w)) this[stage](); this.request(); }
+    async setWorldAsync(w, yieldFn = () => new Promise(resolve => setTimeout(resolve, 0))) {
+        for (const stage of this.worldBuildSteps(w)) {
+            await yieldFn();
+            if (stage === 'buildTerrain' && this.buildTerrainAsync) await this.buildTerrainAsync(yieldFn);
+            else this[stage]();
+        }
+        this.request();
+    }
     setLayer(layer) { this.layer = layer; this.hoveredRealm = null; this.prepareTerritory(); if (this.world)
         this.buildTerrain(); this.dirtyShadow = true; this.request(); }
     setHoveredRealm(id) {
@@ -647,7 +659,7 @@ class AtlasRenderer {
         this.onChange();
     }
     request() { if (this.pending)
-        return; this.pending = true; requestAnimationFrame(() => { this.pending = false; this.render(); }); }
+        return; this.pending = true; requestAnimationFrame(() => { this.pending = false; if (!this.suspendDrawing) this.render(); }); }
     screen(x, y, dh = 0) { if (!this.mvp)
         return [-1000, -1000]; const p = project4(this.mvp, this.coord(x, y, this.ground(x, y) + dh)); return [(p[0] / p[3] * .5 + .5) * this.width, (.5 - p[1] / p[3] * .5) * this.height]; }
     pick(sx, sy) { if (!this.world)
@@ -690,10 +702,10 @@ class SoftwareAtlasRenderer extends AtlasRenderer {
         this.dirtyShadow = true;
     }
     clear() { this.meshes = {}; this.dirtyShadow = true; }
-    setWorld(w) {
+    *shadowFieldSteps(w) {
         this.world = w;
         this.shadowField = new Float32Array(GN).fill(1);
-        for (let y = 0; y < GH; y++)
+        for (let y = 0; y < GH; y++) {
             for (let x = 0; x < GW; x++) {
                 const i = cell(x, y), start = this.ground(x, y);
                 let vis = 1;
@@ -711,7 +723,13 @@ class SoftwareAtlasRenderer extends AtlasRenderer {
                 }
                 this.shadowField[i] = vis;
             }
-        super.setWorld(w);
+            if ((y & 7) === 7) yield;
+        }
+    }
+    setWorld(w) { for (const step of this.shadowFieldSteps(w)) {} super.setWorld(w); }
+    async setWorldAsync(w, yieldFn = () => new Promise(resolve => setTimeout(resolve, 0))) {
+        for (const step of this.shadowFieldSteps(w)) await yieldFn();
+        await super.setWorldAsync(w, yieldFn);
     }
     render() {
         if (!this.ctx || !this.width)
@@ -880,13 +898,15 @@ Geometry.prototype.box = function (x, y, z, rx, rz, h, color) {
     this.quad(d, D, A, a, color);
     this.quad(A, D, C, B, colorScale(color, 1.07));
 };
-AtlasRenderer.prototype.buildCivilization = function () {
+AtlasRenderer.prototype.civilizationSteps = function* () {
     const w = this.world, s = this.sim;
     if (!s)
         return;
     const towns = new Geometry(), borders = new Geometry(), routes = new Geometry(), pacts = new Geometry(), wars = new Geometry(), reeds = new Geometry();
     const capIDs = new Set(s.realms.filter(c => c.alive).map(c => c.capital)), townList = s.provinces.filter(p => p.settled).sort((a, b) => b.urbanPop - a.urbanPop);
+    let townIndex = 0;
     for (const p of townList) {
+        if (townIndex++ % 12 === 0) yield;
         const c = s.realms[p.owner], capital = capIDs.has(p.id) && this.layer !== 'settlements', sc = capital ? .80 : p.city ? .36 : .23, point = this.coord(p.x, p.y), [x, y, z] = point, wall = rgb('#e4d7b5'), roof = rgb('#716e73');
         if (capital && typeof LandmarkBinding !== 'undefined') {
             LandmarkBinding.worldSymbol(towns, w, s, p, x, y, z, sc);
@@ -934,8 +954,9 @@ AtlasRenderer.prototype.buildCivilization = function () {
     }
     // Inland water shares the surrounding territory. Borders cross shared lakes
     // instead of disappearing at either shore; wholly domestic lakes have no seam.
+    yield;
     const territory = this.prepareTerritory();
-    for (let y = 0; y < GH; y++)
+    for (let y = 0; y < GH; y++) {
         for (let x = 0; x < GW; x++) {
             const i = y * GW + x;
             if (w.height[i] <= 0 && !this.territoryInlandWater?.[i]) continue;
@@ -958,6 +979,8 @@ AtlasRenderer.prototype.buildCivilization = function () {
                 borders.line(this.coord(ax, ay, this.ground(ax, ay) + .14), this.coord(bx, by, this.ground(bx, by) + .14), .045, rgb('#f6ecce'));
             }
         }
+        if ((y & 7) === 7) yield;
+    }
     for (const r of s.routes) {
         const a = s.provinces[r.a], b = s.provinces[r.b];
         if (a.owner < 0 || b.owner < 0 || a.owner === b.owner)
@@ -972,6 +995,7 @@ AtlasRenderer.prototype.buildCivilization = function () {
             routes.line(this.coord(i % GW, i / GW | 0, .10), this.coord(j % GW, j / GW | 0, .10), .045, rgb('#c5d9c6'));
         }
     }
+    yield;
     const link = (g, a, b, color) => {
         const A = s.provinces[s.realms[a]?.capital], B = s.provinces[s.realms[b]?.capital];
         if (!A || !B)
@@ -990,6 +1014,7 @@ AtlasRenderer.prototype.buildCivilization = function () {
     for (const war of s.wars)
         if (!war.ended)
             link(wars, war.a, war.b, rgb('#d48064'));
+    yield;
     for (let y = 2; y < GH - 2; y += 3)
         for (let x = 2; x < GW - 2; x += 3) {
             const i = y * GW + x;
@@ -1000,12 +1025,24 @@ AtlasRenderer.prototype.buildCivilization = function () {
                 reeds.cone(p[0] + k * .11, p[1], p[2] + (k % 2) * .17, .045, .01, .35 + (k % 2) * .1, rgb('#426f59'), 4);
         }
     this.upload('settlements', towns, true);
+    yield;
     this.upload('frontiers', borders, false, .8);
+    yield;
     this.upload('tradeRoutes', routes, false, .75, .65);
+    yield;
     this.upload('pactLines', pacts, false, .75, .75);
+    yield;
     this.upload('warLines', wars, false, .8, .9);
+    yield;
     this.upload('reeds', reeds, true);
+    yield;
     this.request();
+};
+// Both entry points consume the same ordered operations; only initial loading
+// yields between batches. Live camera and annual updates remain synchronous.
+AtlasRenderer.prototype.buildCivilization = function () { for (const step of this.civilizationSteps()) {} };
+AtlasRenderer.prototype.buildCivilizationAsync = async function (yieldFn = () => new Promise(resolve => setTimeout(resolve, 0))) {
+    for (const step of this.civilizationSteps()) await yieldFn();
 };
 AtlasRenderer.prototype.setCivilization = function (sim) { this.sim = sim; this.hoveredRealm = null; this.prepareTerritory(); this.buildTerrain(); this.buildCivilization(); this.request(); };
 const geographyLayerBase = AtlasRenderer.prototype.setLayer;

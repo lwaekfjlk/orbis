@@ -1,5 +1,44 @@
 # Map loading
 
+## Responsive world creation
+
+World generation now runs in a disposable Worker built from the same offline
+engine. Its completed geography and civilization buffers transfer back to the
+UI; genuine generation errors still follow normal retry and previous-world
+recovery. Missing or failed Worker infrastructure uses the original generator.
+
+Initial terrain, civilization, roads and software shadows share ordered build
+steps with the synchronous renderers. Attachment yields after short CPU batches
+and suspends partial-map drawing. The overview also skips discarded detailed
+height samples and travellers that only become visible after zooming in.
+
+A matched cold-load comparison against main `49021ed`, on the same Chrome 152
+and SwiftShader host, produced these results. This is one run per version;
+timings vary by device. [Measurements and verification](RESPONSIVE_LOADING_RESULTS.json)
+include both bundle hashes, raw long tasks and separate animation-frame intervals.
+
+| Cold standalone load | Main | Optimized |
+| --- | ---: | ---: |
+| Main-thread blocking time above 50 ms | 2,846 ms | 545 ms |
+| Main-thread long tasks | 15 | 4 |
+| World generation and attachment | 12.46 s | 11.62 s |
+| Bootstrap to first stable rendered frame | 13.72 s | 12.83 s |
+
+Main-thread blocking fell by **80.9%**. World data and visible detail stay the
+same: 62 Node checks cover current/legacy Worker data, continued history, exact
+GPU vertex buffers, software shadows, traffic restoration and failure recovery.
+Browser checks additionally cover actual Worker startup, Recreate, old-save
+import, unavailable/blocked workers, genuine engine errors and retry. The final
+bundle matches all 62 typed world fields and an independently generated town's
+complete uploaded mesh data. Graphics initialization and first-frame work still
+contribute to the remaining startup cost.
+
+The optional `tests/loading.browser.mjs` benchmark now records long tasks and
+blocking time, asserts that geography and civilization did not run on the UI
+thread, and counts shared terrain builds in both synchronous and async paths.
+
+## Earlier directory optimization
+
 In three cold Chromium loads, the default map's median time to a rendered,
 usable screen fell from **44.46 s to 12.45 s** (**72% less waiting**, 3.57× faster).
 The complete measurements are in [MAP_LOADING_RESULTS.json](MAP_LOADING_RESULTS.json).
