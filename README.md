@@ -45,7 +45,7 @@ City detail loads as you approach. Initial generation and large cities can take 
 
 ### High cities and dragon relics
 
-A winged dragon crest marks a Dragon King Citadel; a radiant seal marks a High Holy City. These tiny settlements stand on mountain platforms above 3,500 m. A broken dragon ring marks ancient ruins: shattered nesting courts, dragon-spine arches and horned gateways.
+A coiled dragon totem marks a Dragon King Citadel; a sacred sun seal marks a High Holy City. These tiny settlements stand on mountain platforms above 3,500 m. A broken dragon totem marks ancient ruins: shattered nesting courts, dragon-spine arches and horned gateways.
 
 Click a special symbol or open Search to visit. Searches for **龙城**, **圣城** and **龙族遗迹** work too. Ruins can be explored part by part and exported as a 3D model. [Explore the dragon sites](docs/DRAGON_SITES.md).
 

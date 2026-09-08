@@ -107,7 +107,68 @@ try{
  assert.deepEqual(await fingerprints(),before,'visiting, inspecting and exporting sites must not change the world or simulation');
  assert.deepEqual(await page.evaluate(()=>ContinuousMap.ruinLayer.report().failures),[]);assert.deepEqual(errors,[]);
  if(!process.env.TELLURIC_DRAGON_URL)assert.deepEqual(requests,[],'the production bundle must work without network assets');
- report.after=await fingerprints();report.errors=errors;await save();console.log(JSON.stringify({sites:sites.map(s=>({id:s.id,kind:s.kind})),high:report.high.map(m=>({kind:m.kind,vertices:m.vertices,onScreen:m.onScreen,samples:m.samples})),ruins:report.ruins.map(m=>({id:m.id,parts:m.mounted.parts,vertices:m.vertices,pick:m.pick,exported:m.exported})),fingerprints:report.after,errors,out},null,2));
+ report.after=await fingerprints();report.errors=errors;await save();
+ // History uses a separate saved-simulation fixture, cloned only after the
+ // unmodified exploration fingerprints have been saved. Redistributing one
+ // ordinary town's existing population to urban=649 makes the real +1-year
+ // simulation cross the city-detail threshold; a default year need not do so.
+ await page.evaluate(()=>{window.__qaHistoryBase={params:JSON.parse(JSON.stringify(world.params)),sim:JSON.parse(JSON.stringify(sim))}});
+ const historySite=ruins[0];
+ const loadThresholdFixture=async()=>{
+  const fixture=await page.evaluate(async()=>{
+   const s=JSON.parse(JSON.stringify(window.__qaHistoryBase.sim)),capitals=new Set(s.realms.filter(r=>r.alive).map(r=>r.capital));
+   const candidates=s.provinces.filter(p=>p.settled&&!p.highCitadel&&!capitals.has(p.id)&&p.urbanPop>=650&&p.pop>2000&&Math.min(p.pop*.58,p.urbanSupport*(.70+.22*p.dev))>1200).sort((a,b)=>a.pop-b.pop);
+   const p=candidates[0];if(!p)throw Error('No ordinary town can support the critical-population saved fixture');
+   const original={urban:p.urbanPop,rural:p.ruralPop,total:p.pop},total=s.provinces.reduce((n,p)=>n+p.pop,0);
+   p.urbanPop=649;p.ruralPop=p.pop-p.urbanPop;aggregateRealms(s);validateSimulation(s,world);
+   const balanced=s.provinces.every(p=>Math.abs(p.pop-(p.urbanPop+p.ruralPop))<1e-7);
+   if(!balanced||s.provinces.reduce((n,p)=>n+p.pop,0)!==total)throw Error('Critical-population fixture did not preserve population accounting');
+   const info={kind:'critical-population saved simulation',provinceId:p.id,name:p.name,original,urban:p.urbanPop,rural:p.ruralPop,total:p.pop,worldPopulation:total,urbanSupport:p.urbanSupport,predictedUrbanTarget:Math.min(p.pop*.58,p.urbanSupport*(.70+.22*p.dev)),validated:true,populationBalanced:balanced};
+   await buildWorld({...window.__qaHistoryBase.params},s.options,s);if(window.__error)throw Error(window.__error);
+   validateSimulation(sim,world);return info;
+  });
+  await stable();assert.equal((await fingerprints())[0],before[0],'loading the threshold save must preserve the original geography');
+  await page.locator(`#worldLandmarkPins [data-site-id="${historySite.id}"]`).click();
+  await page.waitForFunction(id=>window.__ruinReady&&window.__ruinFocus===id&&ContinuousMap.ruinLayer.models.get(id)?.lod===2&&!ContinuousMap.ruinLayer.loading,historySite.id,{timeout:180000});
+  await stable();await page.locator('#cmRuinDetails').click();return fixture;
+ };
+ const captureHistory=()=>page.evaluate(id=>{
+  const m=window.__qaHistoryRuin=ContinuousMap.ruinLayer.models.get(id);window.__qaHistoryDetails=document.querySelector('[data-ruin-part]');
+  return{year:sim.year,key:m.key,lod:m.lod,landscapeKey:LandscapeRelief.key(world),camera:{target:[...renderer.target],zoom:renderer.zoom,azimuth:renderer.azimuth,elevation:renderer.elevation}};
+ },historySite.id);
+ const advanceAndReload=async(previous,fixture)=>{
+  assert.equal(previous.lod,2,'history must start after the initial LOD refinement is complete');
+  await page.locator('#step1').click();await page.waitForFunction(year=>sim.year===year+1&&!busy&&!simAdvancing,previous.year,{timeout:180000});
+  await page.waitForFunction(({id,key})=>LandscapeRelief.key(world)!==key&&ContinuousMap.ruinLayer.models.get(id)?.lod===2&&!ContinuousMap.ruinLayer.loading,{id:historySite.id,key:previous.landscapeKey},{timeout:60000});await stable();
+  const next=await page.evaluate(({id,provinceId})=>{const m=ContinuousMap.ruinLayer.models.get(id),p=sim.provinces[provinceId];validateSimulation(sim,world);return{year:sim.year,key:m.key,lod:m.lod,landscapeKey:LandscapeRelief.key(world),urban:p.urbanPop,settled:p.settled,replaced:m!==window.__qaHistoryRuin,detailsReplaced:!window.__qaHistoryDetails.isConnected,
+   meshOwnersCurrent:m.meshNames.every(n=>ContinuousMap.ruinLayer.meshOwners.get(n)?.model===m),parts:m.parts.filter(p=>p.role!=='foundation').map(p=>({id:p.id,name:p.name})),camera:{target:[...renderer.target],zoom:renderer.zoom,azimuth:renderer.azimuth,elevation:renderer.elevation}}},{id:historySite.id,provinceId:fixture.provinceId});
+  assert(next.settled&&next.urban>=650,'the actual annual simulation must cross the city-detail threshold');
+  assert.notEqual(next.landscapeKey,previous.landscapeKey,'a true landscape invalidation, not merely LOD refinement, must occur');assert.equal(next.lod,previous.lod);
+  assert.notEqual(next.key,previous.key);assert(next.replaced&&next.detailsReplaced&&next.meshOwnersCurrent,'the same-LOD model, mesh ownership and details must all be refreshed');
+  assert.deepEqual(next.camera,previous.camera,'history must restream the ruin without moving the camera');return next;
+ };
+ const fixture=await loadThresholdFixture(),historyBefore=await captureHistory(),historyAfter=await advanceAndReload(historyBefore,fixture);
+ const historyMesh=await meshEvidence({id:historySite.id,ruin:true});assertMesh(historyMesh,historySite);
+ assert(await page.locator('#cmRuinGLB').isEnabled());
+ const historyParts=await page.locator('[data-ruin-part]').evaluateAll(nodes=>nodes.map(e=>({id:e.dataset.ruinPart,name:e.textContent.replace(/\s*↗\s*$/,'')})));
+ assert.deepEqual(historyParts,historyAfter.parts,'details must enumerate the latest mounted assembly');
+ const historyDownload=page.waitForEvent('download');await page.locator('#cmRuinGLB').click();const artifact=await historyDownload,path=join(out,historySite.id+'-after-history.glb');await artifact.saveAs(path);assert.equal(await artifact.failure(),null);
+ const historyExport=glb(await readFile(path),historyMesh.meshes,historySite);
+ report.history={site:historySite.id,fixture,before:historyBefore,after:historyAfter,fingerprints:await fingerprints(),mesh:historyMesh,exported:historyExport};
+ assert.equal(report.history.fingerprints[0],before[0],'advancing civilization must preserve physical geography');await save();
+ await page.screenshot({path:join(out,'ruin-after-history.png')});
+ // A fresh copy of the same threshold save independently exercises the closed
+ // card path, so this assertion cannot pass just because no rebuild occurred.
+ const closedFixture=await loadThresholdFixture();await page.locator('#omSelectionClose').click();assert.equal(await page.locator('#omSelection').isVisible(),false);
+ const closedBefore=await captureHistory(),closedAfter=await advanceAndReload(closedBefore,closedFixture);
+ assert.equal(await page.locator('#omSelection').isVisible(),false,'a history reload must not reopen a card the user closed');
+ const closedMesh=await meshEvidence({id:historySite.id,ruin:true});assertMesh(closedMesh,historySite);
+ report.history.closedCard={fixture:closedFixture,before:closedBefore,after:closedAfter,stillHidden:true,pick:closedMesh.pick,fingerprints:await fingerprints()};
+ await page.screenshot({path:join(out,'ruin-history-card-closed.png')});await home();await pins();
+ assert.deepEqual(await page.evaluate(()=>ContinuousMap.ruinLayer.report().failures),[]);assert.deepEqual(errors,[]);
+ if(!process.env.TELLURIC_DRAGON_URL)assert.deepEqual(requests,[]);
+ await page.evaluate(()=>{delete window.__qaHistoryRuin;delete window.__qaHistoryDetails;delete window.__qaHistoryBase});await save();
+ console.log(JSON.stringify({sites:sites.map(s=>({id:s.id,kind:s.kind})),high:report.high.map(m=>({kind:m.kind,vertices:m.vertices,onScreen:m.onScreen,samples:m.samples})),ruins:report.ruins.map(m=>({id:m.id,parts:m.mounted.parts,vertices:m.vertices,pick:m.pick,exported:m.exported})),fingerprints:report.after,history:{fixture:fixture.kind,from:historyBefore.year,to:historyAfter.year,landscapeKeys:[historyBefore.landscapeKey,historyAfter.landscapeKey],lod:[historyBefore.lod,historyAfter.lod],reloaded:historyAfter.replaced,cameraUnchanged:true,exported:historyExport,fingerprints:report.history.fingerprints,closedCard:{from:closedBefore.year,to:closedAfter.year,landscapeKeys:[closedBefore.landscapeKey,closedAfter.landscapeKey],stillHidden:true,reloaded:closedAfter.replaced}},errors,out},null,2));
 }catch(error){
  if(activePage){try{await activePage.screenshot({path:join(out,'failure.png')});const state=await activePage.evaluate(()=>({city:window.__continuousFocus,cityError:window.__cityError,ruin:window.__ruinFocus,ruinReady:window.__ruinReady,ruins:window.ContinuousMap?.ruinLayer?.report(),selection:document.getElementById('omSelectionBody')?.innerText}));await writeFile(join(out,'failure.json'),JSON.stringify({message:String(error),state},null,2)+'\n')}catch{}}
  throw error;

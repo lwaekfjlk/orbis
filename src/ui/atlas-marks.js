@@ -4,17 +4,12 @@
  */
 const AtlasMarks = (() => {
     const artwork = Object.freeze({
-        dragon: `<path class="atlas-mark-body" d="M7 29C4 24 4 18 10 13L8 5L15 8L20 2L21 10L26 13L26 16L30 18L27 22L21 21L18 24L22 28L17 30Z"/>
-            <path class="atlas-mark-wing" d="M7 27L2 18L10 19L6 12L14 16L13 23L17 28Z"/>
-            <path class="atlas-mark-eye" d="M19 13L23 15L19 17Z"/>
-            <path class="atlas-mark-detail" d="M22 21L24 21L23 24Z"/>`,
-        holy: `<path class="atlas-mark-body" d="M16 1L20 7L27 5L25 12L31 16L25 20L27 27L20 25L16 31L12 25L5 27L7 20L1 16L7 12L5 5L12 7Z"/>
-            <circle class="atlas-mark-halo" cx="16" cy="16" r="8.5"/>
-            <path class="atlas-mark-eye" d="M14.5 10H17.5V14.5H22V17.5H17.5V23H14.5V17.5H10V14.5H14.5Z"/>`,
-        'dragon-ruin': `<path class="atlas-mark-ring" d="M12 3A13 13 0 0 0 3 18L7 17L5 22L10 27M20 29A13 13 0 0 0 29 12L25 13L27 8L22 5"/>
-            <path class="atlas-mark-body" d="M11 24L8 17L11 11L10 7L16 10L20 11L23 15L28 17L26 21L22 20L20 24L17 23L17 20L14 20L15 24Z"/>
-            <path class="atlas-mark-eye" d="M14 13L18 14L17 18L13 17ZM23 16L26 18L23 18Z"/>
-            <path class="atlas-mark-fracture" d="M18 11L16 13L19 16"/>`
+        dragon: `<path d="M22 9C17 3 8 6 5 14C2 24 14 29 23 24C29 21 29 14 25 12L22 14C24 20 18 24 13 21C8 18 10 11 15 11C20 11 21 17 16 18"/>
+            <path d="M22 9L22 3M22 9L28 6"/>`,
+        holy: `<circle cx="16" cy="16" r="8.5"/>
+            <path d="M16 10L20 16L16 22L12 16ZM16 2V5M16 27V30M2 16H5M27 16H30M6 6L8 8M24 24L26 26M6 26L8 24M24 8L26 6"/>`,
+        'dragon-ruin': `<path d="M22 9C17 3 8 6 5 14M5 21C9 28 17 28 23 24C29 21 29 14 25 12L22 14C24 20 18 24 13 21M10 16C10 13 12 11 15 11C20 11 21 17 16 18"/>
+            <path d="M22 9L22 3M25 7.5L28 6"/>`
     });
     function markup(kind, {size = 24, className = ''} = {}) {
         if (!Object.hasOwn(artwork, kind)) return '';

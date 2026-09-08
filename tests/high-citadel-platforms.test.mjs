@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, {describe} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -14,15 +14,22 @@ ${reroll}\n${validation}
 return{validateSimulation,reroll(w,s){world=w;sim=s;rerollPolitics();return sim;}};`)();
 const opts={realms:18,historySeed:'First-dawn'},hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const close=(a,b)=>assert(Math.abs(a-b)<1e-7,`${a} != ${b}`);
+// Keep the published version 1 fixture intact while exercising the current
+// irregular-massif default with the exact same accounting and layout checks.
+for (const scenario of [
+ {landformVersion:1,ids:[454,455],sites:[[239,117,'dragon',719],[242,115,'holy',759]],ordinaryCity:419,physical:'cc113c81',settlement:'7ff2f210',political:'90fd7fea'},
+ {landformVersion:2,ids:[455,456],sites:[[239,117,'dragon',761],[242,115,'holy',759]],ordinaryCity:421,physical:'2377e4fa',settlement:'254caa7c',political:'24a862f0'}
+]) describe(`high platforms on landform version ${scenario.landformVersion}`,()=>{
 let w,sim,ordinary,ordinaryWorld,before;
 test.before(async()=>{
- w=await E.generateWorld(fantasyDefaults);before=E.physicalFingerprint(w);ordinaryWorld=structuredClone(w);
+ w=await E.generateWorld({...fantasyDefaults,landformVersion:scenario.landformVersion});before=E.physicalFingerprint(w);ordinaryWorld=structuredClone(w);
  ordinary=E.createCivilization(ordinaryWorld,{...opts,highCitadelsVersion:0});sim=E.createCivilization(w,opts);
 });
 const high=()=>sim.provinces.filter(p=>p.highCitadel);
 test('new default mountain platforms support one dragon and one holy city within their original countries',()=>{
- assert.equal(sim.options.highCitadelsVersion,2);assert.deepEqual(high().map(p=>p.id),[454,455]);
- assert.deepEqual(high().map(p=>[p.x,p.y,p.highCitadel.kind,p.urbanPop]),[[239,117,'dragon',719],[242,115,'holy',759]]);
+ assert.equal(sim.options.highCitadelsVersion,2);assert.deepEqual(high().map(p=>p.id),scenario.ids);
+ assert.equal(before,scenario.physical);assert.equal(E.settlementFingerprint(sim),scenario.settlement);assert.equal(E.politicalFingerprint(sim),scenario.political);
+ assert.deepEqual(high().map(p=>[p.x,p.y,p.highCitadel.kind,p.urbanPop]),scenario.sites);
  assert(Math.hypot(high()[0].x-high()[1].x,high()[0].y-high()[1].y)>=2);
  for(const p of high()){
   const old=ordinary.provinces[p.id],h=p.highCitadel;
@@ -51,9 +58,11 @@ test('country ownership, cultural origins, administration and every ordinary tow
  }
  for(const key of['realms','relations','culturalOrigins','administrationGraph','routes','localCommunities'])assert.deepEqual(sim[key],ordinary[key],key);
  assert.equal(E.politicalFingerprint(sim),E.politicalFingerprint(ordinary));assert.deepEqual(w.provinceId,ordinaryWorld.provinceId);assert.equal(E.physicalFingerprint(w),before);
- // Swiftmount is the closest large city: the former generic spacing rule would
- // shrink its span from 10.409 to 9.164 when these tiny courts were introduced.
- const a=E.generateCity(w,sim,419),b=E.generateCity(ordinaryWorld,ordinary,419);assert.equal(hash(a),hash(b),'the complete nearest ordinary-city layout changed');
+ // Compare a real nearby ordinary city in each geography. On version 1 the
+ // former spacing rule shrank Swiftmount from 10.409 to 9.164; on version 2
+ // Screefield is the nearest ordinary town to these same mountain platforms.
+ assert(ordinary.provinces[scenario.ordinaryCity].settled);
+ const a=E.generateCity(w,sim,scenario.ordinaryCity),b=E.generateCity(ordinaryWorld,ordinary,scenario.ordinaryCity);assert.equal(hash(a),hash(b),'the complete nearest ordinary-city layout changed');
 });
 test('initial records and the exact high-city layouts include both newly founded courts',()=>{
  assert.equal(sim.initialSettlements.length,ordinary.initialSettlements.length+2);assert.equal(sim.settlementSignature,E.settlementFingerprint(sim));assert.equal(sim.foundingPolitics.settlementHash,sim.settlementSignature);
@@ -76,8 +85,8 @@ test('version 2 JSON metadata validates and political replay preserves platform 
  const restored=JSON.parse(JSON.stringify(sim));assert.doesNotThrow(()=>UI.validateSimulation(restored,w));const next=UI.reroll(w,restored);assert.equal(next.settlementSignature,sim.settlementSignature);
  assert.deepEqual(next.provinces.filter(p=>p.highCitadel).map(p=>p.highCitadel),high().map(p=>p.highCitadel));
  delete restored.options.highCitadelsVersion;assert.equal(E.HighCitadels.historyOptions(restored).highCitadelsVersion,2);assert.doesNotThrow(()=>UI.validateSimulation(restored,w));
- for(const change of[h=>{h.originalCell=-1;},h=>{h.originalCell=0;},h=>{h.sourceCell++;},h=>{h.populationCap=1101;},h=>{h.version=3;}]){const bad=structuredClone(sim);change(bad.provinces[454].highCitadel);assert.throws(()=>UI.validateSimulation(bad,w),/Invalid high citadel/);}
- const bad=structuredClone(sim);bad.provinces[454].x++;assert.throws(()=>UI.validateSimulation(bad,w),/Invalid high citadel platform/);
+ for(const change of[h=>{h.originalCell=-1;},h=>{h.originalCell=0;},h=>{h.sourceCell++;},h=>{h.populationCap=1101;},h=>{h.version=3;}]){const bad=structuredClone(sim);change(bad.provinces[scenario.ids[0]].highCitadel);assert.throws(()=>UI.validateSimulation(bad,w),/Invalid high citadel/);}
+ const bad=structuredClone(sim);bad.provinces[scenario.ids[0]].x++;assert.throws(()=>UI.validateSimulation(bad,w),/Invalid high citadel platform/);
 });
 test('unowned districts, missing water, low mountains and failed preflight never force a platform',()=>{
  for(const change of[
@@ -89,4 +98,6 @@ test('unowned districts, missing water, low mountains and failed preflight never
 test('annual updates keep each platform small without changing province accounting',()=>{
  const s=structuredClone(sim);for(let year=0;year<8;year++){E.stepCivilization(s,w);for(const p of s.provinces.filter(p=>p.highCitadel)){assert(p.urbanPop<=1100&&p.urbanPop<=p.highCitadel.populationCap);assert.equal(p.city,false);close(p.urbanPop+p.ruralPop,p.pop);assert.equal(w.provinceId[p.i],p.id);}}
  const audit=E.auditCivilization(s,w);assert.equal(audit.badPop,0);assert.equal(audit.badShares,0);assert.equal(audit.invalidOwners,0);assert.equal(E.physicalFingerprint(w),before);
+});
+
 });

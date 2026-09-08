@@ -52,14 +52,14 @@ These cards expose cities already present in that world; they do not create new
 ones. Some generated geographies have fewer than two suitable high sites. Older
 saves retain their founding rules until the user generates a new world.
 
-The current default Aereth-47 map uses `landformVersion: 1` and
-`highCitadelsVersion: 2`. It has **116 named settlements and 25 living countries**.
+The current default Aereth-47 map uses `landformVersion: 2` and
+`highCitadelsVersion: 2`. It has **108 named settlements and 26 living countries**.
 `tests/full-realm-labels.browser.mjs` verifies that all names remain fully printed
 at 1480px and 430px, with no clipping, text overlap or covering icons/controls.
 `tests/dragon-sites.browser.mjs` separately visits both dedicated high cities and
 all three default dragon ruins, checks real mounted geometry, part navigation and
 independent GLB exports, and verifies unchanged source fingerprints
-`cc113c81 / 7ff2f210 / 90fd7fea` throughout those interactions.
+`2377e4fa / 254caa7c / 24a862f0` throughout those interactions.
 
 The preserved legacy reference uses **`landformVersion: 0` and
 `highCitadelsVersion: 1`**. It has 104 named settlements and 22 living countries,

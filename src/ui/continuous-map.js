@@ -35,6 +35,7 @@ window.ContinuousMap = (() => {
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
   const btn=document.createElement('button');btn.id='cmContext';btn.className='cm-context glass';btn.textContent='Wider setting';btn.title='Pull back in the same map';btn.onclick=wider;E('omChrome').appendChild(btn);
   layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();};
+  ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();};
   bindCamera();
   E('omFit').onclick=()=>ready()&&home();E('omHome').onclick=()=>ready()&&home();
   E('camera').onchange=()=>{if(!ready())return;cancel();renderer.elevation={relief:1.19,overhead:1.555,diorama:.65}[E('camera').value];renderer.request();};
@@ -46,7 +47,12 @@ window.ContinuousMap = (() => {
  }
  function beforeWorldBuild(){cancel();ruins?.reset();window.__ruinReady=false;window.__ruinFocus=null;if(layer)layer.reset(null,null);lastWorld=null;lastCamera='';selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
  function onWorldUpdate(){if(!enabled||!world||!sim)return;layer.bind(world,sim);ruins.bind(world,sim,LandmarkUI.registry.filter(s=>s.dragonRuins));if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
-  makePins();updateTitle();renderer.request();layer.cameraChanged();if(selection&&OneMap.panel==='detail'){if(selection.ruin)ruinDetails(selection.model,selection.part,false);else details(selection.model,selection.building,false);}
+  makePins();updateTitle();renderer.request();layer.cameraChanged();ruins.cameraChanged();if(selection&&OneMap.panel==='detail'){if(selection.ruin)ruinDetails(selection.model,selection.part,false);else details(selection.model,selection.building,false);}
+ }
+ function refreshRuinSelection(){
+  if(!selection?.ruin)return;const current=ruins.models.get(selection.model.id);
+  if(current&&current!==selection.model){const part=selection.part?current.parts.find(p=>p.id===selection.part.id)||null:null;if(E('omSelection').classList.contains('hidden'))selection={ruin:true,model:current,part};else selectRuin({model:current,part});}
+  if(OneMap.panel==='detail')ruinDetails(selection.model,selection.part,false);
  }
  function updateTitle(){if(!enabled||!world||!sim)return;const r=renderer,a=AtlasSpace.grid(r.target[0],r.target[2]);
   const nearest=[...layer.models.values()].sort((x,y)=>Math.hypot(x.p.x-a[0],x.p.y-a[1])-Math.hypot(y.p.x-a[0],y.p.y-a[1]))[0];const near=r.zoom>=AtlasSpace.TOWN_ZOOM*1.04&&nearest&&Math.hypot(nearest.p.x-a[0],nearest.p.y-a[1])<13;
@@ -68,7 +74,7 @@ window.ContinuousMap = (() => {
    // Give these tiny sites a shadow field fitted to their actual buildings.
    // A normal town's field leaves only a few texels across each stone or roof.
    const b=siteBounds,t=b.min.map((v,i)=>(v+b.max[i])*.5),extent=Math.max(.35,...b.max.map((v,i)=>(v-b.min[i])*1.5)),key=(nearRuin?'ruin/'+nearRuin.id:'high/'+nearHigh.p.id)+'/'+extent.toFixed(5)+'/'+t.map(v=>v.toFixed(5)).join('/');
-   if(key!==shadowCenter){shadowCenter=key;renderer.lightVP=mul4(ortho(-extent,extent,-extent,extent,1,100),lookAt([t[0]-18,t[1]+28,t[2]-20],t,[0,1,0]));renderer.dirtyShadow=true;}
+   if(key!==shadowCenter){shadowCenter=key;renderer.lightVP=mul4(ortho(-extent,extent,-extent,extent,1,100),lookAt([t[0]-18,t[1]+28,t[2]-20],t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
   }
   else if(renderer.zoom>=AtlasSpace.TOWN_ZOOM*1.67){const q=renderer.target.map(v=>Math.round(v*1.5)/1.5),key=q.join('/');if(key!==shadowCenter){shadowCenter=key;const t=q,eye=[t[0]-18,t[1]+28,t[2]-20];renderer.lightVP=mul4(ortho(-9,9,-9,9,1,100),lookAt(eye,t,[0,1,0]));renderer.dirtyShadow=true;renderer.request();}}
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
@@ -129,11 +135,12 @@ window.ContinuousMap = (() => {
   E('cmFocusRuin').onclick=()=>focusRuinPart(m,part);E('cmRuinDetails').onclick=()=>ruinDetails(m,part);E('cmRuinContext').onclick=wider;
  }
  function ruinDetails(m,part=null,open=true){
-  if(!m)return;if(open)OneMap.openDrawer('detail');const site=m.site,status=PoliticalLand.status(world,sim,site.i);
+  if(!m)return;m=ruins.models.get(m.id)||m;if(part)part=m.parts.find(p=>p.id===part.id)||null;if(open)OneMap.openDrawer('detail');const site=m.site,status=PoliticalLand.status(world,sim,site.i);
   E('omDrawerTitle').textContent=part?.name||site.name;
   E('inspector').innerHTML=`<div class="overline">ANCIENT DRAGON RUINS</div><h2>${escapeHTML(site.name)}</h2><p class="identity">${escapeHTML(m.recipe.provenance||'Weathered traces of an older dragon realm.')}</p><div class="metrics"><div><b>${Math.round(world.height[site.i]).toLocaleString()} m</b><small>ELEVATION</small></div><div><b>${m.parts.filter(p=>p.role!=='foundation').length}</b><small>SURVIVING FRAGMENTS</small></div></div><p>${escapeHTML(status.label)}</p>${part?`<h3>${escapeHTML(part.name)}</h3><p>${escapeHTML(part.note||'An ancient surviving structure.')}</p>`:''}<div class="inspectbuttons"><button id="cmRuinWhole">View the whole ruin</button><button id="cmRuinGLB">Export ruin GLB</button></div><h3>Explore the remains</h3><div class="cm-ruin-part-list">${m.parts.filter(p=>p.role!=='foundation').map(p=>`<button data-ruin-part="${escapeHTML(p.id)}">${escapeHTML(p.name)} ↗</button>`).join('')}</div>`;
   E('cmRuinWhole').onclick=()=>focusRuinPart(m,null);
-  E('cmRuinGLB').onclick=()=>{const meshes={};for(const name of m.meshNames)if(renderer.meshes[name])meshes[name]=renderer.meshes[name];saveBlob(new Blob([exportGeometryGLB(meshes,{name:site.name,kind:'dragon-ruin',seed:world.params.seed,cell:site.i,crs:'TELLURIC_RECTANGULAR_ATLAS'})],{type:'model/gltf-binary'}),site.name+'-ruin.glb');};
+  E('cmRuinGLB').disabled=!ruins.models.has(m.id);
+  E('cmRuinGLB').onclick=()=>{const mounted=ruins.models.get(m.id);if(!mounted)return;const meshes={};for(const name of mounted.meshNames)if(renderer.meshes[name])meshes[name]=renderer.meshes[name];saveBlob(new Blob([exportGeometryGLB(meshes,{name:site.name,kind:'dragon-ruin',seed:world.params.seed,cell:site.i,crs:'TELLURIC_RECTANGULAR_ATLAS'})],{type:'model/gltf-binary'}),site.name+'-ruin.glb');};
   E('inspector').querySelectorAll('[data-ruin-part]').forEach(b=>b.onclick=()=>focusRuinPart(m,m.parts.find(p=>p.id===b.dataset.ruinPart)));
  }
  function wider(){if(!ready())return;if(selection?.ruin)return animate(AtlasSpace.point(world,selection.model.site.x,selection.model.site.y,renderer.relief),12,1.02);const id=layer.focusId,m=layer.models.get(id);if(m){const a=AtlasSpace.point(world,m.p.x,m.p.y,renderer.relief);a[1]+=.2;return animate(a,10,1.02);}return animate(renderer.target.slice(),Math.max(1,renderer.zoom*.45),1.02);}

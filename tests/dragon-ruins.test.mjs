@@ -60,7 +60,7 @@ test('four real worlds place independent ruins on surveyed uplands without rewri
   assert.deepEqual(E.DragonRuins.sites(w,changed),sites,'ancient ruins cannot move when settlements grow or countries change');
   assert.deepEqual(E.DragonRuins.sites(structuredClone(w),structuredClone(s)),sites,'restoring the same world preserves every site and recipe');
   assert.deepEqual(fingerprints(w,s),before);assert.deepEqual(w.provinceId,province);assert.equal(JSON.stringify(s),society);
-  if(spec.seed==='Aereth-47'){assert.equal(w.params.landformVersion,1);assert.deepEqual(E.LandmarkBinding.inventory(w,s).filter(site=>site.dragonRuins),sites);}
+  if(spec.seed==='Aereth-47'){assert.equal(w.params.landformVersion,fantasyDefaults.landformVersion);assert.deepEqual(E.LandmarkBinding.inventory(w,s).filter(site=>site.dragonRuins),sites);}
   t.diagnostic(JSON.stringify({seed:spec.seed,sites:sites.map(site=>({name:site.name,x:site.x,y:site.y,elevation:site.recipe.geography.elevation,relief:site.survey.relief}))}));
  }
 });

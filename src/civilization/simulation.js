@@ -290,7 +290,7 @@ function buildMarketGraph(sim, w) {
 }
 function initializeSettlements(w, options = {}) {
     const physical = physicalFingerprint(w), historySeed = String(options.historySeed ?? 'First-dawn'), seed = seedHash(w.params.seed + ' / ' + historySeed), rng = random32(seed + 851), g = deriveHumanGeography(w);
-    const sim = { version: 6, year: 400, seed, physicalSeed: w.seed, physicalHash: physical, options: { realms: options.realms || 18, conflict: options.conflict ?? 1, historySeed, politySeed: String(options.politySeed ?? 'First-councils'), highCitadelsVersion: options.highCitadelsVersion ?? (w.params.landformVersion === 1 ? 2 : 1) }, provinces: [], realms: [], relations: {}, wars: [], routes: [], events: [], history: [], nextWar: 1, totalBattles: 0, totalConquests: 0, totalSplits: 0 };
+    const sim = { version: 6, year: 400, seed, physicalSeed: w.seed, physicalHash: physical, options: { realms: options.realms || 18, conflict: options.conflict ?? 1, historySeed, politySeed: String(options.politySeed ?? 'First-councils'), highCitadelsVersion: options.highCitadelsVersion ?? ([1, 2].includes(w.params.landformVersion) ? 2 : 1) }, provinces: [], realms: [], relations: {}, wars: [], routes: [], events: [], history: [], nextWar: 1, totalBattles: 0, totalConquests: 0, totalSplits: 0 };
     const grid = new Int32Array(GN).fill(-1), cost = new Float64Array(GN).fill(Infinity), heap = new MinHeap();
     // Tessellation is solely for accounting. An empty district does NOT receive a settlement.
     for (let by = 2; by < GH - 2; by += 7)
