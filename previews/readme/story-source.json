@@ -1,0 +1,52 @@
+{
+  "commit": "f1788c4",
+  "bundle": "dist/telluric-onemap.html",
+  "viewport": {
+    "width": 1480,
+    "height": 980
+  },
+  "seed": "Aereth-47",
+  "year": 400,
+  "provinceId": 349,
+  "town": "Scorchspire",
+  "narrator": {
+    "people": 0,
+    "peopleName": "Humans",
+    "color": "#bc9062",
+    "name": "Wengar Brendis",
+    "rank": "the Roadbreaker",
+    "office": "keeper of the way-house",
+    "kin": "my great-uncle",
+    "opener": "Give me a moment. It is not a short answer.",
+    "seed": 509204
+  },
+  "title": "The Scorchspire Telling",
+  "chapters": [
+    {
+      "heading": "The Coming",
+      "basis": "province people mixture; siteReason: Supported by rain-fed farms and local paths"
+    },
+    {
+      "heading": "The Founding",
+      "basis": "realm City League of Tapiola has its capital at this province"
+    },
+    {
+      "heading": "The Trial",
+      "basis": "The Skymirror (the high lake) lies 22 cells away"
+    },
+    {
+      "heading": "The Deed",
+      "basis": "hero people sampled from this province's live mixture (Humans at 86%)"
+    },
+    {
+      "heading": "What Remains",
+      "basis": "current model state: urbanPop 95460, ruralPop 73823, type City"
+    }
+  ],
+  "camera": {
+    "zoom": 78,
+    "azimuth": -2.6915926535897934,
+    "elevation": 0.72
+  },
+  "drawer": "Town details, scrolled to Somebody who lives here"
+}
