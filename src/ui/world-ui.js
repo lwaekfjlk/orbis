@@ -264,6 +264,10 @@ function realmNameOriginHTML(c) {
     const origin = RealmNames.describe(c);
     return origin ? `<p class="realm-name-origin"><strong>Name origin</strong><br>${escapeHTML(origin)}</p>` : '';
 }
+function placeNameOriginHTML(p) {
+    const origin = typeof PlaceNames !== 'undefined' ? PlaceNames.describe(p) : '';
+    return origin ? `<p class="realm-name-origin"><strong>Name &amp; tradition</strong><br>${escapeHTML(origin)}</p>` : '';
+}
 function renderInspector(forceRealm = false) {
     if (!forceRealm && !POLITICAL.includes(currentLayer) && selectedCell >= 0)
         return renderGeography(selectedCell, sim?.provinces[world.provinceId[selectedCell]]);

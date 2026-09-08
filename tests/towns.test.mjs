@@ -4,7 +4,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {root,defaults} from './engine-loader.mjs';
-const sources=['src/world/geography.js','src/civilization/realm-names.js', 'src/civilization/simulation.js','src/city/environment.js','src/civilization/high-citadels.js', 'src/towns/catalog.js','src/towns/vocabulary.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/high-citadel-plan.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/continuous/atlas-space.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js','src/landmarks/world-binding.js','src/towns/building-kit.js'];
+const sources=['src/world/geography.js','src/civilization/realm-names.js', 'src/civilization/place-names.js', 'src/civilization/simulation.js','src/city/environment.js','src/civilization/high-citadels.js', 'src/towns/catalog.js','src/towns/vocabulary.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/high-citadel-plan.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/continuous/atlas-space.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js','src/landmarks/world-binding.js','src/towns/building-kit.js'];
 const E=Function(sources.map(f=>readFileSync(resolve(root,f),'utf8')).join('\n')+'\nreturn {AtlasSpace,generateWorld,createCivilization,generateCity,auditCity,physicalFingerprint,settlementFingerprint,politicalFingerprint,TownCatalog,TownBuildingKit,TownCityBinding};')();
 const digest=x=>createHash('sha256').update(Buffer.from(x.buffer??JSON.stringify(x))).digest('hex');
 let w,s,base;const records={version:10,checks:{},styles:[]};

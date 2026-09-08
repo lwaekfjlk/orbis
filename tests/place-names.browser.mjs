@@ -1,0 +1,63 @@
+// Verify the linked country/city vocabulary in the actual offline map and save loader.
+import assert from 'node:assert/strict';
+import {readFile,writeFile,mkdir,mkdtemp,rm} from 'node:fs/promises';
+import {spawn} from 'node:child_process';
+import {tmpdir} from 'node:os';
+import {fileURLToPath} from 'node:url';
+import {resolve,join} from 'node:path';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const root=fileURLToPath(new URL('..',import.meta.url)),out=process.env.TELLURIC_NAMES_OUTPUT||join(tmpdir(),'telluric-linked-place-names-browser');
+await mkdir(out,{recursive:true});
+const profile=await mkdtemp(join(tmpdir(),'telluric-place-names-chrome-'));
+const child=spawn(process.env.CHROMIUM_PATH||chromium.executablePath(),['--headless','--no-first-run','--no-default-browser-check','--no-sandbox','--remote-debugging-port=0','--user-data-dir='+profile,'--use-angle=swiftshader','--enable-unsafe-swiftshader','about:blank'],{stdio:'ignore',detached:true});
+child.unref();let browser;
+try{
+ let port;for(let k=0;k<150&&!port;k++){try{port=(await readFile(join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0]}catch{await new Promise(r=>setTimeout(r,100))}}
+ assert(port,'Chromium did not start');browser=await chromium.connectOverCDP('http://127.0.0.1:'+port);
+ const context=await browser.newContext({viewport:{width:1480,height:980},reducedMotion:'reduce'}),page=await context.newPage(),errors=[],requests=[];
+ page.on('pageerror',e=>errors.push(String(e)));page.on('request',r=>requests.push(r.url()));
+ await context.setOffline(true);
+ await page.setContent(await readFile(resolve(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});
+ const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading',null,{timeout:180000});
+ await stable();await page.evaluate(()=>document.fonts.ready);
+ const report=await page.evaluate(()=>({countries:sim.realms.filter(c=>c.alive).map(c=>({id:c.id,name:RealmNames.fullName(c),source:c.nameOrigin.source,baseId:c.namingCulture.baseId,faith:FAITHS[c.faith].name,towns:sim.provinces.filter(p=>p.owner===c.id&&p.settled).map(p=>({id:p.id,name:p.name,root:p.nameOrigin.root,baseId:p.nameOrigin.baseId,faith:p.nameOrigin.faith}))})),physical:physicalFingerprint(world),settlements:settlementFingerprint(sim),politics:politicalFingerprint(sim)}));
+ assert(report.countries.length>0);assert(report.countries.every(c=>['norse','greek','celtic','finnish','arthurian'].includes(c.baseId)));
+ for(const c of report.countries)assert(c.towns.every(p=>p.baseId===c.baseId),'town culture must match its founding realm');
+ const holy=report.countries.filter(c=>c.faith==='Dawn Communion').sort((a,b)=>b.towns.length-a.towns.length)[0];
+ assert(holy,'the default world has a Dawn Communion realm');
+ const saints=holy.towns.filter(p=>/^Saint /.test(p.name));assert(saints.length>=3,'one country needs a family of Saint towns');
+ assert.equal(new Set(saints.map(p=>p.name)).size,saints.length);
+ await page.locator('[data-realm-id="'+holy.id+'"].realmLabel').click();await page.waitForSelector('.realm-overview');
+ assert.equal(await page.locator('#omDrawerTitle').textContent(),holy.name);
+ const dossier=await page.locator('.realm-overview').textContent();
+ assert(dossier.includes('Saint')&&holy.towns.some(p=>dossier.includes(p.name)),'country introduction must show its naming tradition and real town examples');
+ await page.screenshot({path:join(out,'country-and-town-names.png')});
+ await page.getByRole('heading',{name:'Peoples and faiths'}).scrollIntoViewIfNeeded();
+ await page.screenshot({path:join(out,'naming-tradition.png')});
+ await page.keyboard.press('Escape');
+ const saint=saints[0];await page.evaluate(id=>inspectCell(sim.provinces[id].i),saint.id);
+ assert.equal(await page.locator('#omSelectionBody h3').textContent(),saint.name);
+ const origin=await page.locator('#omSelectionBody .realm-name-origin').textContent();assert(origin.includes('Dawn Communion')&&origin.includes('Saint'),'city inspection must explain its inherited naming custom');
+ await page.screenshot({path:join(out,'saint-city.png')});
+ await page.evaluate(id=>ContinuousMap.focusTown(id,120),saint.id);await stable();
+ await page.evaluate(id=>ContinuousMap.details(ContinuousMap.layer.models.get(id)),saint.id);
+ assert.equal(await page.locator('#omDrawerTitle').textContent(),saint.name);
+ assert((await page.locator('#inspector .realm-name-origin').textContent()).includes('Dawn Communion'));
+ await page.screenshot({path:join(out,'town-naming-details.png')});
+ await page.keyboard.press('Escape');await page.evaluate(()=>ContinuousMap.home());await stable();
+ console.log('PASS country/city vocabulary, multiple Saint towns and map/town naming dossiers');
+ // Saved names and generated provenance must survive the actual loader.
+ const saved=await page.evaluate(()=>JSON.stringify(makeSave()));
+ await page.evaluate(async text=>loadSimulation(new File([text],'names.json',{type:'application/json'})),saved);await stable();
+ assert.equal(await page.evaluate(()=>JSON.stringify(makeSave().simulation.realms.map(c=>[c.name,c.namingCulture]))),JSON.stringify(JSON.parse(saved).simulation.realms.map(c=>[c.name,c.namingCulture])));
+ assert.equal(await page.evaluate(()=>JSON.stringify(sim.provinces.map(p=>[p.name,p.nameOrigin]))),JSON.stringify(JSON.parse(saved).simulation.provinces.map(p=>[p.name,p.nameOrigin])));
+ const replay=await page.evaluate(()=>({physical:physicalFingerprint(world),settlements:settlementFingerprint(sim),politics:politicalFingerprint(sim)}));
+ for(const k of ['physical','settlements','politics'])assert.equal(replay[k],report[k]);
+ await page.setViewportSize({width:430,height:900});await stable();
+ await page.evaluate(id=>selectRealm(id),holy.id);assert(await page.locator('.realm-overview').isVisible());
+ assert.equal(await page.locator('#omDrawerTitle').textContent(),holy.name);
+ await page.screenshot({path:join(out,'country-names-mobile.png')});
+ assert.deepEqual(errors,[]);assert.deepEqual(requests.filter(u=>/^https?:/.test(u)),[]);
+ await writeFile(join(out,'checks.json'),JSON.stringify({...report,saveRoundTrip:true,mobile:true,errors,externalRequests:[]},null,2)+'\n');
+ console.log('PASS save round trip, unchanged world, mobile introduction and offline build');
+}finally{if(browser)await browser.close();try{process.kill(-child.pid,'SIGKILL')}catch{}await rm(profile,{recursive:true,force:true,maxRetries:3,retryDelay:100})}

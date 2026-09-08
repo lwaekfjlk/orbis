@@ -135,7 +135,9 @@ const HighCitadels = (() => {
             p.highCitadel = {version: 2, kind, originalName, originalCell, sourceCell: p.i, founded: sim.year, ...c.ground,
                 populationCap: c.population, support: c.support, ruralSupportBefore: c.ruralSupport, ruralSupportAfter: c.ruralSupport - c.support};
             p.urbanPop = c.population; p.ruralPop = p.pop - p.urbanPop; p.urbanSupport = p.detailSupport = c.support;
-            p.settled = true; p.city = false; p.settlementType = type(p); p.name = `${originalName} · ${type(p)}`;
+            p.settled = true; p.city = false; p.settlementType = type(p);
+            if (p.nameOrigin?.version === 1 && typeof PlaceNames !== 'undefined') PlaceNames.assign(sim, p, {force: true});
+            else p.name = `${originalName} · ${type(p)}`;
             p.siteReason = `${p.settlementType} on a surveyed ${Math.round(c.ground.elevation).toLocaleString('en-US')} m platform inside its original district. ${c.population.toLocaleString('en-US')} existing residents gather here, supported by modeled local water and a reserve from the district's retained rural capacity. No existing town, country, population or terrain is moved.`;
             const budget = sim.settlementBudget;
             budget.available += c.support; budget.allocated += c.support; budget.retained += c.support;

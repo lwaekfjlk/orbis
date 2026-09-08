@@ -87,8 +87,10 @@ test('an inherited river bridge connects the approach, but never turns sea or la
 
 test('incoming roads connect through real gates in Scorchspire, Scorchwell, Whitebeck and Oakdell',async()=>{
  const w=await E.generateWorld(defaults),s=E.createCivilization(w,{realms:18,historySeed:'First-dawn'}),net=E.RoadNetwork.ensure(w,s);
- for(const name of ['Scorchspire','Scorchwell','Whitebeck','Oakdell']){
-  const p=s.provinces.find(p=>p.name===name),city=E.generateCity(w,s,p.id),frame=E.AtlasSpace.cityFrame(w,p,city),model={p,city,frame},r=Object.create(E.AtlasRenderer.prototype);
+ // Preserve the four original road/gate fixtures independently of display names.
+ for(const [name,id,cell] of [['Scorchspire',349,29953],['Scorchwell',313,26331],['Whitebeck',288,24843],['Oakdell',329,28876]]){
+  const p=s.provinces[id];assert.equal(p.i,cell,name+' fixture moved');
+  const city=E.generateCity(w,s,p.id),frame=E.AtlasSpace.cityFrame(w,p,city),model={p,city,frame},r=Object.create(E.AtlasRenderer.prototype);
   Object.assign(r,{world:w,relief:1,roadNetwork:net,continuousModels:new Map([[p.id,model]]),target:frame.origin,halfW:2,halfH:2,elevation:1,updateCamera(){},ground(x,y){return E.AtlasSpace.surface(w,x,y)},coord(x,y,h){const q=E.AtlasSpace.point(w,x,y);q[1]=h;return q},upload(){}});
   r.buildNearRoads();
   for(const road of net.roads.filter(a=>a.from===p.id||a.to===p.id))assert(r.nearRoadAccess.some(a=>a.from===road.from&&a.to===road.to),name+' incoming road remains connected');

@@ -624,9 +624,22 @@ function administrationDistances(sim, start, limit = Infinity) {
     }
     return dist;
 }
-/* Namebases and formal titles are independent of the institutions above. */
+/* Founding names share a cultural vocabulary; faith supplies town naming customs.
+ * This pass owns only names and their provenance, never the simulation RNG. */
 function nameRealms(sim) {
     RealmNames.generate(sim);
+    const previous = new Map(sim.provinces.map(p => [p.id, p.name]));
+    PlaceNames.generate(sim);
+    for (const community of sim.localCommunities || [])
+        community.name = `${sim.provinces[community.capital].name} community`;
+    // Version 1 mountain courts are founded before countries. Their initial
+    // records must use the same final place name as the map and town directory.
+    for (const event of sim.events || []) {
+        if (event.type !== 'founding' || !event.details?.highCitadel) continue;
+        const p = sim.provinces[event.details.province], old = previous.get(p?.id);
+        if (p && old && old !== p.name && event.text.startsWith(old + ' '))
+            event.text = p.name + event.text.slice(old.length);
+    }
 }
 function localPoliticalDifference(a, b) {
     // Small institutional-coordination term; no species gets an inherent state/war bonus.
@@ -707,7 +720,7 @@ function formPolities(sim, w) {
         const commandRange = 35 * Math.pow(18 / frag, .28) * (.90 + .15 * Math.sqrt(p.urbanPop / 45000)) * ambition;
         const adminBudget = (9 + 3.6 * Math.sqrt(p.urbanPop / 1000)) * Math.pow(18 / frag, .3) * ambition;
         sim.realms.push({ id, name, title: titles[gov], color: REALM_COLORS[id % REALM_COLORS.length], capital: p.id, gov, faith: cDominant(p.faith), originPeople: cDominant(p.people), archetype: type,
-            identity: `The existing ${p.settlementType.toLowerCase()} of ${p.name} retained its own political center. It draws on ${type === 'granary' ? 'farms and local markets' : type === 'lake' ? 'freshwater shores and lake commerce' : type === 'maritime' ? 'ports and coastal commerce' : type === 'forge' ? 'highland workshops and mineral resources' : type === 'forest' ? 'forest livelihoods and farms' : type === 'wetland' ? 'wetland livelihoods and navigable valleys' : 'its local production and exchange network'}. Connected outlying communities govern locally beyond the capital's direct administrative reach. Trade does not confer sovereignty. Its ${GOVERNMENTS[gov].toLowerCase()} is a sampled institutional history, not a geographical destiny.`,
+            identity: `The existing ${p.settlementType.toLowerCase()} at the capital retained its own political center. It draws on ${type === 'granary' ? 'farms and local markets' : type === 'lake' ? 'freshwater shores and lake commerce' : type === 'maritime' ? 'ports and coastal commerce' : type === 'forge' ? 'highland workshops and mineral resources' : type === 'forest' ? 'forest livelihoods and farms' : type === 'wetland' ? 'wetland livelihoods and navigable valleys' : 'its local production and exchange network'}. Connected outlying communities govern locally beyond the capital's direct administrative reach. Trade does not confer sovereignty. Its ${GOVERNMENTS[gov].toLowerCase()} is a sampled institutional history, not a geographical destiny.`,
             reach: .88 + rng() * .30, tolerance: .45 + rng() * .50, ambition: .25 + rng() * .55, policy, tech: .8 + p.dev * .22 + p.ore * .15, arcana: .55 + p.mana * .90 + (gov === 2 ? .40 : 0), wealthSeed: 1, treasury: 10, army: 1, navy: 0, stability: 70 + rng() * 17, warWeariness: 0, alive: true, founded: 400, provinces: [], population: 0, power: 0, imports: 0, commandRange, adminBudget, adminUsed: 0, localAutonomy: p.localAutonomy, foundingSource: local ? 'local-council' : 'town', autonomousProvinces: 0 });
         return sim.realms[id];
     };
@@ -1244,13 +1257,17 @@ function stepCivilization(sim, w) {
         p.occupation = Math.max(0, p.occupation - 1);
     }
     for (const p of sim.provinces) {
-        const prev = p.city;
+        const prev = p.city, wasSettled = p.settled;
         const target = HighCitadels.cap(p, Math.min(p.pop * .58, p.urbanSupport * (.70 + .22 * p.dev)));
         p.urbanPop = HighCitadels.cap(p, Math.min(p.pop, Math.max(0, p.urbanPop + (target - p.urbanPop) * .08)));
         p.ruralPop = p.pop - p.urbanPop;
         p.city = p.urbanPop >= 9000;
         p.settled = p.urbanPop >= 650;
         p.settlementType = p.highCitadel && p.settled ? HighCitadels.type(p) : p.city ? (p.urbanPop > 30000 ? 'City' : 'Town') : p.settled ? 'Village' : p.pop > 1000 ? 'Dispersed households' : 'Sparse / uninhabited';
+        // A newly gathered village adopts the local naming custom once. A town
+        // that later shrinks, changes rulers or changes faith keeps its name.
+        if (!wasSettled && p.settled && p.nameOrigin?.version === 1 && p.nameOrigin.pattern === 'landscape')
+            PlaceNames.assign(sim, p, {force: true});
         if (prev !== p.city)
             logEvent(sim, 'prosperity', `${p.name} ${p.city ? 'grows into a town' : 'contracts below town size'} as its population changes.`, p.owner >= 0 ? [p.owner] : []);
     }
@@ -1450,7 +1467,7 @@ function stepCivilization(sim, w) {
             if (!old?.alive || old.provinces.length < 4 || p.occupation > 0 || p.unrest < 62 || rng() > .022)
                 continue;
             const id = sim.realms.length, c = { ...old, id, name: p.name, title: 'Free State of ' + p.name, color: REALM_COLORS[id % REALM_COLORS.length], capital: p.id, gov: 6, faith: cDominant(p.faith), originPeople: cDominant(p.people), policy: 'Concord', ambition: .35, identity: 'A secession born from local unrest. The new government inherits the resident population, beliefs and economic constraints.', army: Math.max(1, old.army * .08), navy: 0, treasury: old.treasury * .06, stability: 57, warWeariness: 0, alive: true, founded: sim.year, provinces: [] };
-            RealmNames.assign(sim, c, { baseId: old.nameOrigin?.baseId });
+            RealmNames.assign(sim, c, { baseId: old.namingCulture?.baseId || old.nameOrigin?.baseId });
             old.army *= .92;
             old.treasury *= .94;
             p.owner = id;

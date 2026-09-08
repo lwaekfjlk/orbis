@@ -5,7 +5,7 @@ import {scripts} from '../scripts/manifest.mjs';
 import {defaults} from './engine-loader.mjs';
 
 const source = scripts.slice(0, scripts.indexOf('src/ui/world-ui.js')).map(f => readFileSync(new URL('../' + f, import.meta.url), 'utf8')).join('\n');
-const exports = '\nreturn {HighCitadels,HighCitadelPlan,CityEnvironment,citySurvey,generateWorld,createCivilization,physicalFingerprint,settlementFingerprint,politicalFingerprint,stepCivilization,auditCivilization,GW};';
+const exports = '\nreturn {HighCitadels,HighCitadelPlan,CityEnvironment,citySurvey,cNameDistricts,generateWorld,createCivilization,physicalFingerprint,settlementFingerprint,politicalFingerprint,stepCivilization,auditCivilization,GW};';
 const E = Function(source + exports)();
 // Compare the ordinary founding path with the same trusted modules and the one
 // new, deterministic post-allocation hook disabled. No alternate world is built.
@@ -23,10 +23,15 @@ ${validationSource}
 return {validateSimulation,reroll(w,s){world=w;sim=s;try{rerollPolitics();return{sim,error:null};}catch(e){return{sim,error:e.message};}}};`)();
 const options = {realms: 18, historySeed: 'First-dawn'};
 const close = (a, b, tolerance = 1e-7) => assert.ok(Math.abs(a - b) <= tolerance, `${a} != ${b}`);
-let w, ordinaryWorld, sim, ordinary, physics;
+let w, ordinaryWorld, sim, ordinary, physics, originalDistrictNames;
 test.before(async () => {
     w = await E.generateWorld(defaults); physics = E.physicalFingerprint(w); ordinaryWorld = structuredClone(w);
     ordinary = B.createCivilization(ordinaryWorld, options); sim = E.createCivilization(w, options);
+    // Version 1 founds its courts before countries assign cultural place names.
+    // Reconstruct that exact district naming pass, including global collisions.
+    const districts = {provinces: structuredClone(ordinary.provinces)};
+    E.cNameDistricts(districts);
+    originalDistrictNames = districts.provinces.map(p => p.name);
 });
 const citadels = () => sim.provinces.filter(p => p.highCitadel);
 
@@ -42,7 +47,15 @@ test('two rare citadels use the original dry mountain sites above 3500 metres', 
         assert.equal(high.elevation, w.height[p.i]); assert.ok(high.elevation >= 3500);
         assert.equal(high.sourceCell, p.i); assert.ok(site.maximumGrade <= .95);
         assert.equal(high.surveySpan, 2.16); assert.equal(high.terrainSpan, .648);
-        assert.ok(p.name.startsWith(before.name + ' · ')); assert.match(p.name, /Dragon King's Aerie|High Sanctuary/);
+        const culture = sim.realms[p.owner].namingCulture;
+        assert.equal(p.nameOrigin.baseId, culture.baseId);
+        assert.equal(p.nameOrigin.realmId, p.owner);
+        assert.equal(p.nameOrigin.generatedName, p.name);
+        assert.ok(p.name.includes(culture.root), 'the high city shares its country naming root');
+        assert.equal(p.settlementType, E.HighCitadels.type(p));
+        assert.match(p.settlementType, /Dragon King's Aerie|High Sanctuary/);
+        assert.ok(!p.name.includes(' · '), 'city type is displayed independently from its proper name');
+        assert.equal(high.originalName, originalDistrictNames[p.id], 'retain the actual district name from before v1 founding');
         assert.equal(p.settled, true); assert.equal(p.city, false); assert.ok(p.urbanPop >= 650 && p.urbanPop <= 1100);
         assert.ok(w.human.waterCapacity[p.i] >= high.support, 'the original site has insufficient modeled water');
         const rx = high.terrainSpan / 2, ry = rx * E.CityEnvironment.cityDimensions.depth / E.CityEnvironment.cityDimensions.width;

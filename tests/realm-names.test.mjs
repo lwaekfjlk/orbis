@@ -6,8 +6,11 @@ import { loadEngine, defaults, root } from './engine-loader.mjs';
 const E = loadEngine();
 function fixture(count = 160) {
     return { seed: 'Mythic-atlas', options: { politySeed: 'Councils' },
-        provinces: Array.from({ length: count }, (_, id) => ({ id, name: `Town ${id}`, x: id % 30 * 10, y: Math.floor(id / 30) * 30, landmass: id % 6 })),
-        realms: Array.from({ length: count }, (_, id) => ({ id, capital: id, gov: id % 8, alive: true, founded: 400 })) };
+        provinces: Array.from({ length: count }, (_, id) => ({ id, name: `Town ${id}`, owner: id, culturalHome: id % 7,
+            people: E.PEOPLES.map((_, k) => Number(k === id % 7)),
+            x: id % 30 * 10, y: Math.floor(id / 30) * 30, landmass: id % 6 })),
+        realms: Array.from({ length: count }, (_, id) => ({ id, capital: id, gov: id % 8, faith: id % 6,
+            originPeople: id % 7, alive: true, founded: 400 })) };
 }
 function assertOrigin(c) {
     assert.equal(c.namedFor, 'mythology');
@@ -27,13 +30,28 @@ test('Mythological countries are unique, meaningful and reproducible beyond 128 
     assert.deepEqual(a, b);
     assert.equal(new Set(a.realms.map(c => c.name.toLowerCase())).size, a.realms.length);
     a.realms.forEach(assertOrigin);
-    assert(new Set(a.realms.map(c => c.nameOrigin.baseId)).size >= 8);
+    assert.deepEqual(new Set(E.RealmNames.bases.map(b => b.id)),
+        new Set(['norse', 'greek', 'celtic', 'finnish', 'arthurian']));
+    assert(new Set(a.realms.map(c => c.nameOrigin.baseId)).size > 1, 'different founding cultures have distinct naming traditions');
     assert(a.realms.some(c => c.nameOrigin.qualifier), 'exercise exhausted base names');
     E.RealmNames.generate(a);
     assert.deepEqual(a, b, 'rerunning the naming pass must be stable');
     const alternative = fixture(); alternative.seed += ' changed';
     E.RealmNames.generate(alternative);
     assert.notDeepEqual(a.realms.map(c => c.name), alternative.realms.map(c => c.name));
+});
+test('An exhausted country namebase uses qualifiers without changing its tradition', () => {
+    for (const base of E.RealmNames.bases) {
+        const s = fixture(base.names.length * 3);
+        for (const c of s.realms) E.RealmNames.assign(s, c, { baseId: base.id });
+        assert.equal(new Set(s.realms.map(c => c.name)).size, s.realms.length);
+        for (const c of s.realms) {
+            assertOrigin(c);
+            assert.equal(c.nameOrigin.baseId, base.id);
+            assert.equal(c.namingCulture.baseId, base.id);
+        }
+        assert(s.realms.some(c => c.nameOrigin.qualifier));
+    }
 });
 test('Requested tradition, custom names and historical names survive allocation', () => {
     const s = fixture(3), c = s.realms[2];
@@ -57,16 +75,19 @@ test('Founding and secession use mythological names, with stable saves and uncha
     s.realms.forEach(assertOrigin);
     const saved = JSON.parse(JSON.stringify(s));
     assert.deepEqual(saved.realms, s.realms);
-    const withoutNames = sim => JSON.stringify({ ...sim, realms: sim.realms.map(({ name, title, namedFor, nameOrigin, ...other }) => other) });
+    const withoutNames = sim => JSON.stringify({ ...sim,
+        realms: sim.realms.map(({ name, title, namedFor, nameOrigin, namingCulture, ...other }) => other),
+        provinces: sim.provinces.map(({ name, namedFor, nameOrigin, ...other }) => other) });
     const before = withoutNames(s);
     E.nameRealms(s, w);
     assert.equal(withoutNames(s), before, 'naming must not change politics, resources or events');
     assert.equal(E.physicalFingerprint(w), '440ae5d0');
-    const edited = s.realms[0];
+    const edited = s.realms[0], culture = structuredClone(edited.namingCulture);
     assert(E.civilizationAction(s, 'rename', edited.id, -1, 'My chosen realm').ok);
     assert.equal(edited.name, 'My chosen realm');
     assert.equal(edited.namedFor, 'custom');
     assert.equal(edited.nameOrigin, null);
+    assert.deepEqual(edited.namingCulture, culture, 'renaming a country retains its local naming tradition');
     assert.equal(E.RealmNames.describe(edited), '');
     const count = s.realms.length;
     for (let year = 0; year < 40 && s.realms.length === count; year++) {
@@ -76,7 +97,9 @@ test('Founding and secession use mythological names, with stable saves and uncha
     assert(s.realms.length > count, 'the stressed fixture should secede');
     for (const c of s.realms.slice(count)) {
         assertOrigin(c);
-        assert(s.events.some(e => e.type === 'secession' && e.text.includes(c.title)));
+        const event = s.events.find(e => e.type === 'secession' && e.actors[1] === c.id);
+        assert(event.text.includes(c.title));
+        assert.equal(c.namingCulture.baseId, s.realms[event.actors[0]].namingCulture.baseId);
         assert.equal(s.realms.filter(r => r.name === c.name).length, 1);
     }
 });

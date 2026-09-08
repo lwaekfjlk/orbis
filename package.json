@@ -53,6 +53,8 @@
     "setup:git": "node scripts/setup-git.mjs",
     "postinstall": "node scripts/setup-git.mjs",
     "preview:folk": "node scripts/preview-folk.mjs",
-    "test:folk-browser": "node tests/folk.browser.mjs"
+    "test:folk-browser": "node tests/folk.browser.mjs",
+    "test:names": "node --test tests/realm-names.test.mjs tests/place-names.test.mjs tests/realm-profile.test.mjs tests/realm-overview-ui.test.mjs",
+    "test:names-browser": "node tests/place-names.browser.mjs"
   }
 }
