@@ -1,0 +1,63 @@
+{
+  "bundleSha256": "dbf3c1e27eddfcfc2df01bd96fcd8b5a69974f1c4fd08d294d28c1b446574341",
+  "viewports": [
+    1480,
+    430,
+    360
+  ],
+  "checks": "Back visibility, full camera restoration, control hit targets and spacing, Recreate labels, cancel/focus behavior, busy states and real same-seed recreation",
+  "before": [
+    "2377e4fa",
+    "254caa7c",
+    "24a862f0"
+  ],
+  "afterCancelled": [
+    "2377e4fa",
+    "254caa7c",
+    "24a862f0"
+  ],
+  "generation": {
+    "busy": true,
+    "controls": [
+      {
+        "id": "forgeButton",
+        "disabled": true,
+        "text": "Creating\u2026"
+      },
+      {
+        "id": "cmContext",
+        "disabled": true,
+        "text": "Back to world"
+      },
+      {
+        "id": "play",
+        "disabled": true,
+        "text": "\u25b6 Play"
+      },
+      {
+        "id": "step1",
+        "disabled": true,
+        "text": "+1"
+      },
+      {
+        "id": "step10",
+        "disabled": true,
+        "text": "+10"
+      }
+    ]
+  },
+  "afterGeneration": [
+    "2377e4fa",
+    "254caa7c",
+    "24a862f0"
+  ],
+  "passed": true,
+  "errors": [],
+  "externalRequests": [],
+  "menuChecks": 75,
+  "menuViewports": [
+    1480,
+    430,
+    320
+  ]
+}
