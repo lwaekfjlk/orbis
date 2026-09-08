@@ -84,7 +84,7 @@ try {
     await page.setContent(testedHtml.toString('utf8'), {waitUntil: 'load', timeout: 240000});
     await page.evaluate(() => document.fonts.ready);
     await settled(); await assertReady();
-    assert.equal(await page.evaluate('world.params.landformVersion'), 1, 'the shipped app did not use the new default');
+    assert.equal(await page.evaluate('world.params.landformVersion'), 2, 'the shipped app did not use the new default');
     report.fantasy = await fingerprints();
     assert.notEqual(report.fantasy.physical, '440ae5d0', 'the new default silently fell back to the legacy terrain');
     const metadata = await page.evaluate(() => {
@@ -194,7 +194,7 @@ try {
         window.__fantasySave = JSON.stringify(saved);
         window.__fantasyHistory = JSON.stringify(saved.simulation);
     });
-    assert.equal(await page.evaluate('JSON.parse(__fantasySave).parameters.landformVersion'), 1);
+    assert.equal(await page.evaluate('JSON.parse(__fantasySave).parameters.landformVersion'), 2);
     assert.equal(await page.evaluate('sim.year'), 401);
 
     // This legacy world is made by the actual current generator's version-0 path.
@@ -234,7 +234,7 @@ try {
     });
     await page.evaluate(() => loadSimulation(new File([__fantasySave], 'fantasy.json', {type: 'application/json'})));
     await settled(); await assertReady();
-    assert.equal(await page.evaluate('world.params.landformVersion'), 1);
+    assert.equal(await page.evaluate('world.params.landformVersion'), 2);
     assert.equal((await fingerprints()).physical, report.fantasy.physical);
     assert(await page.evaluate('JSON.stringify(sim)===__fantasyHistory'), 'new-format restore changed saved history');
     await page.evaluate(() => loadSimulation(new File([__legacySave], 'legacy.json', {type: 'application/json'})));
@@ -243,7 +243,7 @@ try {
     assert.equal((await fingerprints()).physical, '440ae5d0');
     assert(await page.evaluate('JSON.stringify(sim)===__legacyHistory'), 'legacy restore changed its saved history');
     assert(await page.evaluate('ContinuousMap.layer.models.size===0&&renderer.canvas===__fantasyCanvas'), 'restore retained stale city meshes or replaced the canvas');
-    report.saves = {newVersion: 1, versionlessRestoredAs: 0, savedHistoryPreserved: true};
+    report.saves = {newVersion: 2, versionlessRestoredAs: 0, savedHistoryPreserved: true};
     console.log('PASS new and versionless legacy saves, exact history and terrain restoration');
 
     assert.deepEqual(errors, []); assert.deepEqual(requests, []);

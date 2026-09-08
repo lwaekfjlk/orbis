@@ -15,7 +15,7 @@ test.before(async()=>{
 
 test('new landforms still support connected majority countries and settled communities',()=>{
  for(const {w,s} of scenarios){
-  assert.equal(w.params.landformVersion,1);assert(w.landformRegions.length>=3);
+  assert.equal(w.params.landformVersion,2);assert(w.landformRegions.length>=3);
   const audit=E.auditCivilization(s,w);
   for(const field of ['invalidOwners','badShares','badPop','badCapitals','waterClaims','routeErrors'])assert.equal(audit[field],0,w.params.seed+' '+field);
   const realms=s.realms.filter(c=>c.alive);assert(realms.length>1&&realms.length<s.provinces.filter(p=>p.settled).length);

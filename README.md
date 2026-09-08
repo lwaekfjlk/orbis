@@ -26,15 +26,15 @@ Use **Play** or the year-step buttons to advance history. **Regenerate** creates
 
 *Red tablelands and canyon walls. Tree, town and border layers are switched off to show the terrain.*
 
-Explore red-rock mesas, basalt calderas, belts of parallel mountain ridges and limestone towers. Their slopes change the rivers, climate and places people can settle. Flat highlands retain soil and vegetation; exposed cliffs show their rock, with snow and ice where the climate supports them.
+Explore red-rock mesas, basalt calderas, irregular mountain massifs and branching ridges and limestone towers. Their slopes change the rivers, climate and places people can settle. Flat highlands retain soil and vegetation; exposed cliffs show their rock, with snow and ice where the climate supports them.
 
-Search for a named landform to find it. Regenerate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md).
+Search for a named landform to find it. Regenerate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md) and [mountain–climate comparisons](docs/MOUNTAINS_AND_CLIMATE.md).
 
 ## Cities belong to the landscape
 
-![An oblique view of Bramblequay, showing houses, streets, walls and the waterfront](previews/fantasy-landforms/after/city.png)
+![An oblique view of Whitebeck, showing houses, streets, walls and the waterfront](previews/fantasy-landforms/after/city.png)
 
-*Bramblequay: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
+*Whitebeck: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
 
 Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 

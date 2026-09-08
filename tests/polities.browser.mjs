@@ -13,7 +13,7 @@ const baseline=process.env.TELLURIC_BASELINE==='1';
 let reference=null;
 if(!baseline){
  const ui=await readFile(join(root,'src/ui/world-ui.js'),'utf8'),declaration=ui.match(/const GEN_DEFAULTS = \{[^\n]+\};/)?.[0];
- assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,1);
+ assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,2);
  const E=loadEngine(),w=await E.generateWorld(params),s=E.createCivilization(w,{realms:18,conflict:1});
  const territory=E.PoliticalLand.territory(w,s);let landCells=0,lakeCells=0,unclaimedCells=0,enclosedSeaCells=0;
  for(let i=0;i<w.height.length;i++){
@@ -67,7 +67,7 @@ try {
  console.log('Desktop',JSON.stringify(report.desktop));
  await page.screenshot({path:join(out,'world.png')});
  if(!baseline){
-  assert.equal(report.desktop.landformVersion,1,'the default atlas loaded legacy terrain');
+  assert.equal(report.desktop.landformVersion,2,'the default atlas loaded legacy terrain');
   assert.equal(report.desktop.realms,reference.realms,'browser founding differs from independent source generation');
   assert(report.desktop.realms>=18&&report.desktop.realms<=28);
   assert.equal(report.desktop.towns,reference.towns);assert.equal(report.desktop.visibleTownNames,reference.towns);

@@ -1042,6 +1042,87 @@ function sculptHydrology(w) {
             break;
     }
 }
+/** An irregular mountain belt: overlapping massifs joined by branching ridges.
+ * The tectonic direction biases the network, without prescribing parallel rows.
+ * All lengths are parent-grid cells; even narrow shoulders span several cells. */
+function mountainBeltV2(w, r, original, catchment) {
+    const rnd = random32(seedHash(w.params.seed + ' / mountain-belt-v2 / ' + r.center.i));
+    const massifs = [], nodes = [], count = 4 + (rnd() > .55 ? 1 : 0);
+    for (let j = 0; j < count; j++) {
+        const u = (-.72 + 1.44 * (j + .18 + rnd() * .64) / count) * r.rx;
+        const v = noise(u * .07, 2, w.seed + 7291) * r.ry * .45 + (rnd() - .5) * r.ry * .4;
+        const massif = { u, v, along: 5.5 + rnd() * 4, across: 3.3 + rnd() * 2.8,
+            angle: (rnd() - .5) * 1.1, height: 650 + rnd() * 650 };
+        massifs.push(massif);
+        for (let k = 0; k < 3; k++) {
+            for (let attempt = 0; attempt < 16; attempt++) {
+                const a = rnd() * Math.PI * 2, radius = k ? .35 + rnd() * .55 : 0;
+                const u = massif.u + Math.cos(a) * massif.along * radius;
+                const v = massif.v + Math.sin(a) * massif.across * radius;
+                if (Math.hypot(u / (r.rx * .83), v / (r.ry * .8)) > 1 || nodes.some(n => Math.hypot(n.u - u, n.v - v) < 3.8)) continue;
+                nodes.push({ u, v, height: 3500 + rnd() * 2000, width: 2.1 + rnd() * 1.5 });
+                break;
+            }
+        }
+    }
+    // A minimum spanning tree connects neighbouring peaks and can merge, split
+    // and end. Cross-belt links cost slightly more, preserving the regional trend.
+    const edges = [], connected = new Set([0]), degree = nodes.map(() => 0);
+    while (connected.size < nodes.length) {
+        let best = null;
+        for (const a of connected) for (let b = 0; b < nodes.length; b++) {
+            if (connected.has(b)) continue;
+            const du = nodes[b].u - nodes[a].u, dv = nodes[b].v - nodes[a].v, cost = Math.hypot(du, dv * 1.3);
+            if (!best || cost < best.cost) best = { a, b, cost };
+        }
+        connected.add(best.b);degree[best.a]++;degree[best.b]++;
+        const a = nodes[best.a], b = nodes[best.b], du = b.u - a.u, dv = b.v - a.v, length = Math.hypot(du, dv);
+        const bend = (rnd() - .5) * Math.min(3, length * .35), points = [];
+        for (let k = 0; k <= 4; k++) {
+            const t = k / 4, offset = 4 * t * (1 - t) * bend;
+            points.push({ u: lerp(a.u, b.u, t) - dv / length * offset, v: lerp(a.v, b.v, t) + du / length * offset, t });
+        }
+        edges.push({ a, b, points, saddle: 450 + rnd() * 950 });
+    }
+    const channels = [], ca = Math.cos(r.axis), sa = Math.sin(r.axis);
+    for (let y = Math.max(1, r.center.y - Math.ceil(r.rx)); y <= Math.min(GH - 2, r.center.y + r.rx); y++)
+        for (let x = Math.max(1, r.center.x - Math.ceil(r.rx)); x <= Math.min(GW - 2, r.center.x + r.rx); x++) {
+            const i = y * GW + x, dx = x - r.center.x, dy = y - r.center.y;
+            if (catchment[i] < 20 || Math.hypot((dx * ca + dy * sa) / r.rx, (-dx * sa + dy * ca) / r.ry) > 1) continue;
+            channels.push({ x, y, width: 1.1 + clamp(Math.log(catchment[i] / 20) / 5) * .9,
+                depth: 260 + clamp(Math.log(catchment[i] / 20) / 5) * 480 });
+        }
+    r.mountainStructure = { massifs: massifs.length, summits: nodes.length, branches: degree.filter(n => n >= 3).length,
+        minSummit: Math.min(...nodes.map(n => n.height)), maxSummit: Math.max(...nodes.map(n => n.height)), minShoulder: 2.1 };
+    return (i, x, y, u, v) => {
+        const base = Math.max(260, Math.min(2100, original[i] * .34 + r.level * .38 + noise(x * .065, y * .065, w.seed + 7292) * 260));
+        let foothills = 0;
+        for (const m of massifs) {
+            const du = u - m.u, dv = v - m.v, c = Math.cos(m.angle), s = Math.sin(m.angle);
+            const distance = ((du * c + dv * s) / m.along) ** 2 + ((-du * s + dv * c) / m.across) ** 2;
+            foothills = Math.max(foothills, m.height * Math.exp(-distance * .8));
+        }
+        let height = base + foothills, influence = 0;
+        for (const edge of edges) for (let k = 1; k < edge.points.length; k++) {
+            const a = edge.points[k - 1], b = edge.points[k], du = b.u - a.u, dv = b.v - a.v;
+            const t = clamp(((u - a.u) * du + (v - a.v) * dv) / (du * du + dv * dv));
+            const along = lerp(a.t, b.t, t), width = lerp(edge.a.width, edge.b.width, along);
+            const distance = Math.hypot(u - lerp(a.u, b.u, t), v - lerp(a.v, b.v, t));
+            const shoulder = Math.pow(Math.max(0, 1 - distance / (width * 1.6)), 1.5);
+            const crest = lerp(edge.a.height, edge.b.height, along) - edge.saddle * 4 * along * (1 - along);
+            height = Math.max(height, lerp(base + foothills * .4, crest, shoulder));
+            influence = Math.max(influence, shoulder);
+        }
+        height += fbm(x * .17, y * .17, w.seed + 7293, 3) * 260 * influence;
+        let incision = 0;
+        for (const c of channels) {
+            const d2 = ((x - c.x) ** 2 + (y - c.y) ** 2) / (c.width * c.width);
+            if (d2 < 9) incision = Math.max(incision, c.depth * Math.exp(-d2));
+        }
+        return Math.max(base, height - incision);
+    };
+}
+
 /** Regional geomorphology, before the final drainage and climate solve. These are
  * prescribed geological histories, like the existing glacial inlets and uplands;
  * they change bedrock, never a rendered-only surface or the continental shoreline. */
@@ -1205,7 +1286,11 @@ function sculptLandforms(w) {
             continue;
         const level = clamp(original[c.i] * .48, 850, 1500);
         const r = make(c, 3, 'folded-ranges', ['The Thousandfold Ranges', 'The Dragonback Marches', 'The Cloudfold Mountains'][foldContinents.size], rx, ry, axis, level,
+            w.params.landformVersion >= 2 ? 'Compressed crust rises in unequal mountain blocks. Branching ridges connect staggered summits above broad valleys, narrow gorges and lower mountain passes; older drainage cuts into the uplifted terrain.' :
             'A long belt of compressed crust rises in parallel, bending ridges. Several high crests run together above deep longitudinal valleys, with lower passes between the folds.');
+        if (w.params.landformVersion >= 2) {
+            paint(r, mountainBeltV2(w, r, original, catchment));
+        } else {
         r.ridgeSpacing = 4.7;
         // Each fold shares the belt's bearing but has its own slow curvature,
         // summit rhythm and uplift. Keep the axes separated, so these remain
@@ -1230,6 +1315,7 @@ function sculptLandforms(w) {
             }
             return level + uplift + noise(u * .1, v * .075, w.seed + 7226) * 140;
         });
+        }
         foldContinents.add(continent);
         if (foldContinents.size >= 3)
             break;
