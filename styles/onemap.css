@@ -6,8 +6,25 @@ body.onemap #legacyHooks,body.onemap .explore-strip,body.onemap .city-offer{disp
 body.onemap #stage{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0;max-height:none;border:0;border-radius:0;margin:0;z-index:0;isolation:isolate;background:#9fc4c5}
 body.onemap #stage canvas,body.onemap #cityCanvas,body.onemap #lmCanvas{width:100%;height:100%;display:block;outline:none;touch-action:none}
 body.onemap #stage>.maphead,body.onemap #stage>.mapstamp,body.onemap #stage>.mapfooter,body.onemap #stage>.maptools{display:none}
-body.onemap .maploading{position:absolute;inset:0;z-index:5;background:rgba(177,202,196,.96);color:#2b4e43}
-body.onemap .maploading p{color:#4c7061;font-size:12px}
+body.onemap .maploading{position:absolute;inset:0;z-index:5;padding:88px 20px 132px;background:radial-gradient(ellipse at 50% 42%,#e6eadeef,rgba(167,191,180,.97));color:#293f35}
+body.onemap .loading-card{width:min(460px,100%);padding:34px 38px 32px;border:1px solid #fbf8eae6;border-radius:16px;background:#f5f2e8;box-shadow:0 20px 70px #284c3a1c,0 2px 6px #284c3a0a;display:flex;flex-direction:column;align-items:center;text-align:center}
+body.onemap .loading-mark{width:54px;height:54px;margin-bottom:19px;fill:none;stroke:#637b61;stroke-width:1.15;stroke-linecap:round;stroke-linejoin:round}
+body.onemap .loading-mark circle{stroke:#ad9763;stroke-width:.7}
+body.onemap .loading-eyebrow{color:#64705d;font-size:9px;font-weight:600;letter-spacing:2.1px;line-height:1.5}
+body.onemap .maploading strong{margin-top:13px;font:italic 30px/1.2 Georgia,serif;letter-spacing:-.5px}
+body.onemap .maploading p{min-height:36px;width:100%;margin:14px 0 20px;color:#5c6c5d;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+body.onemap .loading-meter{display:flex;align-items:center;gap:14px;width:100%}
+body.onemap .loading-track{height:8px;flex:1;overflow:hidden;border-radius:20px;background:#dce0d1;box-shadow:inset 0 1px 2px #2c4a3114}
+body.onemap .loading-fill{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#355a46,#829567);transform:scaleX(0);transform-origin:left;transition:transform .24s ease-out}
+body.onemap .loading-track:is([aria-valuenow="0"],[aria-valuenow="100"]) .loading-fill{transition:none}
+body.onemap #loadingPercent{min-width:35px;text-align:right;color:#45603f;font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}
+body.onemap .loading-retry{display:flex;align-items:center;gap:14px;margin-top:24px;min-height:44px;padding:10px 19px;border:1px solid #355a46;border-radius:7px;background:#355a46;color:#f5f2e8;font-size:12px;font-weight:600;cursor:pointer}
+body.onemap .loading-retry:hover{background:#284936}
+body.onemap .loading-retry:focus-visible{outline:2px solid #355a46;outline-offset:4px}
+body.onemap .maploading[data-state="error"] .loading-fill{background:#a27b59;transition:none}
+body.onemap .maploading[data-state="error"] #loadingPercent{color:#806044}
+@media(max-width:480px){body.onemap .maploading{padding:80px 16px 148px}body.onemap .loading-card{padding:28px 24px}body.onemap .maploading strong{font-size:27px}body.onemap .loading-mark{width:48px;height:48px;margin-bottom:16px}}
+@media(max-height:540px){body.onemap .maploading{padding:75px 16px 114px}body.onemap .loading-card{padding:18px 24px}body.onemap .loading-mark{display:none}body.onemap .maploading p{margin:10px 0 12px}}
 body.onemap .maplabel{color:#294b42;text-shadow:0 1px 3px #fffef0,0 0 8px #fff6da9c}
 body.onemap .maplabel small{font-size:7px;letter-spacing:1.3px}
 body.onemap .maplabel em{font:italic 15px Georgia,serif}
@@ -67,6 +84,7 @@ body.onemap #omChrome #forgeButton:hover{background:#f8e5b5;border-color:#fff0cc
 body.onemap #omChrome #forgeButton:focus-visible{outline-color:#f8e5b5}
 body.onemap .om-camera{position:absolute;right:22px;bottom:24px;padding:4px;display:flex;flex-direction:column;border-radius:10px;pointer-events:auto}
 body.onemap .om-camera button{height:30px;width:32px;padding:0;font-size:20px}
+body.onemap .om-camera button svg{display:block;width:21px;height:21px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 body.onemap .om-hint{position:absolute;left:24px;bottom:28px;max-width:270px;font-size:8px;line-height:1.85;letter-spacing:1.3px;color:#234840c9;text-shadow:0 1px 4px #e6f4e5;pointer-events:none}
 body.onemap .om-hint i{font-style:normal;padding:0 3px}
 body.onemap .om-event{position:absolute;left:50%;bottom:101px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:min(580px,calc(100vw - 40px));padding:8px 12px!important;border-radius:8px!important;font-size:10px!important;color:#d3e0d7!important;pointer-events:auto}
