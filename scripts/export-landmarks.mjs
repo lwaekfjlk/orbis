@@ -11,7 +11,7 @@ const inventory=[];
 for(const s of api.LandmarkCatalog.styles){
  const recipe=api.LandmarkCatalog.recipe(s.id,'AERETH / 01');
  const model=api.LandmarkTemplates.build(recipe),mesh=api.LandmarkTemplates.meshes(model);
- const data=api.exportGeometryGLB(mesh,{recipe,signature:model.signature,scale:'Schematic architectural units, Y-up.',license:'Original Telluric geometry, MIT license.'});
+ const data=api.exportGeometryGLB(mesh,{recipe,signature:model.signature,scale:'Schematic architectural units, Y-up.',license:'Original Orbis geometry, MIT license.'});
  await writeFile(resolve(output,s.id+'.glb'),new Uint8Array(data));
  await writeFile(resolve(output,s.id+'.recipe.json'),JSON.stringify(recipe,null,2)+'\n');
  inventory.push({id:s.id,name:s.name,type:s.type,file:s.id+'.glb',recipe:s.id+'.recipe.json',signature:model.signature,triangles:model.stats.triangles,groups:model.stats.parts,bytes:data.byteLength});

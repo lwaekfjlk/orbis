@@ -6,6 +6,7 @@
 # `merge=ours` needs a one-line local driver, installed by `npm run setup:git` and by
 # `postinstall`. Without it git falls back to a normal merge and the conflict comes
 # back; nothing breaks, it is only noisier.
+dist/orbis-onemap.html               merge=ours linguist-generated=true
 dist/telluric-onemap.html            merge=ours linguist-generated=true
 src/continuous/generated-worker.js   merge=ours linguist-generated=true
 previews/wonders/index.html         linguist-generated=true

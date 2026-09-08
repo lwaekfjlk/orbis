@@ -1,0 +1,80 @@
+{
+  "viewport": [
+    1480,
+    980
+  ],
+  "bundleSha256": "aec618dec0941c947d4837f818ec1a55de50702543f8f8c591b8fd85d4750775",
+  "errors": [],
+  "world": {
+    "seed": "Aereth-47",
+    "version": 3,
+    "year": 400
+  },
+  "redPlateau": {
+    "name": "The Vermilion Tablelands",
+    "id": 0,
+    "center": {
+      "i": 30834,
+      "x": 234,
+      "y": 102
+    },
+    "disabledControls": [
+      "trees",
+      "frontiers",
+      "settlements",
+      "roads",
+      "folk",
+      "names",
+      "legends"
+    ],
+    "camera": {
+      "target": [
+        47.478260869565226,
+        1.4607548295401065,
+        6.8435754189944085
+      ],
+      "zoom": 5.82039911308204,
+      "azimuth": -0.42,
+      "elevation": 0.88
+    }
+  },
+  "city": {
+    "id": 421,
+    "name": "Oakfield",
+    "buildings": 299,
+    "camera": {
+      "target": [
+        58.15384615384615,
+        1.3930641278210798,
+        10.128491620111735
+      ],
+      "zoom": 86.40000000000002,
+      "azimuth": 0.982793723247329,
+      "elevation": 0.72
+    }
+  },
+  "story": {
+    "town": "Oakfield",
+    "id": 421,
+    "narrator": {
+      "people": 0,
+      "peopleName": "Humans",
+      "color": "#bc9062",
+      "name": "Randath Maredis",
+      "rank": "the Unhoused",
+      "office": "grain-factor",
+      "kin": "my line, four generations back",
+      "opener": "You are not the first to stand there and look up.",
+      "seed": 555104
+    },
+    "title": "The Matter of Oakfield",
+    "visibleTeller": "Randath Maredis the Unhoused\nHUMANS · GRAIN-FACTOR OF OAKFIELD\nThe Matter of Oakfield"
+  },
+  "ruin": {
+    "id": "dragon-ruins-13123",
+    "name": "The Obsidian Aerie",
+    "x": 223,
+    "y": 43,
+    "variant": "aerie"
+  }
+}

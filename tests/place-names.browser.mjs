@@ -17,7 +17,7 @@ try{
  const context=await browser.newContext({viewport:{width:1480,height:980},reducedMotion:'reduce'}),page=await context.newPage(),errors=[],requests=[];
  page.on('pageerror',e=>errors.push(String(e)));page.on('request',r=>requests.push(r.url()));
  await context.setOffline(true);
- await page.setContent(await readFile(resolve(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});
+ await page.setContent(await readFile(resolve(root,'dist/orbis-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});
  const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading',null,{timeout:180000});
  await stable();await page.evaluate(()=>document.fonts.ready);
  const report=await page.evaluate(()=>({countries:sim.realms.filter(c=>c.alive).map(c=>({id:c.id,name:RealmNames.fullName(c),source:c.nameOrigin.source,baseId:c.namingCulture.baseId,faith:FAITHS[c.faith].name,towns:sim.provinces.filter(p=>p.owner===c.id&&p.settled).map(p=>({id:p.id,name:p.name,root:p.nameOrigin.root,baseId:p.nameOrigin.baseId,faith:p.nameOrigin.faith}))})),physical:physicalFingerprint(world),settlements:settlementFingerprint(sim),politics:politicalFingerprint(sim)}));

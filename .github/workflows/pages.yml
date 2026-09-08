@@ -23,10 +23,10 @@ jobs:
         with:
           node-version: 20
       - run: npm run build
-      # Publish only the self-contained bundle so the site stays ~1 MB.
+      # Publish the self-contained Orbis bundle.
       - run: |
           mkdir -p _site
-          cp dist/telluric-onemap.html _site/index.html
+          cp dist/orbis-onemap.html _site/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

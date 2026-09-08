@@ -1,5 +1,5 @@
 {
-  "baseCommit": "509dd73",
+  "baseCommit": "b8a7aff",
   "countryCount": 28,
   "townCount": 110,
   "namingExample": {
@@ -48,5 +48,6 @@
     "node tests/place-names.browser.mjs",
     "node tests/full-realm-labels.browser.mjs",
     "High-citadel platform/site, building-footing, street-mesh, subterranean and worker parity regression checks passed."
-  ]
+  ],
+  "build": "dist/orbis-onemap.html"
 }

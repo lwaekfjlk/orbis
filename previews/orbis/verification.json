@@ -1,0 +1,232 @@
+{
+  "passed": true,
+  "environment": "Offline production HTML in Chromium with SwiftShader",
+  "canonical": "orbis-onemap.html",
+  "legacyPath": "telluric-onemap.html",
+  "identicalCopies": true,
+  "brandFunctionalBundleSha256": "da77d8df4807dc1f13e1ea32b3b270364f48f527a93618992497ce02c9d4a57b",
+  "finalUIBundleSha256": "aec618dec0941c947d4837f818ec1a55de50702543f8f8c591b8fd85d4750775",
+  "world": {
+    "landformVersion": 3,
+    "towns": 110,
+    "realms": 28,
+    "fitSvg": true
+  },
+  "apiAliasSameObject": true,
+  "preservedCompatibility": {
+    "format": "telluric-civilization",
+    "version": 7,
+    "engine": "9.0.0",
+    "workerGlobal": "string",
+    "recipeFormat": "telluric-landmark-recipe",
+    "crs": "TELLURIC_RECTANGULAR_ATLAS"
+  },
+  "exports": [
+    {
+      "name": "orbis-Aereth-47-year-400.json",
+      "bytes": 1503955
+    },
+    {
+      "name": "orbis-Aereth-47-realms-400.png",
+      "bytes": 2865069,
+      "dimensions": [
+        2048,
+        1462
+      ]
+    },
+    {
+      "name": "orbis-Aereth-47-year-400.glb",
+      "bytes": 16262168,
+      "generator": "Orbis / geography-first atlas",
+      "meshes": 9
+    },
+    {
+      "name": "orbis-Aereth-47-chronicle-400.md",
+      "bytes": 29178,
+      "firstLine": "# Orbis \u2014 World Chronicle \u00b7 Year 400 AC"
+    }
+  ],
+  "pngWatermark": [
+    {
+      "text": "ORBIS \u2014 Continuous Atlas",
+      "x": 27,
+      "y": 1395,
+      "canvas": [
+        2048,
+        1462
+      ]
+    }
+  ],
+  "sharedGLBExporter": {
+    "generator": "Orbis Townsmith",
+    "crs": "TELLURIC_RECTANGULAR_ATLAS"
+  },
+  "fingerprints": {
+    "before": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "afterExports": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ],
+    "roundtripViaFileChooser": [
+      "73fe302b",
+      "b18c6a8",
+      "b007f61e"
+    ]
+  },
+  "legacySave": {
+    "format": "telluric-civilization",
+    "version": 6,
+    "engine": "6.0.0",
+    "landformVersion": 0,
+    "before": [
+      "440ae5d0",
+      "e6aee7b8",
+      "d8ba763d"
+    ],
+    "after": [
+      "440ae5d0",
+      "e6aee7b8",
+      "d8ba763d"
+    ]
+  },
+  "screenshots": [
+    {
+      "file": "loading-desktop.png",
+      "viewport": [
+        1480,
+        980
+      ]
+    },
+    {
+      "file": "loading-mobile.png",
+      "viewport": [
+        430,
+        900
+      ]
+    },
+    {
+      "file": "overview-desktop.png",
+      "viewport": [
+        1480,
+        980
+      ]
+    },
+    {
+      "file": "overview-mobile.png",
+      "viewport": [
+        430,
+        900
+      ]
+    }
+  ],
+  "unexpectedPageErrors": [],
+  "externalRequests": [],
+  "note": "Branding, four real export formats and current/legacy file imports passed before the upstream Fit-icon-only update; final screenshots and compatibility/API checks were rerun with that update. Loading screenshots pause a real stage at its await boundary. No QA code was added to the repository.",
+  "build": "npm run build \u2014 passed",
+  "existingTests": {
+    "command": "node --test --test-concurrency=1 tests/onemap.test.mjs tests/continuous.test.mjs",
+    "passed": 28,
+    "failed": 0
+  },
+  "menuBrowser": {
+    "passed": 75,
+    "failures": [],
+    "errors": [],
+    "viewports": [
+      "1480x980",
+      "320x844",
+      "430x900"
+    ]
+  },
+  "galleryCompatibility": {
+    "changed": [
+      "scripts/preview-architecture.mjs",
+      "scripts/preview-biomes.mjs",
+      "scripts/preview-excavations.mjs",
+      "scripts/preview-folk.mjs",
+      "scripts/preview-high-citadels.mjs",
+      "scripts/preview-politics.mjs",
+      "scripts/preview-portraits.mjs",
+      "previews/architecture/index.html",
+      "previews/biomes/index.html",
+      "previews/dragon-sites/index.html",
+      "previews/excavations/index.html",
+      "previews/folk/index.html",
+      "previews/high-citadels/index.html",
+      "previews/landscape/index.html",
+      "previews/politics/index.html",
+      "previews/portraits/index.html",
+      "previews/rivers/index.html",
+      "previews/trees/index.html",
+      "previews/wonders/index.html"
+    ],
+    "verification": [
+      {
+        "file": "previews/architecture/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/biomes/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/dragon-sites/index.html",
+        "hasEmbeddedScript": false,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/excavations/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/folk/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/high-citadels/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/landscape/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/politics/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/portraits/index.html",
+        "hasEmbeddedScript": false,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/rivers/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/trees/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      },
+      {
+        "file": "previews/wonders/index.html",
+        "hasEmbeddedScript": true,
+        "scriptUnchanged": true
+      }
+    ],
+    "onlyDisplayBrandChanges": true
+  }
+}
