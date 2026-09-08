@@ -446,7 +446,12 @@ const SacredCityKit = (() => {
   const model=k.finish();model.signature=LandmarkCatalog.signature(recipe)+'/great-sanctuary-2';model.recipe={...recipe,sacred:true,sacredVersion:1};return model;
  }
  function miniature(recipe,b){return ArtisanCityKit.meshAt(build(recipe,{lod:1}),b);}
- function siteKey(w,s,p){return p.id+'/'+TownCatalog.signature(TownCatalog.resolve(w,s,p))+'/'+(p.detailSupport??p.urbanSupport);}
+ function siteKey(w,s,p){
+  // A political reroll can move a capital while retaining this world object.
+  // That changes the surveyed parcel and can change whether a wonder fits.
+  const survey=citySurvey(s,p);
+  return p.id+'/'+TownCatalog.signature(TownCatalog.resolve(w,s,p))+'/'+(p.detailSupport??p.urbanSupport)+'/'+survey.terrainSpan+'/'+survey.width+'/'+survey.depth;
+ }
  // Only results for the same world object and current recipe can enter its cache.
  // The worker also checks this key against its cloned world/simulation snapshot.
  function hydrateSite(w,s,p,key,entry){

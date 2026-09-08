@@ -26,7 +26,7 @@ export const scripts = [
     'src/continuous/river-detail.js', 'src/continuous/city-layer.js',
     'src/render/landmark-renderer.js',
     'src/render/export-glb.js',
-    'src/civilization/realm-profile.js',
+    'src/civilization/realm-profile.js', 'src/civilization/political-land.js',
     'src/ui/world-ui.js',
     'src/ui/city-ui.js',
     'src/ui/landmark-ui.js',
