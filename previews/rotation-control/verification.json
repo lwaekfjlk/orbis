@@ -1,0 +1,36 @@
+{
+  "bundleSha256": "1b1f07813e1e13cdff203a157d4a9bce739f307ba1aababa63ee7425df89d398",
+  "viewports": [
+    {
+      "width": 1480,
+      "label": "Fit current view",
+      "title": "Fit view",
+      "svg": true,
+      "paths": 2,
+      "hidden": "true",
+      "w": 32,
+      "h": 30,
+      "svgW": 21,
+      "svgH": 21,
+      "stroke": "rgb(245, 243, 232)",
+      "hittable": true,
+      "originalActionPreserved": true
+    },
+    {
+      "width": 360,
+      "label": "Fit current view",
+      "title": "Fit view",
+      "svg": true,
+      "paths": 2,
+      "hidden": "true",
+      "w": 31,
+      "h": 29,
+      "svgW": 21,
+      "svgH": 21,
+      "stroke": "rgb(245, 243, 232)",
+      "hittable": true,
+      "originalActionPreserved": true
+    }
+  ],
+  "errors": []
+}

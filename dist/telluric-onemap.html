@@ -2505,6 +2505,7 @@ body.onemap #omChrome #forgeButton:hover{background:#f8e5b5;border-color:#fff0cc
 body.onemap #omChrome #forgeButton:focus-visible{outline-color:#f8e5b5}
 body.onemap .om-camera{position:absolute;right:22px;bottom:24px;padding:4px;display:flex;flex-direction:column;border-radius:10px;pointer-events:auto}
 body.onemap .om-camera button{height:30px;width:32px;padding:0;font-size:20px}
+body.onemap .om-camera button svg{display:block;width:21px;height:21px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 body.onemap .om-hint{position:absolute;left:24px;bottom:28px;max-width:270px;font-size:8px;line-height:1.85;letter-spacing:1.3px;color:#234840c9;text-shadow:0 1px 4px #e6f4e5;pointer-events:none}
 body.onemap .om-hint i{font-style:normal;padding:0 3px}
 body.onemap .om-event{position:absolute;left:50%;bottom:101px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:min(580px,calc(100vw - 40px));padding:8px 12px!important;border-radius:8px!important;font-size:10px!important;color:#d3e0d7!important;pointer-events:auto}
@@ -2960,7 +2961,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 <div class="om-hint" id="omHint">DRAG TO EXPLORE <i>·</i> SCROLL TO APPROACH <i>·</i> DOUBLE-CLICK A TOWN</div>
 <button class="om-event glass hidden" id="omEvent" title="Open chronicle"><span class="om-event-dot"></span><span id="omEventText"></span><b>↗</b></button>
 <footer aria-label="Simulation controls" class="om-dock glass"><div class="om-date"><small>YEAR</small><b id="omYearHost"><span id="year">400</span></b></div><div class="om-dock-divider"></div><div id="omTimeControls"><button aria-label="Play" class="primary play" id="play">▶ Play</button><button aria-label="Advance one year" id="step1">+1</button><button aria-label="Advance ten years" id="step10">+10</button><button aria-label="Advance fifty years" id="step50">+50</button><select aria-label="Playback speed" id="speed"><option value="1200">1×</option><option value="650">2×</option><option value="350">4×</option></select></div><div class="om-dock-divider"></div><div id="omRegenHost"><button aria-haspopup="dialog" id="forgeButton" title="Create a new world" aria-label="Recreate world">↻ Recreate</button></div></footer>
-<div aria-label="View controls" class="om-camera glass"><button aria-label="Zoom in" id="omZoomIn" title="Zoom in">+</button><button aria-label="Zoom out" id="omZoomOut" title="Zoom out">−</button><button aria-label="Fit current view" id="omFit" title="Fit view">↺</button></div>
+<div aria-label="View controls" class="om-camera glass"><button aria-label="Zoom in" id="omZoomIn" title="Zoom in">+</button><button aria-label="Zoom out" id="omZoomOut" title="Zoom out">−</button><button aria-label="Fit current view" id="omFit" title="Fit view"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 8a8.5 8.5 0 1 0 .2 7M20 3v5h-5"/><path d="m12 8 4 4-4 4-4-4Z"/></svg></button></div>
 <div class="om-scene-loading hidden" id="omSceneLoading" role="status"><span class="loader"></span><span>Reading this place…</span></div>
 <div aria-live="polite" class="om-sr" id="omLive"></div>
 </div>
