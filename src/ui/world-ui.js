@@ -378,7 +378,7 @@ function legend() {
     else if (currentLayer === 'settlements')
         items = [['#d3c3a7', 'Sparse hinterland'], ['#388c79', 'Productive hinterland'], ['#e4d7b5', 'Sized villages & towns — no state symbols']];
     else if (currentLayer === 'realms')
-        items = [['#b8a17a', 'Hover a country name to see its territory'], ['#465457', 'Solid line: national border'], ['#766750', 'Dashed line: unclaimed wilderness boundary'], ['#74b4c1', 'Inland lake']];
+        items = [['#b8a17a', 'Hover a country name to see its full territory'], ['#465457', 'National border'], ['#74b4c1', 'Inland lake within national territory']];
     else if (currentLayer === 'faiths')
         items = FAITHS.map(f => [f.color, f.name]);
     else if (currentLayer === 'peoples')
@@ -409,8 +409,8 @@ function legend() {
 // Candidate positions belong to the realm's land, independently of its towns.
 // Prefer the interior and leave space around settlements; screen-space fitting
 // below chooses a candidate after the actual lettering has been measured.
-function realmLabelAnchors(held) {
-    const cells = held.flatMap(p => p.cells).filter(i => world.height[i] > 0 && world.lake[i] <= 0);
+function realmLabelAnchors(held, territoryCells = null) {
+    const cells = (territoryCells || held.flatMap(p => p.cells)).filter(i => world.height[i] > 0 && world.lake[i] <= 0);
     if (!cells.length) return [];
     const owned = new Set(cells), towns = held.filter(p => p.settled);
     const cx = cells.reduce((s, i) => s + i % GW, 0) / cells.length;
@@ -466,18 +466,24 @@ function makeLabels() {
         // Realm lettering has its own land positions and no settlement marker.
         // Country names have priority; town lettering fills the remaining space.
         const realms = sim.realms.filter(c => c.alive).sort((a, b) => (b.id === selectedRealm ? 1e9 : 0) + b.strength - (a.id === selectedRealm ? 1e9 : 0) - a.strength);
+        const territory = typeof PoliticalLand !== 'undefined' ? PoliticalLand.territory(world, sim) : null, territoryCells = new Map();
+        if (territory) for (let i = 0; i < territory.owners.length; i++) {
+            const owner = territory.owners[i];
+            if (owner < 0 || world.height[i] <= 0 || world.lake[i] > 0) continue;
+            if (!territoryCells.has(owner)) territoryCells.set(owner, []);
+            territoryCells.get(owner).push(i);
+        }
         const territories = realms.map(c => {
             const held = sim.provinces.filter(p => p.owner === c.id);
-            return { c, held, area: RealmProfile.landArea(world, held) };
+            return { c, held, area: territory?.areas?.[c.id]?.land ?? RealmProfile.landArea(world, held) };
         });
         const largest = Math.max(1, ...territories.map(t => t.area));
         list = territories.map(({ c, held, area }) => {
-            const anchors = realmLabelAnchors(held), anchor = anchors[0] || sim.provinces[c.capital];
+            const anchors = realmLabelAnchors(held, territoryCells.get(c.id)), anchor = anchors[0] || sim.provinces[c.capital];
             return { x: anchor.x, y: anchor.y, i: anchor.i, name: RealmNames.fullName(c), shortName:c.name, realm: c.id, anchors, area,
                 labelSize: 14 + 10 * Math.sqrt(area / largest) };
         });
         list.push(...towns);
-        if(typeof PoliticalLand!=='undefined')list.push(...PoliticalLand.labels(world,sim));
     }
     else if (currentLayer === 'relief')
         // Continents claim their names first — they are the coarsest "where am I"

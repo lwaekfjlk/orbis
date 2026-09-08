@@ -56,7 +56,10 @@ test('in-place shore transfer and realm death refresh rendered ownership without
  r.prepareTerritory();assert.notEqual(E.PoliticalLand.territory(world,changed).key,before.key);assert.ok(cells.every(i=>r.territoryOwners[i]===8));
  const i=cells[0];assert.equal(E.PoliticalLand.status(world,changed,i).realm.id,8);assert.equal(E.PoliticalLand.status(world,changed,i).province,null);
  r.focusRealm=8;assert.notDeepEqual(r.palette(i),E.physicalPalette.call(r,i));
- changed.realms[8].alive=false;r.buildCivilization();assert.ok(cells.every(i=>r.territoryOwners[i]===-1));assert.equal(E.PoliticalLand.status(world,changed,i).kind,'water');assert.deepEqual(r.palette(i),E.physicalPalette.call(r,i));
+ changed.realms[8].alive=false;r.buildCivilization();
+ assert.ok(cells.every(i=>r.territoryOwners[i]>=0&&r.territoryOwners[i]!==8&&changed.realms[r.territoryOwners[i]]?.alive),'the surrounding living countries reclaim water after the former shore owner dies');
+ const after=E.PoliticalLand.status(world,changed,i);assert.equal(after.kind,'realm');assert.equal(after.province,null);assert.equal(after.realm.id,r.territoryOwners[i]);assert.equal(after.water,true);
+ assert.deepEqual(r.palette(i),E.physicalPalette.call(r,i),'the former selected country no longer washes the reclaimed lake');
  assert.deepEqual(world.provinceId,grid);
 });
 

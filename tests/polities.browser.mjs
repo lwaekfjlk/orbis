@@ -22,16 +22,27 @@ try {
  const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading',null,{timeout:180000});
  await page.setContent(await readFile(process.env.TELLURIC_HTML||join(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});await stable();
  await page.evaluate(()=>document.fonts.ready);await page.waitForTimeout(350);await stable();
- const measure=()=>page.evaluate(()=>({
+ const measure=()=>page.evaluate(()=>{
+  const owners=typeof PoliticalLand!=='undefined'&&PoliticalLand.territory?PoliticalLand.territory(world,sim).owners
+   :Int32Array.from(world.height,(h,i)=>h>0&&world.lake[i]<=0?(sim.provinces[world.provinceId[i]]?.owner??-1):-1);
+  let landCells=0,lakeCells=0,unclaimedCells=0,invalidClaims=0,oceanClaims=0;
+  for(let i=0;i<world.height.length;i++){
+   if(world.height[i]<=0){if(owners[i]>=0)oceanClaims++;continue;}
+   if(world.lake[i]>0)lakeCells++;else landCells++;
+   if(owners[i]<0)unclaimedCells++;
+   else if(!sim.realms[owners[i]]||sim.realms[owners[i]].alive===false)invalidClaims++;
+  }
+  return {
   realms:sim.realms.filter(c=>c.alive).length,
   majority:sim.realms.filter(c=>c.alive).map(c=>({id:c.id,name:c.name,share:Math.max(...c.people)})),
   unownedTowns:sim.provinces.filter(p=>p.settled&&p.owner<0).length,
   unownedPopulation:sim.provinces.filter(p=>p.owner<0).reduce((n,p)=>n+p.pop,0),
   population:sim.provinces.reduce((n,p)=>n+p.pop,0),
   labels:labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>{const b=e.getBoundingClientRect();return{id:f.realm,text:e.innerText,visible:e.style.opacity==='1',variant:e.dataset.labelVariant||'original',x:b.x,y:b.y,w:b.width,h:b.height};}),
-  wilderness:labelItems.filter(v=>v.feature.wilderness&&v.element.style.opacity==='1').length,
+  wilderness:labelItems.filter(v=>v.feature.wilderness).length,
+  territory:{landCells,lakeCells,unclaimedCells,invalidClaims,oceanClaims},
   fingerprints:[physicalFingerprint(world),settlementFingerprint(sim),politicalFingerprint(sim)]
- }));
+ };});
  const report={baseline,desktop:await measure()};
  console.log('Desktop',JSON.stringify(report.desktop));
  await page.screenshot({path:join(out,'world.png')});
@@ -40,8 +51,9 @@ try {
   assert.equal(report.desktop.unownedTowns,0);
   assert(report.desktop.majority.every(c=>c.share>.5));
   assert.equal(report.desktop.labels.filter(l=>l.visible).length,report.desktop.realms,'every country must have a visible name or clickable marker');
-  assert(report.desktop.wilderness>0,'remaining wilderness must be named');
-  assert.deepEqual(report.desktop.fingerprints.slice(0,2),['440ae5d0','6b6c5ea8']);
+  assert.equal(report.desktop.wilderness,0,'complete country territory must not show wilderness labels');
+  assert.deepEqual(report.desktop.territory,{landCells:23087,lakeCells:538,unclaimedCells:0,invalidClaims:0,oceanClaims:0},'all positive-height cells need a living country while ocean stays unclaimed');
+  assert.deepEqual(report.desktop.fingerprints.slice(0,2),['440ae5d0','e6aee7b8']);
   const visible=report.desktop.labels.filter(l=>l.visible);
   for(let i=0;i<visible.length;i++)for(let j=i+1;j<visible.length;j++){
    const a=visible[i],b=visible[j];assert(!(a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&a.y<b.y+b.h-1&&a.y+a.h>b.y+1),'overlapping country labels: '+a.text+' / '+b.text);
@@ -52,10 +64,41 @@ try {
   assert(await page.locator('.realm-community').isVisible());
   assert.match(await page.locator('.realm-community').innerText(),/majority community/);
   await page.screenshot({path:join(out,'realm.png')});await page.keyboard.press('Escape');await stable();
-  const wild=await page.evaluate(()=>labelItems.find(v=>v.feature.wilderness&&v.element.style.opacity==='1')?.feature.i);
-  assert(Number.isInteger(wild));await page.evaluate(i=>inspectCell(i),wild);await stable();
-  assert.match(await page.locator('#omSelectionBody').innerText(),/No realm claims|outside the territory of any realm/);
+  // Visit a real cell outside every administered province. The political card
+  // must identify its derived country, and the pointer must still hit geography.
+  const remote=await page.evaluate(()=>{
+   const owners=PoliticalLand.territory(world,sim).owners;
+   const named=new Set([...(world.features||[]),...(world.legends||[])].map(f=>f.i));
+   let i=-1;
+   for(let y=3;y<GH-3&&i<0;y++)for(let x=3;x<GW-3;x++){
+    const at=y*GW+x,id=owners[at];
+    if(world.height[at]<=0||world.lake[at]>0||world.provinceId[at]>=0||id<0||named.has(at))continue;
+    let interior=true;
+    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const j=at+dy*GW+dx;if(world.height[j]<=0||world.lake[j]>0||world.provinceId[j]>=0||owners[j]!==id)interior=false;}
+    if(interior){i=at;break;}
+   }
+   if(i<0)return null;
+   const camera={target:renderer.target.slice(),zoom:renderer.zoom,azimuth:renderer.azimuth,elevation:renderer.elevation},names=$('names').checked;
+   $('names').checked=false;positionLabels();
+   renderer.target=renderer.coord(i%GW,Math.floor(i/GW));renderer.zoom=4;renderer.azimuth=.018;renderer.elevation=1.4;renderer.request();
+   return{i,realmId:owners[i],name:RealmNames.fullName(sim.realms[owners[i]]),shortName:sim.realms[owners[i]].name,camera,names};
+  });
+  assert(remote,'default map needs a real remote territory outside the province raster');await stable();
+  const point=await page.evaluate(i=>{
+   renderer.updateCamera();const [x,y]=renderer.screen(i%GW,Math.floor(i/GW),0),hit=AtlasSpace.pickGround(renderer,x,y),rect=renderer.canvas.getBoundingClientRect();
+   return{x:x+rect.left,y:y+rect.top,hit:hit?.i};
+  },remote.i);
+  assert(Number.isInteger(point.hit));
+  assert(await page.evaluate(({i,owner})=>world.provinceId[i]<0&&PoliticalLand.owner(world,sim,i)===owner,{i:point.hit,owner:remote.realmId}),'the pointer should hit the same unadministered country territory');
+  await page.mouse.click(point.x,point.y);await stable();
+  const selected=await page.evaluate(()=>({i:selectedCell,province:world.provinceId[selectedCell],owner:PoliticalLand.owner(world,sim,selectedCell)}));
+  assert.equal(selected.province,-1);assert.equal(selected.owner,remote.realmId);
+  const remoteCard=await page.locator('#omSelectionBody').innerText();
+  assert.equal(await page.locator('#omSelectionBody > .om-eyebrow').innerText(),remote.shortName,'remote land card must name its actual country');
+  assert.doesNotMatch(remoteCard,/wilderness|unclaimed|No realm claims/i);
+  report.remote={...selected,country:remote.name};await page.screenshot({path:join(out,'remote-territory.png')});
   await page.keyboard.press('Escape');
+  await page.evaluate(({camera,names})=>{Object.assign(renderer,camera);$('names').checked=names;positionLabels();renderer.request();},remote);await stable();
   // Zooming and resizing must reveal names in the visible territory, preserve
   // hover/click access, and keep the complete realm list on a narrow display.
   await page.setViewportSize({width:430,height:900});
@@ -67,6 +110,7 @@ try {
   assert.equal(report.mobile.labels.filter(l=>l.visible).length,report.desktop.realms,'mobile loses a country instead of retaining its marker');
   assert(report.mobile.labels.filter(l=>l.visible).every(l=>l.x>=0&&l.x+l.w<=430),'mobile label measurements came from the old desktop viewport');
   assert.equal(report.mobile.labels.length,report.desktop.realms);
+  assert.equal(report.mobile.wilderness,0);assert.equal(report.mobile.territory.unclaimedCells,0);assert.equal(report.mobile.territory.invalidClaims,0);
   const mobileVisible=report.mobile.labels.filter(l=>l.visible);
   for(let i=0;i<mobileVisible.length;i++)for(let j=i+1;j<mobileVisible.length;j++){
    const a=mobileVisible[i],b=mobileVisible[j];assert(!(a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&a.y<b.y+b.h-1&&a.y+a.h>b.y+1),'overlapping mobile country labels: '+a.id+' / '+b.id);
@@ -92,6 +136,7 @@ try {
    assert.equal(JSON.stringify(restored),original,'loading an old save rewrote its borders, people or history');
    report.legacy=await measure();
    assert.equal(report.legacy.realms,saved.realms.filter(c=>c.alive).length);
+   assert.equal(report.legacy.wilderness,0);assert.equal(report.legacy.territory.unclaimedCells,0);assert.equal(report.legacy.territory.invalidClaims,0);assert.equal(report.legacy.territory.oceanClaims,0);
    assert.equal(report.legacy.labels.filter(l=>l.visible).length,report.legacy.realms,'an old save still loses its country labels');
    await page.screenshot({path:join(out,'legacy.png')});
   }

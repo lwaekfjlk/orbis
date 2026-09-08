@@ -49,6 +49,14 @@ try {
   assert.deepEqual(clipped,[],'a visible city name is clipped');
  };
  const report={desktop:await measure()};complete(report.desktop);
+ report.territory=await page.evaluate(()=>{
+  const t=PoliticalLand.territory(world,sim);let dry=0,lakes=0,gaps=0,oceanClaims=0,remote=0;
+  for(let i=0;i<GN;i++)if(world.height[i]>0){if(world.lake[i]>0)lakes++;else dry++;if(!sim.realms[t.owners[i]]?.alive)gaps++;if(world.lake[i]<=0&&!(sim.realms[sim.provinces[world.provinceId[i]]?.owner]?.alive))remote++;}else if(t.owners[i]>=0)oceanClaims++;
+  const areaShare=sim.realms.filter(c=>c.alive).reduce((v,c)=>v+RealmProfile.create(world,sim,c.id).facts.areaShare,0);
+  return{dry,lakes,gaps,oceanClaims,remote,areaShare,wilderness:document.querySelectorAll('.wildernessLabel').length};
+ });
+ assert.equal(report.territory.gaps,0);assert.equal(report.territory.oceanClaims,0);assert.equal(report.territory.wilderness,0);
+ assert(report.territory.remote>6000);assert(Math.abs(report.territory.areaShare-1)<1e-9);
  assert.equal(report.desktop.labels.filter(l=>l.town&&l.visible).length,104);
  assert.equal(report.desktop.labels.filter(l=>!l.town&&l.visible).length,22);
  assert.deepEqual(report.desktop.overlaps,[],'desktop labels must not overlap');
@@ -90,9 +98,30 @@ try {
   await stable();const m=await measure();complete(m);
   assert(m.labels.some(l=>l.town&&l.visible),'local view lost all city labels');report.local.push({zoom,...m});
  }
+ report.highCities=[];
+ await page.locator('#omHome').click();await stable();
+ await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill('');
+ const highIds=await page.locator('[data-high-city]').evaluateAll(nodes=>nodes.map(n=>+n.dataset.highCity));
+ assert.equal(highIds.length,2,'the default world must expose both real high cities without a query');
+ await page.screenshot({path:join(out,'high-city-search.png')});
+ for(const id of highIds){
+  if(!(await page.locator('#omSearchPanel').isVisible()))await page.locator('#omSearchToggle').click();
+  await page.locator('#omSearch').fill('');await page.locator(`[data-high-city="${id}"]`).click();
+  await page.waitForFunction(id=>window.__continuousFocus===id&&window.__cityReady&&!window.__cityError,id,{timeout:180000});await stable();
+  const model=await page.evaluate(id=>{const m=ContinuousMap.layer.models.get(id),p=sim.provinces[id];return{id,name:p.name,kind:m.city.highCitadel.kind,elevation:m.city.highCitadel.elevation,buildings:m.city.buildings.length,roles:m.city.buildings.map(b=>b.highRole),zoom:renderer.zoom};},id);
+  assert(model.elevation>=3500&&model.buildings>=10&&model.buildings<=18);assert(model.roles.every(Boolean));assert(model.zoom>60);
+  await page.screenshot({path:join(out,model.kind+'-city.png')});report.highCities.push(model);
+ }
+ for(const [q,kind]of[['龙王城','dragon'],['圣城','holy']]){
+  await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill(q);
+  assert.equal(await page.locator('[data-search-hit]').count(),1,'each Chinese type finds one real city');
+  await page.locator('[data-search-hit]').click();await stable();
+  await page.waitForFunction(kind=>sim.provinces[window.__continuousFocus]?.highCitadel?.kind===kind,kind);
+  assert.equal(await page.locator('#omSearchPanel').isVisible(),false,'a primary result enters the model and closes search');
+ }
  assert.deepEqual(errors,[]);
  await writeFile(join(out,'report.json'),JSON.stringify(report,null,2)+'\n');
- console.log(JSON.stringify({desktop:{towns:104,realms:22,overlaps:report.desktop.overlaps},mobile:{towns:104,realms:22,overlaps:report.mobile.overlaps},layers:Object.keys(report.layers),localZooms:report.local.map(v=>v.zoom),lake,errors,out},null,2));
+ console.log(JSON.stringify({desktop:{towns:104,realms:22,overlaps:report.desktop.overlaps},mobile:{towns:104,realms:22,overlaps:report.mobile.overlaps},territory:report.territory,highCities:report.highCities,layers:Object.keys(report.layers),localZooms:report.local.map(v=>v.zoom),lake,errors,out},null,2));
 }finally{
  if(browser)await browser.close();
  try{process.kill(child.pid,'SIGTERM');}catch{}

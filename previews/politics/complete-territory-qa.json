@@ -1,0 +1,75 @@
+{
+  "territory": {
+    "dry": 23087,
+    "lakes": 538,
+    "gaps": 0,
+    "oceanClaims": 0,
+    "remote": 6286,
+    "areaShare": 0.9999999999999998,
+    "wilderness": 0
+  },
+  "desktop": {
+    "towns": 104,
+    "realms": 22,
+    "overlaps": [],
+    "covered": []
+  },
+  "mobile": {
+    "towns": 104,
+    "realms": 22,
+    "overlaps": [],
+    "covered": []
+  },
+  "highCities": [
+    {
+      "id": 419,
+      "name": "Granitewatch · Dragon King's Aerie",
+      "kind": "dragon",
+      "elevation": 4096.625,
+      "buildings": 13,
+      "roles": [
+        "keep",
+        "watch",
+        "watch",
+        "roost",
+        "roost",
+        "lodge",
+        "lodge",
+        "forge",
+        "store",
+        "lodge",
+        "lodge",
+        "store",
+        "gate"
+      ],
+      "zoom": 369.982469982605
+    },
+    {
+      "id": 455,
+      "name": "Blackley · High Sanctuary",
+      "kind": "holy",
+      "elevation": 3938.215576171875,
+      "buildings": 12,
+      "roles": [
+        "sanctuary",
+        "bell",
+        "bell",
+        "chapel",
+        "chapel",
+        "scriptorium",
+        "hospice",
+        "hospice",
+        "scriptorium",
+        "hospice",
+        "hospice",
+        "gate"
+      ],
+      "zoom": 348.8716553573705
+    }
+  ],
+  "localZooms": [
+    16,
+    60,
+    150
+  ]
+}
