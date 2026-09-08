@@ -7,14 +7,17 @@ body.continuous-map[data-detail=local] .maplabel.townLabel em{font-size:10.5px}
 .cm-pin:hover{background:#284d3eee}.cm-building-pin{font-size:11px;background:#ece7d3e6;color:#2e4637;border-color:#596d5280}
 #cmLabels .cm-town-pin{font:italic 11px/1.3 var(--town-lettering);letter-spacing:.1px;padding:4px 8px}
 #cmStatus{position:fixed;bottom:109px;left:50%;transform:translateX(-50%);color:#ecf0d9;background:#193b30bb;border:1px solid #d7e4c630;padding:6px 12px;border-radius:5px;font:10px/1.4 system-ui,sans-serif;pointer-events:none;z-index:12;white-space:nowrap;backdrop-filter:blur(5px)}
-.cm-context{position:fixed;right:26px;top:96px;z-index:16;padding:9px 13px;color:#e8edd8;border:1px solid #ffffff40;font:11px system-ui;display:none}
+/* Match the chrome selector so its transparent button reset cannot erase Back. */
+body.onemap #omChrome .cm-context{position:fixed;left:22px;top:94px;z-index:16;display:none;align-items:center;gap:9px;min-height:44px;padding:10px 16px;border:1px solid #fbf5dbb3;border-radius:9px;background:#f1ebd5;color:#263d34;box-shadow:0 3px 14px #142e3438;font:650 13px/1.35 system-ui,sans-serif;white-space:nowrap}
+body.onemap #omChrome .cm-context:hover{background:#fff8e3;border-color:#fff8e3;box-shadow:0 4px 18px #142e3445}
+body.onemap #omChrome .cm-context:focus-visible{outline-color:#fff8e3;outline-offset:4px}
+.cm-context svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .cm-building-list{display:grid;gap:6px;margin:8px 0 20px}.cm-building-list button{text-align:left;padding:10px 12px;font-size:11px}
 body.continuous-map #omBack{display:none!important}
-@media(max-width:700px){#cmStatus{max-width:90vw;white-space:normal;text-align:center;bottom:136px}.cm-context{right:12px;top:116px}.cm-pin{font-size:10px}}
+@media(max-width:700px){#cmStatus{max-width:90vw;white-space:normal;text-align:center;bottom:136px}body.onemap #omChrome .cm-context{left:12px;top:77px}.cm-pin{font-size:10px}}
 body.continuous-map #omDrawer{z-index:30}
 body.continuous-map .om-popover{z-index:35}
 body.continuous-map #omSelection{z-index:18}
-body.continuous-map .cm-context{z-index:2}
 
 /* THE SAGA PANEL. Reads as a page from a chronicle, not as another metrics block:
    a running column of chapters, each with the model fact it was built from beneath it. */

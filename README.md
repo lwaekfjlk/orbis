@@ -19,9 +19,9 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 | Move or rotate the view | Drag to pan; **Shift + drag** or right-drag to orbit |
 | Find a place | Open **Search** or press **/**; choose **Zoom ↗** to approach a town |
 | Inspect a country or building | Click its name, marker or building; hover a country name to highlight its borders |
-| Return to the world | Click the top-left **TELLURIC** logo or press **H**; **Wider setting** pulls back from a town |
+| Return to the world | Use **← Back to world** after zooming in, click the **TELLURIC** logo, or press **H**; **Wider setting** pulls back from a town |
 
-Use **Play** or the year-step buttons to advance history. **Regenerate** creates a new world from a seed and your settings. The **⋯** menu includes save/load, the chronicle and exports; save your world before replacing it.
+Use **Play** or the year-step buttons to advance history. **Recreate** creates a new world from a seed and your settings. The **⋯** menu includes save/load, the chronicle and exports; save your world before replacing it.
 
 ## A world with distinct landforms
 
@@ -31,7 +31,7 @@ Use **Play** or the year-step buttons to advance history. **Regenerate** creates
 
 Explore red-rock mesas, basalt calderas, irregular mountain massifs, branching ridges and limestone towers. Their slopes change the rivers, climate and places people can settle. Plate compression shapes the uplands; seasonal winds carry ocean heat and moisture inland. Wet slopes retain forests and meadows, dry highlands keep their earth colours, and exposed cliffs and ice have distinct surfaces.
 
-Search for a named landform to find it. Regenerate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md) and [tectonics, climate and colour comparisons](docs/TECTONICS_AND_LANDCOVER.md).
+Search for a named landform to find it. Recreate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md) and [tectonics, climate and colour comparisons](docs/TECTONICS_AND_LANDCOVER.md).
 
 ## Cities belong to the landscape
 
