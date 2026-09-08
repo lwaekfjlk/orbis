@@ -243,7 +243,21 @@ test('the ticker stands the crowd still where a frame is expensive',()=>{
  // Standing still is not the same as being absent: the crowd is still built, and it is
  // still re-culled when the camera settles — without a second redraw per pan step.
  assert(/function restFolk\(\)\{[^]*?setTimeout\([^]*?renderer\.buildFolk\(clock\)/.test(src),'a static crowd is rebuilt once the camera settles');
- assert(/if\(sig!==lastCamera\)\{[^}]*restFolk\(\)/.test(src),'a camera move schedules that rebuild');
+ // Exercise the actual camera callback: either a changed-state branch or an
+ // unchanged-state early return must schedule exactly one static recull per view.
+ const start=src.indexOf(' function onCamera(){'),end=src.indexOf('\n function setMoving(',start);
+ assert(start>=0&&end>start,'the camera callback is available for the behavior check');
+ const r={zoom:1,target:[0,0,0],azimuth:0,elevation:1,width:1200,height:800,options:{},software:true};
+ let reculls=0;
+ const onCamera=Function('renderer','AtlasSpace','restFolk',`
+  let lastCamera='',shadowCenter='world',enabled=true,world={},busy=false,walking=false;
+  const window={},layer={models:new Map(),cameraChanged(){}},ruins=layer;
+  const E=()=>({checked:true}),startFolk=()=>{},reducedMotion=()=>false,positionPins=()=>{},updateTitle=()=>{};
+  ${src.slice(start,end)}
+  return onCamera;
+ `)(r,E.AtlasSpace,()=>reculls++);
+ onCamera();onCamera();assert.equal(reculls,1,'stationary draws do not reschedule the static crowd');
+ r.target[0]+=1;onCamera();assert.equal(reculls,2,'a changed camera schedules the next static recull');
  assert(/renderer\.buildFolk\?\.\(clock\)/.test(src),'a newly streamed town is populated immediately');
 });
 

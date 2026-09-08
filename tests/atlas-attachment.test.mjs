@@ -22,14 +22,29 @@ before(async () => {
 function renderer(software = false) {
     const r = Object.create((software ? E.SoftwareAtlasRenderer : E.AtlasRenderer).prototype);
     const uploads = [];
+    let bound = null;
     Object.assign(r, {
         software, sim, meshes: {}, relief: 1, layer: 'realms', width: 1440, height: 900,
         zoom: 1, azimuth: .018, elevation: 1.19, target: [0, 0, 0],
         options: { trees: true, rivers: true, roads: true, folk: true, settlements: true, frontiers: true, legends: true },
         focusRealm: 0, request() {},
         gl: {
-            createBuffer: () => ({}), createVertexArray: () => ({}), bindVertexArray() {}, bindBuffer() {},
-            bufferData(target, data) { uploads.push(hash(data)); }, enableVertexAttribArray() {}, vertexAttribPointer() {},
+            ARRAY_BUFFER: 34962, STATIC_DRAW: 35044, DYNAMIC_DRAW: 35048, FLOAT: 5126,
+            createBuffer: () => ({}), createVertexArray: () => ({}), bindVertexArray() {},
+            bindBuffer(target, buffer) { assert.equal(target, this.ARRAY_BUFFER); bound = buffer; },
+            bufferData(target, data, usage) {
+                assert.equal(target, this.ARRAY_BUFFER); assert(bound);
+                bound.bytes = typeof data === 'number' ? Buffer.alloc(data) : Buffer.from(bytes(data));
+                uploads.push(typeof data === 'number' ? ['allocate', data, usage] : ['data', data.byteLength, usage, hash(bound.bytes)]);
+            },
+            bufferSubData(target, offset, data) {
+                assert.equal(target, this.ARRAY_BUFFER); assert(bound?.bytes);
+                const payload = bytes(data);
+                assert(offset >= 0 && offset + payload.length <= bound.bytes.length, 'dynamic writes fit the allocated GPU capacity');
+                payload.copy(bound.bytes, offset);
+                uploads.push(['subdata', offset, payload.length, hash(payload)]);
+            },
+            enableVertexAttribArray() {}, vertexAttribPointer() {},
             deleteBuffer() {}, deleteVertexArray() {}
         }
     });
@@ -41,6 +56,14 @@ function renderer(software = false) {
     layer.bind(world, sim);
     return { r, layer, uploads };
 }
+function gpuBytesEqual(r) {
+    if (r.software) return;
+    for (const [name, mesh] of Object.entries(r.meshes)) {
+        const uploaded = mesh.buffer?.bytes || Buffer.alloc(0);
+        assert(uploaded.length >= mesh.vertices.byteLength, `${name}: GPU capacity covers the current mesh`);
+        assert.deepEqual(uploaded.subarray(0, mesh.vertices.byteLength), bytes(mesh.vertices), `${name}: GPU storage contains the current vertex bytes`);
+    }
+}
 function meshesEqual(a, b) {
     assert.deepEqual(Object.keys(a.meshes), Object.keys(b.meshes), 'mesh upload order');
     for (const name of Object.keys(a.meshes)) {
@@ -49,6 +72,7 @@ function meshesEqual(a, b) {
         assert.deepEqual(bytes(x.vertices), bytes(y.vertices), `${name} Float32 bytes`);
         if (x.styles) assert.deepEqual(x.styles, y.styles, `${name} software lighting`);
     }
+    gpuBytesEqual(a); gpuBytesEqual(b);
 }
 function frontierScale(r) {
     const groups = new Map(), data = r.meshes.frontierPosts.vertices, unit = E.AtlasSpace.TOWN_UNIT;
@@ -79,7 +103,7 @@ for (const software of [false, true]) {
         assert(yields > 50, 'initial attachment must yield within terrain and civilization work');
         assert(phases.size >= 15, 'individual overlay uploads must give the browser a chance to respond');
         meshesEqual(sync.r, async.r);
-        assert.deepEqual(sync.uploads, async.uploads, 'actual WebGL bufferData payloads and order');
+        assert.deepEqual(sync.uploads, async.uploads, 'actual WebGL allocations, writes and payload order');
         frontierScale(async.r);
         for (const [name, expected] of Object.entries(baseline.overview)) {
             if (name === 'caravans') continue; // Previously allocated but invisible at zoom 1.
@@ -105,6 +129,7 @@ for (const software of [false, true]) {
             r.zoom = 20; r.target = E.AtlasSpace.point(world, p.x, p.y); r.buildFolk(0);
             assert.equal(r.meshes.caravans.count, baseline.regional.count);
             assert.equal(hash(r.meshes.caravans.vertices), baseline.regional.caravans, 'entering the town band restores original traffic');
+            gpuBytesEqual(r);
             assert.equal(r.visible('caravans'), true);
             r.layer = 'diplomacy'; r.buildFolk(0);
             assert.equal(r.visible('caravans'), true);
@@ -118,6 +143,7 @@ for (const software of [false, true]) {
             assert.equal(r.meshes.caravans.count, 0);
             r.options.folk = true; r.buildFolk(0);
             assert.equal(hash(r.meshes.caravans.vertices), baseline.regional.caravans);
+            gpuBytesEqual(r);
         }
         // Reattaching the same seed clears meshes but must not let the roads cache
         // skip their replacement, even if an earlier asynchronous attempt stopped.
@@ -126,6 +152,7 @@ for (const software of [false, true]) {
         await async.r.setWorldAsync(world, yieldFn);
         await async.r.buildCivilizationAsync(yieldFn);
         assert.equal(hash(async.r.meshes.roads.vertices), oldRoads);
+        gpuBytesEqual(async.r);
     });
 }
 

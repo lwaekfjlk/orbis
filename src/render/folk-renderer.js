@@ -4,9 +4,8 @@
  * Two meshes are produced: `caravans`, map-symbol traffic on the regional view, and
  * `folk`, true-scale residents and travellers once a town's architecture has resolved.
  *
- * The figure mesh is uploaded with shadow=false and restores `dirtyShadow` afterwards.
- * Both AtlasRenderer.upload and the software rasterizer set that flag unconditionally,
- * and without this a walking crowd would re-render the shadow map every frame.
+ * Figures use a reusable GPU allocation, while software keeps the same vertex data.
+ * They do not cast shadows or invalidate the cached shadow map as the crowd walks.
  */
 (() => {
     // A figure is 1.5 town-plan units tall. Buildings in the same plan are 1.5 to 4, so a
@@ -117,8 +116,8 @@
         }
         // Keep the shadow map: a walking crowd must not force a shadow pass every frame.
         const wasDirty = this.dirtyShadow;
-        this.upload('folk', folk, false, .10);
-        this.upload('caravans', caravans, false, .10);
+        this.upload('folk', folk, false, .10, 1, true);
+        this.upload('caravans', caravans, false, .10, 1, true);
         this.dirtyShadow = wasDirty;
         this.folkStats = { residents, travelling, budget, fullFigures: detail.full, simpleFigures: detail.simple, triangles: (folk.data.length + caravans.data.length) / 27, clock: +t.toFixed(2) };
     };

@@ -218,7 +218,8 @@ try {
         await page.locator(scroll).evaluate(element => { element.scrollTop = 0; });
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const file = `${kind}-${size}.png`;
-        await page.screenshot({ path: join(out, file) });
+        // SwiftShader readback can outlast the default 30s under shared CPU load.
+        await page.screenshot({ path: join(out, file), timeout: 120000 });
         report.screenshots.push({ kind, viewport: page.viewportSize(), file });
         console.log('ORBIS place cards: screenshot ' + join(out, file));
     }
