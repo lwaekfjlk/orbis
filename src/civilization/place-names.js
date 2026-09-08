@@ -74,7 +74,8 @@ const PlaceNames = (() => {
         if (p.altitude > 1100 || p.highCitadel) return 'upland';
         if (p.forest > .40) return 'forest';
         if (p.wet > .28) return 'marsh';
-        if (p.aridity > .58) return 'arid';
+        // The saved field is precipitation / water demand: low values are dry.
+        if (Number.isFinite(p.aridity) && p.aridity < .55) return 'arid';
         return 'common';
     }
     // A bijective syllable counter provides unbounded, pronounceable collision

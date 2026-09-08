@@ -38,6 +38,9 @@ test('default platform rules support one dragon and one holy city within their o
   assert(!old.settled&&old.urbanPop===0&&old.urbanSupport===0);assert.equal(p.owner,old.owner);assert(sim.realms[p.owner].alive);
   assert.equal(h.elevation,w.height[p.i]);assert(h.elevation>=3500);assert(E.HighCitadels.site(w,p));assert(E.HighCitadelPlan.viable(w,sim,p,h.kind));assert(w.human.waterCapacity[p.i]>=h.support);
   assert(p.urbanPop>=650&&p.urbanPop<=1100&&!p.city);assert.equal(h.sourceCell,p.i);assert.equal(p.highCitadel.originalName,old.name);
+  const culture=sim.realms[p.owner].namingCulture;
+  assert.equal(p.nameOrigin.baseId,culture.baseId);assert.equal(p.nameOrigin.realmId,p.owner);
+  assert.equal(p.nameOrigin.generatedName,p.name);assert(p.name.includes(culture.root),'the founded high city retains its country naming family');
  }
 });
 test('rural population and existing capacity fund the platforms exactly once',()=>{

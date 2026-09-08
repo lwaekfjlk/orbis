@@ -88,6 +88,22 @@ test('Dispersed urban population does not make a district use the town naming pa
     }
 });
 
+test('Dry-country naming follows low rainfall relative to demand, not humid conditions', () => {
+    const baseline = fixture();
+    baseline.realms[0].faith = 3; // Exercise terrain wording rather than a saint dedication.
+    const dry = plain(baseline), humid = plain(baseline);
+    dry.provinces[3].aridity = .1;
+    humid.provinces[3].aridity = 2;
+    // Every other geographical, cultural and seed input is identical.
+    for (const sim of [dry, humid]) E.PlaceNames.assign(sim, sim.provinces[3]);
+    const a = dry.provinces[3], b = humid.provinces[3];
+    assert.equal(a.nameOrigin.terrain, 'arid');
+    assert.notEqual(b.nameOrigin.terrain, 'arid');
+    assert.match(E.PlaceNames.describe(a), /dry country/);
+    assert.doesNotMatch(E.PlaceNames.describe(b), /dry country/);
+    assertLinked(dry, a); assertLinked(humid, b);
+});
+
 test('A country introduction cites a few current towns from its own naming family', () => {
     const sim = fixture(); E.PlaceNames.generate(sim);
     const realm = sim.realms[0], towns = sim.provinces;
@@ -159,12 +175,22 @@ const liveWorld = async () => {
     return { world, sim: plain(initial) };
 };
 
-test('Real founding includes linked ordinary towns and the later high mountain cities', async () => {
+test('Every settled town in the current default world follows its country naming family', async () => {
     const { sim } = await liveWorld();
-    for (const p of sim.provinces.filter(p => p.owner >= 0 && p.settled)) assertLinked(sim, p);
+    const towns = sim.provinces.filter(p => p.owner >= 0 && p.settled);
+    assert(towns.length > 0, 'exercise the inhabited application default');
+    for (const p of towns) assertLinked(sim, p);
+});
+
+test('The version 3 rift gives both later high mountain cities linked names before recording their founding', async () => {
+    // High cities require feasible platforms; the current Aereth default has
+    // none. Meridian's rift exercises both real post-polity founding paths.
+    const world = await E.generateWorld({ ...fantasyDefaults, landformVersion: 3, seed: 'Meridian-21', form: 'rift' });
+    const sim = E.createCivilization(world, { realms: 18, historySeed: 'First-dawn' });
     const high = sim.provinces.filter(p => p.highCitadel);
     assert.equal(high.length, 2, 'exercise both post-polity high city founding paths');
     for (const p of high) {
+        assertLinked(sim, p);
         assert(!p.name.includes(' · '), 'the city name is distinct from its type label');
         assert(p.highCitadel.originalName, 'the original district name remains in historical metadata');
         assert(sim.events.some(e => e.details?.province === p.id && e.details.highCitadel && e.text.includes(p.name)),
