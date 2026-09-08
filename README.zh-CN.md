@@ -4,9 +4,9 @@
 
 **[在线体验](https://haofeiyu.me/telluric/)** · [English](README.md)
 
-![世界全景：国家名称、聚落和完整疆域](previews/fantasy-landforms/after/world.png)
+![世界全景：国家名称、聚落和标示清晰的荒野](previews/fantasy-landforms/after/world.png)
 
-*默认世界 Aereth-47。点击国名可查看疆域、人口与历史；完整疆域包含内陆湖泊与偏远土地。*
+*默认世界 Aereth-47。点击国名可查看疆域、人口与历史；国内湖泊纳入周边国家，开放荒野保留明确标示。*
 
 ## 开始探索
 
@@ -71,7 +71,7 @@ npm test
 
 ## 深入了解
 
-- [国家与人口](docs/POLITIES.md) · [完整疆域](docs/LAKE_TERRITORY_AND_LABELS.md) · [神话国名](docs/REALM_NAMES.md)
+- [国家与人口](docs/POLITIES.md) · [国界与荒野](docs/LAKE_TERRITORY_AND_LABELS.md) · [神话国名](docs/REALM_NAMES.md)
 - [城市与地形](docs/CITY_COHERENCE.md) · [气候与景观](docs/BIOME_LANDSCAPES.md)
 - [居民故事](docs/CITY_SAGAS.md) · [建筑图集与 GLB 导出](docs/WONDER_REFINEMENT.md)
 - [加载性能](docs/MAP_LOADING.md) · [地图架构](docs/CONTINUOUS_ARCHITECTURE.md)

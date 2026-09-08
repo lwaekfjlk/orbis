@@ -28,7 +28,7 @@ try {
   const labels=labelItems.filter(v=>v.feature.town||v.feature.realm!=null).map(({element:e,feature:f})=>{
    const b=e.getBoundingClientRect(),q=renderer.screen(f.x,f.y,f.town?0:.6);
    return{name:f.name,town:!!f.town,realm:f.realm,visible:e.style.opacity==='1'&&e.checkVisibility({checkVisibilityCSS:true}),onScreen:q[0]>=0&&q[0]<=renderer.width&&q[1]>=0&&q[1]<=renderer.height,
-    text:f.town?e.querySelector('em').textContent:e.innerText,font:f.town?parseFloat(getComputedStyle(e.querySelector('em')).fontSize):null,x:b.x,y:b.y,w:b.width,h:b.height};
+    text:f.town?e.querySelector('em').textContent:e.innerText,font:parseFloat(getComputedStyle(e.querySelector('em')).fontSize),family:getComputedStyle(e.querySelector('em')).fontFamily,fontStyle:getComputedStyle(e.querySelector('em')).fontStyle,weight:getComputedStyle(e.querySelector('em')).fontWeight,x:b.x,y:b.y,w:b.width,h:b.height};
   });
   const visible=labels.filter(l=>l.visible),overlaps=[];
   for(let i=0;i<visible.length;i++)for(let j=i+1;j<visible.length;j++){
@@ -47,16 +47,27 @@ try {
   assert(towns.every(l=>l.text===l.name),'city names must remain complete');
   const clipped=towns.filter(l=>l.visible&&!(l.x>=0&&l.x+l.w<=m.width&&l.y>=0&&l.y+l.h<=m.height));
   assert.deepEqual(clipped,[],'a visible city name is clipped');
+  assert(m.labels.every(l=>l.family.includes('IM Fell English')&&l.fontStyle==='italic'&&l.weight==='400'),'city and country names must use the actual antique italic face');
  };
  const report={desktop:await measure()};complete(report.desktop);
  report.territory=await page.evaluate(()=>{
-  const t=PoliticalLand.territory(world,sim);let dry=0,lakes=0,gaps=0,oceanClaims=0,remote=0;
-  for(let i=0;i<GN;i++)if(world.height[i]>0){if(world.lake[i]>0)lakes++;else dry++;if(!sim.realms[t.owners[i]]?.alive)gaps++;if(world.lake[i]<=0&&!(sim.realms[sim.provinces[world.provinceId[i]]?.owner]?.alive))remote++;}else if(t.owners[i]>=0)oceanClaims++;
+  const t=PoliticalLand.territory(world,sim);let dry=0,lakes=0,wildness=0,oceanClaims=0,enclosedSea=0,holes=0;
+  for(let i=0;i<GN;i++)if(world.height[i]>0){if(world.lake[i]>0)lakes++;else dry++;if(t.owners[i]<0)wildness++;}else if(t.owners[i]>=0){if(t.inlandWater[i])enclosedSea++;else oceanClaims++;}
+  for(const c of sim.realms.filter(c=>c.alive)){
+   const seen=new Uint8Array(GN);
+   for(let start=0;start<GN;start++)if(t.owners[start]!==c.id&&!seen[start]){
+    const q=[start];seen[start]=1;let edge=false,foreign=false;
+    for(let k=0;k<q.length;k++){const i=q[k],x=i%GW,y=Math.floor(i/GW);edge ||= x===0||x===GW-1||y===0||y===GH-1;foreign ||= t.owners[i]>=0;
+     for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy,j=yy*GW+xx;if(xx<0||xx>=GW||yy<0||yy>=GH||seen[j]||t.owners[j]===c.id)continue;seen[j]=1;q.push(j);}}
+    if(!edge&&!foreign)holes++;
+   }
+  }
   const areaShare=sim.realms.filter(c=>c.alive).reduce((v,c)=>v+RealmProfile.create(world,sim,c.id).facts.areaShare,0);
-  return{dry,lakes,gaps,oceanClaims,remote,areaShare,wilderness:document.querySelectorAll('.wildernessLabel').length};
+  return{dry,lakes,wildness,oceanClaims,enclosedSea,holes,areaShare,wildLabels:labelItems.filter(v=>v.feature.wildness).map(v=>({text:v.element.innerText,name:v.feature.name,visible:v.element.style.opacity==='1'}))};
  });
- assert.equal(report.territory.gaps,0);assert.equal(report.territory.oceanClaims,0);assert.equal(report.territory.wilderness,0);
- assert(report.territory.remote>6000);assert(Math.abs(report.territory.areaShare-1)<1e-9);
+ assert.equal(report.territory.holes,0,'no country may retain an empty domestic ring');assert.equal(report.territory.oceanClaims,0);
+ assert(report.territory.enclosedSea>0);assert(report.territory.wildness>5000);assert(report.territory.areaShare>0&&report.territory.areaShare<1);
+ assert(report.territory.wildLabels.some(l=>l.visible));assert(report.territory.wildLabels.every(l=>l.name==='wildness'&&l.text==='wildness'));
  assert.equal(report.desktop.labels.filter(l=>l.town&&l.visible).length,104);
  assert.equal(report.desktop.labels.filter(l=>!l.town&&l.visible).length,22);
  assert.deepEqual(report.desktop.overlaps,[],'desktop labels must not overlap');
@@ -77,6 +88,24 @@ try {
  assert.equal(lake.selectedCache,lake.owner,'selecting a country without hover must refresh its lake wash');
  assert((await page.locator('#omSelection').innerText()).includes(lake.shortName),'the lake card must name its country');
  assert((await page.locator('#inspector').innerText()).includes('Territory of '+lake.realm),'lake geography dossier must describe sovereignty');
+ await page.keyboard.press('Escape');await stable();
+ const wildDistrict=await page.evaluate(()=>{
+  const t=PoliticalLand.territory(world,sim),named=new Set([...world.features,...(world.legends||[])].map(f=>f.i)),i=Array.from(world.provinceId).findIndex((pid,i)=>world.height[i]>0&&world.lake[i]<=0&&t.owners[i]<0&&pid>=0&&sim.provinces[pid].pop>0&&!named.has(i));
+  inspectCell(i);return{i,owner:t.owners[i],population:sim.provinces[world.provinceId[i]].pop};
+ });await stable();
+ assert(wildDistrict.i>=0&&wildDistrict.population>0);assert.equal(await page.locator('#omSelectionBody > .om-eyebrow').innerText(),'wildness');
+ assert.equal(await page.locator('#inspector .breakdown .overline span').innerText(),'wildness');
+ assert.equal(await page.locator('#inspector .breakdown .overline span').evaluate(e=>getComputedStyle(e).textTransform),'none');
+ await page.keyboard.press('Escape');await stable();
+ report.inlandSea=await page.evaluate(()=>{
+  const i=15995,t=PoliticalLand.territory(world,sim),realm=sim.realms[t.owners[i]],s=PoliticalLand.status(world,sim,i);
+  renderer.setHoveredRealm(realm.id);const colored=renderer.palette(i);renderer.setHoveredRealm(null);const plain=renderer.palette(i);
+  inspectCell(i);return{i,height:world.height[i],inland:t.inlandWater[i],realm:realm.name,fullName:s.label,colored,plain};
+ });await stable();
+ assert(report.inlandSea.height<=0&&report.inlandSea.inland);assert.notDeepEqual(report.inlandSea.colored,report.inlandSea.plain);
+ assert.equal(await page.locator('#omSelectionBody > .om-eyebrow').innerText(),report.inlandSea.realm);
+ assert((await page.locator('#inspector').innerText()).includes('Territory of '+report.inlandSea.fullName));
+ assert((await page.locator('#omSelectionBody h3').innerText()).includes('Inland sea'));
  await page.keyboard.press('Escape');await stable();
  await page.setViewportSize({width:430,height:900});
  await page.waitForFunction('renderer.width===430');await stable();

@@ -327,11 +327,13 @@ function applyAction(action, target = -1, value = null) { if (busy)
 function showLocation(i) {
     if (!world || i < 0)
         return;
-    const pid = world.provinceId[i], p = sim?.provinces[pid], b = world.basins[world.basinTarget[i]], extra = world.lake[i] > 0 ? `${world.basins[world.lakeId[i]]?.kind || 'Inland lake'} · water surface ${fmt(world.lake[i])} m` : b?.closed ? 'Inland drainage → ' + b.name : 'Drainage toward an ocean or an overflowing basin';
+    const pid = world.provinceId[i], p = world.height[i] > 0 && world.lake[i] <= 0 ? sim?.provinces[pid] : null, b = world.basins[world.basinTarget[i]];
     const sovereignty = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(world, sim, i) : null;
-    $('locationNote').textContent = `${p ? p.name + ' · ' : ''}${sovereignty && sovereignty.kind !== 'water' ? sovereignty.label + ' · ' : ''}${BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i], world.height[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
+    const enclosedWater = sovereignty?.water && sovereignty.kind !== 'water' && world.height[i] <= 0;
+    const extra = enclosedWater ? 'Enclosed inland water' : world.lake[i] > 0 ? `${world.basins[world.lakeId[i]]?.kind || 'Inland lake'} · water surface ${fmt(world.lake[i])} m` : b?.closed ? 'Inland drainage → ' + b.name : 'Drainage toward an ocean or an overflowing basin';
+    $('locationNote').textContent = `${p ? p.name + ' · ' : ''}${sovereignty && sovereignty.kind !== 'water' ? sovereignty.label + ' · ' : ''}${enclosedWater ? 'Inland sea' : BIOME[world.biome[i]][0]} · ${CityEnvironment.band(world.temp[i], world.arid[i], world.height[i])} · bed ${fmt(world.height[i])} m · ${world.temp[i].toFixed(1)} °C · ${extra}`;
 }
-function inspectCell(i) { selectedCell = i; const p = sim?.provinces[world.provinceId[i]]; renderer.select(i); showLocation(i); if (POLITICAL.includes(currentLayer) && p?.owner >= 0) {
+function inspectCell(i) { selectedCell = i; const p = world.height[i] > 0 && world.lake[i] <= 0 ? sim?.provinces[world.provinceId[i]] : null; renderer.select(i); showLocation(i); if (POLITICAL.includes(currentLayer) && p?.owner >= 0) {
     selectedRealm = p.owner;
     renderRealmList();
     renderInspector();
@@ -341,12 +343,16 @@ else
 function renderGeography(i, p = null) {
     if (!world || i < 0)
         return;
-    const w = world, b = w.basins[w.lakeId[i]], target = w.basins[w.basinTarget[i]], country = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(w, sim, i).realm : p ? sim.realms[p.owner] : null, feature = w.features.find(f => f.i === i), plate = w.plates[w.plate[i]], isFjord = w.fjord[i] > 0, landform = landformRegionAt(w, i);
-    const title = feature?.name || b?.name || (isFjord ? 'Glacial fjord' : landform?.name || BIOME[w.biome[i]][0]);
+    if (world.height[i] <= 0 || world.lake[i] > 0) p = null;
+    const w = world, b = w.basins[w.lakeId[i]], target = w.basins[w.basinTarget[i]], place = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(w, sim, i) : null, country = place ? place.realm : p ? sim.realms[p.owner] : null, feature = w.features.find(f => f.i === i), plate = w.plates[w.plate[i]], isFjord = w.fjord[i] > 0, landform = landformRegionAt(w, i);
+    const enclosedWater = place?.water && place.kind !== 'water' && w.height[i] <= 0;
+    const title = feature?.name || b?.name || (enclosedWater ? 'Inland sea' : isFjord ? 'Glacial fjord' : landform?.name || BIOME[w.biome[i]][0]);
     let cause = feature?.text || landform?.detail || '';
     if (!cause) {
         if (b)
             cause = `${b.kind}. Water arrives from a catchment of ${b.catchment} grid cells. Rain and evaporation modify stored water; ${b.closed ? 'no sustained overflow reaches the sea.' : 'surplus water feeds a downstream river.'}`;
+        else if (enclosedWater)
+            cause = 'A water-filled depression below sea level, enclosed by land with no open-water connection to the ocean. Its shoreline lies inside the surrounding territory.';
         else if (isFjord)
             cause = 'A coastal trough carved below sea level during a prescribed former glacial episode. The ocean floods the bed, leaving high shoulders.';
         else if (w.height[i] <= 0)
@@ -358,7 +364,7 @@ function renderGeography(i, p = null) {
         else
             cause = 'Temperature, transported rainfall, elevation and evaporative demand determine this biome. Civilizations inherit these constraints rather than placing the biome themselves.';
     }
-    $('inspector').innerHTML = `<div class="overline">LANDSCAPE DOSSIER</div><h2 class="geoTitle">${escapeHTML(title)}</h2><p class="identity">${escapeHTML(cause)}</p><div class="metrics"><div><b>${fmt(w.height[i])}</b><small>BED / MODEL M</small></div><div><b>${w.temp[i].toFixed(1)}°</b><small>TEMPERATURE</small></div><div><b>${w.rain[i].toFixed(2)}</b><small>RAINFALL INDEX</small></div><div><b>${w.arid[i].toFixed(2)}</b><small>WATER / DEMAND</small></div><div><b>${fmt(w.ice[i])}</b><small>ICE / MODEL M</small></div><div><b>${w.flow[i].toFixed(1)}</b><small>RUNOFF INDEX</small></div></div><p class="geoStat">${escapeHTML(plate.name)} Plate<br>${escapeHTML(BOUNDARY[w.boundaryType[i]] || 'Plate interior')}<br>${target ? 'Catchment: ' + escapeHTML(target.name) : 'No significant closed basin downstream'}</p>${b ? `<table class="detailTable"><tr><td>Water surface / model m</td><td>${fmt(b.level)}</td></tr><tr><td>Water area / grid cells</td><td>${b.area}</td></tr><tr><td>Catchment / grid cells</td><td>${b.catchment}</td></tr><tr><td>Stored volume / model units</td><td>${b.volume.toFixed(2)}</td></tr><tr><td>Annual overflow index</td><td>${b.overflow.toFixed(3)}</td></tr><tr><td>Storage budget residual</td><td>${b.budget.residual.toExponential(1)}</td></tr></table>` : ''}${p ? `<div class="breakdown"><div class="overline">${escapeHTML(p.name)} / ${escapeHTML(country?.name || 'UNALIGNED COMMUNITIES')}</div><div class="miniheading">PEOPLES</div>${mixtureHTML(p.people, PEOPLES)}<div class="miniheading">FAITHS</div>${mixtureHTML(p.faith, FAITHS)}<p class="geoStat" style="margin-top:10px">Population ${fmtPop(p.pop)}<br>Unrest ${Math.round(p.unrest)} / 100</p></div>` : ''}<div class="inspectbuttons"><button id="backRealm">Realm dossier</button><button id="waterLayer">Water layer</button></div><p class="smallnote">Lake surfaces are separate from bedrock. Basins and fjords are explicit design-conditioned landforms; measurements use an uncalibrated rectangular grid.</p>`;
+    $('inspector').innerHTML = `<div class="overline">LANDSCAPE DOSSIER</div><h2 class="geoTitle">${escapeHTML(title)}</h2><p class="identity">${escapeHTML(cause)}</p><div class="metrics"><div><b>${fmt(w.height[i])}</b><small>BED / MODEL M</small></div><div><b>${w.temp[i].toFixed(1)}°</b><small>TEMPERATURE</small></div><div><b>${w.rain[i].toFixed(2)}</b><small>RAINFALL INDEX</small></div><div><b>${w.arid[i].toFixed(2)}</b><small>WATER / DEMAND</small></div><div><b>${fmt(w.ice[i])}</b><small>ICE / MODEL M</small></div><div><b>${w.flow[i].toFixed(1)}</b><small>RUNOFF INDEX</small></div></div><p class="geoStat">${escapeHTML(plate.name)} Plate<br>${escapeHTML(BOUNDARY[w.boundaryType[i]] || 'Plate interior')}<br>${target ? 'Catchment: ' + escapeHTML(target.name) : 'No significant closed basin downstream'}</p>${b ? `<table class="detailTable"><tr><td>Water surface / model m</td><td>${fmt(b.level)}</td></tr><tr><td>Water area / grid cells</td><td>${b.area}</td></tr><tr><td>Catchment / grid cells</td><td>${b.catchment}</td></tr><tr><td>Stored volume / model units</td><td>${b.volume.toFixed(2)}</td></tr><tr><td>Annual overflow index</td><td>${b.overflow.toFixed(3)}</td></tr><tr><td>Storage budget residual</td><td>${b.budget.residual.toExponential(1)}</td></tr></table>` : ''}${p ? `<div class="breakdown"><div class="overline">${escapeHTML(p.name)} / ${country ? escapeHTML(country.name) : '<span style="text-transform:none">'+escapeHTML(place?.label || 'wildness')+'</span>'}</div><div class="miniheading">PEOPLES</div>${mixtureHTML(p.people, PEOPLES)}<div class="miniheading">FAITHS</div>${mixtureHTML(p.faith, FAITHS)}<p class="geoStat" style="margin-top:10px">Population ${fmtPop(p.pop)}<br>Unrest ${Math.round(p.unrest)} / 100</p></div>` : ''}<div class="inspectbuttons"><button id="backRealm">Realm dossier</button><button id="waterLayer">Water layer</button></div><p class="smallnote">Lake surfaces are separate from bedrock. Basins and fjords are explicit design-conditioned landforms; measurements use an uncalibrated rectangular grid.</p>`;
     if (typeof PoliticalLand !== 'undefined' && PoliticalLand.status(w, sim, i).kind !== 'water') {
         const note = document.createElement('p');
         note.className = 'identity';
@@ -392,7 +398,7 @@ function legend() {
     else if (currentLayer === 'settlements')
         items = [['#d3c3a7', 'Sparse hinterland'], ['#388c79', 'Productive hinterland'], ['#e4d7b5', 'Sized villages & towns — no state symbols']];
     else if (currentLayer === 'realms')
-        items = [['#b8a17a', 'Hover a country name to see its full territory'], ['#465457', 'National border'], ['#74b4c1', 'Inland lake within national territory']];
+        items = [['#b8a17a', 'Hover a country name to see its full territory'], ['#465457', 'National border'], ['#766750', 'wildness · land outside national territory'], ['#74b4c1', 'Domestic lakes lie inside the national border']];
     else if (currentLayer === 'faiths')
         items = FAITHS.map(f => [f.color, f.name]);
     else if (currentLayer === 'peoples')
@@ -498,6 +504,7 @@ function makeLabels() {
                 labelSize: 14 + 10 * Math.sqrt(area / largest) };
         });
         list.push(...towns);
+        if (typeof PoliticalLand !== 'undefined') list.push(...PoliticalLand.labels(world, sim));
     }
     else if (currentLayer === 'relief')
         // Continents claim their names first — they are the coarsest "where am I"
@@ -517,7 +524,7 @@ function makeLabels() {
     if (!list.some(f => f.town)) list = [...list, ...towns];
     for (const f of list) {
         const b = document.createElement('button');
-        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wilderness ? ' wildernessLabel' : '');
+        b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wildness || f.wilderness ? ' wildernessLabel' : '');
         b.innerHTML = f.realm != null
             ? `<span class="realmLeader" aria-hidden="true"></span><em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
             : `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;

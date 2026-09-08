@@ -40,7 +40,7 @@ function harness() {
         ] };
     const world = { params: { seed: 'Realm-overview' }, continents: [], features: [], legends: [], basins: [],
         provinceId: [0, 1, -1], height: [100, 150, -10], temp: [15, 12, 10],
-        arid: [.5, .6, .8], biome: [0, 0, 0], lakeId: [-1, -1, -1] };
+        arid: [.5, .6, .8], biome: [0, 0, 0], lake: [-1, -1, -1], lakeId: [-1, -1, -1] };
     const context = { document, window: { addEventListener() {} }, world, sim,
         busy: false, simAdvancing: false, playing: false, selectedRealm: 0,
         renderer: { canvas: node('map') }, CityUI: {}, LandmarkUI: { registry: [] },

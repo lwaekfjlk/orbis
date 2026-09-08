@@ -217,12 +217,14 @@ window.OneMap = (() => {
         if(!world||!sim||busy||scene!=='world'||i<0)return;
         if(drawer==='realm')closeDrawer();
         const status=typeof PoliticalLand!=='undefined'?PoliticalLand.status(world,sim,i):null;
-        const p=sim.provinces[world.provinceId[i]],f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],direct=p&&sim.realms[p.owner],realm=status?status.realm:direct?.alive!==false?direct:null;
-        if(world.height[i]<=0&&!f&&!b){clearSelection();return;}
+        const p=world.height[i]>0&&world.lake[i]<=0?sim.provinces[world.provinceId[i]]:null,f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],direct=p&&sim.realms[p.owner],realm=status?status.realm:direct?.alive!==false?direct:null;
+        const enclosedWater=status?.water&&status.kind!=='water'&&world.height[i]<=0;
+        if(world.height[i]<=0&&!f&&!b&&!enclosedWater){clearSelection();return;}
         selection={kind:'world',i};
         const landform=typeof landformRegionAt==='function'?landformRegionAt(world,i):null;
-        const title=p?.settled?p.name:f?.name||b?.name||landform?.name||BIOME[world.biome[i]][0];
-        const geography=f?.legend?f.text:[landform?.kind?.replaceAll('-', ' '),BIOME[world.biome[i]][0],world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
+        const surface=enclosedWater?'Inland sea':BIOME[world.biome[i]][0];
+        const title=p?.settled?p.name:f?.name||b?.name||landform?.name||surface;
+        const geography=f?.legend?f.text:[landform?.kind?.replaceAll('-', ' '),surface,world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`,p?.settled?`${fmtPop(p.urbanPop)} town residents`:null].filter(Boolean).join(' · ');
         const subtitle=status&&!status.realm&&status.kind!=='water'?PoliticalLand.description(world,sim,i)+' '+geography:geography;
         const buttons=[];
         if(p?.settled)buttons.push({label:'Zoom to town',primary:true,run:()=>enterTown(p.id)});
@@ -237,7 +239,7 @@ window.OneMap = (() => {
              +`<p>${esc(told.narrator.opener)}</p></div></div>`
             :'';
         const kicker=f?.legend?'LEGENDARY PLACE · '+f.kind
-            :told?`${(realm?.name||'FREE COMMUNITIES').toUpperCase()} · ${told.title.toUpperCase()}`
+            :told?`${realm?realm.name.toUpperCase():status?.label||'wildness'} · ${told.title.toUpperCase()}`
             :realm?.name||(status&&status.kind!=='water'?status.label:'NATURAL WORLD');
         selectionCard(kicker,title,subtitle,buttons,media,realm);
     }

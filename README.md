@@ -4,9 +4,9 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and complete national territories](previews/fantasy-landforms/after/world.png)
+![World overview with named countries, settlements and marked wildness](previews/fantasy-landforms/after/world.png)
 
-*The default world, Aereth-47. Click a country name to see its territory, population and history. National territories include inland lakes and remote land.*
+*The default world, Aereth-47. Click a country name to see its territory, population and history. Domestic lakes belong to their surrounding countries; open wildness remains clearly marked.*
 
 ## Start exploring
 
@@ -71,7 +71,7 @@ New generation rules apply when you regenerate; loading an old save preserves it
 
 ## Learn more
 
-- [Countries and population](docs/POLITIES.md) · [Complete territories](docs/LAKE_TERRITORY_AND_LABELS.md) · [Mythological names](docs/REALM_NAMES.md)
+- [Countries and population](docs/POLITIES.md) · [Borders and wildness](docs/LAKE_TERRITORY_AND_LABELS.md) · [Mythological names](docs/REALM_NAMES.md)
 - [Cities and terrain](docs/CITY_COHERENCE.md) · [Climate and landscapes](docs/BIOME_LANDSCAPES.md)
 - [Resident stories](docs/CITY_SAGAS.md) · [Architecture gallery and GLB exports](docs/WONDER_REFINEMENT.md)
 - [Loading performance](docs/MAP_LOADING.md) · [Map architecture](docs/CONTINUOUS_ARCHITECTURE.md)
