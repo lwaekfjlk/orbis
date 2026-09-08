@@ -96,7 +96,9 @@ test('Origin markup escapes imported text and long labels use actual rendered wi
     const renderer = { width: 1000, height: 600, azimuth: 0, zoom: 1, screen: (x, y) => [x, y] };
     new Function('$', 'renderer', 'world', 'labelItems', position + ';positionLabels();')(id => dom[id], renderer, {}, items);
     assert.equal(items[0].element.style.opacity, '1');
-    assert.equal(items[1].element.style.opacity, '0', 'long adjacent names must not overlap');
+    assert.equal(items[1].element.style.opacity, '1', 'long adjacent names must both stay printed');
+    const a=items[0].element.style,b=items[1].element.style;
+    assert(Math.abs(parseFloat(a.left)-parseFloat(b.left))>=231||Math.abs(parseFloat(a.top)-parseFloat(b.top))>=44,'the second full name must move clear of the first');
 });
 
 function positionMapLabels(items, zoom = 1, {width=1000,height=600}={}) {
@@ -165,7 +167,8 @@ test('A small country keeps its only owned label position when a town competes f
 });
 
 function measuredRealm(id,x,y,{full=180,compact=80,rows=2,anchors=[{x,y,i:id}],labelSize=20}={}){
-    const probes={'.realmFullName':{offsetWidth:full,offsetHeight:rows*22},'.realmCompactName':{offsetWidth:compact,offsetHeight:18},'.realmMarker':{offsetWidth:18,offsetHeight:18}};
+    const name='The Kingdom of Test '+id;
+    const probes={'.realmFullName':{textContent:name,offsetWidth:full,offsetHeight:rows*22},'.realmCompactName':{textContent:name,offsetWidth:compact,offsetHeight:Math.ceil(name.length*5/compact)*15},'.realmLeader':{style:{}}};
     const item=mapLabel({name:'The Kingdom of Test '+id,shortName:'Test '+id,realm:id,x,y,anchors,labelSize},full,rows*22);
     item.element.dataset={};item.element.querySelector=selector=>probes[selector];
     return item;
@@ -203,14 +206,16 @@ test('a compact neighbouring country can displace an earlier wide name without d
     assert(separated(...items.map(labelBox)));
 });
 
-test('an extremely narrow visible country keeps an owned, accessible marker with its full name',()=>{
+test('an extremely narrow visible country prints its full name beside its owned anchor',()=>{
     const item=measuredRealm(3,22,200,{full:220,compact:90});positionMapLabels([item],1,{width:390,height:844});
-    assert.equal(item.element.style.opacity,'1');assert.equal(item.element.dataset.labelVariant,'marker');
-    assert.equal(item.element.style.left,'22px');assert.equal(item.element.dataset.anchorCell,'3');
+    assert.equal(item.element.style.opacity,'1');assert.notEqual(item.element.dataset.labelVariant,'marker');
+    assert(parseFloat(item.element.style.left)>22,'the complete name moves inside the viewport');assert.equal(item.element.dataset.anchorCell,'3');
+    assert.equal(item.element.querySelector(item.element.dataset.labelVariant==='compact'?'.realmCompactName':'.realmFullName').textContent,item.feature.name);
+    assert.equal(item.element.querySelector('.realmLeader').style.display,'block');
     assert(item.element.title.includes(item.feature.name));assert.equal(item.element.tabIndex,0);assert.equal(item.element.style.pointerEvents,'auto');
 });
 
-test('a dense mobile country cluster reserves every owned marker before expanding names',()=>{
+test('a dense mobile country cluster keeps every formal name and its owned anchor',()=>{
     const items=[150,190,230].map((x,id)=>measuredRealm(id,x,410,{full:150,compact:60}));
     positionMapLabels(items,1,{width:430,height:900});
     assert(items.every(v=>v.element.style.opacity==='1'),'an earlier short name must not erase a neighbouring country');
@@ -231,7 +236,8 @@ test('the actual narrow-screen world retains all 22 countries on their own land 
         const items=fixture.countries.map(c=>{
             const anchors=c.anchors.map(([i,x,y])=>({i,x,y})),first=anchors[0];
             const item=measuredRealm(c.id,first.x,first.y,{anchors,labelSize});
-            const probes=Object.fromEntries(['.realmFullName','.realmCompactName','.realmMarker'].map((key,i)=>[key,{offsetWidth:c.probes[i][0],offsetHeight:c.probes[i][1]}]));
+            const probes={'.realmFullName':{textContent:c.name,offsetWidth:c.probes[0][0],offsetHeight:c.probes[0][1]},
+                '.realmCompactName':{textContent:c.name,offsetWidth:108,offsetHeight:Math.ceil(c.name.length*5/108)*15},'.realmLeader':{style:{}}};
             item.feature.name=c.name;item.element.querySelector=selector=>probes[selector];return item;
         });
         positionMapLabels(items,1,fixture);
@@ -241,7 +247,8 @@ test('the actual narrow-screen world retains all 22 countries on their own land 
             assert(item.feature.anchors.some(a=>String(a.i)===item.element.dataset.anchorCell));
             assert(box.x>=8&&box.x+box.w<=fixture.width-8);
             assert.equal(item.element.tabIndex,0);assert.equal(item.element.style.pointerEvents,'auto');
-            assert(item.element.title.includes(item.feature.name),'every short name or marker exposes its full state name');
+            assert.notEqual(item.element.dataset.labelVariant,'marker');
+            assert.equal(item.element.querySelector(item.element.dataset.labelVariant==='compact'?'.realmCompactName':'.realmFullName').textContent,item.feature.name,'the full formal name is printed, not confined to a tooltip');
             for(let k=0;k<j;k++)assert(separated(box,labelBox(items[k])),'overlap in actual mobile terrain projection');
         }
     }
@@ -252,23 +259,26 @@ test('the actual fantasy mobile map keeps all 25 countries accessible through a 
     const items=fixture.countries.map(c=>{
         const anchors=c.anchors.map(([i,x,y])=>({i,x,y})),first=anchors[0];
         const item=measuredRealm(c.id,first.x,first.y,{anchors});
-        const probes=Object.fromEntries(['.realmFullName','.realmCompactName','.realmMarker'].map((key,i)=>[key,{offsetWidth:c.probes[i][0],offsetHeight:c.probes[i][1]}]));
+        const probes={'.realmFullName':{textContent:c.name,offsetWidth:c.probes[0][0],offsetHeight:c.probes[0][1]},
+                '.realmCompactName':{textContent:c.name,offsetWidth:108,offsetHeight:Math.ceil(c.name.length*5/108)*15},'.realmLeader':{style:{}}};
         probes['.realmLeader']={style:{}};
         item.feature.name=c.name;item.element.querySelector=selector=>probes[selector];return item;
     });
     positionMapLabels(items,1,fixture);
-    assert.equal(items.filter(v=>v.element.style.opacity==='1').length,25,'the constrained marker search must not discard four western countries');
+    assert.equal(items.filter(v=>v.element.style.opacity==='1').length,25,'the complete-name layout must not discard four western countries');
     let callouts=0;
     for(let j=0;j<items.length;j++){
         const item=items[j],box=labelBox(item);
         const anchor=item.feature.anchors.find(a=>String(a.i)===item.element.dataset.anchorCell);
         assert(anchor,'country callouts must retain an anchor on their own real land');
         const dx=anchor.x-parseFloat(item.element.style.left),dy=anchor.y-parseFloat(item.element.style.top),distance=Math.hypot(dx,dy);
-        assert(distance<=6.00001,'a minimum marker must remain within six pixels of its land');
+        assert(distance<=150,'the full name must keep a nearby connection to its land');
+        assert.notEqual(item.element.dataset.labelVariant,'marker');
+        assert.equal(item.element.querySelector(item.element.dataset.labelVariant==='compact'?'.realmCompactName':'.realmFullName').textContent,item.feature.name);
         if(distance>1e-5){
-            callouts++;assert.equal(item.element.dataset.labelVariant,'marker');
+            callouts++;
             const leader=item.element.querySelector('.realmLeader');assert.equal(leader.style.display,'block');
-            assert(Math.abs(parseFloat(leader.style.width)-distance)<1e-5,'the connector must end at the real land anchor');
+            assert(Math.abs(parseFloat(leader.style.width)*Number(item.element.style.transform.match(/scale\(([^)]+)\)/)[1])-distance)<1e-5,'the connector must end at the real land anchor');
         }
         assert(box.x>=8&&box.x+box.w<=fixture.width-8&&box.y>=8&&box.y+box.h<=fixture.height-22);
         assert.equal(item.element.tabIndex,0);assert.equal(item.element.style.pointerEvents,'auto');

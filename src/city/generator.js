@@ -83,7 +83,9 @@ function cityDrySegment(city, a, b) {
 function cityReach(sim, p) {
     let best = Infinity;
     for (const q of sim.provinces)
-        if (q.id !== p.id && q.settled && q.urbanPop >= 650)
+        // Version 2 mountain courts occupy their own tiny fixed precinct. They
+        // must not shrink a distant ordinary town's much broader survey span.
+        if (q.id !== p.id && q.settled && q.urbanPop >= 650 && q.highCitadel?.version !== 2)
             best = Math.min(best, Math.hypot(q.x - p.x, q.y - p.y));
     return best;
 }

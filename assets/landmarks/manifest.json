@@ -232,6 +232,17 @@
       "triangles": 14739,
       "groups": 7,
       "bytes": 1596936
+    },
+    {
+      "id": "dragon-ruins",
+      "name": "The Ashen Aerie",
+      "type": "landmark",
+      "file": "dragon-ruins.glb",
+      "recipe": "dragon-ruins.recipe.json",
+      "signature": "a40fdaae",
+      "triangles": 6076,
+      "groups": 20,
+      "bytes": 669224
     }
   ]
 }

@@ -500,7 +500,7 @@ function makeLabels() {
         const largest = Math.max(1, ...territories.map(t => t.area));
         list = territories.map(({ c, held, area }) => {
             const anchors = realmLabelAnchors(held, territoryCells.get(c.id)), anchor = anchors[0] || sim.provinces[c.capital];
-            return { x: anchor.x, y: anchor.y, i: anchor.i, name: RealmNames.fullName(c), shortName:c.name, realm: c.id, anchors, area,
+            return { x: anchor.x, y: anchor.y, i: anchor.i, name: RealmNames.fullName(c), realm: c.id, anchors, area,
                 labelSize: 14 + 10 * Math.sqrt(area / largest) };
         });
         list.push(...towns);
@@ -526,7 +526,7 @@ function makeLabels() {
         const b = document.createElement('button');
         b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wildness || f.wilderness ? ' wildernessLabel' : '');
         b.innerHTML = f.realm != null
-            ? `<span class="realmLeader" aria-hidden="true"></span><em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
+            ? `<span class="realmLeader" aria-hidden="true"></span><em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.name)}</em>`
             : `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
         if (f.realm != null) {
             b.dataset.realmId = f.realm;
@@ -575,7 +575,7 @@ function positionLabels() {
     const local = renderer.continuousLayer && renderer.zoom >= AtlasSpace.TOWN_ZOOM;
     if (local) renderer.setHoveredRealm(null);
     const boxes = [];
-    // All three country forms remain measurable. Batch these reads before any
+    // Both country sizes contain the full formal name. Batch these reads before any
     // placement writes; a camera frame must not relayout once per candidate.
     const measured = labelItems.filter(({element:e,feature:f}) => {
         if (local && !f.town) { e.style.opacity='0'; e.style.pointerEvents='none'; e.tabIndex=-1; return false; }
@@ -587,9 +587,8 @@ function positionLabels() {
             const font=typeof getComputedStyle==='function'?parseFloat(getComputedStyle(full).fontSize):f.labelSize||18;
             for(const scale of [1,.9,Math.max(.78,10.5/font)].filter((v,i,a)=>v<=1&&a.indexOf(v)===i))
                 variants.push({kind:'full',scale,width:full.offsetWidth+22,height:full.offsetHeight+10});
-            const compact=e.querySelector('.realmCompactName'),marker=e.querySelector('.realmMarker');
+            const compact=e.querySelector('.realmCompactName');
             if(compact)variants.push({kind:'compact',scale:1,width:compact.offsetWidth+22,height:compact.offsetHeight+10});
-            if(marker)variants.push({kind:'marker',scale:1,width:marker.offsetWidth+4,height:marker.offsetHeight+4});
         }else variants.push({kind:'full',scale:1,width:e.offsetWidth+6,height:e.offsetHeight+4});
         return {...item,region,variants};
     });
@@ -611,11 +610,18 @@ function positionLabels() {
             if(b.width&&b.height)obstacles.push({x:b.left-labelRect.left-2,y:b.top-labelRect.top-2,w:b.width+4,h:b.height+4,pin});
         }
     }
+    // Complete names can extend beyond the land on a narrow screen. Keep the
+    // permanent map controls and status clear, just like the special site pins.
+    if(labelRect&&typeof document!=='undefined')for(const control of document.querySelectorAll('#omChrome .om-brandbar, #omChrome .om-tools, #omChrome .om-dock, #omChrome .om-camera, #cmStatus')){
+        if(control.checkVisibility&&!control.checkVisibility({checkVisibilityCSS:true}))continue;
+        const b=control.getBoundingClientRect();
+        if(b.width&&b.height)obstacles.push({x:b.left-labelRect.left-2,y:b.top-labelRect.top-2,w:b.width+4,h:b.height+4,pin:control,fixed:true});
+    }
     // Countries answer the primary political question. Town names use the space
     // left over, rather than reserving a capital-sized hole in every small realm.
     // A constrained island gets its turn before a large country with many anchors.
     for(const v of measured){const f=v.feature;v.anchors=v.region?(f.anchors?.length?f.anchors:[f]):[f];
-        v.visibleAnchors=v.region?v.anchors.filter(a=>inside(at(f,18,18,a))).length:0;}
+        v.visibleAnchors=v.region?v.anchors.filter(a=>{const p=at(f,18,18,a);return p.left>=0&&p.left<=renderer.width&&p.top>=0&&p.top<=renderer.height;}).length:0;}
     measured.sort((a,b)=>Number(b.region)-Number(a.region)||(a.region&&b.region?a.visibleAnchors-b.visibleAnchors:0));
     const townBoxes=measured.filter(v=>v.feature.town).map(v=>at(v.feature,v.variants[0].width,v.variants[0].height)).filter(inside);
     const fit=(v,occupied,limit=1)=>{
@@ -640,97 +646,58 @@ function positionLabels() {
         return{box,fitted,show};
     };
     const regions=measured.filter(v=>v.region),visibleRegions=regions.filter(v=>v.visibleAnchors).length;
-    const arrange=limit=>{const occupied=[],placements=new Map();let count=0,named=0;for(const v of regions){const p=fit(v,occupied,limit);placements.set(v,p);if(p.show){count++;if(p.fitted.kind!=='marker')named++;}}return{occupied,placements,count,named};};
+    const protectedPins=obstacles.filter(b=>b.fixed||b.pin.dataset?.atlasSite);
+    const arrange=limit=>{const occupied=[...protectedPins],placements=new Map();let count=0,named=0;for(const v of regions){const p=fit(v,occupied,limit);placements.set(v,p);if(p.show){count++;if(p.fitted.kind!=='marker')named++;}}return{occupied:occupied.filter(b=>!b.pin),placements,count,named};};
     let layout=arrange(1);
     // Do not let an early wide name permanently consume the only anchor of a
     // neighbour. Retry the set in smaller forms only when it restores a country.
     for(const limit of [.9,.78,0]){if(layout.count>=visibleRegions&&layout.named>=visibleRegions)break;const candidate=arrange(limit);if(candidate.count>layout.count||(candidate.count===layout.count&&candidate.named>layout.named))layout=candidate;}
-    if(layout.count<visibleRegions){
-        // On a phone several countries may share a few dozen screen pixels.
-        // Reserve a valid minimum footprint for each country before expanding
-        // any name: shrinking only the next name cannot undo an earlier choice.
-        const entries=regions.map(v=>{
-            const fitted=v.variants.reduce((a,b)=>a.width*a.height*a.scale*a.scale<=b.width*b.height*b.scale*b.scale?a:b);
-            const candidates=v.anchors.map(a=>at(v.feature,fitted.width*fitted.scale,fitted.height*fitted.scale,a)).filter(inside);
-            return{v,fitted,candidates};
-        }).filter(e=>e.candidates.length);
-        const bound=entry=>{
-            let x=Infinity,y=Infinity,right=-Infinity,bottom=-Infinity;
-            for(const c of entry.candidates){x=Math.min(x,c.x);y=Math.min(y,c.y);right=Math.max(right,c.x+c.w);bottom=Math.max(bottom,c.y+c.h);}
-            entry.bounds={x,y,w:right-x,h:bottom-y};
+    // A tiny territory may be narrower than its complete formal name. Keep the
+    // name printed and move its lettering to nearby open space, connected to a
+    // real owned anchor. Neither a short name nor a number substitutes for it.
+    const callout=(v,occupied)=>{
+        const fitted=v.variants.reduce((a,b)=>a.width*a.height*a.scale*a.scale<=b.width*b.height*b.scale*b.scale?a:b);
+        const seen=new Set(),origins=v.anchors.map(a=>at(v.feature,fitted.width*fitted.scale,fitted.height*fitted.scale,a))
+            .filter(p=>{const key=Math.round(p.left/12)+','+Math.round(p.top/12);if(p.left<0||p.left>renderer.width||p.top<0||p.top>renderer.height||seen.has(key))return false;seen.add(key);return true;});
+        if(!origins.length)return layout.placements.get(v);
+        let best=null,bestCost=Infinity;
+        const consider=(origin,dx,dy)=>{
+            const x=Math.max(8,Math.min(renderer.width-8-origin.w,origin.x+dx));
+            let y=Math.max(8,Math.min(renderer.height-22-origin.h,origin.y+dy));
+            if(x<210&&y<75)y=75;
+            const box={...origin,x,y,left:x+origin.w/2,top:y+origin.h/2,origin:{left:origin.left,top:origin.top}};
+            let overlap=0;
+            for(const other of occupied)if(overlaps(box,other,2))overlap+=(Math.min(box.x+box.w,other.x+other.w+2)-Math.max(box.x,other.x-2))*(Math.min(box.y+box.h,other.y+other.h+2)-Math.max(box.y,other.y-2));
+            const cost=overlap*1e6+Math.hypot(box.left-origin.left,box.top-origin.top);
+            if(cost<bestCost){best=box;bestCost=cost;}
+            return overlap===0;
         };
-        for(const entry of entries)bound(entry);
-        const minimum=new Map(),occupied=[];let visits=0;
-        const reserve=pending=>{
-            if(!pending.length)return true;
-            if(++visits>256)return false;
-            let chosen=null,available=null;
-            const freeByEntry=new Map();
-            for(const entry of pending){
-                const free=entry.candidates.filter(c=>!occupied.some(b=>overlaps(c,b)));
-                if(!free.length)return false;
-                freeByEntry.set(entry,free);
-                if(!available||free.length<available.length){chosen=entry;available=free;}
+        let free=false;
+        for(const origin of origins)if(consider(origin,0,0)){free=true;break;}
+        const step=12,maxRing=Math.ceil(Math.max(renderer.width,renderer.height)/step);
+        for(let ring=1;!free&&ring<=maxRing;ring++){
+            // Distinct nearby anchors, rather than every adjacent projected cell,
+            // keep the search bounded when an entire coast shares the same gap.
+            const offsets=[];
+            for(let x=-ring;x<=ring;x++)offsets.push([x*step,-ring*step],[x*step,ring*step]);
+            for(let y=1-ring;y<ring;y++)offsets.push([-ring*step,y*step],[ring*step,y*step]);
+            offsets.sort((a,b)=>Math.hypot(...a)-Math.hypot(...b));
+            for(const [dx,dy] of offsets){
+                for(const origin of origins)if(consider(origin,dx,dy)){free=true;break;}
+                if(free)break;
             }
-            const rest=pending.filter(e=>e!==chosen);
-            // Adjacent land cells often project only one or two pixels apart.
-            // Trying every equivalent collision pattern exhausts the budget
-            // without changing any neighbour's options. Explore each pattern
-            // once, preferring positions that leave constrained countries room.
-            const alternatives=[],patterns=new Set();
-            for(const box of available){
-                let cost=0,blocked=false;const pattern=[];
-                for(let j=0;j<rest.length;j++){
-                    if(!overlaps(box,rest[j].bounds))continue;
-                    const free=freeByEntry.get(rest[j]),hits=[];
-                    for(let k=0;k<free.length;k++)if(overlaps(box,free[k]))hits.push(k);
-                    if(hits.length===free.length){blocked=true;break;}
-                    if(hits.length){cost+=hits.length/free.length;pattern.push(j+':'+hits.join(','));}
-                }
-                if(blocked)continue;
-                const key=pattern.join(';');if(patterns.has(key))continue;
-                patterns.add(key);alternatives.push({box,cost});
-            }
-            alternatives.sort((a,b)=>a.cost-b.cost);
-            for(const {box} of alternatives){
-                occupied.push(box);minimum.set(chosen.v,{box,fitted:chosen.fitted,show:true});
-                if(reserve(rest))return true;
-                occupied.pop();minimum.delete(chosen.v);
-                if(visits>256)break;
-            }
-            return false;
-        };
-        let reserved=reserve(entries);
-        if(!reserved){
-            // A tiny country's whole territory can project narrower than the
-            // readable marker itself. Only after exact placement fails, permit
-            // a six-pixel callout; its true owned anchor and hit target remain.
-            visits=0;
-            for(const entry of entries)if(entry.fitted.kind==='marker'){
-                const original=entry.candidates;
-                entry.candidates=original.concat(original.flatMap(b=>[[6,0],[-6,0],[0,6],[0,-6]].map(([dx,dy])=>({
-                    ...b,x:b.x+dx,y:b.y+dy,left:b.left+dx,top:b.top+dy,origin:{left:b.left,top:b.top}
-                }))).filter(inside));
-                bound(entry);
-            }
-            reserved=reserve(entries);
         }
-        if(reserved){
-            const placements=new Map(layout.placements);
-            for(const [v,p] of minimum)placements.set(v,p);
-            for(const {v} of entries){
-                const other=[...placements].filter(([key,p])=>key!==v&&p.show).map(([,p])=>p.box);
-                const expanded=fit(v,other);
-                if(expanded.show)placements.set(v,expanded);
-            }
-            const shown=[...placements.values()].filter(p=>p.show),candidate={placements,occupied:shown.map(p=>p.box),count:shown.length,named:shown.filter(p=>p.fitted.kind!=='marker').length};
-            if(candidate.count>layout.count||(candidate.count===layout.count&&candidate.named>layout.named))layout=candidate;
-        }
+        occupied.push(best);return{box:best,fitted,show:true};
+    };
+    const occupiedRegions=[...protectedPins,...layout.occupied];
+    for(const v of regions)if(v.visibleAnchors&&!layout.placements.get(v).show){
+        const placement=callout(v,occupiedRegions);layout.placements.set(v,placement);
     }
+    layout.occupied=occupiedRegions.filter(b=>!b.pin);
     // An optional monument icon cannot veto a small country's only anchor.
     // Restore it next placement, then suppress only icons intersecting a chosen
     // country label. Towns subsequently avoid all the icons that remain.
-    if(!local)for(let i=obstacles.length-1;i>=0;i--)if(layout.occupied.some(b=>overlaps(obstacles[i],b))){
+    if(!local)for(let i=obstacles.length-1;i>=0;i--)if(!obstacles[i].fixed&&!obstacles[i].pin.dataset?.atlasSite&&layout.occupied.some(b=>overlaps(obstacles[i],b))){
         obstacles[i].pin.style.display='none';obstacles.splice(i,1);
     }
     boxes.push(...obstacles,...layout.occupied);
@@ -762,7 +729,7 @@ function positionLabels() {
         };
         let free=consider(0,0);
         const stepY=Math.max(12,Math.min(18,origin.h*.8)),stepX=stepY;
-        for(let ring=1;!free&&ring<=24;ring++){
+        for(let ring=1;!free&&ring<=Math.ceil(Math.max(renderer.width,renderer.height)/stepY);ring++){
             const offsets=[];
             for(let x=-ring;x<=ring;x++)offsets.push([x*stepX,-ring*stepY],[x*stepX,ring*stepY]);
             for(let y=1-ring;y<ring;y++)offsets.push([-ring*stepX,y*stepY],[ring*stepX,y*stepY]);
@@ -794,13 +761,13 @@ function positionLabels() {
             const leader=e.querySelector('.realmLeader');
             if(leader){
                 const dx=(box.origin?.left??box.left)-box.left,dy=(box.origin?.top??box.top)-box.top;
-                leader.style.width=Math.hypot(dx,dy)+'px';leader.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;
+                leader.style.width=Math.hypot(dx,dy)/fitted.scale+'px';leader.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;
                 leader.style.display=show&&(dx||dy)?'block':'none';
             }
             e.style.width=(fitted.width-6)+'px';e.style.height=(fitted.height-4)+'px';
             e.style.transform=`translate(-50%,-50%) scale(${fitted.scale})`;
-            // The compact form and marker still announce the complete state name.
-            e.title=fitted.kind==='full'?'Inspect '+f.name:f.name+' · Click for country details';
+            // Both visible sizes print the same complete formal name.
+            e.title='Inspect '+f.name;
         }
         e.style.opacity = show ? '1' : '0';
         e.style.pointerEvents = show ? 'auto' : 'none';

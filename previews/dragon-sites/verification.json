@@ -1,0 +1,451 @@
+{
+  "before": [
+    "2377e4fa",
+    "254caa7c",
+    "24a862f0"
+  ],
+  "after": [
+    "2377e4fa",
+    "254caa7c",
+    "24a862f0"
+  ],
+  "sites": [
+    {
+      "id": "site-455-high-citadel",
+      "name": "Blackley \u00b7 Dragon King's Aerie",
+      "i": 35339,
+      "provinceId": 455,
+      "kind": "dragon"
+    },
+    {
+      "id": "site-456-high-citadel",
+      "name": "Coalwell \u00b7 High Sanctuary",
+      "i": 34742,
+      "provinceId": 456,
+      "kind": "holy"
+    },
+    {
+      "id": "dragon-ruins-30967",
+      "name": "The Sable Aerie",
+      "i": 30967,
+      "provinceId": null,
+      "kind": "dragon-ruin"
+    },
+    {
+      "id": "dragon-ruins-18654",
+      "name": "The Storm Spine",
+      "i": 18654,
+      "provinceId": null,
+      "kind": "dragon-ruin"
+    },
+    {
+      "id": "dragon-ruins-33233",
+      "name": "The Cinder Maw",
+      "i": 33233,
+      "provinceId": null,
+      "kind": "dragon-ruin"
+    }
+  ],
+  "overviewPins": [
+    {
+      "id": "site-455-high-citadel",
+      "kind": "dragon",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    },
+    {
+      "id": "site-456-high-citadel",
+      "kind": "holy",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    },
+    {
+      "id": "dragon-ruins-30967",
+      "kind": "dragon-ruin",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    },
+    {
+      "id": "dragon-ruins-18654",
+      "kind": "dragon-ruin",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    },
+    {
+      "id": "dragon-ruins-33233",
+      "kind": "dragon-ruin",
+      "svg": true,
+      "visible": true,
+      "hittable": true,
+      "w": 23,
+      "h": 23
+    }
+  ],
+  "chineseSearch": "dragon-ruins-30967",
+  "errors": [],
+  "high": [
+    {
+      "id": 455,
+      "kind": "dragon",
+      "roles": [
+        "keep",
+        "watch",
+        "watch",
+        "roost",
+        "roost",
+        "lodge",
+        "lodge",
+        "forge",
+        "store",
+        "lodge",
+        "lodge",
+        "lodge",
+        "store",
+        "gate"
+      ],
+      "vertices": 111711,
+      "uploaded": true,
+      "onScreen": 603,
+      "samples": 603,
+      "width": 607.7203793067838,
+      "height": 623.415504129506,
+      "zoom": 404.8045724811592,
+      "mounted": null,
+      "pick": {
+        "id": 455,
+        "building": "high-455-keep-0",
+        "x": 747.9640830155088,
+        "y": 628.2080762697385
+      }
+    },
+    {
+      "id": 456,
+      "kind": "holy",
+      "roles": [
+        "sanctuary",
+        "bell",
+        "bell",
+        "chapel",
+        "chapel",
+        "scriptorium",
+        "hospice",
+        "hospice",
+        "scriptorium",
+        "hospice",
+        "hospice",
+        "store",
+        "store",
+        "gate"
+      ],
+      "vertices": 268224,
+      "uploaded": true,
+      "onScreen": 603,
+      "samples": 603,
+      "width": 625.5590282339881,
+      "height": 540.9943716004267,
+      "zoom": 364.43107750409337,
+      "mounted": null,
+      "pick": {
+        "id": 456,
+        "building": "high-456-sanctuary-0",
+        "x": 822.1266286161414,
+        "y": 600.7602055848577
+      }
+    }
+  ],
+  "ruins": [
+    {
+      "id": "dragon-ruins-30967",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 22554,
+      "uploaded": true,
+      "onScreen": 6353,
+      "samples": 6353,
+      "width": 666.362676883632,
+      "height": 483.22287428910045,
+      "zoom": 235.5371666314262,
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 18,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-30967",
+        "part": "nest",
+        "x": 650.2566834341328,
+        "y": 527.3060235551413
+      },
+      "partFocus": {
+        "part": "nest",
+        "error": 0,
+        "zoom": 620.0000000000002
+      },
+      "exported": {
+        "bytes": 824032,
+        "meshes": 18,
+        "vertices": 22554
+      }
+    },
+    {
+      "id": "dragon-ruins-18654",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 24486,
+      "uploaded": true,
+      "onScreen": 7102,
+      "samples": 7102,
+      "width": 573.8230433447916,
+      "height": 436.77493839428087,
+      "zoom": 195.0046150049693,
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 20,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-18654",
+        "part": "nest",
+        "x": 812.5741472177972,
+        "y": 558.9869472506728
+      },
+      "partFocus": {
+        "part": "nest",
+        "error": 0,
+        "zoom": 569.6049725349096
+      },
+      "exported": {
+        "bytes": 894964,
+        "meshes": 20,
+        "vertices": 24486
+      }
+    },
+    {
+      "id": "dragon-ruins-33233",
+      "kind": "dragon-ruin",
+      "roles": [
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "foundation",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "architecture",
+        "landscape",
+        "landscape",
+        "landscape"
+      ],
+      "vertices": 22554,
+      "uploaded": true,
+      "onScreen": 6353,
+      "samples": 6353,
+      "width": 523.986250470025,
+      "height": 485.2239460096098,
+      "zoom": 205.9296745812964,
+      "mounted": {
+        "originError": 0,
+        "scale": 0.011092656501906,
+        "parts": 18,
+        "matchingUploads": true
+      },
+      "pick": {
+        "id": "dragon-ruins-33233",
+        "part": "nest",
+        "x": 796.1721843213166,
+        "y": 559.1018198546142
+      },
+      "partFocus": {
+        "part": "nest",
+        "error": 0,
+        "zoom": 620.0000000000002
+      },
+      "exported": {
+        "bytes": 824024,
+        "meshes": 18,
+        "vertices": 22554
+      }
+    }
+  ],
+  "pinStyle": [
+    {
+      "id": "site-455-high-citadel",
+      "width": "23px",
+      "height": "23px",
+      "background": "rgba(244, 239, 215, 0.86)",
+      "border": "rgba(139, 151, 124, 0.5)",
+      "opacity": "0.88",
+      "color": "rgb(111, 98, 61)",
+      "glyphWidth": "17px",
+      "glyphHeight": "17px",
+      "fill": "none",
+      "stroke": "rgb(111, 98, 61)"
+    },
+    {
+      "id": "site-456-high-citadel",
+      "width": "23px",
+      "height": "23px",
+      "background": "rgba(244, 239, 215, 0.86)",
+      "border": "rgba(139, 151, 124, 0.5)",
+      "opacity": "0.88",
+      "color": "rgb(111, 98, 61)",
+      "glyphWidth": "17px",
+      "glyphHeight": "17px",
+      "fill": "none",
+      "stroke": "rgb(111, 98, 61)"
+    },
+    {
+      "id": "dragon-ruins-30967",
+      "width": "23px",
+      "height": "23px",
+      "background": "rgba(244, 239, 215, 0.86)",
+      "border": "rgba(139, 151, 124, 0.5)",
+      "opacity": "0.88",
+      "color": "rgb(111, 98, 61)",
+      "glyphWidth": "17px",
+      "glyphHeight": "17px",
+      "fill": "none",
+      "stroke": "rgb(111, 98, 61)"
+    },
+    {
+      "id": "dragon-ruins-18654",
+      "width": "23px",
+      "height": "23px",
+      "background": "rgba(244, 239, 215, 0.86)",
+      "border": "rgba(139, 151, 124, 0.5)",
+      "opacity": "0.88",
+      "color": "rgb(111, 98, 61)",
+      "glyphWidth": "17px",
+      "glyphHeight": "17px",
+      "fill": "none",
+      "stroke": "rgb(111, 98, 61)"
+    },
+    {
+      "id": "dragon-ruins-33233",
+      "width": "23px",
+      "height": "23px",
+      "background": "rgba(244, 239, 215, 0.86)",
+      "border": "rgba(139, 151, 124, 0.5)",
+      "opacity": "0.88",
+      "color": "rgb(111, 98, 61)",
+      "glyphWidth": "17px",
+      "glyphHeight": "17px",
+      "fill": "none",
+      "stroke": "rgb(111, 98, 61)"
+    }
+  ],
+  "history": {
+    "site": "dragon-ruins-30967",
+    "fixture": {
+      "kind": "critical-population saved simulation",
+      "provinceId": 56,
+      "name": "Snowcombe",
+      "original": {
+        "urban": 6979.349217950424,
+        "rural": 3720.9020473403043,
+        "total": 10700.251265290728
+      },
+      "urban": 649,
+      "rural": 10051.251265290728,
+      "total": 10700.251265290728,
+      "worldPopulation": 11770226.062669564,
+      "urbanSupport": 10483.561489715576,
+      "predictedUrbanTarget": 6206.145733868621,
+      "validated": true,
+      "populationBalanced": true
+    },
+    "beforeYear": 400,
+    "afterYear": 401,
+    "landscapeKeys": [
+      "2/2",
+      "2/3"
+    ],
+    "lod": [
+      2,
+      2
+    ],
+    "cameraUnchanged": true,
+    "modelReplaced": true,
+    "detailsReplaced": true,
+    "exported": {
+      "bytes": 824032,
+      "meshes": 18,
+      "vertices": 22554
+    },
+    "fingerprints": [
+      "2377e4fa",
+      "81379c3c",
+      "24a862f0"
+    ],
+    "closedCard": {
+      "stillHidden": true,
+      "reloaded": true,
+      "landscapeKeys": [
+        "2/4",
+        "2/5"
+      ]
+    }
+  },
+  "bundleSha256": "b5f7af058efa5560db3f1e20c53804fd142e1a63398c64c9bdd5fa0ea23fe017"
+}

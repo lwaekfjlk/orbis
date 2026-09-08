@@ -4,23 +4,23 @@ import {readFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {createHash} from 'node:crypto';
 import {root,defaults} from './engine-loader.mjs';
-const scripts=['src/world/geography.js','src/civilization/realm-names.js', 'src/civilization/simulation.js','src/city/environment.js','src/civilization/high-citadels.js', 'src/towns/catalog.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/high-citadel-plan.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/render/export-glb.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/templates.js','src/landmarks/world-binding.js'];
+const scripts=['src/world/geography.js','src/civilization/realm-names.js', 'src/civilization/simulation.js','src/city/environment.js','src/civilization/high-citadels.js', 'src/towns/catalog.js','src/towns/grammar.js', 'src/towns/fortifications.js','src/city/high-citadel-plan.js','src/city/generator.js','src/city/actions.js','src/render/world-renderer.js','src/render/export-glb.js','src/landmarks/catalog.js','src/landmarks/kit.js','src/landmarks/dragon-ruins.js','src/landmarks/templates.js','src/landmarks/world-binding.js'];
 const e=Function(scripts.map(f=>readFileSync(resolve(root,f),'utf8')).join('\n')+'\nreturn {LandmarkCatalog,LandmarkTemplates,LandmarkBinding,generateWorld,createCivilization,generateCity,physicalFingerprint,settlementFingerprint,politicalFingerprint,exportGeometryGLB};')();
 const C=e.LandmarkCatalog,T=e.LandmarkTemplates;
 function geometryHash(m,filter=()=>true){const h=createHash('sha256');for(const p of m.parts.filter(filter))h.update(Buffer.from(new Float32Array(p.geometry.data).buffer));return h.digest('hex')}
 
-test('catalog has fifteen palace families and six separately composed regional landmarks',()=>{
- assert.equal(C.styles.filter(s=>s.type==='palace').length,15);assert.equal(C.styles.filter(s=>s.type==='landmark').length,6);
+test('catalog has fifteen palace families and seven separately composed regional landmarks',()=>{
+ assert.equal(C.styles.filter(s=>s.type==='palace').length,15);assert.equal(C.styles.filter(s=>s.type==='landmark').length,7);
  for(const s of C.styles)assert.ok(T.builders[s.id]);
 });
-test('all twenty-one assemblies are deterministic finite meshes, with separate named roof groups',()=>{
+test('all twenty-two assemblies are deterministic finite meshes, with separate named roof groups',()=>{
  const hashes=new Set();
  for(const s of C.styles){const r=C.recipe(s.id,'mesh-test'),a=T.build(r),b=T.build(r);
-  assert.equal(geometryHash(a),geometryHash(b),s.id);assert.ok(a.stats.triangles>3000);assert.ok(a.parts.some(p=>p.role==='roof'));assert.equal(a.parts.length,new Set(a.parts.map(p=>p.id)).size);
+  assert.equal(geometryHash(a),geometryHash(b),s.id);assert.ok(a.stats.triangles>3000);if(s.id==='dragon-ruins')assert.ok(a.parts.every(p=>p.role!=='roof'));else assert.ok(a.parts.some(p=>p.role==='roof'));assert.equal(a.parts.length,new Set(a.parts.map(p=>p.id)).size);
   for(const p of a.parts){assert.equal(p.geometry.data.length%27,0);for(const v of p.geometry.data)assert.ok(Number.isFinite(v));}
   hashes.add(geometryHash(a,p=>p.role==='architecture'));
  }
- assert.equal(hashes.size,21,'Architecture differs geometrically, not only through color or metadata.');
+ assert.equal(hashes.size,22,'Architecture differs geometrically, not only through color or metadata.');
 });
 test('seed recombination, tower-crown substitution and roof substitution change actual mesh geometry',()=>{
  const r=C.recipe('river','composition-test'),a=T.build(r),b=T.build({...r,seed:'composition-test-2',variant:2}),c=T.build({...r,crown:'crystal'}),d=T.build({...r,roofLanguage:'flat'});

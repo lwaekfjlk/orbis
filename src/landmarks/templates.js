@@ -1,4 +1,4 @@
-/** Authored compositions assembled from the reusable kit. Fifteen palace families + six landmarks. */
+/** Authored compositions assembled from the reusable kit. Fifteen palace families + seven landmarks. */
 const LandmarkTemplates = (() => {
  const LABYRINTH_OPENING=[[-9,-14],[9,-14],[9,12],[-9,12]],LABYRINTH_FLOOR=-6.25;
  function pavilion(k,x,y,z,r=2,h=3){k.mark('open-pavilion');k.cylinder(x,y,z,r*1.14,.3,'trim',8);for(let i=0;i<8;i++){const a=i*Math.PI/4;k.cylinder(x+Math.cos(a)*r*.83,y+.3,z+Math.sin(a)*r*.83,.11,h,'wall',6)}k.using('roof',()=>{k.lathe(x,y+h+.3,z,[[0,0],[r*1.3,0],[r*.92,.25],[r*.54,r*.6],[r*.2,r*1.15],[0,r*1.5]],'roof',8);k.cone(x,y+h+.3+r*1.5,z,.16,.65,'metal',0,6)})}
@@ -305,8 +305,8 @@ const LandmarkTemplates = (() => {
    k.using('ornament',()=>k.cultureDetail(0,deck+.38,13.5));
   },'Planting follows the site climate; no watercourse or clearing is created.');
  }
- const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,steppe,paddy,delve,lagoon,taiga,monsoon,lighthouse,observatory,labyrinth,bridge,ice,grove};
- function build(recipe,options={}){if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.build(recipe,options);if(recipe.artisan&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.precinct(recipe,options);const r=LandmarkCatalog.validate(recipe),k=new LandmarkKit(r,options);stage(k);builders[r.style](k);const model=k.finish();return r.style==='labyrinth'?{...model,groundY:0,excavation:{outline:LABYRINTH_OPENING.map(p=>p.slice()),floorY:LABYRINTH_FLOOR,entrance:[0,13.245]}}:model}
+ const builders={river,basilica,arcane,forest,mountain,desert,delta,basalt,fjord,steppe,paddy,delve,lagoon,taiga,monsoon,lighthouse,observatory,labyrinth,bridge,ice,grove,'dragon-ruins':k=>DragonRuins.compose(k)};
+ function build(recipe,options={}){if(recipe.sacred&&typeof SacredCityKit!=='undefined')return SacredCityKit.build(recipe,options);if(recipe.artisan&&typeof ArtisanCityKit!=='undefined')return ArtisanCityKit.precinct(recipe,options);const r=LandmarkCatalog.validate(recipe),k=new LandmarkKit(r,options);if(r.style!=='dragon-ruins')stage(k);builders[r.style](k);const model=k.finish();if(r.style==='dragon-ruins')return{...model,groundY:0,footprint:[...DragonRuins.footprint],canonicalWidth:DragonRuins.footprint[0],dragonRuins:{version:DragonRuins.version,variant:DragonRuins.variants[r.variant%3].id}};return r.style==='labyrinth'?{...model,groundY:0,excavation:{outline:LABYRINTH_OPENING.map(p=>p.slice()),floorY:LABYRINTH_FLOOR,entrance:[0,13.245]}}:model}
  function transformGeometry(g,scale=1,offset=[0,0,0],angle=0){const out=new Geometry(),c=Math.cos(angle),s=Math.sin(angle);for(let i=0;i<g.data.length;i+=9){const a=g.data,x=a[i],z=a[i+2],nx=a[i+3],nz=a[i+5];out.data.push((x*c-z*s)*scale+offset[0],a[i+1]*scale+offset[1],(x*s+z*c)*scale+offset[2],nx*c-nz*s,a[i+4],nx*s+nz*c,a[i+6],a[i+7],a[i+8])}return out}
  function meshes(model){const m={};for(const p of model.parts)m[p.id]={vertices:new Float32Array(p.geometry.data)};return m}
  return {build,builders,transformGeometry,meshes};

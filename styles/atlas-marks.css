@@ -1,0 +1,16 @@
+/* Incised, single-colour totems share the quiet scale of the other wonders. */
+.atlas-mark{display:inline-block;flex:0 0 auto;vertical-align:middle;overflow:visible;pointer-events:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.om-high-city-icon .atlas-mark,.om-site-mark .atlas-mark{color:#ddd8c1}
+
+body.onemap .world-landmark-pin[data-atlas-site]{padding:2px;color:#6f623d}
+body.onemap .world-landmark-pin[data-atlas-site] .atlas-mark{width:17px;height:17px}
+.om-site-mark{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 30px;vertical-align:middle;margin-right:8px}
+.om-ruin-sites{border-bottom:1px solid #d5e7ae30;padding:8px 0 12px;margin-bottom:5px}
+#omChrome .om-ruin-site{display:flex;align-items:center;width:100%;text-align:left;padding:8px 5px;margin:4px 0}
+.om-ruin-site b{display:block;color:#f5efd9;font:12px/1.4 system-ui,sans-serif}
+.om-ruin-site small{display:block;color:var(--ui-muted);font:10px/1.4 system-ui,sans-serif;margin-top:3px}
+.om-result button:has(.om-site-mark){display:flex;align-items:center}
+.cm-ruin-part-list{display:grid;gap:6px}
+.cm-ruin-part-list button{text-align:left}
+
+body.onemap .world-landmark-pin[data-atlas-site]::before{content:"";position:absolute;left:50%;top:50%;height:1px;width:var(--site-leader-length,0);background:#755833a0;transform:rotate(var(--site-leader-angle,0rad));transform-origin:0 50%;z-index:-1;pointer-events:none}
