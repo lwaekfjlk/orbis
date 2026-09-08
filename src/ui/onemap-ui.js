@@ -198,8 +198,15 @@ window.OneMap = (() => {
     function clearSelection(){selection=null;show('omSelection',false);if(drawer==='realm')closeDrawer();}
     function selectionCard(kicker,title,text,buttons,media='',realm=null,place=null){
         // `media` is markup we generated ourselves (a narrator portrait), never input.
-        E('omSelectionBody').innerHTML=`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p><div class="om-actions">${buttons.map((b,i)=>`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`).join('')}</div>${place ? placeVitalsHTML(PlaceVitals.city(sim,place)) : ''}${placeNameOriginHTML(place) || realmNameOriginHTML(realm)}${media}`;
-        E('omSelectionBody').querySelectorAll('[data-selection-action]').forEach(b=>b.onclick=buttons[+b.dataset.selectionAction].run);
+        const body=E('omSelectionBody'),scrollTop=body.querySelector('.om-selection-content')?.scrollTop||0;
+        const heading=`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p>`;
+        const actions=(footer=false)=>`<div class="om-actions${footer?' om-city-actions':''}">${buttons.map((b,i)=>!!b.footer===footer?`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`:'').join('')}</div>`;
+        const origin=placeNameOriginHTML(place)||realmNameOriginHTML(realm);
+        body.innerHTML=place
+            ?`<div class="om-city-card"><div class="om-selection-content">${heading}${placeVitalsHTML(PlaceVitals.city(sim,place))}${origin}${media}${actions()}</div>${actions(true)}</div>`
+            :`${heading}${actions()}${origin}${media}`;
+        const content=body.querySelector('.om-selection-content');if(content)content.scrollTop=scrollTop;
+        body.querySelectorAll('[data-selection-action]').forEach(b=>b.onclick=buttons[+b.dataset.selectionAction].run);
         show('omSelection',true);
     }
     function inspectRealm(id,open=true){
@@ -224,7 +231,10 @@ window.OneMap = (() => {
     function inspectWorld(i,refresh=false){
         if(!world||!sim||busy||scene!=='world'||i<0)return;
         if(!refresh&&(drawer==='realm'||drawerContext))closeDrawer();
-        if(!refresh)E('omSelectionBody').scrollTop=0;
+        if(!refresh){
+            E('omSelectionBody').scrollTop=0;
+            const content=E('omSelectionBody').querySelector('.om-selection-content');if(content)content.scrollTop=0;
+        }
         const ruin=LandmarkUI.registry.find(s=>s.dragonRuins&&s.i===i);if(ruin){inspectRuinSite(ruin);return;}
         const status=typeof PoliticalLand!=='undefined'?PoliticalLand.status(world,sim,i):null;
         const p=world.height[i]>0&&world.lake[i]<=0?sim.provinces[world.provinceId[i]]:null,f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],direct=p&&sim.realms[p.owner],realm=status?status.realm:direct?.alive!==false?direct:null;
@@ -237,10 +247,10 @@ window.OneMap = (() => {
         const geography=f?.legend?f.text:[landform?.kind?.replaceAll('-', ' '),surface,world.height[i]>0?CityEnvironment.band(world.temp[i],world.arid[i],world.height[i]):null,`${world.temp[i].toFixed(1)} °C`].filter(Boolean).join(' · ');
         const subtitle=status&&!status.realm&&status.kind!=='water'?PoliticalLand.description(world,sim,i)+' '+geography:geography;
         const buttons=[];
-        if(p?.settled)buttons.push({label:'Zoom',primary:true,run:()=>enterTown(p.id)});
+        if(p?.settled)buttons.push({label:'Visit',primary:true,footer:true,run:()=>enterTown(p.id)});
         // The local storyteller remains available below the current census.
         const told=p?.settled&&typeof Saga!=='undefined'?Saga.of(world,sim,p):null;
-        if(told)buttons.push({label:'Story',run:()=>readSaga(p.id)});
+        if(told)buttons.push({label:'Story',footer:true,run:()=>readSaga(p.id)});
         buttons.push({label:'Details',run:()=>p?.settled?inspectTownDetails(p.id):openDrawer('detail')});
         const media=told&&typeof Portrait!=='undefined'
             ?`<div class="om-teller"><div class="om-teller-face">${Portrait.svg(told.narrator.people,told.narrator.seed,{size:72})}</div>`

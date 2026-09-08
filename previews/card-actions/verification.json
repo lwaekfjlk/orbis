@@ -1,0 +1,239 @@
+{
+  "product": "ORBIS",
+  "offline": true,
+  "actions": [
+    "desktop Visit focuses the selected real town",
+    "desktop Story opens that town’s saga and visual summary",
+    "Government & diplomacy clears town context and retains the country dossier after refresh",
+    "desktop Details retains the selected town",
+    "430×900: Details, Visit and Story remain visible and clickable",
+    "360×800: Details, Visit and Story remain visible and clickable"
+  ],
+  "footers": [
+    {
+      "viewport": {
+        "width": 1480,
+        "height": 980
+      },
+      "before": {
+        "footer": {
+          "top": 786,
+          "bottom": 852,
+          "width": 302,
+          "height": 66
+        },
+        "buttons": [
+          {
+            "top": 801,
+            "bottom": 849,
+            "width": 143,
+            "height": 48,
+            "text": "Visit",
+            "fontSize": 15
+          },
+          {
+            "top": 801,
+            "bottom": 849,
+            "width": 143,
+            "height": 48,
+            "text": "Story",
+            "fontSize": 15
+          }
+        ]
+      },
+      "after": {
+        "footer": {
+          "top": 786,
+          "bottom": 852,
+          "width": 302,
+          "height": 66
+        },
+        "buttons": [
+          {
+            "top": 801,
+            "bottom": 849,
+            "width": 143,
+            "height": 48,
+            "text": "Visit",
+            "fontSize": 15
+          },
+          {
+            "top": 801,
+            "bottom": 849,
+            "width": 143,
+            "height": 48,
+            "text": "Story",
+            "fontSize": 15
+          }
+        ]
+      },
+      "content": {
+        "top": 289.96875,
+        "bottom": 772,
+        "width": 302,
+        "height": 482.03125
+      },
+      "card": {
+        "top": 289.96875,
+        "bottom": 852,
+        "width": 302,
+        "height": 562.03125
+      },
+      "scrollTop": 0,
+      "scrollRange": 0,
+      "footerFollowsContent": true,
+      "detailsInContent": true
+    },
+    {
+      "viewport": {
+        "width": 430,
+        "height": 900
+      },
+      "before": {
+        "footer": {
+          "top": 728,
+          "bottom": 794,
+          "width": 318,
+          "height": 66
+        },
+        "buttons": [
+          {
+            "top": 743,
+            "bottom": 791,
+            "width": 151,
+            "height": 48,
+            "text": "Visit",
+            "fontSize": 15
+          },
+          {
+            "top": 743,
+            "bottom": 791,
+            "width": 151,
+            "height": 48,
+            "text": "Story",
+            "fontSize": 15
+          }
+        ]
+      },
+      "after": {
+        "footer": {
+          "top": 728,
+          "bottom": 794,
+          "width": 318,
+          "height": 66
+        },
+        "buttons": [
+          {
+            "top": 743,
+            "bottom": 791,
+            "width": 151,
+            "height": 48,
+            "text": "Visit",
+            "fontSize": 15
+          },
+          {
+            "top": 743,
+            "bottom": 791,
+            "width": 151,
+            "height": 48,
+            "text": "Story",
+            "fontSize": 15
+          }
+        ]
+      },
+      "content": {
+        "top": 240.65625,
+        "bottom": 714,
+        "width": 318,
+        "height": 473.34375
+      },
+      "card": {
+        "top": 240.65625,
+        "bottom": 794,
+        "width": 318,
+        "height": 553.34375
+      },
+      "scrollTop": 0,
+      "scrollRange": 0,
+      "footerFollowsContent": true,
+      "detailsInContent": true
+    },
+    {
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "before": {
+        "footer": {
+          "top": 582,
+          "bottom": 648,
+          "width": 248,
+          "height": 66
+        },
+        "buttons": [
+          {
+            "top": 597,
+            "bottom": 645,
+            "width": 116,
+            "height": 48,
+            "text": "Visit",
+            "fontSize": 15
+          },
+          {
+            "top": 597,
+            "bottom": 645,
+            "width": 116,
+            "height": 48,
+            "text": "Story",
+            "fontSize": 15
+          }
+        ]
+      },
+      "after": {
+        "footer": {
+          "top": 582,
+          "bottom": 648,
+          "width": 248,
+          "height": 66
+        },
+        "buttons": [
+          {
+            "top": 597,
+            "bottom": 645,
+            "width": 116,
+            "height": 48,
+            "text": "Visit",
+            "fontSize": 15
+          },
+          {
+            "top": 597,
+            "bottom": 645,
+            "width": 116,
+            "height": 48,
+            "text": "Story",
+            "fontSize": 15
+          }
+        ]
+      },
+      "content": {
+        "top": 81,
+        "bottom": 568,
+        "width": 248,
+        "height": 487
+      },
+      "card": {
+        "top": 81,
+        "bottom": 648,
+        "width": 248,
+        "height": 567
+      },
+      "scrollTop": 36,
+      "scrollRange": 36,
+      "footerFollowsContent": true,
+      "detailsInContent": true
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "externalRequests": []
+}

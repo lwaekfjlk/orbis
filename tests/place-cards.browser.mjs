@@ -19,7 +19,7 @@ const child = spawn(process.env.CHROMIUM_PATH || chromium.executablePath(), [
 ], { stdio: 'ignore', detached: true });
 child.unref();
 let browser;
-const report = { product: 'ORBIS', cities: [], realms: [], actions: [], layouts: [], screenshots: [], errors: [], consoleErrors: [], externalRequests: [] };
+const report = { product: 'ORBIS', cities: [], realms: [], actions: [], layouts: [], footers: [], screenshots: [], errors: [], consoleErrors: [], externalRequests: [] };
 const close = (actual, expected, message, tolerance = 1e-10) => {
     assert(Number.isFinite(actual), message + ': nonfinite value');
     assert(Math.abs(actual - expected) <= Math.max(1, Math.abs(expected)) * tolerance,
@@ -142,9 +142,49 @@ try {
         await page.evaluate(id => inspectCell(sim.provinces[id].i), id);
         await page.locator(citySelector).waitFor({ state: 'visible' });
         assert.equal((await page.locator('#omSelectionBody h3').innerText()).trim(), (await expected('city', id)).name);
-        assert.deepEqual(await page.locator('#omSelectionBody .om-actions button').allTextContents(), ['Zoom', 'Story', 'Details']);
+        assert.deepEqual(await page.locator('#omSelectionBody [data-selection-action]').allTextContents(), ['Details', 'Visit', 'Story']);
     }
     const button = name => page.locator('#omSelectionBody').getByRole('button', { name, exact: true });
+    async function verifyCityFooter(viewport) {
+        const result = await page.locator('#omSelectionBody .om-city-card').evaluate(card => {
+            const content = card.querySelector(':scope > .om-selection-content');
+            const footer = card.querySelector(':scope > .om-city-actions.om-actions');
+            if (!content || !footer) throw Error('City content and footer must be direct children of the card');
+            const rect = n => { const r = n.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, width: r.width, height: r.height }; };
+            const buttons = [...footer.querySelectorAll('button')];
+            const snapshot = () => ({ footer: rect(footer), buttons: buttons.map(n => ({ ...rect(n), text: n.textContent.trim(), fontSize: parseFloat(getComputedStyle(n).fontSize) })) });
+            content.scrollTop = 0;
+            const before = snapshot(), contentRect = rect(content);
+            content.scrollTop = content.scrollHeight;
+            const after = snapshot(), scrollTop = content.scrollTop;
+            content.scrollTop = 0;
+            return { before, after, content: contentRect, card: rect(card), scrollTop,
+                scrollRange: content.scrollHeight - content.clientHeight,
+                footerFollowsContent: content.nextElementSibling === footer,
+                detailsInContent: [...content.querySelectorAll('button')].some(n => n.textContent.trim() === 'Details') };
+        });
+        assert(result.footerFollowsContent && result.detailsInContent, 'Details belongs to the scrolling content before the separate bottom footer');
+        assert.deepEqual(result.before.buttons.map(b => b.text), ['Visit', 'Story']);
+        assert(Math.abs(result.before.buttons[0].width - result.before.buttons[1].width) <= 1, 'Visit and Story share the footer width equally');
+        assert(result.before.footer.top >= result.content.bottom - 1, 'the footer sits below the scrolling content');
+        for (const state of [result.before, result.after]) {
+            assert(state.footer.top >= 0 && state.footer.bottom <= viewport.height + 1, 'the bottom footer stays within the viewport');
+            assert(state.footer.bottom <= result.card.bottom + 1, 'the footer stays inside the card');
+            for (const action of state.buttons) {
+                assert(action.height >= 44 && action.fontSize >= 14, `${action.text} has a large readable touch target`);
+                assert(action.top >= state.footer.top - 1 && action.bottom <= state.footer.bottom + 1, `${action.text} remains fully visible in the footer`);
+            }
+        }
+        if (viewport.width <= 430) {
+            if (result.scrollRange > 1) assert(result.scrollTop > 0, 'overflowing mobile city content can scroll');
+            for (const edge of ['top', 'bottom']) assert(Math.abs(result.before.footer[edge] - result.after.footer[edge]) <= .5,
+                `the footer ${edge} remains fixed while city content scrolls`);
+            await page.locator('#omSelectionBody .om-selection-content').evaluate(n => { n.scrollTop = n.scrollHeight; });
+            for (const name of ['Visit', 'Story']) await button(name).click({ trial: true });
+            await page.locator('#omSelectionBody .om-selection-content').evaluate(n => { n.scrollTop = 0; });
+        }
+        report.footers.push({ viewport, ...result });
+    }
     async function home() { await page.locator('#omHome').click(); await stable(); }
     async function townFocused(id) {
         await page.waitForFunction(id => window.__continuousFocus === id && ContinuousMap.layer.focusId === id && ContinuousMap.layer.models.has(id), id, { timeout: 180000 });
@@ -174,19 +214,20 @@ try {
         assert.deepEqual(await camera(), before, 'Details opens the city overview without moving the map camera');
     }
     async function screenshot(kind, size) {
-        const scroll = kind === 'city' ? '#omSelectionBody' : '#omDrawer .om-drawer-body';
+        const scroll = kind === 'city' ? '#omSelectionBody .om-selection-content' : '#omDrawer .om-drawer-body';
         await page.locator(scroll).evaluate(element => { element.scrollTop = 0; });
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const file = `${kind}-${size}.png`;
         await page.screenshot({ path: join(out, file) });
         report.screenshots.push({ kind, viewport: page.viewportSize(), file });
+        console.log('ORBIS place cards: screenshot ' + join(out, file));
     }
 
     for (const id of fixture.townIds) {
         await inspectTown(id); report.cities.push(await verifyVitals(citySelector, 'city', id));
         console.log(`ORBIS place cards: city ${id} population and both composition bars match the simulation`);
     }
-    await inspectTown(fixture.townIds[0]); await screenshot('city', 'desktop');
+    await inspectTown(fixture.townIds[0]); await verifyCityFooter(page.viewportSize()); await screenshot('city', 'desktop');
     await page.evaluate(id => selectRealm(id), fixture.realmId);
     const originalRealm = await verifyVitals(realmSelector, 'realm', fixture.realmId);
     report.realms.push(originalRealm);
@@ -215,13 +256,13 @@ try {
     await inspectTown(fixture.townIds[1]);
     assert(await page.locator('#omDrawer').evaluate(n => n.classList.contains('hidden')), 'switching to a town closes the previous realm dossier');
 
-    console.log('ORBIS place cards: testing desktop Zoom, Story and Details');
+    console.log('ORBIS place cards: testing desktop Visit, Story and Details');
     await home(); await inspectTown(fixture.townIds[0]);
     const overviewZoom = await page.evaluate(() => renderer.zoom);
-    await button('Zoom').click(); await townFocused(fixture.townIds[0]);
+    await button('Visit').click(); await townFocused(fixture.townIds[0]);
     assert((await page.evaluate(() => renderer.zoom)) > overviewZoom);
-    assert.equal(await page.evaluate(() => OneMap.panel), null, 'Zoom preserves the direct map focus behavior');
-    report.actions.push('desktop Zoom focuses the selected real town');
+    assert.equal(await page.evaluate(() => OneMap.panel), null, 'Visit preserves the direct map focus behavior');
+    report.actions.push('desktop Visit focuses the selected real town');
     await home(); await inspectTown(fixture.townIds[0]); await story(fixture.townIds[0]);
     report.actions.push('desktop Story opens that town’s saga and visual summary');
     const storyTown = fixture.townIds[0], beforeStoryRefresh = await expected('city', storyTown);
@@ -323,30 +364,33 @@ try {
         await home(); await page.setViewportSize(viewport); await stable();
         await inspectTown(fixture.townIds[0]); await verifyVitals(citySelector, 'city', fixture.townIds[0]);
         await verifyLayout('#omSelection', viewport);
+        await verifyCityFooter(viewport);
         await screenshot('city', viewport.width);
-        for (const name of ['Zoom', 'Story', 'Details']) {
+        for (const name of ['Details', 'Visit', 'Story']) {
             await button(name).scrollIntoViewIfNeeded(); assert(await button(name).isVisible());
             await button(name).click({ trial: true });
         }
         await story(fixture.townIds[0]);
         await verifyLayout('#omDrawer', viewport);
         await page.locator('#omDrawerClose').click(); await home();
-        await inspectTown(fixture.townIds[1]); await button('Zoom').click(); await townFocused(fixture.townIds[1]);
+        await inspectTown(fixture.townIds[1]); await button('Visit').click(); await townFocused(fixture.townIds[1]);
         await home(); await inspectTown(fixture.townIds[2]); await details(fixture.townIds[2]);
         await page.locator('#omDrawerClose').click(); await home();
         await page.evaluate(id => selectRealm(id), fixture.realmId);
         await verifyVitals(realmSelector, 'realm', fixture.realmId); await verifyLayout('#omDrawer', viewport);
         await screenshot('country', viewport.width);
         await page.locator('#omDrawerClose').click();
-        report.actions.push(`${viewport.width}×${viewport.height}: Zoom, Story and Details remain visible and clickable`);
+        report.actions.push(`${viewport.width}×${viewport.height}: Details, Visit and Story remain visible and clickable`);
         console.log(`ORBIS place cards: ${viewport.width}×${viewport.height} passed; city and country screenshots captured`);
     }
+    assert(report.footers.some(f => f.viewport.width <= 430 && f.scrollRange > 1 && f.scrollTop > 0),
+        'at least one real mobile card exercises content scrolling beneath the fixed footer');
     assert.deepEqual(report.errors, [], 'no uncaught browser errors');
     assert.deepEqual(report.consoleErrors, [], 'no console errors');
     assert.deepEqual(report.externalRequests, [], 'the bundled ORBIS map works without external requests');
     report.offline = true;
     await writeFile(join(out, 'checks.json'), JSON.stringify(report, null, 2) + '\n');
-    console.log('PASS ORBIS place cards: exact populations, all composition segments, live ownership refresh, selection, Zoom/Story/Details and two mobile viewports');
+    console.log('PASS ORBIS place cards: exact populations, all composition segments, live ownership refresh, selection, Details/Visit/Story, fixed bottom actions and two mobile viewports');
     console.log('Report: ' + join(out, 'checks.json'));
 } catch (error) {
     report.failure = String(error?.stack || error);
