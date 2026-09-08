@@ -1,13 +1,13 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/telluric-wordmark-dark.svg">
-  <img src="assets/brand/telluric-wordmark.svg" alt="TELLURIC" width="252" height="72">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/orbis-wordmark-dark.svg">
+  <img src="assets/brand/orbis-wordmark.svg" alt="ORBIS" width="200" height="72">
 </picture>
 
 一张自动生成的奇幻世界地图，可以从大陆一路放大到城市街道。在浏览器里探索国家与居民，看历史继续发展。
 
 **[在线体验](https://haofeiyu.me/telluric/)** · [English](README.md)
 
-![世界全景：国家名称、聚落和标示清晰的荒野](previews/tectonic-climate/labels/full-names-1480.png)
+![世界全景：国家名称、聚落和标示清晰的荒野](previews/orbis/overview-desktop.png)
 
 *默认世界 Aereth-47。点击国名可查看疆域、人口与历史；地图显示完整正式国名；国内湖泊纳入周边国家，开放荒野保留明确标示。*
 
@@ -19,13 +19,13 @@
 | 移动或旋转视角 | 拖动平移；**Shift + 拖动**或右键拖动旋转 |
 | 找到一个地方 | 打开 **Search**，或按 **/**；选择 **Zoom ↗** 接近城镇 |
 | 查看国家或建筑 | 点击名称、标记或建筑；悬停国名可高亮国界 |
-| 返回世界全景 | 放大后点击 **← Back to world**，也可点击 **TELLURIC** 标记或按 **H**；**Wider setting** 可从城镇拉远 |
+| 返回世界全景 | 放大后点击 **← Back to world**，也可点击 **ORBIS** 标记或按 **H**；**Wider setting** 可从城镇拉远 |
 
 底部 **Play** 和年份按钮用于推进历史。**Recreate** 可按种子与设置生成新世界。**⋯** 菜单提供保存、读取、编年史和导出；生成新世界前，先保存想保留的世界。
 
 ## 地貌各有性格
 
-![赭红砂岩台地被深峡谷切开](previews/tectonic-climate/exploration/after/diagnostic-0-red-plateau.png)
+![赭红砂岩台地被深峡谷切开](previews/orbis/red-plateau.png)
 
 *红土台地与峡谷崖壁。此图关闭了树木、城镇和国界图层，便于观察地形本身。*
 
@@ -35,7 +35,7 @@
 
 ## 城市生长在原有地形上
 
-![斜视角下的 Oakfield：住宅、街道、城墙与水岸](previews/tectonic-climate/exploration/after/city.png)
+![斜视角下的 Oakfield：住宅、街道、城墙与水岸](previews/orbis/city.png)
 
 *Oakfield：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
 
@@ -49,13 +49,13 @@
 
 点击专属符号，或打开搜索即可前往，也支持搜索 **龙城**、**圣城**和 **龙族遗迹**。遗迹可以逐部件查看，并导出三维模型。[查看龙族遗址说明](docs/DRAGON_SITES.md)。
 
-![龙族遗迹：破损石环与龙脊拱架](previews/dragon-sites/ruins-aerie.png)
+![龙族遗迹：破损石环与龙脊拱架](previews/orbis/dragon-ruins.png)
 
 ## 居民、国家与故事
 
-![地图旁的城市故事面板，包含居民讲述者的肖像与叙事](previews/readme/story.png)
+![地图旁的城市故事面板，包含居民讲述者的肖像与叙事](previews/orbis/story.png)
 
-*居民 Wengar Brendis 讲述 Scorchspire 的故事。每个章节都会附上所依据的世界数据或历史记录。*
+*居民 Randath Maredis the Unhoused 讲述 Oakfield 的故事。每个章节都会附上所依据的世界数据或历史记录。*
 
 世界中生活着七个族群。新建国家以一个族群为主，同时保留少数族群；迁徙与政治事件可以改变人口构成。国名来自多个神话传统，国家概览会解释名称出处。
 
@@ -63,7 +63,7 @@
 
 ## 本地运行
 
-下载或克隆仓库后，用现代浏览器打开 **[dist/telluric-onemap.html](dist/telluric-onemap.html)** 即可离线游玩，无需账号、API 密钥或额外下载资源。
+下载或克隆仓库后，用现代浏览器打开 **[dist/orbis-onemap.html](dist/orbis-onemap.html)** 即可离线游玩，无需账号、API 密钥或额外下载资源。原来的 `dist/telluric-onemap.html` 路径保留为兼容副本。
 
 开发需要 **Node.js 20+**，无需安装 npm 依赖：
 

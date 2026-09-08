@@ -1,13 +1,13 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/telluric-wordmark-dark.svg">
-  <img src="assets/brand/telluric-wordmark.svg" alt="TELLURIC" width="252" height="72">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/orbis-wordmark-dark.svg">
+  <img src="assets/brand/orbis-wordmark.svg" alt="ORBIS" width="200" height="72">
 </picture>
 
 A procedural fantasy atlas you can explore from continents to city streets. Generate a world, discover its countries and people, and watch its history unfold—all in your browser.
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and marked wildness](previews/tectonic-climate/labels/full-names-1480.png)
+![World overview with named countries, settlements and marked wildness](previews/orbis/overview-desktop.png)
 
 *The default world, Aereth-47. Click a country name to see its territory, population and history. Countries print their full formal names. Domestic lakes belong to their surrounding countries; open wildness remains clearly marked.*
 
@@ -19,13 +19,13 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 | Move or rotate the view | Drag to pan; **Shift + drag** or right-drag to orbit |
 | Find a place | Open **Search** or press **/**; choose **Zoom ↗** to approach a town |
 | Inspect a country or building | Click its name, marker or building; hover a country name to highlight its borders |
-| Return to the world | Use **← Back to world** after zooming in, click the **TELLURIC** logo, or press **H**; **Wider setting** pulls back from a town |
+| Return to the world | Use **← Back to world** after zooming in, click the **ORBIS** logo, or press **H**; **Wider setting** pulls back from a town |
 
 Use **Play** or the year-step buttons to advance history. **Recreate** creates a new world from a seed and your settings. The **⋯** menu includes save/load, the chronicle and exports; save your world before replacing it.
 
 ## A world with distinct landforms
 
-![Red sandstone tablelands divided by deep canyons](previews/tectonic-climate/exploration/after/diagnostic-0-red-plateau.png)
+![Red sandstone tablelands divided by deep canyons](previews/orbis/red-plateau.png)
 
 *Red tablelands and canyon walls. Tree, town and border layers are switched off to show the terrain.*
 
@@ -35,7 +35,7 @@ Search for a named landform to find it. Recreate to explore the new terrain; old
 
 ## Cities belong to the landscape
 
-![An oblique view of Oakfield, showing houses, streets, walls and the waterfront](previews/tectonic-climate/exploration/after/city.png)
+![An oblique view of Oakfield, showing houses, streets, walls and the waterfront](previews/orbis/city.png)
 
 *Oakfield: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
 
@@ -49,13 +49,13 @@ A coiled dragon totem marks a Dragon King Citadel; a sacred sun seal marks a Hig
 
 Click a special symbol or open Search to visit. Searches for **龙城**, **圣城** and **龙族遗迹** work too. Ruins can be explored part by part and exported as a 3D model. [Explore the dragon sites](docs/DRAGON_SITES.md).
 
-![Ancient dragon ruins with broken stone rings and spine arches](previews/dragon-sites/ruins-aerie.png)
+![Ancient dragon ruins with broken stone rings and spine arches](previews/orbis/dragon-ruins.png)
 
 ## People, countries and stories
 
-![A town's resident narrator and illustrated city story beside the map](previews/readme/story.png)
+![A town's resident narrator and illustrated city story beside the map](previews/orbis/story.png)
 
-*Wengar Brendis introduces Scorchspire. Each story chapter includes the world or historical facts behind it.*
+*Randath Maredis the Unhoused introduces Oakfield. Each story chapter includes the world or historical facts behind it.*
 
 Seven peoples inhabit the atlas. New countries form around a majority people while retaining minority communities; migration and political events can change that mix. Names draw on mythological traditions, and national overviews explain their origins.
 
@@ -63,7 +63,7 @@ Select a town and choose **Hear the whole story** to meet its narrator. Explore 
 
 ## Run locally
 
-Download or clone this repository, then open **[dist/telluric-onemap.html](dist/telluric-onemap.html)** in a modern browser. The standalone file works offline, with no account, API key or external asset downloads.
+Download or clone this repository, then open **[dist/orbis-onemap.html](dist/orbis-onemap.html)** in a modern browser. The standalone file works offline, with no account, API key or external asset downloads. The former `dist/telluric-onemap.html` path remains available as a compatibility copy.
 
 For development, use **Node.js 20+**. No npm dependencies need installing:
 

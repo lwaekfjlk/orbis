@@ -36,4 +36,4 @@ const server = createServer(async (req, res) => {
     }
 });
 server.on('error', e => { console.error(e.message); process.exitCode = 1; });
-server.listen(port, '127.0.0.1', () => console.log(`Telluric: http://127.0.0.1:${port}\nCtrl+C to stop.`));
+server.listen(port, '127.0.0.1', () => console.log(`Orbis: http://127.0.0.1:${port}\nCtrl+C to stop.`));

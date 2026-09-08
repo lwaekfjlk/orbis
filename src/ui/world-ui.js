@@ -252,7 +252,7 @@ function refreshAll(rebuild = true) {
     $('realmCount').textContent = alive.length + ' / ' + sim.realms.length;
     $('worldSubtitle').textContent = `${world.stats.continents} continents · ${world.stats.islands} islands · ${world.hydrologyStats.lakes} inland lakes · ${PEOPLES.length} peoples · ${FAITHS.length} traditions`;
     $('navWorldStats').textContent = `${sim.provinces.length} provinces · ${world.stats.volcanoes} volcanic centers (${world.stats.active} active) · ${world.hydrologyStats.fjords} fjords`;
-    $('footerStatus').textContent = `TELLURIC VI · Seed ${world.params.seed} · ${sim.year - 400} simulated years · ${sim.totalConquests} territorial transfers`;
+    $('footerStatus').textContent = `ORBIS · Seed ${world.params.seed} · ${sim.year - 400} simulated years · ${sim.totalConquests} territorial transfers`;
     $('simStatus').textContent = playing ? 'History is advancing' : 'Paused · changes are reproducible';
     const audit = auditCivilization(sim, world);
     window.__audit = audit;
@@ -960,16 +960,17 @@ function rerollPolitics() {
 }
 function saveBlob(blob, name) { const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(u), 12000); }
 const slug = () => world.params.seed.replace(/[^a-zA-Z0-9_-]+/g, '-').slice(0, 50) || 'world';
+// The persisted format remains compatible with existing Telluric saves.
 function makeSave() { return { format: 'telluric-civilization', version: 7, engine: '9.0.0', parameters: world.params, options: sim.options, simulation: sim, note: 'Rebuilds deterministic geography with the bundled engine; city projects, town-assembly recipes and optional landmark recipes are included. All quantities are qualitative model units.' }; }
 function saveSimulation() { if (!sim || busy)
-    return; pause(); saveBlob(new Blob([JSON.stringify(makeSave())], { type: 'application/json' }), `telluric-${slug()}-year-${sim.year}.json`); $('exportMenu').classList.add('hidden'); toast('Simulation saved, including population mixtures, treaties, wars and history.'); }
+    return; pause(); saveBlob(new Blob([JSON.stringify(makeSave())], { type: 'application/json' }), `orbis-${slug()}-year-${sim.year}.json`); $('exportMenu').classList.add('hidden'); toast('Simulation saved, including population mixtures, treaties, wars and history.'); }
 async function loadSimulation(file) { if (!file || busy)
     return; try {
     if (file.size > 20 * 1024 * 1024)
         throw Error('This save is larger than the 20 MB safety limit.');
     const payload = JSON.parse(await file.text());
     if (payload.format !== 'telluric-civilization' || !([6, 7].includes(payload.version)) || !(['6.0.0', '7.0.0', '8.0.0', '9.0.0'].includes(payload.engine)) || !payload.parameters || typeof payload.parameters.seed !== 'string' || !payload.simulation)
-        throw Error('Choose a Telluric VI–IX simulation save, not a map image or an older terrain export.');
+        throw Error('Choose an Orbis or legacy Telluric VI–IX simulation save, not a map image or a terrain export.');
     const p = payload.parameters;
     if (!Number.isFinite(p.plates) || p.plates < 10 || p.plates > 30 || !Number.isFinite(p.continents) || p.continents < 4 || p.continents > 8)
         throw Error('Invalid geography settings in save.');
@@ -1023,7 +1024,7 @@ async function savePNG() {
     ctx.fillRect(0, canvas.height, out.width, 106);
     ctx.fillStyle = '#304e3c';
     ctx.font = '27px Georgia';
-    ctx.fillText('TELLURIC — Continuous Atlas', 27, canvas.height + 39);
+    ctx.fillText('ORBIS — Continuous Atlas', 27, canvas.height + 39);
     ctx.font = '12px sans-serif';
     ctx.fillStyle = '#74876a';
     ctx.fillText(`YEAR ${sim.year} AC · ${layerTitles[currentLayer]} · ${sim.realms.filter(c => c.alive).length} realms · ${PEOPLES.length} peoples · ${FAITHS.length} faiths · Seed: ${world.params.seed}`, 27, canvas.height + 64);
@@ -1033,13 +1034,13 @@ async function savePNG() {
     canvas.height = oh;
     renderer.render();
     out.toBlob(b => { if (b)
-        saveBlob(b, `telluric-${slug()}-${currentLayer}-${sim.year}.png`); }, 'image/png');
+        saveBlob(b, `orbis-${slug()}-${currentLayer}-${sim.year}.png`); }, 'image/png');
     $('exportMenu').classList.add('hidden');
 }
 function saveChronicle() {
     if (!sim)
         return;
-    const lines = [`# The Manyfold World — Year ${sim.year} AC`, '', 'A reproducible, uncalibrated fantasy simulation. Names and institutions are generated after settlements; no named polity list is required.', `Seed: ${world.params.seed}`, `Geography: ${world.stats.continents} continents; ${world.stats.islands} islands; ${world.hydrologyStats.lakes} inland lakes; ${world.hydrologyStats.fjords} fjords.`, '', '## Realms'];
+    const lines = [`# Orbis — World Chronicle · Year ${sim.year} AC`, '', 'A reproducible, uncalibrated fantasy simulation. Names and institutions are generated after settlements; no named polity list is required.', `Seed: ${world.params.seed}`, `Geography: ${world.stats.continents} continents; ${world.stats.islands} islands; ${world.hydrologyStats.lakes} inland lakes; ${world.hydrologyStats.fjords} fjords.`, '', '## Realms'];
     for (const c of sim.realms.filter(c => c.alive).sort((a, b) => b.strength - a.strength)) {
         lines.push('', `### ${c.title}`, ...(RealmNames.describe(c) ? ['Name origin: ' + RealmNames.describe(c)] : []), c.identity, `Government: ${GOVERNMENTS[c.gov]}. Capital: ${sim.provinces[c.capital].name}.`, `Population ${fmtPop(c.population)}; army ${c.army.toFixed(1)} thousand; revenue ${c.income.toFixed(1)} model units; treasury ${c.treasury.toFixed(1)}; power index ${c.strength.toFixed(1)}.`, `State tradition: ${FAITHS[c.faith].name}.`, 'Peoples: ' + PEOPLES.map((p, k) => p.name + ' ' + (c.people[k] * 100).toFixed(1) + '%').join('; ') + '.', 'Local faiths: ' + FAITHS.map((f, k) => f.name + ' ' + (c.faithMix[k] * 100).toFixed(1) + '%').join('; ') + '.');
     }
@@ -1053,7 +1054,7 @@ function saveChronicle() {
     lines.push('', '## Recorded events');
     for (const e of sim.events)
         lines.push(`**${e.year} · ${e.type}** — ${e.text}`);
-    saveBlob(new Blob([lines.join('\n\n')], { type: 'text/markdown' }), `telluric-${slug()}-chronicle-${sim.year}.md`);
+    saveBlob(new Blob([lines.join('\n\n')], { type: 'text/markdown' }), `orbis-${slug()}-chronicle-${sim.year}.md`);
     $('exportMenu').classList.add('hidden');
 }
 function bindCamera() {
@@ -1118,7 +1119,7 @@ function forgeOutputs() { for (const [id, type] of Object.entries(FORGE)) {
 function readForge() { return { params: { ...GEN_DEFAULTS, seed: $('seed').value.trim() || 'Aereth-47', plates: +$('plateInput').value, continents: +$('continentInput').value, islands: +$('islandInput').value, volcanism: +$('volcanoInput').value, temperature: +$('temperatureInput').value, aridity: +$('aridityInput').value }, options: { realms: +$('realmInput').value, conflict: +$('conflictInput').value, historySeed: $('historySeed').value.trim() || 'First-dawn' } }; }
 function makeGLB() {
     const meshEntries = Object.entries(renderer.meshes).filter(([name, m]) => m.count > 0 && (['terrain', 'trees', 'volcanoes', 'dunes', 'rivers', 'iceflow', 'icefloes', 'settlements', 'frontiers', 'reeds'].includes(name)||name.startsWith('cm:')) && renderer.visible(name));
-    const gltf = { asset: { version: '2.0', generator: 'Telluric 5.0 / geography-first atlas', extras: { note: 'Cartographic model coordinates, not physical meters. Relief and symbols exaggerated.' } }, scene: 0, scenes: [{ nodes: [] }], nodes: [], meshes: [], materials: [{ name: 'Matte vertex colors', doubleSided: true, pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 1 } }], buffers: [{ byteLength: 0 }], bufferViews: [], accessors: [] };
+    const gltf = { asset: { version: '2.0', generator: 'Orbis / geography-first atlas', extras: { note: 'Cartographic model coordinates, not physical meters. Relief and symbols exaggerated.' } }, scene: 0, scenes: [{ nodes: [] }], nodes: [], meshes: [], materials: [{ name: 'Matte vertex colors', doubleSided: true, pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1], metallicFactor: 0, roughnessFactor: 1 } }], buffers: [{ byteLength: 0 }], bufferViews: [], accessors: [] };
     let offset = 0;
     const chunks = [];
     for (const [name, m] of meshEntries) {
@@ -1205,7 +1206,7 @@ function boot() {
     $('savePNG').onclick = savePNG;
     $('saveLore').onclick = saveChronicle;
     $('saveGLB').onclick = () => { if (!world || busy)
-        return; saveBlob(new Blob([makeGLB()], { type: 'model/gltf-binary' }), `telluric-${slug()}-year-${sim.year}.glb`); $('exportMenu').classList.add('hidden'); toast('3D geometry exported. Lighting is not baked in.'); };
+        return; saveBlob(new Blob([makeGLB()], { type: 'model/gltf-binary' }), `orbis-${slug()}-year-${sim.year}.glb`); $('exportMenu').classList.add('hidden'); toast('3D geometry exported. Lighting is not baked in.'); };
     $('loadGame').onclick = () => { pause(); $('importFile').click(); $('exportMenu').classList.add('hidden'); };
     $('importFile').onchange = () => loadSimulation($('importFile').files[0]);
     $('mobileToggle').onclick = () => $('realmnav').classList.toggle('open');
@@ -1223,6 +1224,7 @@ function boot() {
         $('zoomIn').click(); if (e.key === '-')
         $('zoomOut').click(); });
     $('map').addEventListener('webglcontextlost', e => { e.preventDefault(); pause(); toast('Graphics context lost. Save if possible, then reload this file.'); window.__error = 'WebGL context lost'; });
-    window.Telluric = { politicalDiagnostics, politicalFingerprint, rerollPolitics, focusContinent, initializeSettlements, formPolities, deriveHumanGeography, physicalFingerprint, settlementFingerprint, settlementDistribution, rerollSocieties, advance, stepCivilization, createCivilization, buildWorld, makeSave, validateSimulation, setLayer, inspectCell, selectRealm, audit: () => auditCivilization(sim, world), action: civilizationAction, savePNG, saveChronicle, pause, makeGLB };
+    // Retain the original API name for existing integrations.
+    window.Orbis = window.Telluric = { politicalDiagnostics, politicalFingerprint, rerollPolitics, focusContinent, initializeSettlements, formPolities, deriveHumanGeography, physicalFingerprint, settlementFingerprint, settlementDistribution, rerollSocieties, advance, stepCivilization, createCivilization, buildWorld, makeSave, validateSimulation, setLayer, inspectCell, selectRealm, audit: () => auditCivilization(sim, world), action: civilizationAction, savePNG, saveChronicle, pause, makeGLB };
     buildWorld();
 }
