@@ -6,7 +6,7 @@ import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {resolve,dirname} from 'node:path';
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
-const baseline=process.env.TERRAIN_BASELINE==='1',out=resolve(root,'previews/terrain-refinement',baseline?'before':'after');
+const baseline=process.env.TERRAIN_BASELINE==='1',out=resolve(process.env.TELLURIC_TERRAIN_OUTPUT||resolve(root,'previews/terrain-refinement',baseline?'before':'after'));
 await mkdir(out,{recursive:true});
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const server=await chromium.launchServer({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
@@ -16,9 +16,15 @@ page.on('pageerror',e=>{errors.push(String(e));console.log('PAGE ERROR',String(e
 const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading',null,{timeout:240000});
 const settled=async()=>{await stable();if(!baseline)await page.waitForFunction('ContinuousMap.layer.lastTerrainKey===ContinuousMap.layer.terrainKey()',null,{timeout:240000});await stable();};
 try{
- await page.setContent(await readFile(process.env.TERRAIN_HTML||resolve(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000});await stable();console.log('PASS initial world');
+ // Hold the photographed Glassbeck saddle constant across renderer versions.
+ const original=await readFile(process.env.TERRAIN_HTML||resolve(root,'dist/telluric-onemap.html'),'utf8');
+ const html=original.replace('/** One renderer and one atlas canvas.','GEN_DEFAULTS.landformVersion=0;\n/** One renderer and one atlas canvas.');
+ assert.notEqual(html,original,'legacy terrain fixture was not installed');
+ await page.setContent(html,{waitUntil:'load',timeout:180000});await stable();
+ assert.equal(await page.evaluate('world.params.landformVersion||0'),0);
+ assert.equal(await page.evaluate('physicalFingerprint(world)'),'440ae5d0');console.log('PASS original terrain fixture');
  if(!baseline)await page.evaluate(()=>{window.__farOverlays=Object.fromEntries(['roads','rivers'].map(name=>[name,renderer.meshes[name].vertices.slice()]));});
- await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill('Glassbeck');await page.locator('[data-search-enter]').first().click();await settled();
+ await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill(await page.evaluate('sim.provinces[507].name'));await page.locator('[data-search-enter]').first().click();await settled();
  if(!baseline)assert(await page.evaluate(()=>Object.entries(window.__farOverlays).every(([name,v])=>v.some((n,i)=>n!==renderer.meshes[name].vertices[i]))),'entering detail must reseat both road and river overlays on the curved terrain');
  await page.screenshot({path:resolve(out,'city.png')});console.log('PASS city entry');
  // Inspect actual uploaded terrain, including triangle interiors. Vertex-only
@@ -60,9 +66,9 @@ try{
  await page.evaluate(()=>{ContinuousMap.layer.drop('terrain-wire');renderer.visible=function(name){return name==='terrain'||name==='water';};renderer.request();});
  const beforePan=await page.evaluate('renderer.target.slice()');await page.mouse.move(720,450);await page.mouse.down();await page.mouse.move(1050,450,{steps:5});await page.mouse.up();await settled();
  const pan=await measure();checks.push({...pan,action:'pan'});assert.notDeepEqual(await page.evaluate('renderer.target.slice()'),beforePan);if(!baseline)assert(pan.maxEdge<64,'the new pan position retains fine terrain');console.log('PASS pan');
- await page.setViewportSize({width:430,height:900});await settled();const mobile=await measure();checks.push({...mobile,action:'resize'});if(!baseline)assert.notEqual(mobile.key,pan.key);
+ await page.setViewportSize({width:430,height:900});await page.waitForFunction('renderer.width===430');await settled();const mobile=await measure();checks.push({...mobile,action:'resize'});if(!baseline)assert.notEqual(mobile.key,pan.key);
  if(!baseline){
-  await page.evaluate(()=>{renderer.visible=window.__terrainVisible;renderer.request();});await page.setViewportSize({width:1440,height:900});
+  await page.evaluate(()=>{renderer.visible=window.__terrainVisible;renderer.request();});await page.setViewportSize({width:1440,height:900});await page.waitForFunction('renderer.width===1440');
   await page.evaluate(()=>ContinuousMap.home());await settled();
   const home=await page.evaluate(()=>({natural:ContinuousMap.layer.natural,zoom:renderer.zoom,overlays:Object.entries(window.__farOverlays).map(([name,v])=>({name,equal:v.length===renderer.meshes[name].vertices.length&&v.every((n,i)=>n===renderer.meshes[name].vertices[i])}))}));
   assert.equal(home.natural,false);assert.equal(home.zoom,1);assert(home.overlays.every(o=>o.equal),'returning to the atlas must restore its original road and river heights');checks.push({...home,action:'home'});console.log('PASS close-to-world surface transition',home);

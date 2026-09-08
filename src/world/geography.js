@@ -330,6 +330,8 @@ async function generateWorld(p, progress = async () => { }) {
     await progress('03 / Cutting glacial inlets and subsidence basins');
     drainage(w);
     sculptHydrology(w);
+    if (p.landformVersion >= 1)
+        sculptLandforms(w);
     drainage(w);
     await progress('04 / Transporting ocean heat');
     ocean(w);
@@ -342,6 +344,8 @@ async function generateWorld(p, progress = async () => { }) {
     describeWorld(w);
     measureLandmasses(w);
     describeHydrology(w);
+    if (p.landformVersion >= 1)
+        describeLandforms(w);
     nameLegends(w);
     return w;
 }
@@ -1038,6 +1042,298 @@ function sculptHydrology(w) {
             break;
     }
 }
+/** Regional geomorphology, before the final drainage and climate solve. These are
+ * prescribed geological histories, like the existing glacial inlets and uplands;
+ * they change bedrock, never a rendered-only surface or the continental shoreline. */
+function sculptLandforms(w) {
+    drainage(w);
+    const original = new Float32Array(w.height), catchment = new Float32Array(GN).fill(1);
+    for (let k = w.order.length - 1; k >= 0; k--) {
+        const i = w.order[k], d = w.down[i];
+        if (d >= 0)
+            catchment[d] += catchment[i];
+    }
+    w.landform = new Uint8Array(GN);
+    w.landformStrength = new Float32Array(GN);
+    w.landformRegion = new Int16Array(GN).fill(-1);
+    w.landformRegions = [];
+    const smooth = t => { t = clamp(t); return t * t * (3 - 2 * t); };
+    const eligible = i => original[i] > 0 && w.dist[i] >= 3 && !w.basinPrior[i] && !w.fjord[i];
+    const free = (c, spacing) => w.landformRegions.every(r => Math.hypot(r.x - c.x, r.y - c.y) > spacing + Math.min(r.rx, r.ry) * .55);
+    const clearCore = (c, radius) => {
+        for (let y = c.y - radius; y <= c.y + radius; y++)
+            for (let x = c.x - radius; x <= c.x + radius; x++)
+                if ((x - c.x) ** 2 + (y - c.y) ** 2 <= radius * radius && (!eligible(cell(x, y)) || w.landformStrength[cell(x, y)] > .5))
+                    return false;
+        return true;
+    };
+    const clearBelt = (c, rx, ry, axis) => {
+        const ca = Math.cos(axis), sa = Math.sin(axis);
+        for (let u = -rx * .68; u <= rx * .68; u += 1.5) {
+            let clear = 0;
+            for (const v of [-ry * .55, 0, ry * .55]) {
+                const i = cell(c.x + u * ca - v * sa, c.y + u * sa + v * ca);
+                if (eligible(i) && w.landformStrength[i] < .5)
+                    clear++;
+            }
+            if (clear < 2)
+                return false;
+        }
+        return true;
+    };
+    const candidates = (test, score) => {
+        const out = [];
+        for (let y = 12; y < GH - 12; y += 2)
+            for (let x = 12; x < GW - 12; x += 2) {
+                const i = y * GW + x;
+                if (eligible(i) && test(i))
+                    out.push({ i, x, y, score: score(i, x, y) });
+            }
+        return out.sort((a, b) => b.score - a.score || a.i - b.i);
+    };
+    const make = (c, type, kind, name, rx, ry, axis, level, detail) => {
+        const region = { id: w.landformRegions.length, type, kind, name, i: c.i, x: c.x, y: c.y, center: { i: c.i, x: c.x, y: c.y }, rx, ry, axis, level, detail, area: 0 };
+        w.landformRegions.push(region);
+        return region;
+    };
+    const paint = (r, shape) => {
+        const reach = Math.ceil(Math.max(r.rx, r.ry) * 1.25), ca = Math.cos(r.axis), sa = Math.sin(r.axis);
+        const footprint = new Map();
+        for (let y = Math.max(1, r.y - reach); y <= Math.min(GH - 2, r.y + reach); y++)
+            for (let x = Math.max(1, r.x - reach); x <= Math.min(GW - 2, r.x + reach); x++) {
+                const i = y * GW + x;
+                if (!eligible(i))
+                    continue;
+                const dx = x - r.x, dy = y - r.y, u = dx * ca + dy * sa, v = -dx * sa + dy * ca;
+                const edge = 1 + (r.type === 1 ? .20 : .10) * noise(x * .12, y * .12, w.seed + 7201 + r.id)
+                    + (r.type === 1 ? .07 * noise(x * .31, y * .31, w.seed + 7207) : 0);
+                const radius = Math.hypot(u / r.rx, v / r.ry) / edge;
+                const strength = smooth((1 - radius) * 3.8) * smooth((w.dist[i] - 2) / 3);
+                if (strength <= .015)
+                    continue;
+                footprint.set(i, { i, x, y, u, v, radius, strength });
+            }
+        // A protected basin or coastal inlet may clip the footprint. Preserve it,
+        // and leave separated slivers untouched instead of creating broken ranges.
+        const todo = [r.center.i], seen = new Set(todo);
+        while (todo.length) {
+            const p = footprint.get(todo.pop());
+            if (!p)
+                continue;
+            const { i, x, y, u, v, radius, strength } = p;
+            if (strength > w.landformStrength[i]) {
+                const target = shape(i, x, y, u, v, radius);
+                w.height[i] = Math.max(35, lerp(w.height[i], target, strength));
+                w.landform[i] = r.type;
+                w.landformStrength[i] = strength;
+                w.landformRegion[i] = r.id;
+            }
+            for (const j of [i - 1, i + 1, i - GW, i + GW])
+                if (footprint.has(j) && !seen.has(j)) {
+                    seen.add(j);
+                    todo.push(j);
+                }
+        }
+    };
+
+    // Uplift a sedimentary roof around inherited drainage. The old trunk and its
+    // branches stay near their pre-uplift bed, cutting a connected canyon system
+    // through a broad tabletop instead of scattering isolated red bumps.
+    const mesas = candidates(i => w.dist[i] >= 9 && original[i] > 200 && original[i] < 2200 && Math.abs(w.lat[i]) < 43,
+        (i, x, y) => Math.min(w.dist[i], 22) + Math.log1p(catchment[i]) * 3 - w.collision[i] * 5 + noise(x * .05, y * .05, w.seed + 7211) * 8);
+    const mesaContinents = new Set();
+    for (const c of mesas) {
+        const continent = w.continentalProvinceId[c.i];
+        if (mesaContinents.has(continent) || !free(c, 19))
+            continue;
+        const rx = clamp(w.dist[c.i] * .82, 12, 20), ry = rx * .76, axis = hash2(c.x, c.y, w.seed + 7212) * Math.PI;
+        const level = 1850 + hash2(c.x, c.y, w.seed + 7213) * 520;
+        const r = make(c, 1, 'red-plateau', ['The Vermilion Tablelands', 'The Copper Labyrinth', 'The Painted Stair'][mesaContinents.size], rx, ry, axis, level,
+            'A broad roof of uplifted red sediment stands above branching river canyons. Resistant beds form the mesas and escarpments; the older drainage cuts through their layered walls.');
+        let channels = [];
+        let coreArea = 0;
+        const ca = Math.cos(axis), sa = Math.sin(axis);
+        for (let y = Math.max(1, c.y - Math.ceil(rx * 1.3)); y <= Math.min(GH - 2, c.y + rx * 1.3); y++)
+            for (let x = Math.max(1, c.x - Math.ceil(rx * 1.3)); x <= Math.min(GW - 2, c.x + rx * 1.3); x++) {
+                const i = y * GW + x;
+                if (!eligible(i))
+                    continue;
+                const dx = x - c.x, dy = y - c.y;
+                const core = Math.hypot((dx * ca + dy * sa) / rx, (-dx * sa + dy * ca) / ry) < .75;
+                if (core)
+                    coreArea++;
+                if (catchment[i] >= 12)
+                    channels.push({ x, y, i, core, width: .85 + clamp(Math.log(catchment[i] / 12) / 5) * .6 });
+            }
+        // Incise tributaries without erasing every resistant tabletop in a densely
+        // dissected catchment. Denser drainage retains its larger connected branches.
+        let channelThreshold = 12;
+        while (channels.filter(p => p.core).length > coreArea * .11 && channelThreshold < 100) {
+            channelThreshold *= 1.3;
+            channels = channels.filter(p => catchment[p.i] >= channelThreshold);
+        }
+        paint(r, (i, x, y, u) => {
+            const roof = level + u * 4 + noise(x * .09, y * .09, w.seed + 7214) * 95;
+            let distance = 8;
+            for (const p of channels)
+                distance = Math.min(distance, Math.hypot(x - p.x, y - p.y) / p.width);
+            const cut = Math.exp(-distance * distance * .8);
+            // Tributaries must penetrate the roof too, not stop at a single river on
+            // its edge. An inherited downhill surface keeps the connected channel
+            // floors below the roof without cutting a chain of arbitrary deep pits.
+            const floor = Math.max(80, Math.min(level - 800, w.filled[i] + 45));
+            return lerp(roof, floor, cut);
+        });
+        r.channelCells = channels.map(p => p.i);
+        mesaContinents.add(continent);
+        if (mesaContinents.size >= 3)
+            break;
+    }
+
+    // Long, gently bending fold axes give a range several parallel crests and
+    // intervening valleys. The boundary's tangent determines their common bearing.
+    const folds = candidates(i => w.dist[i] >= 7 && original[i] > 550 && original[i] < 3600 && Math.abs(w.lat[i]) < 52 && w.collision[i] > .12,
+        (i, x, y) => w.collision[i] * 24 + Math.min(w.dist[i], 18) + noise(x * .05, y * .05, w.seed + 7221) * 7);
+    const foldContinents = new Set();
+    for (const c of folds) {
+        const continent = w.continentalProvinceId[c.i];
+        if (foldContinents.has(continent) || !free(c, 16))
+            continue;
+        const b = w.boundaries[w.boundaryId[c.i]], axis = b ? Math.atan2(b.ny, b.nx) + Math.PI / 2 : Math.PI / 2;
+        const rx = 24 + hash2(c.x, c.y, w.seed + 7222) * 7, ry = 10 + hash2(c.x, c.y, w.seed + 7223) * 2.5;
+        if (!clearBelt(c, rx, ry, axis))
+            continue;
+        const level = clamp(original[c.i] * .48, 850, 1500);
+        const r = make(c, 3, 'folded-ranges', ['The Thousandfold Ranges', 'The Dragonback Marches', 'The Cloudfold Mountains'][foldContinents.size], rx, ry, axis, level,
+            'A long belt of compressed crust rises in parallel, bending ridges. Several high crests run together above deep longitudinal valleys, with lower passes between the folds.');
+        r.ridgeSpacing = 4.7;
+        // Each fold shares the belt's bearing but has its own slow curvature,
+        // summit rhythm and uplift. Keep the axes separated, so these remain
+        // continuous mountain chains and longitudinal valleys rather than cones.
+        const ridges = Array.from({ length: 7 }, (_, j) => {
+            const k = j - 3, sample = salt => hash2(c.x + k * 7, c.y, w.seed + salt);
+            return { across: k * r.ridgeSpacing + (sample(7251) - .5) * .9,
+                bend: sample(7252) * Math.PI * 2, phase: sample(7253) * Math.PI * 2,
+                period: 2.8 + sample(7254) * 1.6, width: 1.45 + sample(7255) * .4,
+                height: 1350 + sample(7256) * 750 };
+        });
+        paint(r, (i, x, y, u, v) => {
+            const bend = Math.sin(u * .065) * .65 + noise(u * .065, 0, w.seed + 7224 + r.id) * .4;
+            let uplift = 0;
+            for (const ridge of ridges) {
+                const axis = ridge.across + bend + Math.sin(u / (rx * .46) + ridge.bend) * .65;
+                const distance = Math.abs(v - axis) / ridge.width;
+                if (distance >= 1) continue;
+                const crest = Math.pow(Math.cos(distance * Math.PI / 2), 1.6);
+                const height = ridge.height * (.78 + .22 * Math.cos(u / ridge.period + ridge.phase));
+                uplift = Math.max(uplift, crest * height);
+            }
+            return level + uplift + noise(u * .1, v * .075, w.seed + 7226) * 140;
+        });
+        foldContinents.add(continent);
+        if (foldContinents.size >= 3)
+            break;
+    }
+
+    // Broad flood-basalt shields and collapsed summit chambers extend existing
+    // volcanic/rift provinces. No extra island or unsupported active vent is added.
+    const volcanic = candidates(i => w.dist[i] >= 6 && original[i] > 350 && original[i] < 3400 && Math.abs(w.lat[i]) < 52 && (w.rift[i] > .32 || w.arc[i] > .24),
+        (i, x, y) => w.rift[i] * 13 + w.arc[i] * 10 + Math.min(w.dist[i], 15) + noise(x * .07, y * .07, w.seed + 7231) * 5);
+    const volcanoContinents = new Set();
+    for (const c of volcanic) {
+        const continent = w.continentalProvinceId[c.i];
+        if (volcanoContinents.has(continent) || !free(c, 13) || !clearCore(c, 5))
+            continue;
+        const rx = 10 + hash2(c.x, c.y, w.seed + 7232) * 3, ry = rx * .86, axis = hash2(c.x, c.y, w.seed + 7233) * Math.PI;
+        const level = clamp(original[c.i] * .6 + 450, 950, 1900);
+        const r = make(c, 2, 'volcanic', ['The Obsidian Wastes', 'The Ember Cauldron', 'The Ashen Shield'][volcanoContinents.size], rx, ry, axis, level,
+            'Successive lava floods built a dark, terraced volcanic shield. Its summit collapsed into a broad caldera, ringed by broken rims and younger lava ridges.');
+        r.calderaRadius = 3.6;
+        paint(r, (i, x, y, u, v) => {
+            const d = Math.hypot(u, v), a = Math.atan2(v, u);
+            const rimRadius = r.calderaRadius * (1 + .08 * Math.sin(a * 3));
+            const rim = Math.exp(-(((d - rimRadius) / .9) ** 2)) * (1 - .66 * Math.exp(-(((a - .6) / .33) ** 2)));
+            const bowl = 1 - smooth((d - 1.4) / 1.7);
+            const flows = noise(u * .11, v * .11, w.seed + 7234) * 160 + Math.sin(d * 1.8 + a * .45) * 50;
+            return level + rim * 1050 - bowl * 520 + flows;
+        });
+        volcanoContinents.add(continent);
+        if (volcanoContinents.size >= 2)
+            break;
+    }
+
+    // A small warm limestone province contrasts with the broad highlands. Dissolution
+    // leaves clustered towers on a low floor, not a grid of identical isolated cones.
+    const limestone = candidates(i => w.dist[i] >= 5 && w.dist[i] <= 17 && original[i] > 120 && original[i] < 1600 && Math.abs(w.lat[i]) < 30,
+        (i, x, y) => 12 - Math.abs(w.dist[i] - 9) + noise(x * .075, y * .075, w.seed + 7241) * 8);
+    for (const c of limestone) {
+        if (!free(c, 12))
+            continue;
+        const r = make(c, 4, 'karst', 'The Jade Needles', 9, 7, hash2(c.x, c.y, w.seed + 7242) * Math.PI, 430,
+            'Water dissolved a warm limestone upland into clustered stone towers. Low connecting valleys separate the pinnacles and carry runoff toward the surrounding rivers.');
+        const towers = [];
+        for (let k = 0; k < 17; k++) {
+            const a = k * 2.39996, d = 1.4 * Math.sqrt(k);
+            towers.push({ u: Math.cos(a) * d, v: Math.sin(a) * d * .8, height: 450 + hash2(k, c.i, w.seed + 7243) * 600 });
+        }
+        paint(r, (i, x, y, u, v) => {
+            let spire = 0;
+            for (const t of towers)
+                spire = Math.max(spire, t.height * Math.exp(-((u - t.u) ** 2 + (v - t.v) ** 2) / 1.1));
+            return r.level + noise(u * .14, v * .14, w.seed + 7244) * 90 + spire;
+        });
+        break;
+    }
+}
+
+/** Resolve descriptions against the final water/ice surface, so search and picking
+ * point at exposed, genuinely generated terrain rather than a buried center marker. */
+function describeLandforms(w) {
+    const retained = [], remap = new Int16Array(w.landformRegions.length).fill(-1);
+    for (const r of w.landformRegions) {
+        let best = -Infinity, low = Infinity, high = -Infinity, sum = 0, weightedArea = 0, exposed = 0, cliffs = 0;
+        r.area = 0;
+        for (let i = 0; i < GN; i++) {
+            if (w.landformRegion[i] !== r.id)
+                continue;
+            r.area++;
+            low = Math.min(low, w.height[i]);
+            high = Math.max(high, w.height[i]);
+            sum += w.height[i];
+            weightedArea += w.area[i];
+            const x = i % GW, y = i / GW | 0;
+            const relief = Math.max(...[cell(x - 1, y), cell(x + 1, y), cell(x, y - 1), cell(x, y + 1)].map(j => Math.abs(w.height[j] - w.height[i])));
+            if (relief > 400)
+                cliffs++;
+            if (w.lake[i] >= 0 || w.ice[i] >= 80)
+                continue;
+            exposed++;
+            const score = w.landformStrength[i] * 10 - Math.hypot(x - r.center.x, y - r.center.y) * .2 - Math.max(0, w.ice[i]) * .1
+                + (r.type === 1 ? Math.min(relief, 850) / 150 : 0);
+            if (score > best) {
+                best = score;
+                r.i = i;
+                r.x = x;
+                r.y = y;
+            }
+        }
+        if (!r.area)
+            continue;
+        remap[r.id] = retained.length;
+        r.id = retained.length;
+        retained.push(r);
+        r.weightedArea = weightedArea;
+        r.statistics = { minHeight: low, maxHeight: high, meanHeight: sum / Math.max(1, r.area), relief: high - low, exposedCells: exposed, cliffCells: cliffs };
+        r.viewpoint = exposed ? { i: r.i, x: r.x, y: r.y } : null;
+        if (r.viewpoint)
+            w.features.push({ id: 'landform-' + r.id, name: r.name, kind: r.kind.toUpperCase().replaceAll('-', ' '), i: r.i, x: r.x, y: r.y, text: r.detail, landform: r.type, region: r.id });
+    }
+    w.landformRegions = retained;
+    for (let i = 0; i < GN; i++)
+        if (w.landformRegion[i] >= 0)
+            w.landformRegion[i] = remap[w.landformRegion[i]];
+}
+
 function basinHydrology(w) {
     const h = w.height, seen = new Uint8Array(GN), lid = new Int32Array(GN).fill(-1), basins = [];
     // Remove the old single-cell lake heuristic; restore the underlying climate biome.

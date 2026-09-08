@@ -4,7 +4,7 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and unclaimed wilderness](previews/polities/after.png)
+![World overview with named countries, settlements and unclaimed wilderness](previews/fantasy-landforms/after/world.png)
 
 *The default world, Aereth-47. Click a country name to see its territory, population and history. Unclaimed wilderness is explicitly marked.*
 
@@ -19,6 +19,16 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 | Return to the world | Click the top-left title or press **H**; **Wider setting** pulls back from a town |
 
 Use **Play** or the year-step buttons to advance history. **Regenerate** creates a new world from a seed and your settings. The **⋯** menu includes save/load, the chronicle and exports; save your world before replacing it.
+
+## A world with distinct landforms
+
+![Red sandstone tablelands divided by deep canyons](previews/fantasy-landforms/after/diagnostic-0-red-plateau.png)
+
+*Red tablelands and canyon walls. Tree, town and border layers are switched off to show the terrain.*
+
+Explore red-rock mesas, basalt calderas, belts of parallel mountain ridges and limestone towers. Their slopes change the rivers, climate and places people can settle. Flat highlands retain soil and vegetation; exposed cliffs show their rock, with snow and ice where the climate supports them.
+
+Search for a named landform to find it. Regenerate to explore the new terrain; old saves retain their original geography and history. [See the landform guide](docs/FANTASY_LANDFORMS.md).
 
 ## Cities belong to the landscape
 

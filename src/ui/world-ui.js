@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id), escapeHTML = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmtPop = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1000 ? (v / 1000).toFixed(0) + 'k' : Math.round(v).toString();
 const fmt = v => Number.isFinite(v) ? Math.round(v).toLocaleString('en-US') : '—';
-const GEN_DEFAULTS = { seed: 'Aereth-47', form: 'global', plates: 24, continents: 6, islands: 1.2, volcanism: .85, uplift: 1.2, sea: 0, aridity: .85, current: 1, erosion: .7, temperature: 0, glaciation: 1.2 };
+const GEN_DEFAULTS = { seed: 'Aereth-47', form: 'global', plates: 24, continents: 6, islands: 1.2, volcanism: .85, uplift: 1.2, sea: 0, aridity: .85, current: 1, erosion: .7, temperature: 0, glaciation: 1.2, landformVersion: 1 };
 const DEFAULT_WORLD_LAYER = 'realms';
 let world = null, sim = null, renderer = null, busy = false, playing = false, timer = null, currentLayer = DEFAULT_WORLD_LAYER, selectedRealm = 0, selectedCell = -1, labelItems = [], diplomacyTarget = -1, lastError = null, simAdvancing = false;
 const POLITICAL = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'];
@@ -12,6 +12,20 @@ function pause() { playing = false; clearTimeout(timer); timer = null; $('play')
 function setBusy(value) { busy = value; if (value) renderer?.setHoveredRealm(null); for (const id of ['generate', 'play', 'step1', 'step10', 'step50', 'resetAge', 'exportToggle', 'forgeButton'])
     $(id).disabled = value; $('loading').classList.toggle('hidden', !value); window.OneMap?.onBusy(value); }
 async function stageProgress(text) { $('loadingText').textContent = text; await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0))); }
+function landformRegionAt(w, i) {
+    if (!Number.isInteger(i) || !(w?.height?.[i] > 0) || w.lake?.[i] >= 0)
+        return null;
+    const id = w.landformRegion?.[i];
+    return id >= 0 ? w.landformRegions?.find(r => r.id === id) || null : null;
+}
+function generationParameters(params, restored = null) {
+    // A save without a terrain version predates the new landforms. Resolve it
+    // before merging defaults, including calls through the public build API.
+    const landformVersion = params?.landformVersion ?? (restored ? 0 : GEN_DEFAULTS.landformVersion);
+    if (![0, 1].includes(landformVersion))
+        throw Error('This world uses an unsupported landform generation version.');
+    return { ...GEN_DEFAULTS, ...params, landformVersion };
+}
 /** Default presentation for a newly generated/restored world, not a model update. */
 function resetWorldPresentation() {
     currentLayer = DEFAULT_WORLD_LAYER;
@@ -64,12 +78,12 @@ async function buildWorld(params = GEN_DEFAULTS, opts = { realms: 18, conflict: 
     let landmarkPreload = null;
     try {
         focusedContinent = null;
-        const start = performance.now(), w = await generateWorld({ ...GEN_DEFAULTS, ...params }, stageProgress);
+        const start = performance.now(), w = await generateWorld(generationParameters(params, restored), stageProgress);
         await stageProgress('08 / Water, food capacity, villages and market networks');
         const initial = createCivilization(w, opts);
         let next = initial;
         if (restored) {
-            if (restored.gridSignature !== initial.gridSignature)
+            if (restored.gridSignature !== initial.gridSignature || (restored.physicalHash && restored.physicalHash !== physicalFingerprint(w)))
                 throw Error('The saved geography does not match this engine version.');
             next = restored;
             validateSimulation(next, w);
@@ -327,9 +341,9 @@ else
 function renderGeography(i, p = null) {
     if (!world || i < 0)
         return;
-    const w = world, b = w.basins[w.lakeId[i]], target = w.basins[w.basinTarget[i]], country = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(w, sim, i).realm : p ? sim.realms[p.owner] : null, feature = w.features.find(f => f.i === i), plate = w.plates[w.plate[i]], isFjord = w.fjord[i] > 0;
-    const title = feature?.name || b?.name || (isFjord ? 'Glacial fjord' : BIOME[w.biome[i]][0]);
-    let cause = feature?.text || '';
+    const w = world, b = w.basins[w.lakeId[i]], target = w.basins[w.basinTarget[i]], country = typeof PoliticalLand !== 'undefined' ? PoliticalLand.status(w, sim, i).realm : p ? sim.realms[p.owner] : null, feature = w.features.find(f => f.i === i), plate = w.plates[w.plate[i]], isFjord = w.fjord[i] > 0, landform = landformRegionAt(w, i);
+    const title = feature?.name || b?.name || (isFjord ? 'Glacial fjord' : landform?.name || BIOME[w.biome[i]][0]);
+    let cause = feature?.text || landform?.detail || '';
     if (!cause) {
         if (b)
             cause = `${b.kind}. Water arrives from a catchment of ${b.catchment} grid cells. Rain and evaporation modify stored water; ${b.closed ? 'no sustained overflow reaches the sea.' : 'surplus water feeds a downstream river.'}`;
@@ -499,7 +513,7 @@ function makeLabels() {
         const b = document.createElement('button');
         b.className = 'maplabel' + (f.realm != null ? ' realmLabel' : '') + (f.plate ? ' plateLabel' : '') + (f.legend ? ' legendLabel' : '') + (f.town ? ' townLabel cm-town-pin' : '') + (f.wilderness ? ' wildernessLabel' : '');
         b.innerHTML = f.realm != null
-            ? `<em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
+            ? `<span class="realmLeader" aria-hidden="true"></span><em class="realmFullName">${escapeHTML(f.name)}</em><em class="realmCompactName" aria-hidden="true">${escapeHTML(f.shortName||f.name)}</em><span class="realmMarker" aria-hidden="true">${f.realm+1}</span>`
             : `<small>${escapeHTML(f.kind || '')}</small><em>${escapeHTML(f.name)}</em>`;
         if (f.realm != null) {
             b.dataset.realmId = f.realm;
@@ -627,18 +641,45 @@ function positionLabels() {
             const candidates=v.anchors.map(a=>at(v.feature,fitted.width*fitted.scale,fitted.height*fitted.scale,a)).filter(inside);
             return{v,fitted,candidates};
         }).filter(e=>e.candidates.length);
+        const bound=entry=>{
+            let x=Infinity,y=Infinity,right=-Infinity,bottom=-Infinity;
+            for(const c of entry.candidates){x=Math.min(x,c.x);y=Math.min(y,c.y);right=Math.max(right,c.x+c.w);bottom=Math.max(bottom,c.y+c.h);}
+            entry.bounds={x,y,w:right-x,h:bottom-y};
+        };
+        for(const entry of entries)bound(entry);
         const minimum=new Map(),occupied=[];let visits=0;
         const reserve=pending=>{
             if(!pending.length)return true;
             if(++visits>256)return false;
             let chosen=null,available=null;
+            const freeByEntry=new Map();
             for(const entry of pending){
                 const free=entry.candidates.filter(c=>!occupied.some(b=>overlaps(c,b)));
                 if(!free.length)return false;
+                freeByEntry.set(entry,free);
                 if(!available||free.length<available.length){chosen=entry;available=free;}
             }
             const rest=pending.filter(e=>e!==chosen);
+            // Adjacent land cells often project only one or two pixels apart.
+            // Trying every equivalent collision pattern exhausts the budget
+            // without changing any neighbour's options. Explore each pattern
+            // once, preferring positions that leave constrained countries room.
+            const alternatives=[],patterns=new Set();
             for(const box of available){
+                let cost=0,blocked=false;const pattern=[];
+                for(let j=0;j<rest.length;j++){
+                    if(!overlaps(box,rest[j].bounds))continue;
+                    const free=freeByEntry.get(rest[j]),hits=[];
+                    for(let k=0;k<free.length;k++)if(overlaps(box,free[k]))hits.push(k);
+                    if(hits.length===free.length){blocked=true;break;}
+                    if(hits.length){cost+=hits.length/free.length;pattern.push(j+':'+hits.join(','));}
+                }
+                if(blocked)continue;
+                const key=pattern.join(';');if(patterns.has(key))continue;
+                patterns.add(key);alternatives.push({box,cost});
+            }
+            alternatives.sort((a,b)=>a.cost-b.cost);
+            for(const {box} of alternatives){
                 occupied.push(box);minimum.set(chosen.v,{box,fitted:chosen.fitted,show:true});
                 if(reserve(rest))return true;
                 occupied.pop();minimum.delete(chosen.v);
@@ -646,7 +687,22 @@ function positionLabels() {
             }
             return false;
         };
-        if(reserve(entries)){
+        let reserved=reserve(entries);
+        if(!reserved){
+            // A tiny country's whole territory can project narrower than the
+            // readable marker itself. Only after exact placement fails, permit
+            // a six-pixel callout; its true owned anchor and hit target remain.
+            visits=0;
+            for(const entry of entries)if(entry.fitted.kind==='marker'){
+                const original=entry.candidates;
+                entry.candidates=original.concat(original.flatMap(b=>[[6,0],[-6,0],[0,6],[0,-6]].map(([dx,dy])=>({
+                    ...b,x:b.x+dx,y:b.y+dy,left:b.left+dx,top:b.top+dy,origin:{left:b.left,top:b.top}
+                }))).filter(inside));
+                bound(entry);
+            }
+            reserved=reserve(entries);
+        }
+        if(reserved){
             const placements=new Map(layout.placements);
             for(const [v,p] of minimum)placements.set(v,p);
             for(const {v} of entries){
@@ -722,6 +778,12 @@ function positionLabels() {
         if(region&&e.querySelector?.('.realmFullName')){
             e.dataset.labelVariant=fitted.kind;
             if(Number.isInteger(box.anchor))e.dataset.anchorCell=String(box.anchor);
+            const leader=e.querySelector('.realmLeader');
+            if(leader){
+                const dx=(box.origin?.left??box.left)-box.left,dy=(box.origin?.top??box.top)-box.top;
+                leader.style.width=Math.hypot(dx,dy)+'px';leader.style.transform=`rotate(${Math.atan2(dy,dx)}rad)`;
+                leader.style.display=show&&(dx||dy)?'block':'none';
+            }
             e.style.width=(fitted.width-6)+'px';e.style.height=(fitted.height-4)+'px';
             e.style.transform=`translate(-50%,-50%) scale(${fitted.scale})`;
             // The compact form and marker still announce the complete state name.

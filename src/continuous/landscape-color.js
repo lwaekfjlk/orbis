@@ -1,6 +1,6 @@
 /** Close terrain materials, sampled continuously in parent-world coordinates. */
 const LandscapeColor=(()=>{
- const cache=new WeakMap(),STRIDE=10;
+ const cache=new WeakMap(),STRIDE=15;
  const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t);};
  function prepare(w){
   let data=cache.get(w);if(data)return data;
@@ -14,6 +14,11 @@ const LandscapeColor=(()=>{
    data[o+4]=clamp((t-7)/20);data[o+5]=cl.cold;data[o+6]=cl.alpine;
    data[o+7]=b===13?.85:b===3?.45:b===12?.22:.04;
    data[o+8]=b===4||b===14?1:0;
+   // Interpolate each rock family separately, never the categorical ID. The
+   // resulting weights stay continuous along a red/green or basalt/soil edge.
+   const kind=w.params?.landformVersion>=1?w.landform?.[i]||0:0;
+   if(data[o]&&b!==1&&b!==16&&!(w.ice?.[i]>25)&&kind>=1&&kind<=4)data[o+9+kind]=clamp(w.landformStrength?.[i]||0);
+   data[o+14]=h;
    heights[i]=CityEnvironment.atlasHeight(w,i,1);
   }
   // A continuous fallback slope for consumers without terrain normals. Compute
@@ -31,22 +36,29 @@ const LandscapeColor=(()=>{
   const field=k=>lerp(lerp(data[a+k],data[b+k],u),lerp(data[c+k],data[d+k],u),v);
   const land=field(0),cover=field(1),strength=(1-cover)*(1-cover);
   if(land===0)return baseRGB.slice();
-  const dry=field(2),wet=field(3),warm=field(4),cold=field(5),alpine=field(6),rock=field(7),sand=field(8);
+  const dry=field(2),wet=field(3),warm=field(4),cold=field(5),alpine=field(6),rock=field(7),rawSand=field(8),modern=w.params?.landformVersion>=1;
+  const materials=modern?[field(10),field(11),field(12),field(13)]:null,materialWeight=materials?materials.reduce((a,b)=>a+b,0):0;
   const steep=smooth(.13,.95,Number.isFinite(slope)?Math.max(0,slope):field(9)*Math.max(0,relief));
+  // A sandy biome can contain a sandstone cliff or a basalt rim. Dune hues
+  // remain on its flat sand cover, while steep exposed faces show their rock.
+  const sand=rawSand*(1-materialWeight*steep);
   // Three rotated, non-integer frequency bands avoid alignment with either
   // parent-cell boundaries or their former terrain diagonals. Small patches
   // carry exposed soil and stone; the broad band only modulates their moisture.
   const seed=w.seed|0,broad=noise(x*.83+y*.19+11,y*.89-x*.23+37,seed+211),patch=noise(x*3.1+y*.73+41,y*2.93-x*.51+9,seed+223),fine=noise(x*13.7+y*4.1+17,y*12.9-x*3.3+23,seed+229);
   const exposure=smooth(.30,.82,.5+patch*.36+fine*.19+broad*.13);
   const soil=exposure*(.25+dry*.45+warm*.48)*(1-cold*.48)*(1-steep*.35);
-  const stone=clamp((steep*.83+alpine*.25+rock*.42)*(.37+smooth(-.55,.65,patch-fine*.24)*.63),0,.76);
+  const stone=clamp((steep*.83+alpine*.25*(modern?steep:1)+rock*.42)*(.37+smooth(-.55,.65,patch-fine*.24)*.63),0,.76);
   const moss=wet*(1-cold*.8)*(1-exposure)*(1-stone)*smooth(-.7,.5,broad)*.17;
   const damp=wet*(1-steep)*(1-alpine*.45)*smooth(.05,.72,-broad+patch*.2)*.19;
   const light=1+broad*.035+patch*.028+fine*.022;
   // Height and colour use the same warped bands, so an ice fissure is blue
   // where the surface actually dips and a dune's shading follows its crest.
-  const p=LandscapePatterns.sample(w,x,y),mountain=Math.max(p.alpine,p.rock)*(1-sand);
+  const p=LandscapePatterns.sample(w,x,y),mountain=(modern?Math.max(p.alpine*steep,rock*(.20+.80*steep)):Math.max(p.alpine,p.rock))*(1-sand);
   const mineralMix=mountain*(.35+steep*.5),mineralTone=(p.strata-.5)*.14+(p.scree-.5)*.085;
+  // Sandstone bands follow the physical height of the same continuous patch,
+  // rather than diagonal stripes painted across unrelated neighbouring slopes.
+  const strata=Math.sin(field(14)*.058+broad*.45)*.5;
   const grit=cold*(1-cover)*(1-sand)*(1-mountain)*.28;
   const duneLight=1+(p.dune-.5)*.17+(p.scree-.5)*.045;
   // Pole-facing slopes retain more snow, but only if the climate supplies it.
@@ -59,8 +71,21 @@ const LandscapeColor=(()=>{
   const result=new Array(3);
   for(let k=0;k<3;k++){
    const base=baseRGB[k];let value=base*light;
-   const earth=k===0?.43+warm*.14:k===1?.42+warm*.005:.36-warm*.075;
-   const mineral=k===0?.51+dry*.07-cold*.05:k===1?.50+dry*.035-cold*.015:.46+dry*.005+cold*.025;
+   let earth=k===0?.43+warm*.14:k===1?.42+warm*.005:.36-warm*.075;
+   let mineral=k===0?.51+dry*.07-cold*.05:k===1?.50+dry*.035-cold*.015:.46+dry*.005+cold*.025;
+   let rockColor=(k===0?.50+dry*.045:k===1?.51+dry*.020:.52-dry*.015)+mineralTone;
+   if(materialWeight){
+    let soilTone=0,rockTone=0;
+    for(let j=0;j<4;j++)if(materials[j]){
+     const palette=CityEnvironment.landformPalette(j+1),green=wet*(1-steep)*(j===1?.42:.24);
+     soilTone+=materials[j]*lerp(palette.earth[k],palette.green[k],green);
+     const band=j===0?strata*(k===0?.20:k===1?.14:.065):(p.scree-.5)*(j===1?.065:.10);
+     rockTone+=materials[j]*(palette.mineral[k]+band);
+    }
+    earth=lerp(earth,soilTone/materialWeight,materialWeight);
+    mineral=lerp(mineral,rockTone/materialWeight,materialWeight);
+    rockColor=lerp(rockColor,rockTone/materialWeight,materialWeight);
+   }
    // Sandy and saline ground retain their existing hue instead of acquiring
    // forest moss or a new soil palette merely because the camera is close.
    value=lerp(value,lerp(earth,base*.98,sand),soil);
@@ -68,7 +93,6 @@ const LandscapeColor=(()=>{
    value=lerp(value,k===0?.39:k===1?.44:.29,moss*(1-sand));
    value=lerp(value,k===0?.23:k===1?.29:.255,damp*(1-sand));
    value=lerp(base,value,strength);
-   const rockColor=(k===0?.50+dry*.045:k===1?.51+dry*.020:.52-dry*.015)+mineralTone;
    value=lerp(value,rockColor,mineralMix);
    value=lerp(value,value+(p.scree-.5)*.13+(p.strata-.5)*.055,grit);
    value*=lerp(1,duneLight,sand*(1-cover));

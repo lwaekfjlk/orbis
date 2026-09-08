@@ -80,6 +80,18 @@ test('Selecting a realm opens its overview without presenting its capital as the
     assert.equal(h.document.activeElement, h.node('omDrawerClose'));
 });
 
+test('inspecting any cell of a named landform shows its region and material identity', () => {
+    const h = harness(), uiSource = readFileSync(new URL('../src/ui/world-ui.js', import.meta.url), 'utf8');
+    const helpers = uiSource.slice(uiSource.indexOf('function landformRegionAt('), uiSource.indexOf('/** Default presentation'));
+    h.context.landformRegionAt = new Function(helpers + 'return landformRegionAt;')();
+    Object.assign(h.context.world, { landformRegion: [-1, -1, 5],
+        landformRegions: [{ id: 5, name: 'Ember Tablelands', kind: 'RED-ROCK PLATEAU & CANYONS' }] });
+    h.context.world.height[2] = 1700;
+    h.ui.inspectWorld(2);
+    assert(h.node('omSelectionBody').innerHTML.includes('Ember Tablelands'));
+    assert(h.node('omSelectionBody').innerHTML.includes('RED ROCK PLATEAU &amp; CANYONS'));
+});
+
 test('An open overview follows its realm through advancing history and renaming without reopening', () => {
     const h = harness();
     h.ui.inspectRealm(1);

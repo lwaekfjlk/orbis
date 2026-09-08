@@ -5,10 +5,18 @@ import {spawn} from 'node:child_process';
 import {tmpdir} from 'node:os';
 import {resolve,dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {loadEngine} from './engine-loader.mjs';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const out=resolve(process.env.TELLURIC_POLITY_OUTPUT||join(root,'previews/polities'));
 const baseline=process.env.TELLURIC_BASELINE==='1';
+let reference=null;
+if(!baseline){
+ const ui=await readFile(join(root,'src/ui/world-ui.js'),'utf8'),declaration=ui.match(/const GEN_DEFAULTS = \{[^\n]+\};/)?.[0];
+ assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,1);
+ const E=loadEngine(),w=await E.generateWorld(params),s=E.createCivilization(w,{realms:18,conflict:1});
+ reference={fingerprints:[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)],realms:s.realms.filter(c=>c.alive).length};
+}
 await mkdir(out,{recursive:true});
 const profile=await mkdtemp(join(tmpdir(),'telluric-polities-'));
 const child=spawn(process.env.CHROMIUM_PATH||chromium.executablePath(),['--headless','--no-first-run','--no-default-browser-check','--no-sandbox','--remote-debugging-port=0','--user-data-dir='+profile,'--use-angle=swiftshader','--enable-unsafe-swiftshader','about:blank'],{stdio:'ignore',detached:true});
@@ -30,18 +38,21 @@ try {
   population:sim.provinces.reduce((n,p)=>n+p.pop,0),
   labels:labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>{const b=e.getBoundingClientRect();return{id:f.realm,text:e.innerText,visible:e.style.opacity==='1',variant:e.dataset.labelVariant||'original',x:b.x,y:b.y,w:b.width,h:b.height};}),
   wilderness:labelItems.filter(v=>v.feature.wilderness&&v.element.style.opacity==='1').length,
-  fingerprints:[physicalFingerprint(world),settlementFingerprint(sim),politicalFingerprint(sim)]
+  fingerprints:[physicalFingerprint(world),settlementFingerprint(sim),politicalFingerprint(sim)],
+  landformVersion:world.params.landformVersion||0
  }));
  const report={baseline,desktop:await measure()};
  console.log('Desktop',JSON.stringify(report.desktop));
  await page.screenshot({path:join(out,'world.png')});
  if(!baseline){
+  assert.equal(report.desktop.landformVersion,1,'the default atlas loaded legacy terrain');
+  assert.equal(report.desktop.realms,reference.realms,'browser founding differs from independent source generation');
   assert(report.desktop.realms>=18&&report.desktop.realms<=28);
   assert.equal(report.desktop.unownedTowns,0);
   assert(report.desktop.majority.every(c=>c.share>.5));
   assert.equal(report.desktop.labels.filter(l=>l.visible).length,report.desktop.realms,'every country must have a visible name or clickable marker');
   assert(report.desktop.wilderness>0,'remaining wilderness must be named');
-  assert.deepEqual(report.desktop.fingerprints.slice(0,2),['440ae5d0','6b6c5ea8']);
+  assert.deepEqual(report.desktop.fingerprints,reference.fingerprints,'the bundled world differs from current source defaults');
   const visible=report.desktop.labels.filter(l=>l.visible);
   for(let i=0;i<visible.length;i++)for(let j=i+1;j<visible.length;j++){
    const a=visible[i],b=visible[j];assert(!(a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&a.y<b.y+b.h-1&&a.y+a.h>b.y+1),'overlapping country labels: '+a.text+' / '+b.text);
@@ -87,7 +98,9 @@ try {
    const history=s=>JSON.stringify({year:s.year,events:s.events,provinces:s.provinces.map(p=>[p.owner,p.pop,p.people]),realms:s.realms.map(c=>[c.id,c.name,c.title])});
    const original=history(saved);
    await page.setViewportSize({width:1480,height:980});await page.waitForFunction('renderer.width===1480');
-   await page.evaluate(s=>buildWorld(GEN_DEFAULTS,s.options,s),saved);await stable();await page.waitForTimeout(350);await stable();
+   await page.evaluate(s=>buildWorld({...GEN_DEFAULTS,landformVersion:0},s.options,s),saved);await stable();await page.waitForTimeout(350);await stable();
+   assert.equal(await page.evaluate('world.params.landformVersion'),0,'a legacy simulation was restored on new terrain');
+   assert.equal(await page.evaluate('physicalFingerprint(world)'),'440ae5d0');
    const restored=await page.evaluate(()=>({year:sim.year,events:sim.events,provinces:sim.provinces.map(p=>[p.owner,p.pop,p.people]),realms:sim.realms.map(c=>[c.id,c.name,c.title])}));
    assert.equal(JSON.stringify(restored),original,'loading an old save rewrote its borders, people or history');
    report.legacy=await measure();
