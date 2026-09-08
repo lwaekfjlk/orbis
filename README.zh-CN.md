@@ -7,7 +7,7 @@
 
 **[在线体验](https://haofeiyu.me/telluric/)** · [English](README.md)
 
-![世界全景：国家名称、聚落和标示清晰的荒野](previews/tectonic-climate/labels/full-names-1480.png)
+![世界全景：国家名称、聚落和标示清晰的荒野](previews/orbis/overview-desktop.png)
 
 *默认世界 Aereth-47。点击国名可查看疆域、人口与历史；地图显示完整正式国名；国内湖泊纳入周边国家，开放荒野保留明确标示。*
 
@@ -25,7 +25,7 @@
 
 ## 地貌各有性格
 
-![赭红砂岩台地被深峡谷切开](previews/tectonic-climate/exploration/after/diagnostic-0-red-plateau.png)
+![赭红砂岩台地被深峡谷切开](previews/orbis/red-plateau.png)
 
 *红土台地与峡谷崖壁。此图关闭了树木、城镇和国界图层，便于观察地形本身。*
 
@@ -35,7 +35,7 @@
 
 ## 城市生长在原有地形上
 
-![斜视角下的 Oakfield：住宅、街道、城墙与水岸](previews/tectonic-climate/exploration/after/city.png)
+![斜视角下的 Oakfield：住宅、街道、城墙与水岸](previews/orbis/city.png)
 
 *Oakfield：住宅与街道围绕城市地标展开，城墙外连接着农田与水岸。*
 
@@ -49,13 +49,13 @@
 
 点击专属符号，或打开搜索即可前往，也支持搜索 **龙城**、**圣城**和 **龙族遗迹**。遗迹可以逐部件查看，并导出三维模型。[查看龙族遗址说明](docs/DRAGON_SITES.md)。
 
-![龙族遗迹：破损石环与龙脊拱架](previews/dragon-sites/ruins-aerie.png)
+![龙族遗迹：破损石环与龙脊拱架](previews/orbis/dragon-ruins.png)
 
 ## 居民、国家与故事
 
-![地图旁的城市故事面板，包含居民讲述者的肖像与叙事](previews/readme/story.png)
+![地图旁的城市故事面板，包含居民讲述者的肖像与叙事](previews/orbis/story.png)
 
-*居民 Wengar Brendis 讲述 Scorchspire 的故事。每个章节都会附上所依据的世界数据或历史记录。*
+*居民 Randath Maredis the Unhoused 讲述 Oakfield 的故事。每个章节都会附上所依据的世界数据或历史记录。*
 
 世界中生活着七个族群。新建国家以一个族群为主，同时保留少数族群；迁徙与政治事件可以改变人口构成。国名来自多个神话传统，国家概览会解释名称出处。
 
