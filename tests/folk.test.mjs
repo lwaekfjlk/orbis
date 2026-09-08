@@ -191,7 +191,7 @@ test('a figure is a small bounded mesh, and every accent is real geometry',()=>{
   for(let i=0;i<a.data.length;i+=9)for(let k=0;k<3;k++)
    assert(Math.abs((b.data[i+k]-O[k])-a.data[i+k])<1e-9,l.accent+' is not translation invariant');
  }
- for(const n of sizes)assert(n>=18&&n<=40,'a figure costs '+n+' triangles; the crowd budget assumes about thirty');
+ for(const n of sizes)assert(n>=18&&n<=E.AtlasRenderer.FOLK_DETAIL.fullTriangles,'a detailed figure costs '+n+' triangles; it must fit the published model budget');
  // The accent is the visible difference between peoples, so it must add geometry.
  const plain=new E.Geometry();plain.figure(0,0,0,1,.3,0,[.5,.5,.5],[.9,.8,.7],'none',0);
  for(let k=1;k<E.Folk.LOOKS.length;k++)assert(sizes[k]>=plain.data.length/27,'accent '+E.Folk.LOOKS[k].accent+' adds nothing');
@@ -216,7 +216,10 @@ test('a walking crowd never forces a shadow pass',()=>{
  assert.equal(r.meshes.folk.shadow,false,'figures are excluded from the shadow pass');
  assert.equal(r.meshes.caravans.shadow,false);
  assert(r.folkStats.residents>0,'a loaded town is populated');
- assert(r.folkStats.triangles>0&&r.folkStats.triangles<r.folkStats.budget*44,'the crowd stays inside its triangle budget');
+ const detail=E.AtlasRenderer.FOLK_DETAIL,stats=r.folkStats;
+ assert(stats.fullFigures<=detail.maxDetailed,'only the nearest visible people use detailed models');
+ const triangleBudget=stats.fullFigures*detail.fullTriangles+stats.simpleFigures*detail.simpleTriangles+stats.travelling*detail.vehicleTriangles;
+ assert(stats.triangles>0&&stats.triangles<=triangleBudget,'the crowd stays inside its figure and vehicle triangle budgets');
  // Every frame is a fresh mesh, and the clock is the only thing that changed.
  const first=r.meshes.folk.count;
  r.buildFolk(3.5);
