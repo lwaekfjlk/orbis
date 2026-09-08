@@ -1,0 +1,114 @@
+// Production browser acceptance: real catalog sites, mounted atlas meshes and
+// the visible navigation/export controls. Uses no browser dependency in the app.
+import assert from 'node:assert/strict';
+import {readFile,writeFile,mkdir,mkdtemp,rm} from 'node:fs/promises';
+import {spawn} from 'node:child_process';
+import {tmpdir} from 'node:os';
+import {resolve,join} from 'node:path';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const root=resolve(new URL('..',import.meta.url).pathname),out=process.env.TELLURIC_DRAGON_OUTPUT||join(tmpdir(),'telluric-dragon-sites');
+await mkdir(out,{recursive:true});const profile=await mkdtemp(join(tmpdir(),'telluric-dragon-browser-'));
+const child=spawn(process.env.CHROMIUM_PATH||chromium.executablePath(),['--headless','--no-first-run','--no-default-browser-check','--no-sandbox','--remote-debugging-port=0','--user-data-dir='+profile,'--use-angle=swiftshader','--enable-unsafe-swiftshader','about:blank'],{stdio:'ignore',detached:true});
+child.unref();let browser,activePage;
+function glb(buffer,expected,site){
+ assert.equal(buffer.readUInt32LE(0),0x46546c67);assert.equal(buffer.readUInt32LE(4),2);assert.equal(buffer.readUInt32LE(8),buffer.length);
+ const length=buffer.readUInt32LE(12);assert.equal(buffer.readUInt32LE(16),0x4e4f534a);
+ const json=JSON.parse(buffer.toString('utf8',20,20+length));assert.equal(buffer.readUInt32LE(24+length),0x004e4942);
+ assert.equal(buffer.readUInt32LE(20+length),json.buffers[0].byteLength);assert.equal(28+length+json.buffers[0].byteLength,buffer.length);
+ assert.equal(json.asset.extras.kind,'dragon-ruin');assert.equal(json.asset.extras.name,site.name);assert.equal(json.asset.extras.cell,site.i);
+ assert.deepEqual(json.meshes.map(m=>m.name).sort(),expected.map(m=>m.name).sort(),'the file must contain exactly this ruin, without cities or world terrain');
+ let vertices=0;
+ for(const mesh of json.meshes){assert(mesh.name.startsWith('ruin:'+site.id+':'));const p=mesh.primitives[0],a=json.accessors[p.attributes.POSITION],wanted=expected.find(m=>m.name===mesh.name);
+  assert.equal(a.componentType,5126);assert.equal(a.type,'VEC3');assert.equal(a.count,wanted.count);assert.equal(a.count%3,0);assert.deepEqual(a.min,wanted.min);assert.deepEqual(a.max,wanted.max);vertices+=a.count;
+  const view=json.bufferViews[a.bufferView],start=28+length+(view.byteOffset||0)+(a.byteOffset||0),stride=view.byteStride||12;
+  for(let i=0;i<a.count;i++)for(let k=0;k<3;k++)assert(Number.isFinite(buffer.readFloatLE(start+i*stride+k*4)),'GLB positions must remain finite');
+ }
+ assert(vertices>300);return{bytes:buffer.length,meshes:json.meshes.length,vertices};
+}
+try{
+ let port;for(let k=0;k<100&&!port;k++){try{port=(await readFile(join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0]}catch{await new Promise(r=>setTimeout(r,100))}}
+ assert(port,'Chromium did not start');browser=await chromium.connectOverCDP('http://127.0.0.1:'+port);
+ const context=await browser.newContext({viewport:{width:1480,height:980},reducedMotion:'reduce',acceptDownloads:true}),page=activePage=await context.newPage(),errors=[],requests=[];
+ page.on('pageerror',e=>errors.push(String(e)));page.on('request',r=>{if(/^https?:/.test(r.url()))requests.push(r.url())});
+ if(process.env.TELLURIC_DRAGON_URL)await page.goto(process.env.TELLURIC_DRAGON_URL,{waitUntil:'load',timeout:180000});
+ else{await context.setOffline(true);await page.setContent(await readFile(join(root,'dist/telluric-onemap.html'),'utf8'),{waitUntil:'load',timeout:180000})}
+ const stable=()=>page.waitForFunction('window.__ready&&!busy&&!simAdvancing&&!renderer.pending&&!ContinuousMap.moving&&!ContinuousMap.layer.loading&&!ContinuousMap.ruinLayer.loading',null,{timeout:180000});
+ const fingerprints=()=>page.evaluate(()=>[physicalFingerprint(world),settlementFingerprint(sim),politicalFingerprint(sim)]);
+ await stable();await page.evaluate(()=>document.fonts.ready);const before=await fingerprints();
+ const sites=await page.evaluate(()=>LandmarkUI.registry.filter(s=>s.highCitadel||s.dragonRuins).map(s=>({id:s.id,name:s.name,i:s.i,provinceId:s.provinceId,kind:s.highCitadel?.kind||'dragon-ruin'})));
+ const high=sites.filter(s=>s.kind!=='dragon-ruin'),ruins=sites.filter(s=>s.kind==='dragon-ruin');
+ await writeFile(join(out,'catalog.json'),JSON.stringify({before,sites},null,2)+'\n');
+ assert.deepEqual(high.map(s=>s.kind).sort(),['dragon','holy']);assert(ruins.length>=1&&ruins.length<=3,'the actual world catalog has a bounded set of ruins');
+ const report={before,sites,high:[],ruins:[]},save=()=>writeFile(join(out,'report.json'),JSON.stringify(report,null,2)+'\n');
+ const home=async()=>{await page.locator('#omHome').click();await stable();await page.evaluate(()=>positionLabels());assert((await page.evaluate(()=>renderer.zoom))<16)};
+ const pins=async()=>{
+  const rows=await page.locator('#worldLandmarkPins [data-atlas-site]').evaluateAll(nodes=>nodes.map(e=>{const b=e.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return{id:e.dataset.siteId,kind:e.dataset.atlasSite,svg:!!e.querySelector('svg path'),visible:e.checkVisibility({checkVisibilityCSS:true}),hittable:hit===e||e.contains(hit),w:b.width,h:b.height}}));
+  for(const site of sites){const p=rows.find(p=>p.id===site.id);assert(p,site.name+' needs its dedicated symbol');assert.equal(p.kind,site.kind);assert(p.svg&&p.visible&&p.hittable&&p.w>=18&&p.h>=18,site.name+' must have a visible, clickable SVG symbol')}
+  return rows;
+ };
+ report.overviewPins=await pins();await page.screenshot({path:join(out,'special-sites-world.png')});
+ const meshEvidence=arg=>page.evaluate(({id,ruin})=>{
+  const model=ruin?ContinuousMap.ruinLayer.models.get(id):ContinuousMap.layer.models.get(id);if(!model)return null;
+  const names=ruin?model.meshNames:model.meshNames.filter(n=>/:(buildings|roofs)$/.test(n));let vertices=0,onScreen=0,samples=0,uploaded=true,minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  const meshes=[];for(const name of names){const mesh=renderer.meshes[name];if(!mesh?.vertices?.length||!renderer.visible(name))continue;uploaded&&=!!mesh.buffer&&!!mesh.vao;const data=mesh.vertices,min=[Infinity,Infinity,Infinity],max=[-Infinity,-Infinity,-Infinity];vertices+=data.length/9;
+   for(let i=0;i<data.length;i+=9)for(let k=0;k<3;k++){min[k]=Math.min(min[k],data[i+k]);max[k]=Math.max(max[k],data[i+k])}
+   meshes.push({name,count:data.length/9,min,max});const step=Math.max(1,Math.floor(data.length/9/300))*9;
+   for(let i=0;i<data.length;i+=step){const p=project4(renderer.mvp,[data[i],data[i+1],data[i+2]]),x=(p[0]/p[3]*.5+.5)*renderer.width,y=(.5-p[1]/p[3]*.5)*renderer.height;samples++;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);if(x>=0&&x<=renderer.width&&y>=0&&y<=renderer.height)onScreen++}
+  }
+  let pick=null,mounted=null;
+  if(ruin){
+   const origin=AtlasSpace.point(world,model.site.x,model.site.y,renderer.relief);
+   mounted={originError:Math.hypot(...origin.map((v,i)=>v-model.frame.origin[i])),scale:model.frame.scale,parts:model.parts.length,matchingUploads:model.parts.every(p=>renderer.meshes[p.meshName]?.vertices.length===p.geometry.data.length)};
+   outer:for(const part of model.parts.filter(p=>p.role!=='foundation')){const v=part.geometry.data,n=v.length/27;
+    for(let j=0;j<Math.min(10,n);j++){const k=Math.floor(j*n/Math.min(10,n))*27,point=[0,1,2].map(a=>(v[k+a]+v[k+9+a]+v[k+18+a])/3),q=project4(renderer.mvp,point),x=(q[0]/q[3]*.5+.5)*renderer.width,y=(.5-q[1]/q[3]*.5)*renderer.height;
+     if(x<0||x>renderer.width||y<0||y>renderer.height)continue;const hit=ContinuousMap.ruinLayer.pick(x,y);if(hit?.model.id===id){pick={id:hit.model.id,part:hit.part.id,x,y};break outer;}
+    }
+   }
+  }
+  if(!ruin)for(const b of model.city.buildings){const a=model.frame.anchors.get(b.id);if(!a)continue;
+   const q=project4(renderer.mvp,[a.x,a.y+(model.heights[b.id]||b.h)*a.scale*.8,a.z]),x=(q[0]/q[3]*.5+.5)*renderer.width,y=(.5-q[1]/q[3]*.5)*renderer.height;
+   if(x<0||x>renderer.width||y<0||y>renderer.height)continue;const hit=ContinuousMap.layer.pick(x,y);if(hit?.model.p.id===id){pick={id:hit.model.p.id,building:hit.building.id,x,y};break;}
+  }
+  return{id,kind:ruin?'dragon-ruin':model.city.highCitadel.kind,roles:ruin?model.parts.map(p=>p.role):model.city.buildings.map(b=>b.highRole),vertices,uploaded,onScreen,samples,width:maxX-minX,height:maxY-minY,zoom:renderer.zoom,meshes,mounted,pick};
+ },arg);
+ const assertMesh=(m,site)=>{assert(m&&m.vertices>300&&m.uploaded,site.name+' must upload real triangles to WebGL');assert(m.onScreen>m.samples*.45&&m.width>40&&m.height>40,site.name+' must be substantially visible, not merely a moved camera');if(m.mounted){assert(m.mounted.originError<1e-6&&m.mounted.scale>0&&m.mounted.scale<1&&m.mounted.matchingUploads);assert(m.pick,site.name+' must expose actual above-ground triangles to the scene picker')}else{assert(m.roles.length>=10&&m.roles.every(Boolean));assert(m.pick,site.name+' must expose its buildings in front of the terrain to the scene picker')};};
+ // Click the map symbols themselves for both dedicated high-city models.
+ for(const site of high){await page.locator(`#worldLandmarkPins [data-site-id="${site.id}"]`).click();await page.waitForFunction(id=>window.__continuousFocus===id&&window.__cityReady&&!window.__cityError,site.provinceId,{timeout:180000});await stable();const m=await meshEvidence({id:site.provinceId,ruin:false});assertMesh(m,site);report.high.push(m);await page.screenshot({path:join(out,site.kind+'-city.png')});await home();await pins();await save()}
+ await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill('');
+ assert.equal(await page.locator('[data-high-city]').count(),high.length);assert.equal(await page.locator('[data-ruin-site]').count(),ruins.length);
+ assert.equal(await page.locator('[data-high-city] svg, [data-ruin-site] svg').count(),high.length+ruins.length);
+ await page.screenshot({path:join(out,'featured-search.png')});
+ if(high.length){await page.locator(`[data-high-city="${high[0].provinceId}"]`).click();await stable();await page.waitForFunction(id=>window.__continuousFocus===id,high[0].provinceId)}await home();
+ // The empty-search relic card must enter the same real site as its map pin.
+ await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill('');
+ await page.locator(`[data-ruin-site="${ruins[0].id}"]`).click();
+ await page.waitForFunction(id=>window.__ruinReady&&window.__ruinFocus===id,ruins[0].id,{timeout:180000});await stable();await home();
+ // Chinese search must route to a catalog ruin and assemble it in this canvas.
+ await page.locator('#omSearchToggle').click();await page.locator('#omSearch').fill('龙族遗迹');
+ assert.equal(await page.locator('[data-search-hit]').count(),ruins.length);
+ await page.locator('[data-search-hit]').first().click();await page.waitForFunction(ids=>window.__ruinReady&&ids.includes(window.__ruinFocus),ruins.map(s=>s.id),{timeout:180000});await stable();
+ report.chineseSearch=await page.evaluate(()=>window.__ruinFocus);await home();
+ for(const [index,site] of ruins.entries()){
+  await pins();await page.locator(`#worldLandmarkPins [data-site-id="${site.id}"]`).click();
+  await page.waitForFunction(id=>window.__ruinReady&&window.__ruinFocus===id,site.id,{timeout:180000});await stable();
+  const m=await meshEvidence({id:site.id,ruin:true});assertMesh(m,site);assert(m.roles.some(r=>r!=='foundation'));await page.screenshot({path:join(out,site.id+'.png')});
+  await page.locator('#cmRuinDetails').click();assert((await page.locator('#inspector').innerText()).includes(site.name));
+  const parts=await page.locator('[data-ruin-part]').evaluateAll(nodes=>nodes.map(e=>({id:e.dataset.ruinPart,name:e.textContent.replace(/\s*↗\s*$/,'')})));assert(parts.length>0);
+  const part=parts[0];await page.locator(`[data-ruin-part="${part.id}"]`).click();await stable();
+  const focus=await page.evaluate(({id,part})=>{const model=ContinuousMap.ruinLayer.models.get(id),view=ContinuousMap.ruinLayer.view(model,part);return{error:Math.hypot(...renderer.target.map((v,i)=>v-view.target[i])),zoom:renderer.zoom}}, {id:site.id,part:part.id});
+  assert(focus.error<1e-5,'the fragment button must focus its actual mounted bounds');assert((await page.locator('#omSelectionBody h3').innerText()).includes(part.name));
+  if(index===0)await page.screenshot({path:join(out,'ruin-part.png')});
+  await page.locator('#cmRuinWhole').click();await stable();assert((await page.locator('#omSelectionBody h3').innerText()).includes(site.name));
+  const expected=(await meshEvidence({id:site.id,ruin:true})).meshes;
+  const downloaded=page.waitForEvent('download');await page.locator('#cmRuinGLB').click();const download=await downloaded;
+  assert(download.suggestedFilename().endsWith('-ruin.glb'));const file=join(out,site.id+'.glb');await download.saveAs(file);assert.equal(await download.failure(),null);
+  const exported=glb(await readFile(file),expected,site);report.ruins.push({...m,partFocus:{part:part.id,...focus},exported});await home();await pins();await save();
+ }
+ assert.deepEqual(await fingerprints(),before,'visiting, inspecting and exporting sites must not change the world or simulation');
+ assert.deepEqual(await page.evaluate(()=>ContinuousMap.ruinLayer.report().failures),[]);assert.deepEqual(errors,[]);
+ if(!process.env.TELLURIC_DRAGON_URL)assert.deepEqual(requests,[],'the production bundle must work without network assets');
+ report.after=await fingerprints();report.errors=errors;await save();console.log(JSON.stringify({sites:sites.map(s=>({id:s.id,kind:s.kind})),high:report.high.map(m=>({kind:m.kind,vertices:m.vertices,onScreen:m.onScreen,samples:m.samples})),ruins:report.ruins.map(m=>({id:m.id,parts:m.mounted.parts,vertices:m.vertices,pick:m.pick,exported:m.exported})),fingerprints:report.after,errors,out},null,2));
+}catch(error){
+ if(activePage){try{await activePage.screenshot({path:join(out,'failure.png')});const state=await activePage.evaluate(()=>({city:window.__continuousFocus,cityError:window.__cityError,ruin:window.__ruinFocus,ruinReady:window.__ruinReady,ruins:window.ContinuousMap?.ruinLayer?.report(),selection:document.getElementById('omSelectionBody')?.innerText}));await writeFile(join(out,'failure.json'),JSON.stringify({message:String(error),state},null,2)+'\n')}catch{}}
+ throw error;
+}finally{if(browser)await browser.close();try{process.kill(child.pid,'SIGTERM')}catch{}await rm(profile,{recursive:true,force:true,maxRetries:3,retryDelay:100})}

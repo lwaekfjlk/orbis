@@ -33,15 +33,15 @@ test.before(async()=>{
  before=fingerprints(w,s);inventory=E.LandmarkBinding.inventory(w,s);
 });
 
-test('the directory preserves the 152 current founding entries and adds two exact high cities',()=>{
+test('the directory preserves the 152 current founding entries and adds two exact high cities and three independent dragon ruins',()=>{
  assert.equal(E.calls.full,0);assert.equal(E.calls.context,0);
  assert.equal(E.calls.query,80,'78 ordinary candidates and two compact high cities receive exact placement queries');
- const ordinary=inventory.filter(site=>!site.highCitadel),high=inventory.filter(site=>site.highCitadel);
- assert.equal(inventory.length,154);assert.equal(ordinary.length,152);assert.equal(high.length,2);
+ const ordinary=inventory.filter(site=>!site.highCitadel&&!site.dragonRuins),high=inventory.filter(site=>site.highCitadel);
+ assert.equal(inventory.length,157);assert.equal(inventory.filter(site=>site.dragonRuins).length,3);assert.equal(ordinary.length,152);assert.equal(high.length,2);
  assert.deepEqual(high.map(site=>site.highCitadel.kind).sort(),['dragon','holy']);
  assert(high.every(site=>site.buildingId&&site.recipe.buildingId===site.buildingId&&!site.recipe.sacred));
  assert.equal(inventory.filter(site=>site.recipe.sacred).length,69);
- const original=E.LandmarkBinding.inventory(w,baseline);
+ const original=E.LandmarkBinding.inventory(w,baseline).filter(site=>!site.dragonRuins);
  assert.equal(original.length,152);assert(original.every(site=>!site.highCitadel));
  const digest=createHash('sha256').update(JSON.stringify(metadata(original))).digest('hex');
  assert.equal(digest,'21acd52dc3052aca20b261d8adbfc3beb613e5ceffe3fde15fbafd72d543ca23');
@@ -53,10 +53,10 @@ test('the directory preserves the 152 current founding entries and adds two exac
 
 test('cloning or searching the index does not invoke the local-building getter',()=>{
  const calls={...E.calls};
- assert.equal(JSON.parse(JSON.stringify(inventory)).length,154);
- assert.equal(structuredClone(inventory).length,154);
+ assert.equal(JSON.parse(JSON.stringify(inventory)).length,157);
+ assert.equal(structuredClone(inventory).length,157);
  const search=inventory.map(site=>({...site,type:'site'}));
- assert.equal(search.length,154);assert.deepEqual(E.calls,calls);
+ assert.equal(search.length,157);assert.deepEqual(E.calls,calls);
  const site=inventory.find(site=>site.recipe.sacred);
  assert.equal(Object.getOwnPropertyDescriptor(site,'building').enumerable,false);
 });

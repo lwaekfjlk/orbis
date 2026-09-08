@@ -35,7 +35,7 @@ window.OneMap = (() => {
         E('omSelectionClose').onclick=clearSelection;
         E('omEvent').onclick=()=>openDrawer('history');
         E('omSearch').oninput=renderSearch;
-        E('omSearch').placeholder='Find a place · 龙王城 / 圣城';
+        E('omSearch').placeholder='Find a place · 龙城 / 圣城 / 龙族遗迹';
         E('omSearch').addEventListener('keydown',e=>{
             if(e.key==='ArrowDown'){e.preventDefault();E('omSearchResults').querySelector('button')?.focus();}
             if(e.key==='Enter'){e.preventDefault();E('omSearchResults').querySelector('button')?.click();}
@@ -208,9 +208,17 @@ window.OneMap = (() => {
             if(open)E('omDrawer').querySelector('.om-drawer-body').scrollTop=0;
         }
     }
+    function inspectRuinSite(site){
+        selection={kind:'site',id:site.id};
+        selectionCard('ANCIENT DRAGON RUINS',site.name,site.recipe.provenance||'Broken dragon monuments survive above the surrounding landscape.',[
+            {label:'Explore ruins',primary:true,run:()=>LandmarkUI.openSite(site.id)},
+            {label:'Details',run:async()=>{const m=await ContinuousMap.focusSite(site.id);if(m)ContinuousMap.ruinDetails(m);}}
+        ],`<span class="om-site-mark">${siteMark(site,30)}</span>`);
+    }
     function inspectWorld(i){
         if(!world||!sim||busy||scene!=='world'||i<0)return;
         if(drawer==='realm')closeDrawer();
+        const ruin=LandmarkUI.registry.find(s=>s.dragonRuins&&s.i===i);if(ruin){inspectRuinSite(ruin);return;}
         const status=typeof PoliticalLand!=='undefined'?PoliticalLand.status(world,sim,i):null;
         const p=world.height[i]>0&&world.lake[i]<=0?sim.provinces[world.provinceId[i]]:null,f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],direct=p&&sim.realms[p.owner],realm=status?status.realm:direct?.alive!==false?direct:null;
         const enclosedWater=status?.water&&status.kind!=='water'&&world.height[i]<=0;
@@ -264,22 +272,30 @@ window.OneMap = (() => {
     }
     function enterTown(id){if(window.ContinuousMap?.active)return ContinuousMap.focusTown(id);return transition(()=>CityUI.open(id));}
     function enterBuilding(b){return transition(()=>LandmarkUI.openBuilding(CityUI.activeId,b));}
+    function siteMark(s,size=24){
+        const kind=s.highCitadel?.kind||(s.dragonRuins?'dragon-ruin':null);
+        return kind&&typeof AtlasMarks!=='undefined'?AtlasMarks.markup(kind,{size}):'';
+    }
     function renderSearch(){
         if(!sim)return;
         const q=E('omSearch').value.trim().toLowerCase();
         const featured=q?[]:searchIndex.filter(s=>s.type==='town'&&s.highCitadel&&sim.provinces[s.id]?.urbanPop>=650);
+        const ruins=q?[]:searchIndex.filter(s=>s.dragonRuins).slice(0,3);
         const results=(q?searchIndex.filter(s=>(s.name+' '+s.subtitle+' '+(s.saga||'')).toLowerCase().includes(q)):searchIndex.filter(s=>s.type==='town'&&!featured.includes(s))).slice(0,9);
         const highCities=featured.length?`<section class="om-high-cities" aria-label="Visit the high cities"><span class="om-eyebrow">VISIT THE HIGH CITIES</span>${featured.map(s=>{
             const h=s.highCitadel,title=h.kind==='dragon'?'Dragon King Citadel · 龙王城':'High Holy City · 圣城';
-            return `<button class="om-high-city" data-high-city="${s.id}" aria-label="Visit ${esc(title)} · ${esc(s.name)}"><span class="om-high-city-icon" aria-hidden="true">${h.kind==='dragon'?'♜':'✧'}</span><span><b>${esc(title)}</b><small>${esc(h.originalName||s.name)} · ${Math.round(h.elevation).toLocaleString()} m</small></span><i aria-hidden="true">Visit ↗</i></button>`;
+            return `<button class="om-high-city" data-high-city="${s.id}" aria-label="Visit ${esc(title)} · ${esc(s.name)}"><span class="om-high-city-icon" aria-hidden="true">${siteMark(s)}</span><span><b>${esc(title)}</b><small>${esc(h.originalName||s.name)} · ${Math.round(h.elevation).toLocaleString()} m</small></span><i aria-hidden="true">Visit ↗</i></button>`;
         }).join('')}</section>`:'';
-        E('omSearchResults').innerHTML=highCities+(results.length?results.map((s,k)=>`<div class="om-result"><button data-search-hit="${k}" aria-label="${s.highCitadel?'Visit':'Locate'} ${esc(s.name)}"><b>${esc(s.name)}</b><small>${esc(s.subtitle)}</small></button>${s.type==='town'||s.type==='site'?`<button class="om-enter" data-search-enter="${k}" aria-label="Approach ${esc(s.name)}">Zoom ↗</button>`:''}</div>`).join(''):featured.length?'':'<p class="om-note">No matching place in this world.</p>');
+        const relics=ruins.length?`<section class="om-ruin-sites" aria-label="Explore dragon ruins"><span class="om-eyebrow">RELICS OF THE DRAGONS · 龙族遗迹</span>${ruins.map(s=>`<button class="om-ruin-site" data-ruin-site="${esc(s.id)}" aria-label="Explore ${esc(s.name)}"><span class="om-site-mark">${siteMark(s)}</span><span><b>${esc(s.name)}</b><small>Ancient dragon ruins · Explore ↗</small></span></button>`).join('')}</section>`:'';
+        E('omSearchResults').innerHTML=highCities+relics+(results.length?results.map((s,k)=>`<div class="om-result"><button data-search-hit="${k}" aria-label="${s.highCitadel||s.dragonRuins?'Visit':'Locate'} ${esc(s.name)}">${s.highCitadel||s.dragonRuins?`<span class="om-site-mark">${siteMark(s)}</span>`:''}<span><b>${esc(s.name)}</b><small>${esc(s.subtitle)}</small></span></button>${s.type==='town'||s.type==='site'?`<button class="om-enter" data-search-enter="${k}" aria-label="Approach ${esc(s.name)}">Zoom ↗</button>`:''}</div>`).join(''):featured.length||ruins.length?'':'<p class="om-note">No matching place in this world.</p>');
         E('omSearchResults').querySelectorAll('[data-high-city]').forEach(b=>b.onclick=()=>enterTown(+b.dataset.highCity));
+        E('omSearchResults').querySelectorAll('[data-ruin-site]').forEach(b=>b.onclick=()=>LandmarkUI.openSite(b.dataset.ruinSite));
         E('omSearchResults').querySelectorAll('[data-search-hit]').forEach(b=>b.onclick=()=>locate(results[+b.dataset.searchHit]));
         E('omSearchResults').querySelectorAll('[data-search-enter]').forEach(b=>b.onclick=()=>{const s=results[+b.dataset.searchEnter];if(s.type==='town')enterTown(s.id);else if(window.ContinuousMap?.active)ContinuousMap.focusSite(s.id);else transition(()=>LandmarkUI.openSite(s.id));});
     }
     function locate(item){
         if(!interactive()||!item)return;
+        if(item.dragonRuins)return LandmarkUI.openSite(item.id);
         if(item.highCitadel&&(item.type==='town'||item.type==='site'))return enterTown(item.type==='town'?item.id:item.provinceId);
         LandmarkUI.close();CityUI.close();setScene('world');closeMenus();closeDrawer();
         if(item.type==='continent'){focusContinent(item.id);return;}
@@ -299,13 +315,14 @@ window.OneMap = (() => {
                 saga:(p.highCitadel?(p.highCitadel.kind==='dragon'?'dragoncity dragon city dragon king citadel 龙王 龙城 龙王城 ':'holycity holy city sacred city 圣城 '):'')+(g?`${g.title} ${g.hero.name} ${g.hero.rank} ${PEOPLES[g.hero.people].name} ${g.adversary.name}`:''),
                 subtitle:p.highCitadel?`${LandmarkBinding.highCitadelLabel(p)} · ${Math.round(p.highCitadel.elevation).toLocaleString()} m · ${fmtPop(p.urbanPop)} residents`:g?`${g.hero.name} against ${g.adversary.name} · ${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`
                     :`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`};
-        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:RealmNames.fullName(c),subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.filter(s=>!s.highCitadel||!towns.some(p=>p.id===s.provinceId)).map(s=>({...s,type:'site',subtitle:s.highCitadel?s.kind:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
+        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:RealmNames.fullName(c),subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.filter(s=>!s.highCitadel||!towns.some(p=>p.id===s.provinceId)).map(s=>({...s,type:'site',subtitle:s.dragonRuins?'Dragon ruins · 龙族遗迹':s.highCitadel?s.kind:'3D landmark',saga:s.dragonRuins?'dragon ruins dragon relic ancient draconic ruins 龙族遗迹 龙遗迹 古龙遗址 龙墓':''})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
         const latest=sim.events.slice().reverse().find(e=>e.type!=='founding'&&e.year>400);
         show('omEvent',!!latest&&sim.year>400);
         if(latest){E('omEventText').textContent=`${latest.year} · ${latest.text}`;if(latest!==lastEvent)lastEvent=latest;}
         if(drawer==='history')E('omDrawerTitle').textContent=`Year ${sim.year}`;
         if(selection?.kind==='world')inspectWorld(selection.i);
         else if(selection?.kind==='realm')inspectRealm(selection.id,false);
+        else if(selection?.kind==='site'){const site=LandmarkUI.registry.find(s=>s.id===selection.id);if(site)inspectRuinSite(site);else clearSelection();}
         if(menu==='search')renderSearch();
         E('omHome').title=`World seed: ${world.params.seed} · Whole world`;
         setScene(scene);onPlayback();
