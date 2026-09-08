@@ -333,21 +333,31 @@ function renderInspector(forceRealm = false) {
     $('renameRealm').onclick = () => applyAction('rename', -1, $('realmNameEdit').value);
     relationNote();
 }
+function renderCityOverview(id) {
+    const p = sim?.provinces[id];
+    if (!p?.settled) return;
+    const c = sim.realms[p.owner], climate = world.temp[p.i];
+    $('inspector').innerHTML = `<article class="city-overview" data-province-id="${id}">
+        <div class="overline">${escapeHTML(p.settlementType)} · YEAR ${sim.year}</div>
+        ${placeVitalsHTML(PlaceVitals.city(sim,p))}
+        <p class="place-allegiance">${escapeHTML(c?.alive ? RealmNames.fullName(c) : 'Local communities')}</p>
+        ${placeNameOriginHTML(p)}
+        <h3>Setting</h3><p>${escapeHTML([BIOME[world.biome[p.i]]?.[0], Number.isFinite(climate) ? climate.toFixed(1) + ' °C' : null].filter(Boolean).join(' · '))}</p>
+        <p class="identity">${escapeHTML(p.siteReason || '')}</p>
+    </article>`;
+}
 function renderRealmOverview(id) {
     const profile = RealmProfile.create(world, sim, id), c = sim?.realms[id];
     if (!profile || !c?.alive) return;
     const { facts } = profile;
+    const vitals = PlaceVitals.realm(sim, c);
+    vitals.metrics.push({key: 'landShare', label: "World's land", value: facts.areaShare * 100, unit: '%'});
     $('inspector').innerHTML = `<article class="realm-overview" data-realm-id="${id}">
         <div class="overline">${escapeHTML(GOVERNMENTS[c.gov])} · YEAR ${sim.year}</div>
-        <p class="realm-lead">${escapeHTML(profile.summary)}</p>
-        <div class="realm-facts">
-            <div><b>${fmtPop(facts.population)}</b><small>Residents</small></div>
-            <div><b>${(facts.areaShare * 100).toFixed(1)}%</b><small>Of the world's land</small></div>
-            <div><b>${facts.provinceCount}</b><small>Provinces · ${facts.townCount} towns</small></div>
-            <div><b>${escapeHTML(facts.capital || 'No capital')}</b><small>Capital</small></div>
-        </div>
-        ${facts.primaryPeople ? `<p class="realm-community"><strong>${escapeHTML(facts.primaryPeople)}</strong> · ${(facts.primaryPeopleShare * 100).toFixed(1)}% of residents · ${facts.primaryPeopleShare > .5 ? 'majority community' : 'largest community'}</p>` : ''}
+        ${placeVitalsHTML(vitals)}
+        <p class="realm-capital">Capital <strong>${escapeHTML(facts.capital || 'No capital')}</strong></p>
         <div class="inspectbuttons"><button id="realmVisitCapital">Visit capital</button><button id="realmGovernment">Government & diplomacy</button></div>
+        <p class="realm-lead">${escapeHTML(profile.summary)}</p>
         ${profile.sections.map(section => `<section><h3>${escapeHTML(section.title)}</h3><p>${escapeHTML(section.text)}</p></section>`).join('')}
         <section><h3>From the chronicle</h3>${profile.events.length ? `<ol class="realm-history">${profile.events.map(event => `<li><time>Year ${event.year}</time>${escapeHTML(event.text)}</li>`).join('')}</ol>` : '<p>No events have yet been recorded for this realm.</p>'}</section>
     </article>`;
