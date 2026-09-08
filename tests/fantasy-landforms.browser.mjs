@@ -4,6 +4,7 @@
 import assert from 'node:assert/strict';
 import {readFile, writeFile, mkdir, mkdtemp, rm} from 'node:fs/promises';
 import {spawn} from 'node:child_process';
+import {createHash} from 'node:crypto';
 import {tmpdir} from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {dirname, join, resolve} from 'node:path';
@@ -78,7 +79,9 @@ try {
         return previous;
     };
 
-    await page.setContent(await readFile(process.env.FANTASY_HTML || join(root, 'dist/telluric-onemap.html'), 'utf8'), {waitUntil: 'load', timeout: 240000});
+    const testedHtml = await readFile(process.env.FANTASY_HTML || join(root, 'dist/telluric-onemap.html'));
+    report.bundleSha256 = createHash('sha256').update(testedHtml).digest('hex');
+    await page.setContent(testedHtml.toString('utf8'), {waitUntil: 'load', timeout: 240000});
     await page.evaluate(() => document.fonts.ready);
     await settled(); await assertReady();
     assert.equal(await page.evaluate('world.params.landformVersion'), 1, 'the shipped app did not use the new default');
