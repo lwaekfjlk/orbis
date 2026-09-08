@@ -44,7 +44,7 @@ window.OneMap = (() => {
         E('omBack').onclick=back;
         E('omZoomIn').onclick=()=>zoom(1.25);
         E('omZoomOut').onclick=()=>zoom(1/1.25);
-        E('omFit').onclick=()=>{if(!interactive())return;const r=activeRenderer();r?.reset();if(scene==='world'){focusedContinent=null;legend();}clearSelection();};
+        E('omFit').onclick=rotateView;
         E('forgeButton').onclick=openRegenerate;
         E('closeForge').onclick=()=>closeRegenerate(true);
         E('omRandomSeed').onclick=()=>{E('seed').value=freshSeed();};
@@ -102,6 +102,12 @@ window.OneMap = (() => {
         onPlayback();
     }
 
+    function rotateView(){
+        if(!interactive())return;
+        if(scene==='world'&&window.ContinuousMap?.active)return ContinuousMap.rotate90();
+        const r=activeRenderer();
+        if(r){r.azimuth+=Math.PI/2;r.request();}
+    }
     function freshSeed(){
         const bytes=new Uint32Array(2);crypto.getRandomValues(bytes);
         return `World-${bytes[0].toString(36)}-${bytes[1].toString(36).slice(0,4)}`;
@@ -332,7 +338,7 @@ window.OneMap = (() => {
         const blocked=busy||simAdvancing||transitioning;
         E('play').setAttribute('aria-pressed',String(playing));E('play').setAttribute('aria-label',playing?'Pause simulation':'Play simulation');
         E('play').textContent=playing?'Ⅱ Pause':'▶ Play';
-        for(const id of ['play','step1','step10','step50','forgeButton'])E(id).disabled=blocked||!sim;
+        for(const id of ['play','step1','step10','step50','forgeButton','omFit'])E(id).disabled=blocked||!sim;
         if(E('cmContext'))E('cmContext').disabled=blocked||!sim;
         E('forgeButton').textContent=busy?'Creating…':simAdvancing?'Advancing…':'↻ Recreate';
         E('omYearHost').title=simAdvancing?'Advancing history':playing?'History is running':'Simulation paused';

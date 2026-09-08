@@ -1,6 +1,6 @@
 /** Camera-only exploration: towns and buildings never replace the world canvas. */
 window.ContinuousMap = (() => {
- const E=id=>document.getElementById(id);let layer=null,ruins=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',shadowCenter='',moving=false;
+ const E=id=>document.getElementById(id);let layer=null,ruins=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',shadowCenter='',moving=false,rotationGoal=null;
  const ready=()=>enabled&&world&&sim&&!busy&&!simAdvancing;
  /* WALKING FIGURES.
   * A frame with a moving crowd costs a mesh rebuild plus a full redraw. That is cheap on
@@ -37,7 +37,7 @@ window.ContinuousMap = (() => {
   layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();};
   ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();};
   bindCamera();
-  E('omFit').onclick=()=>ready()&&home();E('omHome').onclick=()=>ready()&&home();
+  E('omHome').onclick=()=>ready()&&home();
   E('camera').onchange=()=>{if(!ready())return;cancel();renderer.elevation={relief:1.19,overhead:1.555,diorama:.65}[E('camera').value];renderer.request();};
   E('resetView').onclick=home;E('zoomIn').onclick=()=>zoomBy(1.25);E('zoomOut').onclick=()=>zoomBy(.8);
   E('cmLabels').addEventListener('pointerdown',e=>e.stopPropagation());
@@ -80,7 +80,28 @@ window.ContinuousMap = (() => {
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
   positionPins();updateTitle();
  }
- function cancel(){animation++;moving=false;}
+ function cancel(){animation++;moving=false;rotationGoal=null;}
+ function rotate90(){
+  if(!ready())return Promise.resolve(false);
+  // Keep an unwrapped goal so every click adds a full quarter turn, even when
+  // another turn is in flight. Other camera input cancels this goal normally.
+  const r=renderer,start=r.azimuth,goal=(rotationGoal??start)+Math.PI/2;
+  cancel();
+  if(reducedMotion()){r.azimuth=goal;r.request();return Promise.resolve(true);}
+  rotationGoal=goal;moving=true;
+  const token=animation,time=performance.now(),duration=420*(goal-start)/(Math.PI/2);
+  return new Promise(resolve=>{
+   function frame(now){
+    if(token!==animation||!ready()){if(token===animation)cancel();resolve(false);return;}
+    const t=clamp((now-time)/duration),a=t*t*(3-2*t);
+    // Orbit in place: do not overwrite zoom, elevation, target or selection.
+    r.azimuth=lerp(start,goal,a);r.request();
+    if(t<1)requestAnimationFrame(frame);
+    else{moving=false;rotationGoal=null;layer.cameraChanged();ruins.cameraChanged();resolve(true);}
+   }
+   requestAnimationFrame(frame);
+  });
+ }
  function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));moving=true;
   return new Promise(resolve=>{function frame(now){if(token!==animation||busy){if(token===animation)moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
  }
@@ -219,5 +240,5 @@ window.ContinuousMap = (() => {
   c.addEventListener('pointerup',end);c.addEventListener('pointercancel',()=>{pointers.clear();drag=null;pinch=null;renderer.interacting=false;renderer.request();});E('stage').addEventListener('wheel',e=>{e.preventDefault();const a=rect();zoomBy(Math.exp(-e.deltaY*.0012),e.clientX-a.left,e.clientY-a.top);},{passive:false});
   c.addEventListener('dblclick',e=>{if(!ready())return;e.stopImmediatePropagation();const a=rect(),x=e.clientX-a.left,y=e.clientY-a.top,h=layer.pick(x,y),site=ruins.pick(x,y);if(site){focusRuinPart(site.model,site.part);return;}if(h){focusBuilding(h.model.p.id,h.building.id);return;}const at=AtlasSpace.pickGround(renderer,x,y);if(!at)return;const nearby=sim.provinces.filter(p=>p.settled).map(p=>({p,d:Math.hypot(p.x-at.x,p.y-at.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby?.d<5)focusTown(nearby.p.id);else animate(at.point,Math.min(180,renderer.zoom*2),renderer.elevation);},true);
  }
- return{init,onWorldUpdate,beforeWorldBuild,focusTown,focusBuilding,focusSite,focusRuinPart,ruinDetails,zoomBy,wider,home,cancel,details,select,get ruinLayer(){return ruins;},get layer(){return layer;},get active(){return enabled;},get moving(){return moving;},get walking(){return walking;},get clock(){return clock;},report:()=>layer?.report()};
+ return{init,onWorldUpdate,beforeWorldBuild,focusTown,focusBuilding,focusSite,focusRuinPart,ruinDetails,zoomBy,wider,home,rotate90,cancel,details,select,get ruinLayer(){return ruins;},get layer(){return layer;},get active(){return enabled;},get moving(){return moving;},get walking(){return walking;},get clock(){return clock;},report:()=>layer?.report()};
 })();
