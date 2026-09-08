@@ -1,0 +1,279 @@
+{
+  "bundleSha256": "539e2fbd6a868cdf2d7fee4ab1522ace532ef4d8e3aa10fd44bf21110d90d8e3",
+  "viewport": {
+    "width": 1200,
+    "height": 1020
+  },
+  "cities": [
+    {
+      "id": 216,
+      "name": "Corbinbelararhaven",
+      "enterMs": 1912.0999999940395,
+      "population": 41006.06212791392,
+      "buildings": 971,
+      "ordinary": 965,
+      "homes": 851,
+      "parcelArea": 4373.257758012563,
+      "fingerprint": "7432610d",
+      "triangles": 524762,
+      "worker": true,
+      "meshes": {
+        "farms": 634,
+        "streets": 19908,
+        "cityWalls": 41112,
+        "port": 552,
+        "buildings": 256778,
+        "roofs": 84724,
+        "details": 97084,
+        "trees": 23970,
+        "vegetation": 2524,
+        "silhouettes": 13594
+      },
+      "camera": {
+        "target": [
+          66.01950125575985,
+          0.383679409134581,
+          -16.67372348029308
+        ],
+        "zoom": 93.16208522754954,
+        "azimuth": 1.2441258666746502,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17.100000023841858,
+          "maxMs": 18.299999982118607,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 173.39999985694885
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17.900000005960464,
+          "maxMs": 18.900000005960464,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 209.5999999344349
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 264,
+      "name": "Sarrelmont",
+      "enterMs": 1851.8999999761581,
+      "population": 32386.099604574712,
+      "buildings": 874,
+      "ordinary": 868,
+      "homes": 868,
+      "parcelArea": 3054.48335742621,
+      "fingerprint": "f489ca91",
+      "triangles": 621730,
+      "worker": true,
+      "meshes": {
+        "farms": 448,
+        "streets": 19264,
+        "cityWalls": 47464,
+        "port": 0,
+        "buildings": 348950,
+        "roofs": 94818,
+        "details": 43644,
+        "trees": 67142,
+        "vegetation": 5514,
+        "silhouettes": 12236
+      },
+      "camera": {
+        "target": [
+          -78.900270006971,
+          0.8415530415513521,
+          -3.6197517107397386
+        ],
+        "zoom": 92.76839329608981,
+        "azimuth": 2.2963032650549695,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17,
+          "maxMs": 19.30000001192093,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 243.9000001847744
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17.599999994039536,
+          "maxMs": 19,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 223.60000002384186
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 499,
+      "name": "Alflundenvik",
+      "enterMs": 1401.699999988079,
+      "population": 32228.13761061071,
+      "buildings": 792,
+      "ordinary": 786,
+      "homes": 708,
+      "parcelArea": 4347.28193568645,
+      "fingerprint": "a0955bf1",
+      "triangles": 373347,
+      "worker": true,
+      "meshes": {
+        "farms": 662,
+        "streets": 15819,
+        "cityWalls": 42864,
+        "port": 864,
+        "buildings": 199088,
+        "roofs": 58840,
+        "details": 37330,
+        "trees": 17880,
+        "vegetation": 4150,
+        "silhouettes": 11088
+      },
+      "camera": {
+        "target": [
+          -51.9894596699114,
+          0.3873498529176228,
+          23.815475181386283
+        ],
+        "zoom": 104.69377844877994,
+        "azimuth": -0.39060139085280254,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 19.30000001192093,
+          "maxMs": 21,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 260.90000012516975
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.700000017881393,
+          "p95Ms": 17.900000005960464,
+          "maxMs": 19,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 227.69999995827675
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 267,
+      "name": "Saint Tuoneneli",
+      "enterMs": 1499.2999999821186,
+      "population": 26875.458581828294,
+      "buildings": 716,
+      "ordinary": 709,
+      "homes": 709,
+      "parcelArea": 3804.463836590328,
+      "fingerprint": "71758665",
+      "triangles": 405675,
+      "worker": true,
+      "meshes": {
+        "farms": 462,
+        "streets": 16621,
+        "cityWalls": 36856,
+        "port": 726,
+        "buildings": 179034,
+        "roofs": 84144,
+        "details": 71576,
+        "trees": 16256,
+        "vegetation": 4304,
+        "silhouettes": 10024
+      },
+      "camera": {
+        "target": [
+          -64.34291357000345,
+          0.2507799140326683,
+          -4.626752551234091
+        ],
+        "zoom": 126.79444968038523,
+        "azimuth": 0.33716126308781996,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 18.299999982118607,
+          "maxMs": 19.5,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 262.1000000834465
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17,
+          "maxMs": 21.30000001192093,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 242.40000009536743
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "readyMs": 9051.904333,
+  "before": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "graphics": {
+    "software": false,
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+  },
+  "after": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "passed": true
+}
