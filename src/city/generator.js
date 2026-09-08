@@ -102,27 +102,196 @@ function cityParcelEvery(city, q, width, depth, test) {
             if (!test(city.index(q.x + dx, q.z + dz))) return false;
     return true;
 }
+/** Coarse street nodes stay in their original order. A refined gate may paint a
+ * nearby survey cell without passing through its center: use its actual points
+ * unless a regular street also owns that center. Courtyard paths are exact too. */
+function cityStreetSources(city, coarse, exact) {
+    const gates=(city.roads||[]).filter(r=>r.role==='gate-approach'&&r.refined);
+    let gateCells,regularCells;
+    if(gates.length){
+        gateCells=new Set();regularCells=new Set();
+        for(const r of gates)for(const p of r.points)gateCells.add(city.index(p.x,p.z));
+        for(const r of city.roads)if(r.role!=='courtyard-access'&&!(r.role==='gate-approach'&&r.refined))
+            for(const i of r.nodes)regularCells.add(i);
+    }
+    for(let k=0;k<city.road.length;k++)if(city.road[k]&&(!gateCells?.has(k)||regularCells.has(k)))coarse(k);
+    for(const r of city.roads||[])if(r.role==='courtyard-access'||r.role==='gate-approach'&&r.refined)
+        for(const p of r.points)exact(p);
+}
 /** Find the actual dry, unobstructed doorway used by the final layout filter. */
 function cityStreetConnections(city) {
     const roadGrid = cityGrid(12), blockGrid = cityGrid(8);
-    for (let k=0;k<city.road.length;k++) if (city.road[k]) { const q = {i:k,...city.xy(k)}; roadGrid.add(q, q.x, q.z, q.x, q.z); }
-    for (const b of city.buildings) blockGrid.add(b, b.x-b.w/2-.09, b.z-b.d/2-.09, b.x+b.w/2+.09, b.z+b.d/2+.09);
-    return b => {
-        let best=null;
+    const add = b => blockGrid.add(b, b.x-b.w/2-.09, b.z-b.d/2-.09, b.x+b.w/2+.09, b.z+b.d/2+.09);
+    const addRoad = points => {for(const p of points){const q={...p,i:city.index(p.x,p.z)};roadGrid.add(q,q.x,q.z,q.x,q.z);}};
+    cityStreetSources(city,k=>{const q={i:k,...city.xy(k)};roadGrid.add(q,q.x,q.z,q.x,q.z);},p=>{const q={...p,i:city.index(p.x,p.z)};roadGrid.add(q,q.x,q.z,q.x,q.z);});
+    for (const b of city.buildings) add(b);
+    const connection = (b, limit=12) => {
+        const candidates=[];
         // A socket beyond 12 is rejected below anyway, so only that neighbourhood is searched.
-        for(const q of roadGrid.near(b.x-b.w/2-12,b.z-b.d/2-12,b.x+b.w/2+12,b.z+b.d/2+12)) {
+        for(const q of roadGrid.near(b.x-b.w/2-limit,b.z-b.d/2-limit,b.x+b.w/2+limit,b.z+b.d/2+limit)) {
             const dx=q.x-b.x,dz=q.z-b.z;
             const px=b.x+cityClamp(dx,-b.w/2-.08,b.w/2+.08), pz=b.z+cityClamp(dz,-b.d/2-.08,b.d/2+.08);
             const dist=Math.hypot(q.x-px,q.z-pz);
-            if(best&&dist>=best.dist)continue;
-            const a = { x: px, z: pz };
+            if(dist>=limit)continue;
+            candidates.push({dist,a:{x:px,z:pz},b:q});
+        }
+        // Stable distance order preserves the old nearest-socket/tie choice,
+        // while expensive water and obstruction walks stop at the first match.
+        candidates.sort((a,b)=>a.dist-b.dist);
+        for(const candidate of candidates){
+            const {a,b:q}=candidate,px=a.x,pz=a.z;
             if (!cityDrySegment(city, a, q)) continue;
             const obstacles = blockGrid.near(Math.min(px, q.x), Math.min(pz, q.z), Math.max(px, q.x), Math.max(pz, q.z));
             if (obstacles.some(v => v !== b && citySegmentBox(a, q, v.x - v.w / 2 - .08, v.z - v.d / 2 - .08, v.x + v.w / 2 + .08, v.z + v.d / 2 + .08))) continue;
-            best={dist,a,b:q};
+            return candidate;
         }
-        return best;
+        return null;
     };
+    connection.add = add;
+    connection.addRoad = addRoad;
+    return connection;
+}
+/** Canonical paved half-widths, including the narrow courtyard passages. A
+ * coarse road bitmap cell is wider than many of these lanes; subcell houses
+ * must clear the actual complete ribbon, not give up that whole survey cell. */
+function cityRoadClearance(city) {
+    const grid=cityGrid(4);
+    const add=road=>{
+        const width=road.role==='courtyard-access'?road.halfWidth:(city.townProfile?.width||1)*(road.kind==='arterial'?.67:road.kind==='street'?.5:.37);
+        for(let k=1;k<road.points.length;k++){
+            const a=road.points[k-1],b=road.points[k],half=width+((a.bridge||b.bridge)?.18:0),r={a,b,half};
+            grid.add(r,Math.min(a.x,b.x)-half-.05,Math.min(a.z,b.z)-half-.05,Math.max(a.x,b.x)+half+.05,Math.max(a.z,b.z)+half+.05);
+        }
+    };
+    for(const road of city.roads||[])add(road);
+    const blocked=(b,pad=.05)=>grid.near(b.x-b.w/2,b.z-b.d/2,b.x+b.w/2,b.z+b.d/2).some(r=>citySegmentBox(r.a,r.b,b.x-b.w/2-r.half-pad,b.z-b.d/2-r.half-pad,b.x+b.w/2+r.half+pad,b.z+b.d/2+r.half+pad));
+    return{add,blocked};
+}
+/** One access tree for the open ground inside a town, rooted in its existing
+ * streets. Houses can share its narrow courtyard lanes; no per-house Dijkstra
+ * and no new arterial cut through an occupied block. */
+function cityCourtyardAccess(city,hull) {
+    const step=.275,clearance=.17;
+    const x0=Math.min(...hull.map(p=>p.x)),z0=Math.min(...hull.map(p=>p.z)),nx=Math.ceil((Math.max(...hull.map(p=>p.x))-x0)/step)+1,nz=Math.ceil((Math.max(...hull.map(p=>p.z))-z0)/step)+1;
+    // Heap priorities and the stored distances must use the same precision.
+    // Rounding a fractional-step improvement into Float32 can requeue an unchanged
+    // distance many times across a whole equal-cost courtyard grid.
+    const size=nx*nz,occupied=new Uint8Array(size),parent=new Int32Array(size).fill(-1),distance=new Float64Array(size).fill(Infinity),roots=new Map(),built=new Uint8Array(size),dead=new Uint8Array(size);
+    const xy=k=>({x:x0+k%nx*step,z:z0+Math.floor(k/nx)*step}),index=(x,z)=>Math.max(0,Math.min(nz-1,Math.round((z-z0)/step)))*nx+Math.max(0,Math.min(nx-1,Math.round((x-x0)/step)));
+    const inside=q=>hull.every((a,i)=>{const b=hull[(i+1)%hull.length];return (b.x-a.x)*(q.z-a.z)-(b.z-a.z)*(q.x-a.x)>=-1e-8;});
+    const forbidden=new Uint8Array(city.n*city.n);
+    for(let i=0;i<forbidden.length;i++)forbidden[i]=!!(city.water[i]||city.environment.ice[i]>25||city.environment.snow[i]>.5||city.atlasSlope[i]>city.streetGradeCap);
+    const dryPoint=q=>[-clearance,0,clearance].every(dx=>[-clearance,0,clearance].every(dz=>!forbidden[city.index(q.x+dx,q.z+dz)]));
+    const dryLane=(a,b)=>{
+        if(!dryPoint(a)||!dryPoint(b))return false;
+        const length=Math.hypot(b.x-a.x,b.z-a.z)||1,dx=-(b.z-a.z)/length,dz=(b.x-a.x)/length;
+        return [-clearance,0,clearance].every(t=>cityDrySegment(city,{x:a.x+dx*t,z:a.z+dz*t},{x:b.x+dx*t,z:b.z+dz*t}));
+    };
+    const mark=b=>{const xa=Math.max(0,Math.ceil((b.x-b.w/2-clearance-x0)/step)),xb=Math.min(nx-1,Math.floor((b.x+b.w/2+clearance-x0)/step)),za=Math.max(0,Math.ceil((b.z-b.d/2-clearance-z0)/step)),zb=Math.min(nz-1,Math.floor((b.z+b.d/2+clearance-z0)/step));for(let z=za;z<=zb;z++)for(let x=xa;x<=xb;x++)occupied[z*nx+x]=1;};
+    for(let k=0;k<size;k++){const q=xy(k);if(!inside(q)||!dryPoint(q))occupied[k]=1;}
+    for(const b of city.buildings)mark(b);
+    const blocks=cityGrid(4);for(const b of city.buildings)blocks.add(b,b.x-b.w/2,b.z-b.d/2,b.x+b.w/2,b.z+b.d/2);
+    const clear=(a,b)=>dryLane(a,b)&&!blocks.near(Math.min(a.x,b.x)-clearance,Math.min(a.z,b.z)-clearance,Math.max(a.x,b.x)+clearance,Math.max(a.z,b.z)+clearance).some(p=>citySegmentBox(a,b,p.x-p.w/2-clearance,p.z-p.d/2-clearance,p.x+p.w/2+clearance,p.z+p.d/2+clearance));
+    const queue=new MinHeap();
+    const seed=p=>{const k=index(p.x,p.z);for(const j of[k,k-1,k+1,k-nx,k+nx]){if(j<0||j>=size||occupied[j]||Math.abs(j%nx-k%nx)>1||!clear(p,xy(j)))continue;const d=Math.hypot(p.x-xy(j).x,p.z-xy(j).z);if(d<distance[j]){distance[j]=d;parent[j]=-2;roots.set(j,p);queue.push(j,distance[j]);}}};
+    cityStreetSources(city,i=>seed({...city.xy(i),i}),p=>seed({...p,i:city.index(p.x,p.z)}));
+    while(queue.length){const[k,d]=queue.pop();if(d!==distance[k])continue;const x=k%nx,z=Math.floor(k/nx),a=xy(k);
+        for(const[dx,dz]of[[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,zz=z+dz,j=zz*nx+xx;if(xx<0||xx>=nx||zz<0||zz>=nz||occupied[j])continue;const nd=d+step;if(nd>=distance[j])continue;
+            // Every parcel side is >=1.1, four times this orthogonal step. An edge
+            // cannot jump its expanded box when both endpoint nodes are free.
+            // Water only needs a walk when the edge crosses a survey-cell edge.
+            const b=xy(j);if(city.index(a.x,a.z)!==city.index(b.x,b.z)&&!cityDrySegment(city,a,b))continue;
+            distance[j]=nd;parent[j]=k;queue.push(j,distance[j]);}
+    }
+    function route(b){
+        const center=index(b.x,b.z),options=[];
+        for(let dz=-4;dz<=4;dz++)for(let dx=-4;dx<=4;dx++){const xx=center%nx+dx,zz=Math.floor(center/nx)+dz;if(xx<0||xx>=nx||zz<0||zz>=nz)continue;const k=zz*nx+xx,q=xy(k);if(occupied[k]||dead[k]||!Number.isFinite(distance[k]))continue;if(Math.abs(q.x-b.x)<b.w/2+clearance&&Math.abs(q.z-b.z)<b.d/2+clearance)continue;options.push({k,q,cost:distance[k]+Math.hypot(q.x-b.x,q.z-b.z)});}
+        options.sort((a,b)=>a.cost-b.cost);
+        for(const {k,q}of options){
+            const a={x:b.x+cityClamp(q.x-b.x,-b.w/2-.2,b.w/2+.2),z:b.z+cityClamp(q.z-b.z,-b.d/2-.2,b.d/2+.2)};
+            const door={x:b.x+cityClamp(a.x-b.x,-b.w/2-.08,b.w/2+.08),z:b.z+cityClamp(a.z-b.z,-b.d/2-.08,b.d/2+.08)};
+            if(!clear(door,a)||!clear(a,q))continue;
+            const path=[a,q],cells=[k];let j=k,valid=true;
+            for(let t=0;t<size&&!built[j];t++){
+                const next=parent[j],p=next===-2?roots.get(j):next>=0?xy(next):null;
+                if(!p||(next>=0&&(occupied[next]||dead[next]))){for(const cell of cells)dead[cell]=1;valid=false;break;}
+                if(citySegmentBox(path.at(-1),p,b.x-b.w/2-clearance,b.z-b.d/2-clearance,b.x+b.w/2+clearance,b.z+b.d/2+clearance)){valid=false;break;}
+                path.push(p);if(next===-2)break;cells.push(next);j=next;
+            }
+            if(valid)return {path,cells,socket:{dist:Math.hypot(a.x-door.x,a.z-door.z),a:door,b:{...a,i:city.index(a.x,a.z)}}};
+        }
+        return null;
+    }
+    function add(b,route){mark(b);blocks.add(b,b.x-b.w/2,b.z-b.d/2,b.x+b.w/2,b.z+b.d/2);if(route)for(const k of route.cells)built[k]=1;}
+    return{route,add};
+}
+/** Fill the unbuilt parts of existing blocks, keeping every earlier doorway open.
+ * The survey raster is much coarser than a small house. Subcell candidates find
+ * usable yards that its one-candidate-per-cell pass cannot reach. Access lanes
+ * and occupied parcels are indexed as they are accepted, so later houses cannot
+ * close a courtyard's only exit. The original built hull bounds all additions.
+ */
+function cityResidentialInfill(city, entrances, place) {
+    if (city.buildings.length < 12) return;
+    const points = city.buildings.flatMap(b => [-1, 1].flatMap(x => [-1, 1].map(z => ({x:b.x+x*b.w/2,z:b.z+z*b.d/2}))));
+    const hull = FortressPlan.hull(points), lanes = cityGrid(4), connect = cityStreetConnections(city),paving=cityRoadClearance(city);
+    let courtyards;
+    const inside = (x,z) => hull.every((a,i) => {const b=hull[(i+1)%hull.length];return (b.x-a.x)*(z-a.z)-(b.z-a.z)*(x-a.x)>=-1e-8;});
+    const reserve = path => lanes.add(path,Math.min(path.a.x,path.b.x)-.17,Math.min(path.a.z,path.b.z)-.17,Math.max(path.a.x,path.b.x)+.17,Math.max(path.a.z,path.b.z)+.17);
+    for (const path of entrances.values()) reserve(path);
+    const loX=Math.min(...hull.map(p=>p.x)),hiX=Math.max(...hull.map(p=>p.x)),loZ=Math.min(...hull.map(p=>p.z)),hiZ=Math.max(...hull.map(p=>p.z));
+    const candidates=[];
+    // The back courts use the existing minimum usable house plot. A finer
+    // search step fits that fixed physical size between irregular older parcels;
+    // roof forms, materials and heights still follow the town's building kit.
+    for(let z=loZ+.6;z<hiZ-.6;z+=.2)for(let x=loX+.6;x<hiX-.6;x+=.2){
+        const k=city.index(x,z);
+        if(city.water[k]||city.gateReserve[k]||city.slope[k]>.9||!inside(x,z))continue;
+        candidates.push({x,z,k,rank:Math.hypot(x-city.market.x,z-city.market.z)});
+    }
+    candidates.sort((a,b)=>a.rank-b.rank||a.z-b.z||a.x-b.x);
+    let pending,alley;
+    const accepts = b => {
+        // The .12 half-width alley plus .05 clearance must remain visibly open.
+        const x0=b.x-b.w/2-.17,x1=b.x+b.w/2+.17,z0=b.z-b.d/2-.17,z1=b.z+b.d/2+.17;
+        if(!inside(x0,z0)||!inside(x0,z1)||!inside(x1,z0)||!inside(x1,z1))return false;
+        if(paving.blocked(b))return false;
+        if(lanes.near(x0,z0,x1,z1).some(path=>citySegmentBox(path.a,path.b,x0,z0,x1,z1)))return false;
+        pending=connect(b,3);alley=null;
+        if(pending&&pending.dist<12)return true;
+        alley=courtyards.route(b);
+        return !!alley;
+    };
+    const before=city.buildings.length,areaBefore=city.buildings.reduce((sum,b)=>sum+b.w*b.d,0);
+    for(let pass=0;pass<5;pass++){
+      courtyards=cityCourtyardAccess(city,hull);
+      const count=city.buildings.length;
+      for(const q of candidates){
+        if(q.closed)continue;
+        let reachedAccess=false;
+        const b=place({...q,w:1.1,d:1.1},plot=>{reachedAccess=true;return accepts(plot);});
+        // Terrain, footprint collisions and existing paving only become more
+        // constrained. Only an access failure can benefit from the next lane
+        // field, and no RNG is consumed before that access check is reached.
+        if(!b){if(!reachedAccess)q.closed=true;continue;}
+        q.closed=true;
+        b.denseInfill=true;
+        connect.add(b);
+        if(alley){
+            const points=alley.path.map(p=>{const xx=cityClamp((p.x/city.width+.5)*(city.n-1),0,city.n-1),zz=cityClamp((p.z/city.depth+.5)*(city.n-1),0,city.n-1),x=Math.floor(xx),z=Math.floor(zz),u=xx-x,v=zz-z,at=(a,b)=>city.height[Math.min(city.n-1,b)*city.n+Math.min(city.n-1,a)];return {...p,y:lerp(lerp(at(x,z),at(x+1,z),u),lerp(at(x,z+1),at(x+1,z+1),u),v)+.13,bridge:false};});
+            const nodes=[];for(const p of points){const i=city.index(p.x,p.z);if(nodes.at(-1)!==i)nodes.push(i);}
+            const road={kind:'lane',role:'courtyard-access',halfWidth:.12,refined:true,nodes,points};
+            city.roads.push(road);paving.add(road);
+            connect.addRoad(points);
+            for(let k=1;k<points.length;k++)reserve({a:points[k-1],b:points[k]});
+            pending=alley.socket;
+        }
+        reserve(pending);entrances.set(b.id,pending);
+        courtyards.add(b,alley);
+      }
+      if(city.buildings.length===count)break;
+    }
+    city.density={version:1,basePlots:before,addedPlots:city.buildings.length-before,parcelAreaBefore:areaBefore,parcelAreaAfter:city.buildings.reduce((sum,b)=>sum+b.w*b.d,0)};
 }
 /** Read the existing survey extent without generating streets or consuming RNG. */
 function citySurvey(sim, p) {
@@ -439,14 +608,15 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
         }
     lots.sort((a, b) => a.rank - b.rank);
     const target = cityClamp(Math.round(260 + Math.sqrt(Math.max(0, p.detailSupport ?? p.urbanSupport)) * 2.3), 260, 1500);
-    const used = [], usedGrid = cityGrid(8), MIN_PARCEL_SIDE = 1.1, MAX_PARCEL_ASPECT = 4.4;
+    const used = [], MIN_PARCEL_SIDE = 1.1, MAX_PARCEL_ASPECT = 4.4;
+    let usedGrid = cityGrid(8), buildingSerial = 0;
     let infill=false;
     // Large precincts allow more local relief than small houses. Exact projected
     // parcel bounds below still limit the footing required by the whole block.
-    const blocked = (j, steep = .9) => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.road[j] || city.gateReserve[j] || city.slope[j] > steep;
+    const blocked = (j, steep = .9, exactRoad = false) => city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || (!exactRoad&&city.road[j]) || city.gateReserve[j] || city.slope[j] > steep;
     // `plot` is an explicitly surveyed parcel: position and both dimensions decided by the
     // caller. Without it the old behaviour stands, a near-square footprint on a lot cell.
-    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1, plot = null, steep = .9) {
+    function buildingAt(k, type, landmark = false, precinctSize = 3, shrink = 1, plot = null, steep = .9, accessTest = null) {
         const q = plot ? { x: plot.x, z: plot.z } : city.xy(k), seat = plot ? city.index(q.x, q.z) : k;
         // The interior passes take whatever the frontage ranks left behind, so their
         // footprints are drawn small and unevenly: a near-square 4-6 block only ever fitted
@@ -458,7 +628,7 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
         // entire multi-building compound into them.
         if (!landmark && (Math.min(ww, dd) < MIN_PARCEL_SIDE || Math.max(ww / dd, dd / ww) > MAX_PARCEL_ASPECT + 1e-9)) return null;
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
-        if (!cityParcelEvery(city, q, ww, dd, j => !blocked(j, steep))) return null;
+        if (!cityParcelEvery(city, q, ww, dd, j => !blocked(j, steep,!!accessTest))) return null;
         const a = 0; // Footprints remain aligned to local surveyed blocks; organic roads cut across them.
         // Party walls, not garden walls. The old .28 clearance around every block is most of
         // why half the buildable ground stayed empty; the style's spacing still separates an
@@ -468,6 +638,7 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
         const gap = .02 + .17 * (profile.spacing - .8);
         if (usedGrid.near(q.x - ww / 2 - gap, q.z - dd / 2 - gap, q.x + ww / 2 + gap, q.z + dd / 2 + gap).some(b => Math.abs(b.x - q.x) < (b.w + ww) / 2 + gap && Math.abs(b.z - q.z) < (b.d + dd) / 2 + gap))
             return null;
+        if(accessTest&&!accessTest({...q,w:ww,d:dd}))return null;
         const district = city.districts.reduce((best, d) => { const dis = Math.hypot(d.x - q.x, d.z - q.z); return dis < best.dist ? { d, dist: dis } : best; }, { d: city.districts[0], dist: Infinity }).d;
         const actual = type || (['garden', 'market', 'civic', 'temple', 'academy', 'harbor'].includes(district.type) ? 'home' : district.type);
         const h = landmark ? (actual === 'academy' ? 10 : actual === 'temple' ? 7 : actual === 'civic' ? 7 : 3.2) : 1.5 + rng() * 2.3;
@@ -477,7 +648,7 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
         // A house needs a modest footing, not a downhill tower as tall as itself.
         // Smaller alternatives remain available to the frontage and infill passes.
         if(fall>footingLimit)return null;
-        const b = { id: `b${city.buildings.length}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill, terrainFall:fall, footingLimit };
+        const b = { id: `b${buildingSerial++}`, name: landmark ? ({ civic: 'The Council Keep', temple: 'Sanctuary of Many Lamps', academy: 'The Meridian Collegium', market: 'The Covered Exchange', granary: 'The Public Granary', workshop: 'The Guildhall', harbor: 'Harbormaster House' }[actual] || 'Landmark') : `${district.name} · Court ${district.buildings + 1}`, type: actual, ...q, w: ww, d: dd, h, y: city.height[seat], angle: a, district: district.id, landmark, condition: 1, infill, terrainFall:fall, footingLimit };
         used.push(b);
         usedGrid.add(b, b.x - b.w / 2, b.z - b.d / 2, b.x + b.w / 2, b.z + b.d / 2);
         TownGrammar.moduleFor(city, b, rng);
@@ -587,13 +758,6 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
     infill=true;
     for(const lot of lots){if(city.buildings.length>=Math.min(1900,target*2.1))break;buildingAt(lot.k,'home',false);}
     infill=false;
-    if (landmarkOnly) {
-        const b=city.buildings.find(b=>b.sacred),socket=b?cityStreetConnections(city)(b):null;
-        // Waterfront fittings, trees and fields add no building footprints or
-        // road nodes. Query the same final doorway against all household plots,
-        // then leave their decorative geometry and full town metadata unbuilt.
-        return {townRecipe:recipe,townProfile:profile,buildings:b&&socket&&socket.dist<12?[b]:[]};
-    }
     // A granary and public well are selected from dry, road-served existing lots.
     const ordinary = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
     // Reusing a house lot for a lower structure also lowers its footing budget.
@@ -607,6 +771,27 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
         Object.assign(well, { type: 'well', name: 'The Common Cistern', landmark: true, h: .9, footingLimit:.9*.65 });
         city.landmarks.push(well.id);
     }
+    // Keep the established civic well and granary before filling smaller yards.
+    // Resolve existing access before adding another row behind it. These are the
+    // same exact sockets the final layout filter requires; reserve them first.
+    const doorway=cityStreetConnections(city);
+    if (landmarkOnly) {
+        // Query the sacred doorway against the same complete obstacle set.
+        // Resolving every household entrance would not change this result.
+        const b=city.buildings.find(b=>b.sacred),path=b?doorway(b):null;
+        return {townRecipe:recipe,townProfile:profile,buildings:b&&path&&path.dist<12?[b]:[]};
+    }
+    const entrances=new Map();
+    for(const b of city.buildings){const path=doorway(b);if(path&&path.dist<12)entrances.set(b.id,path);}
+    city.buildings=city.buildings.filter(b=>entrances.has(b.id));
+    // Fix the existing curtain and its external approaches before finer houses
+    // occupy the interior. Infill clears these real road ribbons as well.
+    if(typeof FortressPlan!=='undefined')FortressPlan.build(city);
+    usedGrid=cityGrid(4);
+    for(const b of city.buildings)usedGrid.add(b,b.x-b.w/2,b.z-b.d/2,b.x+b.w/2,b.z+b.d/2);
+    infill=true;
+    cityResidentialInfill(city,entrances,(plot,accepts)=>buildingAt(plot.k,'home',false,3,1,plot,.9,accepts));
+    infill=false;
     // A working waterfront, where the harbour district already sits on real parent water.
     // Quays, jetties, sheds, cranes and hulls are port FITTINGS, not city.buildings: the
     // block plan, the LOD triangle budget and city.fingerprint are all left alone, and the
@@ -740,7 +925,7 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
     }
     // Historical precinct walls protect the old core; gaps are gates or open waterfronts.
     const wallRadius = 20 * grow * settled;
-    for (let k = 0; k < (profile.wall ? 76 : 0); k++) {
+    for (let k = 0; k < (!city.defenses&&profile.wall ? 76 : 0); k++) {
         const a = k / 76 * Math.PI * 2, b = (k + 1) / 76 * Math.PI * 2, A = { x: city.market.x + Math.cos(a) * wallRadius, z: city.market.z + Math.sin(a) * wallRadius * .85 }, B = { x: city.market.x + Math.cos(b) * wallRadius, z: city.market.z + Math.sin(b) * wallRadius * .85 }, i = city.index(A.x, A.z), j = city.index(B.x, B.z);
         if (city.water[i] || city.water[j] || distanceRoad[i] < 2.5 || distanceRoad[j] < 2.5 || city.buildings.some(v => cityPointSegment(v, A, B) < Math.max(v.w, v.d) * .7))
             continue;
@@ -749,7 +934,7 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
     city.connectors = [];
     const connectorFor = cityStreetConnections(city);
     for(const b of city.buildings) {
-        const best=connectorFor(b);
+        const best=entrances.get(b.id)||connectorFor(b);
         if(best&&best.dist<12){b.streetSocket=best.b.i;b.angle=Math.round(Math.atan2(-(best.b.x-b.x),best.b.z-b.z)/(Math.PI/2))*(Math.PI/2);city.connectors.push({blockId:b.id,...best});}
     }
     city.buildings = city.buildings.filter(b=>b.streetSocket!=null);
@@ -775,7 +960,6 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
         if (b.landmark)
             b.lod = 2;
     city.lod = { full, mid, plain: graded.length - full - mid, estimate: graded.reduce((n, b) => n + LOD_COST[b.lod], 0) };
-    if(typeof FortressPlan!=='undefined')FortressPlan.build(city);
     city.blocks = city.buildings.filter(b=>!b.landmark).map(b=>({id:b.id,template:b.module,district:b.district,components:b.components,streetSocket:b.streetSocket??null,x:b.x,z:b.z,width:b.w,depth:b.d}));
     const weights = { home: 0, workshop: 0, market: 0, temple: 0, academy: 0, harbor: 0, civic: 0, garden: 0 };
     for (const d of city.districts)
@@ -787,6 +971,7 @@ function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
 function cityPointSegment(p, a, b) { const dx = b.x - a.x, dz = b.z - a.z, t = cityClamp(((p.x - a.x) * dx + (p.z - a.z) * dz) / (dx * dx + dz * dz || 1), 0, 1); return Math.hypot(p.x - a.x - t * dx, p.z - a.z - t * dz); }
 function auditCity(city) {
     let iceBuildings=0,wetBuildings = 0, roadBuildings = 0, overlaps = 0, nonfinite = 0, seaRoads = 0;
+    const paving=cityRoadClearance(city);
     for (const b of city.buildings) {
         if (![b.x, b.z, b.w, b.d, b.h, b.y].every(Number.isFinite))
             nonfinite++;
@@ -796,9 +981,10 @@ function auditCity(city) {
                 if(city.environment?.ice[i]>25||city.environment?.snow[i]>.5)iceBuildings++;
                 if (city.water[i])
                     wetBuildings++;
-                if (city.road[i])
+                if (!b.denseInfill&&city.road[i])
                     roadBuildings++;
             }
+        if(b.denseInfill&&paving.blocked(b,0))roadBuildings++;
     }
     for (let i = 0; i < city.buildings.length; i++)
         for (let j = i + 1; j < city.buildings.length; j++) {

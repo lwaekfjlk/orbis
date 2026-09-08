@@ -78,6 +78,40 @@ const ExcavationTerrain=(()=>{
  return{prepare,contains,subtract,triangle,seat,restore,map};
 })();
 const SEASON_SNOW=rgb('#e9f1f4');
+// Mount collected triangles directly into their final upload buffer. Repeating
+// frame.vertex / Geometry.tri here allocated five arrays per face and then
+// copied the complete numeric array again. The arithmetic and face rejection
+// match those public helpers; only the intermediate storage is removed.
+const CityMeshProjection=(()=>{
+ function mesh(data,ranges,frame,excavatedBuildings=new Set()){
+  const output=new Float32Array(data.length),points=new Float64Array(9),heights=new Map();
+  let length=0,rangeIndex=0;
+  const ground=(x,z)=>{let row=heights.get(x);if(!row){row=new Map();heights.set(x,row);}let value=row.get(z);if(value===undefined){value=frame.ground(x,z);row.set(z,value);}return value;};
+  for(let k=0;k<data.length;k+=27){
+   while(rangeIndex<ranges.length&&ranges[rangeIndex].end<=k)rangeIndex++;
+   const range=ranges[rangeIndex],anchor=range&&range.start<=k?frame.anchors.get(range.id):null,footing=anchor&&range.footing;
+   for(let j=0;j<3;j++){
+    const t=k+j*9,q=j*3,x=data[t],y=data[t+1],z=data[t+2];
+    const rise=footing?(y-anchor.b.y)/footing.depth*((anchor.y-anchor.low)+.04*frame.scale):anchor?(y-anchor.b.y)*frame.scale:0;
+    points[q]=frame.origin[0]+x*frame.sx;
+    points[q+1]=anchor?anchor.y+rise:ground(x,z)+(y-frame.localGround(x,z)+AtlasSpace.BUILDING_LIFT)*frame.scale;
+    points[q+2]=frame.origin[2]+z*frame.sz;
+    if(anchor&&!footing&&!excavatedBuildings.has(range.id)&&y<anchor.b.y-.015)points[q+1]=Math.min(points[q+1],ground(x,z)-.006);
+   }
+   const ax=points[0],ay=points[1],az=points[2],bx=points[3],by=points[4],bz=points[5],cx=points[6],cy=points[7],cz=points[8];
+   const ux=bx-ax,uy=by-ay,uz=bz-az,vx=cx-ax,vy=cy-ay,vz=cz-az;
+   const fx=uy*vz-uz*vy,fy=uz*vx-ux*vz,fz=ux*vy-uy*vx,n=Math.hypot(fx,fy,fz);
+   if(n<1e-10)continue;
+   const divisor=n||1,nx=fx/divisor,ny=fy/divisor,nz=fz/divisor,r=data[k+6],g=data[k+7],b=data[k+8];
+   for(let j=0;j<3;j++){
+    const q=j*3;output[length++]=points[q];output[length++]=points[q+1];output[length++]=points[q+2];
+    output[length++]=nx;output[length++]=ny;output[length++]=nz;output[length++]=r;output[length++]=g;output[length++]=b;
+   }
+  }
+  return{data:length===output.length?output:output.subarray(0,length)};
+ }
+ return{mesh};
+})();
 class ContinuousCityLayer {
  constructor(r){this.r=r;this.world=null;this.sim=null;this.models=new Map();this.pending=new Set();this.failed=new Set();this.focusId=null;this.epoch=0;this.natural=false;this.loading=false;this.sequence=0;this.preparing=null;this.onChange=()=>{};this.maxModels=2;this.lastTerrainKey=null;this.terrainColorCache=null;this.lastLandscapeKey='none';this.lastExcavationKey='closed';this.retess=0;this.reriver=0;this.reroad=0;this.lastRiverKey=null;this.lastEnvironmentKey='none';this.reflora=0;this.worker=null;this.workerId=0;this.workerJobs=new Map();this.workerWorld=null;}
  key(p){const survey=citySurvey(this.sim,p);return `${p.id}/${TownCatalog.signature(TownCatalog.resolve(this.world,this.sim,p))}/${JSON.stringify(this.sim.cityState?.[p.id]||{})}/${JSON.stringify(this.sim.landmarkRecipes||{})}/${this.sim.realms[p.owner]?.id}/${survey.terrainSpan}/${survey.width}/${survey.depth}${p.highCitadel?'/high/'+JSON.stringify(p.highCitadel):''}`;}
@@ -374,16 +408,7 @@ class ContinuousCityLayer {
   const excavatedBuildings=new Set(model.excavations.map(h=>h.buildingId));
   for(const[name,m]of Object.entries(collector.meshes)){
    if(!['buildings','roofs','details','streets','farms','cityWalls','trees','port'].includes(name))continue;
-   const g=new Geometry(),data=m.vertices,ranges=collector.buildingRanges[name]||[];let rangeIndex=0;
-   for(let k=0;k<data.length;k+=27){
-    while(rangeIndex<ranges.length&&ranges[rangeIndex].end<=k)rangeIndex++;
-    const range=ranges[rangeIndex],anchor=range&&range.start<=k?frame.anchors.get(range.id):null,pts=[];
-    for(let j=0;j<3;j++){const t=k+j*9;const q=frame.vertex(data[t],data[t+1],data[t+2],anchor,range?.footing);
-     // Footings reach the actual slope instead of hovering below flat compounds.
-     if(anchor&&!range.footing&&!excavatedBuildings.has(range.id)&&data[t+1]<anchor.b.y-.015)q[1]=Math.min(q[1],frame.ground(data[t],data[t+2])-.006);
-     pts.push(q);
-    }g.tri(pts[0],pts[1],pts[2],[data[k+6],data[k+7],data[k+8]]);
-   }
+   const g=CityMeshProjection.mesh(m.vertices,collector.buildingRanges[name]||[],frame,excavatedBuildings);
    const key=`cm:${p.id}:${name}`;this.r.upload(key,g,m.shadow,m.unlit,1);model.meshNames.push(key);model.triangles+=g.data.length/27;
   }
   // RiverDetail renders inherited city tributaries with the parent channels.

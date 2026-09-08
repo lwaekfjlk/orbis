@@ -1,6 +1,6 @@
 {
-  "bundleSHA": "7fa6d360eef9a33c5e73f9417781657e015686f8e70a426879341046905080b0",
-  "sourceCommit": "7001d9074fc452efac84e0fade758aea30ae7bb7",
+  "bundleSHA": "614601c3829fcf9d009daa1642831588d3bde630c7566a6b4de7ceeca0a69740",
+  "sourceCommit": "4f0405c",
   "selection": "Generated building count, descending",
   "bundlePath": "dist/orbis-onemap.html",
   "viewport": {
@@ -32,8 +32,8 @@
         "forestFraction": 0.3902439024390244
       },
       "rank": 1,
-      "buildings": 971,
-      "roads": 97,
+      "buildings": 3452,
+      "roads": 501,
       "walls": 278,
       "gates": 3,
       "landmarks": [
@@ -75,98 +75,21 @@
         "maxX": 1098.7356481698953,
         "maxY": 969.999417161405
       },
-      "triangles": 301430,
+      "triangles": 841833,
       "camera": {
         "target": [
-          65.9908235608714,
-          0.383679409134581,
-          -16.643067293658873
+          65.9905065208265,
+          0.38337531493832094,
+          -16.64317596063236
         ],
-        "zoom": 103.59380540285274,
+        "zoom": 103.5938008475093,
         "azimuth": 1.2441258666746502,
         "elevation": 0.74
       },
       "worker": true,
       "error": null,
       "full": null,
-      "panel": "/tmp/telluric-largest-cities-qa/city-216-panel.png"
-    },
-    {
-      "id": 264,
-      "name": "Sarrelmont",
-      "urban": 32386.099604574712,
-      "harbor": 0.7459158301353455,
-      "river": 0,
-      "biome": "Tropical rainforest",
-      "style": "monsoon",
-      "environment": {
-        "label": "Tropical rainforest · mountain slopes",
-        "bed": 916.591552734375,
-        "temperature": 22.495033264160156,
-        "aridity": 5.643034934997559,
-        "mountainous": true,
-        "relief": 2814.1373748779297,
-        "forestFraction": 0.66
-      },
-      "rank": 2,
-      "buildings": 874,
-      "roads": 112,
-      "walls": 322,
-      "gates": 8,
-      "landmarks": [
-        {
-          "id": "b0",
-          "name": "The High Citadel",
-          "type": "civic",
-          "wonder": null
-        },
-        {
-          "id": "b1",
-          "name": "Sanctuary of Many Lamps",
-          "type": "temple"
-        },
-        {
-          "id": "b2",
-          "name": "The Meridian Collegium",
-          "type": "academy"
-        },
-        {
-          "id": "b3",
-          "name": "The Covered Exchange",
-          "type": "market"
-        },
-        {
-          "id": "b34",
-          "name": "Public Grain House",
-          "type": "granary"
-        },
-        {
-          "id": "b777",
-          "name": "The Common Cistern",
-          "type": "well"
-        }
-      ],
-      "bounds": {
-        "minX": 72.09871079557217,
-        "minY": 49.99892831779306,
-        "maxX": 1127.9020239272938,
-        "maxY": 969.9989385314414
-      },
-      "triangles": 430592,
-      "camera": {
-        "target": [
-          -78.7343431039217,
-          0.8415530415513521,
-          -3.7336308899281385
-        ],
-        "zoom": 111.87359948106757,
-        "azimuth": 2.2963032650549695,
-        "elevation": 0.74
-      },
-      "worker": true,
-      "error": null,
-      "full": null,
-      "panel": "/tmp/telluric-largest-cities-qa/city-264-panel.png"
+      "panel": "/tmp/telluric-dense-cities-qa/readme/city-216-panel.png"
     },
     {
       "id": 499,
@@ -185,9 +108,9 @@
         "relief": 3799.216899871826,
         "forestFraction": 0.3140495867768595
       },
-      "rank": 3,
-      "buildings": 792,
-      "roads": 71,
+      "rank": 2,
+      "buildings": 2867,
+      "roads": 429,
       "walls": 312,
       "gates": 3,
       "landmarks": [
@@ -229,7 +152,7 @@
         "maxX": 1147.775186525996,
         "maxY": 969.9997782162714
       },
-      "triangles": 250937,
+      "triangles": 654995,
       "camera": {
         "target": [
           -51.999000719335534,
@@ -243,41 +166,41 @@
       "worker": true,
       "error": null,
       "full": null,
-      "panel": "/tmp/telluric-largest-cities-qa/city-499-panel.png"
+      "panel": "/tmp/telluric-dense-cities-qa/readme/city-499-panel.png"
     },
     {
-      "id": 267,
-      "name": "Saint Tuoneneli",
-      "urban": 26875.458581828294,
-      "harbor": 0.8866433501243591,
+      "id": 264,
+      "name": "Sarrelmont",
+      "urban": 32386.099604574712,
+      "harbor": 0.7459158301353455,
       "river": 0,
-      "biome": "Savanna",
-      "style": "lagoon",
+      "biome": "Tropical rainforest",
+      "style": "monsoon",
       "environment": {
-        "label": "Savanna",
-        "bed": 78.24849700927734,
-        "temperature": 27.406661987304688,
-        "aridity": 1.1840012073516846,
-        "mountainous": false,
-        "relief": 719.7760047912598,
-        "forestFraction": 0.08791208791208792
+        "label": "Tropical rainforest · mountain slopes",
+        "bed": 916.591552734375,
+        "temperature": 22.495033264160156,
+        "aridity": 5.643034934997559,
+        "mountainous": true,
+        "relief": 2814.1373748779297,
+        "forestFraction": 0.66
       },
-      "rank": 4,
-      "buildings": 716,
-      "roads": 124,
-      "walls": 218,
-      "gates": 14,
+      "rank": 3,
+      "buildings": 2789,
+      "roads": 449,
+      "walls": 322,
+      "gates": 8,
       "landmarks": [
         {
           "id": "b0",
-          "name": "Saint Tuoneneli · Tide Palace",
-          "type": "temple",
-          "wonder": "tide-palace"
+          "name": "The High Citadel",
+          "type": "civic",
+          "wonder": null
         },
         {
           "id": "b1",
-          "name": "The Council Keep",
-          "type": "civic"
+          "name": "Sanctuary of Many Lamps",
+          "type": "temple"
         },
         {
           "id": "b2",
@@ -290,42 +213,119 @@
           "type": "market"
         },
         {
-          "id": "b4",
-          "name": "Harbormaster House",
-          "type": "harbor"
-        },
-        {
-          "id": "b7",
+          "id": "b34",
           "name": "Public Grain House",
           "type": "granary"
         },
         {
-          "id": "b692",
+          "id": "b777",
           "name": "The Common Cistern",
           "type": "well"
         }
       ],
       "bounds": {
-        "minX": 50.00116849646474,
-        "minY": 147.64084673222757,
-        "maxX": 1150.001129589839,
-        "maxY": 872.357331279423
+        "minX": 72.09871079557217,
+        "minY": 49.99892831779306,
+        "maxX": 1127.9020239272938,
+        "maxY": 969.9989385314414
       },
-      "triangles": 250329,
+      "triangles": 1002872,
       "camera": {
         "target": [
-          -64.3002411736162,
-          0.2507799140326683,
-          -4.57728388357796
+          -78.7343431039217,
+          0.8415530415513521,
+          -3.7336308899281385
         ],
-        "zoom": 129.19279696775993,
-        "azimuth": 0.33716126308781996,
+        "zoom": 111.87359948106757,
+        "azimuth": 2.2963032650549695,
         "elevation": 0.74
       },
       "worker": true,
       "error": null,
       "full": null,
-      "panel": "/tmp/telluric-largest-cities-qa/city-267-panel.png"
+      "panel": "/tmp/telluric-dense-cities-qa/readme/city-264-panel.png"
+    },
+    {
+      "id": 334,
+      "name": "Camelelorport",
+      "urban": 25717.601407042974,
+      "harbor": 0.9794113636016846,
+      "river": 0,
+      "biome": "Savanna",
+      "style": "lagoon",
+      "environment": {
+        "label": "Savanna",
+        "bed": 111.22261810302734,
+        "temperature": 27.31609535217285,
+        "aridity": 1.1560025215148926,
+        "mountainous": false,
+        "relief": 333.85472679138184,
+        "forestFraction": 0.2571428571428571
+      },
+      "rank": 4,
+      "buildings": 1759,
+      "roads": 311,
+      "walls": 268,
+      "gates": 15,
+      "landmarks": [
+        {
+          "id": "b0",
+          "name": "Camelelorport · Tide Palace",
+          "type": "temple",
+          "wonder": "tide-palace"
+        },
+        {
+          "id": "b1",
+          "name": "The Council Keep",
+          "type": "civic"
+        },
+        {
+          "id": "b2",
+          "name": "The Covered Exchange",
+          "type": "market"
+        },
+        {
+          "id": "b3",
+          "name": "The Guildhall",
+          "type": "workshop"
+        },
+        {
+          "id": "b4",
+          "name": "Harbormaster House",
+          "type": "harbor"
+        },
+        {
+          "id": "b56",
+          "name": "Public Grain House",
+          "type": "granary"
+        },
+        {
+          "id": "b65",
+          "name": "The Common Cistern",
+          "type": "well"
+        }
+      ],
+      "bounds": {
+        "minX": 49.99978859209051,
+        "minY": 130.35057028880473,
+        "maxX": 1149.999729044314,
+        "maxY": 889.6496611724174
+      },
+      "triangles": 644152,
+      "camera": {
+        "target": [
+          0.22108875212631823,
+          0.28749610724338454,
+          4.0873265866054584
+        ],
+        "zoom": 125.6342120635943,
+        "azimuth": -1.8564536915161138,
+        "elevation": 0.74
+      },
+      "worker": true,
+      "error": null,
+      "full": null,
+      "panel": "/tmp/telluric-dense-cities-qa/readme/city-334-panel.png"
     }
   ],
   "errors": [],

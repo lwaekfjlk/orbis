@@ -39,7 +39,7 @@ test.before(async () => {
     sim = E.createCivilization(world, {realms: 18, historySeed: 'First-dawn'});
     originalState = state();
     // Survey only the two reported river cities, without building every town.
-    for (const [id, name] of [[291, 'Gullgrove'], [299, 'Harthurst']]) {
+    for (const [id, name] of [[291, 'Porth Tirseren'], [299, 'Avalfergalhaven']]) {
         const p = sim.provinces[id];
         assert.equal(p.name, name);
         const city = E.generateCity(world, sim, id), frame = E.AtlasSpace.cityFrame(world, p, city, 1);
@@ -47,7 +47,7 @@ test.before(async () => {
     }
 });
 
-test('actual city streams reuse their parent river source and retain the small Gullgrove tributary', () => {
+test('actual city streams reuse their parent river source and retain the small Porth Tirseren tributary', () => {
     const first = models.get(291), atlas = new Map(E.RiverDetail.sources(layerAt(first, {loaded: []})).map(s => [s.id, s]));
     const layer = layerAt(first), sources = E.RiverDetail.sources(layer), byId = new Map(sources.map(s => [s.id, s]));
     assert.equal(byId.size, sources.length, 'one surface per parent source cell');

@@ -14,6 +14,7 @@
     "test": "node --test --test-concurrency=1 tests/*.test.mjs",
     "test:browser": "python tests/continuous_browser.py",
     "test:city-browser": "node tests/city-coherence.browser.mjs",
+    "test:dense-city-browser": "node tests/dense-city.browser.mjs",
     "test:civic-browser": "node tests/civic-layout.browser.mjs",
     "test:loading-browser": "node tests/loading.browser.mjs",
     "test:polities-browser": "node tests/polities.browser.mjs",

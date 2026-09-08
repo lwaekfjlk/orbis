@@ -65,11 +65,15 @@ test('gateway feet reach the terrain on both sides of a steep road',()=>{
  for(const offset of feet)assert(offset<.05&&offset>-.5,'a gateway leg floats above the roadway');
 });
 
-test('Scorchspire keeps a genuine gate lane without removing or crossing any buildings',async()=>{
+test('Ben Tiraran keeps a genuine gate lane without removing or crossing any buildings',async()=>{
  const w=await generateWorld(defaults),s=createCivilization(w,{realms:18,historySeed:'First-dawn'}),build=FortressPlan.build;let snapshot;
- FortressPlan.build=c=>{snapshot=structuredClone(c.buildings);return build(c);};
+ FortressPlan.build=c=>{snapshot=structuredClone(c.buildings);const defenses=build(c);assert.deepEqual(c.buildings,snapshot,'recovering a lane must preserve the generated buildings');return defenses;};
  let c;try{c=generateCity(w,s,349);}finally{FortressPlan.build=build;}
- assert.equal(c.name,'Scorchspire');assert.deepEqual(c.buildings,snapshot,'recovering a lane must preserve the generated buildings');
+ assert.equal(c.name,'Ben Tiraran');assert(snapshot);
+ // Later infill adds homes and the renderer preparation assigns doorway, LOD
+ // and footing fields. Every earlier plot must still survive at its exact site.
+ const footprint=b=>[b.id,b.x,b.z,b.w,b.d,b.h,b.type];
+ for(const old of snapshot){const house=c.buildings.find(b=>b.id===old.id);assert(house,old.id+' was removed');assert.deepEqual(footprint(house),footprint(old),old.id+' changed its inherited plot');}
  const d=c.defenses,approach=c.roads.find(r=>r.role==='gate-approach');assert(approach,'the city must retain an outward street approach');closed(d);assert(d.gates.length>0);
  const outside=q=>d.perimeter.some((a,j)=>{const b=d.perimeter[(j+1)%d.perimeter.length];return(b.x-a.x)*(q.z-a.z)-(b.z-a.z)*(q.x-a.x)<-1e-7;});
  assert(!outside(approach.points[0]));assert(outside(approach.points.at(-1)));

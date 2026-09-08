@@ -1,0 +1,283 @@
+{
+  "sourceSHA256": "0bd50487776f8cef7d7b938b9e7d4dfdc1f51d8d5a68e65e61877b0e39a46b2a",
+  "baselineCommit": "49021ed",
+  "groups": [
+    {
+      "parameters": {
+        "seed": "Aereth-47",
+        "form": "global",
+        "plates": 24,
+        "continents": 6,
+        "islands": 1.2,
+        "volcanism": 0.85,
+        "uplift": 1.2,
+        "sea": 0,
+        "aridity": 0.85,
+        "current": 1,
+        "erosion": 0.7,
+        "temperature": 0,
+        "glaciation": 1.2,
+        "landformVersion": 3
+      },
+      "fingerprints": [
+        "73fe302b",
+        "b18c6a8",
+        "b007f61e"
+      ],
+      "rows": [
+        {
+          "id": 529,
+          "name": "Saint Midulrik",
+          "population": 2116.1361263091103,
+          "ordinaryBefore": 208,
+          "ordinaryAfter": 423,
+          "plotsRatio": 2.0336538461538463,
+          "visibleBefore": 227,
+          "visibleAfter": 442,
+          "housesRatio": 1.947136563876652,
+          "areaBefore": 943.4466849037341,
+          "areaAfter": 1203.5966849037418,
+          "areaRatio": 1.275744251543533,
+          "courtyardLanes": 44,
+          "alleySegments": 904,
+          "cityFingerprint": "21f12e4b",
+          "milliseconds": 1283.8298340000006,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 429
+          }
+        },
+        {
+          "id": 302,
+          "name": "Pohjlehtniemi",
+          "population": 7069.5546942431265,
+          "ordinaryBefore": 234,
+          "ordinaryAfter": 388,
+          "plotsRatio": 1.6581196581196582,
+          "visibleBefore": 236,
+          "visibleAfter": 390,
+          "housesRatio": 1.652542372881356,
+          "areaBefore": 913.5741522602095,
+          "areaAfter": 1099.9141522602151,
+          "areaRatio": 1.2039681174636945,
+          "courtyardLanes": 33,
+          "alleySegments": 576,
+          "cityFingerprint": "6a0d7bee",
+          "milliseconds": 797.6893749999999,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 392
+          }
+        },
+        {
+          "id": 136,
+          "name": "Nidavsmidfjord",
+          "population": 9771.086761562217,
+          "ordinaryBefore": 480,
+          "ordinaryAfter": 1361,
+          "plotsRatio": 2.8354166666666667,
+          "visibleBefore": 484,
+          "visibleAfter": 1365,
+          "housesRatio": 2.8202479338842976,
+          "areaBefore": 1443.2003450763937,
+          "areaAfter": 2509.2103450764257,
+          "areaRatio": 1.7386431160696572,
+          "courtyardLanes": 162,
+          "alleySegments": 3850,
+          "cityFingerprint": "d30b721d",
+          "milliseconds": 2450.4887500000004,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 1366
+          }
+        }
+      ],
+      "aggregate": {
+        "plotsRatio": 2.355748373101952,
+        "housesRatio": 2.319957761351637,
+        "areaRatio": 1.4583026156365957
+      }
+    },
+    {
+      "parameters": {
+        "seed": "Meridian-21",
+        "form": "rift",
+        "plates": 24,
+        "continents": 6,
+        "islands": 1.2,
+        "volcanism": 0.85,
+        "uplift": 1.2,
+        "sea": 0,
+        "aridity": 0.85,
+        "current": 1,
+        "erosion": 0.7,
+        "temperature": 0,
+        "glaciation": 1.2,
+        "landformVersion": 3
+      },
+      "fingerprints": [
+        "648c6ee8",
+        "fa190ebe",
+        "6f14f188"
+      ],
+      "rows": [
+        {
+          "id": 313,
+          "name": "Saint Aiaiene",
+          "population": 2090.4485676698328,
+          "ordinaryBefore": 155,
+          "ordinaryAfter": 265,
+          "plotsRatio": 1.7096774193548387,
+          "visibleBefore": 170,
+          "visibleAfter": 280,
+          "housesRatio": 1.6470588235294117,
+          "areaBefore": 818.6361646557477,
+          "areaAfter": 951.7361646557517,
+          "areaRatio": 1.1625874909349687,
+          "courtyardLanes": 22,
+          "alleySegments": 380,
+          "cityFingerprint": "1b27fc0d",
+          "milliseconds": 733.3232079999998,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 272
+          }
+        },
+        {
+          "id": 416,
+          "name": "Porth Sidicyv",
+          "population": 15439.771789117736,
+          "ordinaryBefore": 700,
+          "ordinaryAfter": 1767,
+          "plotsRatio": 2.5242857142857145,
+          "visibleBefore": 769,
+          "visibleAfter": 1836,
+          "housesRatio": 2.387516254876463,
+          "areaBefore": 3082.26442177778,
+          "areaAfter": 4373.3344217778185,
+          "areaRatio": 1.4188706169652305,
+          "courtyardLanes": 159,
+          "alleySegments": 3877,
+          "cityFingerprint": "b82c31b9",
+          "milliseconds": 2875.5460839999996,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 1774
+          }
+        },
+        {
+          "id": 436,
+          "name": "Aber Emainteir",
+          "population": 27170.9770028093,
+          "ordinaryBefore": 235,
+          "ordinaryAfter": 549,
+          "plotsRatio": 2.3361702127659574,
+          "visibleBefore": 274,
+          "visibleAfter": 588,
+          "housesRatio": 2.145985401459854,
+          "areaBefore": 1296.9703954753047,
+          "areaAfter": 1676.9103954753161,
+          "areaRatio": 1.2929442347531561,
+          "courtyardLanes": 65,
+          "alleySegments": 1443,
+          "cityFingerprint": "785d6782",
+          "milliseconds": 1225.803582999999,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 556
+          }
+        },
+        {
+          "id": 261,
+          "name": "Avalvesbelford",
+          "population": 40817.67551639916,
+          "ordinaryBefore": 379,
+          "ordinaryAfter": 807,
+          "plotsRatio": 2.129287598944591,
+          "visibleBefore": 385,
+          "visibleAfter": 813,
+          "housesRatio": 2.1116883116883116,
+          "areaBefore": 1213.3363538593483,
+          "areaAfter": 1731.2163538593638,
+          "areaRatio": 1.4268231132717293,
+          "courtyardLanes": 77,
+          "alleySegments": 1533,
+          "cityFingerprint": "c394d136",
+          "milliseconds": 1445.9981669999997,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 813
+          }
+        },
+        {
+          "id": 322,
+          "name": "Camelormere",
+          "population": 64480.66975396519,
+          "ordinaryBefore": 344,
+          "ordinaryAfter": 1069,
+          "plotsRatio": 3.1075581395348837,
+          "visibleBefore": 451,
+          "visibleAfter": 1176,
+          "housesRatio": 2.6075388026607538,
+          "areaBefore": 2366.4873181389758,
+          "areaAfter": 3243.737318139002,
+          "areaRatio": 1.3706971059071227,
+          "courtyardLanes": 116,
+          "alleySegments": 3165,
+          "cityFingerprint": "20aad4a2",
+          "milliseconds": 1763.2735840000023,
+          "audit": {
+            "iceBuildings": 0,
+            "wetBuildings": 0,
+            "roadBuildings": 0,
+            "overlaps": 0,
+            "nonfinite": 0,
+            "seaRoads": 0,
+            "buildings": 1075
+          }
+        }
+      ],
+      "aggregate": {
+        "plotsRatio": 2.4583563154991728,
+        "housesRatio": 2.2903855539287457,
+        "areaRatio": 1.3644738312440658
+      }
+    }
+  ],
+  "passed": true
+}

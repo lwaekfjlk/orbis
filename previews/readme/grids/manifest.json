@@ -9,47 +9,47 @@
       "panels": [
         {
           "source": "panels/city-216-panel.png",
-          "sourceSha256": "d47e058d2d18bd5dcb8a996fa3106b4a13d96ff33c053e68e7906bc832ef3824",
+          "sourceSha256": "ea0c0cfb1391e7b539532011dc088f14d6509eea212087f533eff3a9c0668237",
           "title": "Corbinbelararhaven",
-          "subtitle": "971 building plots \u00b7 41,006 people",
+          "subtitle": "3,452 building plots · 41,006 people",
           "position": 1,
           "cityId": 216,
-          "buildingPlots": 971,
+          "buildingPlots": 3452,
           "population": 41006
         },
         {
-          "source": "panels/city-264-panel.png",
-          "sourceSha256": "5f8ad2ad49f393ad6ac4a1c13d51ebabbf07681aac0681ac2e3d57008e959c34",
-          "title": "Sarrelmont",
-          "subtitle": "874 building plots \u00b7 32,386 people",
-          "position": 2,
-          "cityId": 264,
-          "buildingPlots": 874,
-          "population": 32386
-        },
-        {
           "source": "panels/city-499-panel.png",
-          "sourceSha256": "783b397085be63ffd05ca5650386840834c03e33bde5c4bfb5e2438c149848b6",
+          "sourceSha256": "0ffcd2267eb3e9cb458f797e82987d8106a314c562fa55b71c652f4bbeda5cca",
           "title": "Alflundenvik",
-          "subtitle": "792 building plots \u00b7 32,228 people",
-          "position": 3,
+          "subtitle": "2,867 building plots · 32,228 people",
+          "position": 2,
           "cityId": 499,
-          "buildingPlots": 792,
+          "buildingPlots": 2867,
           "population": 32228
         },
         {
-          "source": "panels/city-267-panel.png",
-          "sourceSha256": "f8ff30d4a9ffae078fce6dad7e22f3b517c50e25cab39b19a395841456f969d0",
-          "title": "Saint Tuoneneli",
-          "subtitle": "716 building plots \u00b7 26,875 people",
+          "source": "panels/city-264-panel.png",
+          "sourceSha256": "d2066d7fe76ae6dbe44303291a151676b4b4bcb37c46cedb095eb39a7ecd879b",
+          "title": "Sarrelmont",
+          "subtitle": "2,789 building plots · 32,386 people",
+          "position": 3,
+          "cityId": 264,
+          "buildingPlots": 2789,
+          "population": 32386
+        },
+        {
+          "source": "panels/city-334-panel.png",
+          "sourceSha256": "9e7d98132adeddc573ca9ee3d5069bd87b37f065b1cdc5c14953ba3f4c12fb27",
+          "title": "Camelelorport",
+          "subtitle": "1,759 building plots · 25,718 people",
           "position": 4,
-          "cityId": 267,
-          "buildingPlots": 716,
-          "population": 26875
+          "cityId": 334,
+          "buildingPlots": 1759,
+          "population": 25718
         }
       ],
-      "sourceCommit": "7001d9074fc452efac84e0fade758aea30ae7bb7",
-      "bundleSha256": "7fa6d360eef9a33c5e73f9417781657e015686f8e70a426879341046905080b0",
+      "sourceCommit": "4f0405c",
+      "bundleSha256": "614601c3829fcf9d009daa1642831588d3bde630c7566a6b4de7ceeca0a69740",
       "panelDimensions": [
         1200,
         1020
@@ -67,7 +67,7 @@
           "source": "panels/dragon-city-bowercairn-panel.png",
           "sourceSha256": "be77ef510298e098dc9d3095608fc93b62b7697f5028f5da69a665efe87a52ac",
           "title": "Sarrlororford",
-          "subtitle": "Dragon King\u2019s Aerie",
+          "subtitle": "Dragon King’s Aerie",
           "position": 1
         },
         {
@@ -109,28 +109,28 @@
           "source": "panels/story-421-panel.png",
           "sourceSha256": "fb38ed11fd881b2ba3f1838b79617fb7080129bb92f020283b41f1d9f341d426",
           "title": "Ath Annaber",
-          "subtitle": "Randath Maredis \u00b7 Humans",
+          "subtitle": "Randath Maredis · Humans",
           "position": 1
         },
         {
           "source": "panels/story-289-panel.png",
           "sourceSha256": "8bbf9a4e8ad68ef77252923fc15e03b856cc9a20b70674d023ad7d19a9ce1e09",
           "title": "Sarrnavgalbourne",
-          "subtitle": "Dharmora Orureh \u00b7 Hornkin",
+          "subtitle": "Dharmora Orureh · Hornkin",
           "position": 2
         },
         {
           "source": "panels/story-484-panel.png",
           "sourceSha256": "f8976a9acfd1b3f0d6a0215c28c1ea1ef92dbccb76bac18773e6b8386db32f88",
           "title": "Tapiopiirkoski",
-          "subtitle": "Dorokstone Vorundek \u00b7 Stonekin",
+          "subtitle": "Dorokstone Vorundek · Stonekin",
           "position": 3
         },
         {
           "source": "panels/story-365-panel.png",
           "sourceSha256": "b013e18e0f305f6a3eb90bbdd5ad1d6b824d6706c7841f6538ebe9be5330e7ac",
           "title": "Vainojuurniemi",
-          "subtitle": "Lyrariel Ithemesae \u00b7 Sylvans",
+          "subtitle": "Lyrariel Ithemesae · Sylvans",
           "position": 4
         }
       ],

@@ -42,12 +42,12 @@ Search for a named landform to find it. Recreate to explore the new terrain; old
 
 | Rank | City | Building plots | Population |
 | --- | --- | ---: | ---: |
-| 1 | Corbinbelararhaven | **971** | 41,006 |
-| 2 | Sarrelmont | **874** | 32,386 |
-| 3 | Alflundenvik | **792** | 32,228 |
-| 4 | Saint Tuoneneli | **716** | 26,875 |
+| 1 | Corbinbelararhaven | **3,452** | 41,006 |
+| 2 | Alflundenvik | **2,867** | 32,228 |
+| 3 | Sarrelmont | **2,789** | 32,386 |
+| 4 | Camelelorport | **1,759** | 25,718 |
 
-Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
+Zooming reveals dense residential blocks, narrow lanes, walls, temples, palaces and waterfronts in the same landscape. Main streets, gates and landmark entrances stay clear. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 
 City detail loads as you approach. Initial generation and large cities can take longer on slower devices. Terrain and buildings use stylized scales.
 

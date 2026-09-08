@@ -92,6 +92,14 @@ const Folk = (() => {
      * from the door-to-street connectors, and from the market square. */
     function roster(city, province, options = {}) {
         const seed = (city.seed ^ 0x5f3a) | 0, mixture = province.people, agents = [];
+        // Added back-court houses share the original town georeference but have
+        // smaller parcels. Measure those parcels once per cached roster, not by
+        // building meshes or inspecting every house during each animation frame.
+        let height = 1.5;
+        for (const b of city.buildings || [])
+            if (b.denseInfill && b.w > 0 && b.d > 0)
+                height = Math.min(height, Math.min(b.w, b.d) * .75);
+        const pace = height / 1.5;
         const cap = options.max ?? 96;
         const count = Math.max(6, Math.min(cap, Math.round(Math.sqrt(Math.max(0, province.urbanPop)) / 5.6)));
         const streets = city.roads.filter(r => r.points.length >= 4);
@@ -99,7 +107,7 @@ const Folk = (() => {
         const add = agent => { agents.push(agent); return agent; };
         const dress = (index, kindRoll) => {
             const people = pick(mixture, roll(index, 17, seed)), l = look(people);
-            return { id: `f${index}`, people, look: l, gait: roll(index, 41, seed), base: .30,
+            return { id: `f${index}`, people, look: l, height, gait: roll(index, 41, seed), base: .30 * pace,
                 tone: roll(index, 73, seed), phase: roll(index, 97, seed), kindRoll };
         };
         for (let k = 0; k < count; k++) {
@@ -111,8 +119,10 @@ const Folk = (() => {
                 const slice = road.points.slice(start, Math.min(road.points.length, start + run));
                 if (slice.length < 2)
                     continue;
-                // Walk a shoulder rather than the centre line, but never off the paving.
-                let side = (roll(k, 23, seed) - .5) * .44;
+                // Fine courtyard lanes are only .24 units wide and turn every
+                // subcell. Keep their walkers on the surveyed centre line;
+                // the ordinary street's .22 shoulder can leave these lanes.
+                const side = road.role === 'courtyard-access' ? 0 : (roll(k, 23, seed) - .5) * .44;
                 const pts = slice.map((p, j) => {
                     const q = slice[Math.min(slice.length - 1, j + 1)], dx = q.x - p.x, dz = q.z - p.z, len = Math.hypot(dx, dz) || 1;
                     return { x: p.x - dz / len * side, z: p.z + dx / len * side, y: p.y + .02 };
@@ -128,7 +138,7 @@ const Folk = (() => {
                 // Stepping out of a compound onto the street it is connected to.
                 const c = city.connectors[Math.floor(roll(k, 29, seed) * city.connectors.length) % city.connectors.length];
                 const ya = city.height[city.index(c.a.x, c.a.z)] + .15, yb = city.height[city.index(c.b.x, c.b.z)] + .15;
-                add({ ...agent, kind: 'walker', base: .036, route: polyline([{ ...c.a, y: ya }, { x: c.b.x, z: c.b.z, y: yb }]), speed: 0 });
+                add({ ...agent, kind: 'walker', base: .036 * pace, route: polyline([{ ...c.a, y: ya }, { x: c.b.x, z: c.b.z, y: yb }]), speed: 0 });
             }
             else {
                 const a = roll(k, 31, seed) * 6.2831853, radius = 1.6 + roll(k, 37, seed) * 3.4;
@@ -136,7 +146,7 @@ const Folk = (() => {
                 const i = city.index(x, z);
                 if (wet(i))
                     continue;
-                add({ ...agent, kind: 'idler', base: .07, radius: .5 + roll(k, 43, seed) * .9,
+                add({ ...agent, kind: 'idler', base: .07 * pace, radius: .5 + roll(k, 43, seed) * .9,
                     anchor: { x, z, y: city.height[i] + .15 }, speed: 0 });
             }
         }

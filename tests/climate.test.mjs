@@ -118,7 +118,9 @@ test('one tradition built at both ends of its own range is not the same town twi
   if (hot.e.temperature - cold.e.temperature < 6) continue;
   const build = q => {
    const c = E.generateCity(world, sim, q.p.id);
-   const b = c.buildings.find(b => !b.landmark && b.lod >= 1);
+   // A dense city's ordinary homes can all use LOD 0. Climate still shapes
+   // those houses; decorative-detail allocation must not erase this coverage.
+   const b = c.buildings.find(b => !b.landmark);
    return b ? E.ArtisanCityKit.compound(b, c, q.p, sim.realms[q.p.owner]) : null;
   };
   const a = build(cold), b = build(hot);

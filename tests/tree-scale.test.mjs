@@ -36,8 +36,8 @@ function shape(form, unit = 1, coarse = false) {
     return {...bounds(g.data), triangles: g.data.length / 27};
 }
 const baseline = [
-    {id: 299, name: 'Harthurst'},
-    {id: 127, name: 'Longshaw'}
+    {id: 299, name: 'Avalfergalhaven'},
+    {id: 127, name: 'Nidaveiknes'}
 ];
 // Compare the height refactor with its original inline formula under the SAME
 // street plan. Legitimate civic layout changes must not require new magic hashes.

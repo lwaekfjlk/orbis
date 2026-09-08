@@ -70,7 +70,7 @@ test('terrain keys and ground queries distinguish multiple loaded openings and l
 });
 
 test('excavated buildings preserve their rigid below-entry walls while ordinary slope footings still conform',()=>{
- const buildings=[{id:1,x:0,z:0,y:10,w:4,d:4,h:5},{id:2,x:10,z:0,y:10,w:4,d:4,h:5}],c={buildings,rivers:[],width:40,depth:40},frame={scale:.1,sx:.1,sz:.1,cells:1,ground:x=>x===7?1.5:1,anchors:new Map(buildings.map(b=>[b.id,{b,y:2,x:b.x*.1,z:0,scale:.1}]))};
+ const buildings=[{id:1,x:0,z:0,y:10,w:4,d:4,h:5},{id:2,x:10,z:0,y:10,w:4,d:4,h:5}],c={buildings,rivers:[],width:40,depth:40},frame={origin:[0,0,0],scale:.1,sx:.1,sz:.1,cells:1,ground:x=>x===7?1.5:1,anchors:new Map(buildings.map(b=>[b.id,{b,y:2,x:b.x*.1,z:0,scale:.1}]))};
  frame.vertex=(x,y,z,a)=>[x*.1,a.y+(y-a.b.y)*.1,z*.1];
  const vertices=[];for(const b of buildings)for(const p of[[b.x,9,0],[b.x+1,9,0],[b.x,9,1]])vertices.push(...p,0,1,0,.3,.4,.5);
  const collector={setCity(){},landmarkHeights:{},excavations:[{buildingId:1,outline:[[-2,-2],[2,-2],[2,2],[-2,2]],floorY:-10,entrance:[7,0]}],meshes:{buildings:{vertices,shadow:true}},buildingRanges:{buildings:[{start:0,end:27,id:1},{start:27,end:54,id:2}]}};
@@ -78,7 +78,7 @@ test('excavated buildings preserve their rigid below-entry walls while ordinary 
  const Layer=Function('Geometry','AtlasSpace','generateCity','createCityRenderer','CityEnvironment','ArtisanCityKit','rgb','noise','hash2','GW','GH',localSource+'\nreturn ContinuousCityLayer;')(E.Geometry,{cityFrame:()=>frame},()=>c,()=>collector,{sample:()=>({water:true})},{blockPaint:()=>({wall:'wall',roof:'roof'})},()=>[.3,.4,.5],()=>0,()=>0,200,200);
  const meshes={},r={relief:1,upload(name,g){meshes[name]=g;}},layer=new Layer(r);layer.world={seed:1};layer.sim={realms:[{}]};layer.key=()=> 'qa';const m=layer.build({id:3,x:100,y:100,owner:0});
  assert.equal(m.excavations.length,1);assert.equal(m.excavations[0].floorY,-.5);assert.equal(m.excavations[0].groundY,1.5);assert.equal(frame.anchors.get(1).y,1.5);assert.equal(frame.anchors.get(2).y,2);
- const d=meshes['cm:3:buildings'].data;assert.ok(Math.abs(d[1]-1.4)<1e-12,'well wall remains rigid relative to its entry anchor');assert.ok(Math.abs(d[28]-.994)<1e-12,'ordinary foundation still follows the lower slope');
+ const d=meshes['cm:3:buildings'].data;assert.equal(d[1],Math.fround(1.4),'well wall remains rigid relative to its entry anchor');assert.equal(d[28],Math.fround(.994),'ordinary foundation still follows the lower slope');
 });
 test('worker payload carries excavation outlines and main-thread installation retains them',async()=>{
  const hole={...square(.2,.4,.3,-5,2),groundY:2.75,entrance:[.2,.7]},responses=[],city={n:2,width:40,depth:40,span:1,height:new Float32Array(4),buildings:[{id:2,x:0,z:0,y:12,w:3,d:3,h:4}],context:{n:2,width:40,depth:40},xy(){}};

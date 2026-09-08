@@ -1,0 +1,336 @@
+{
+  "bundleSha256": "614601c3829fcf9d009daa1642831588d3bde630c7566a6b4de7ceeca0a69740",
+  "viewport": {
+    "width": 1200,
+    "height": 1020
+  },
+  "cities": [
+    {
+      "id": 216,
+      "name": "Corbinbelararhaven",
+      "enterMs": 4325.5,
+      "population": 41006.06212791392,
+      "buildings": 3452,
+      "ordinary": 3446,
+      "homes": 3332,
+      "parcelArea": 7375.267758012653,
+      "fingerprint": "efbfde0d",
+      "triangles": 962419,
+      "worker": true,
+      "meshes": {
+        "farms": 498,
+        "streets": 138135,
+        "cityWalls": 41112,
+        "port": 552,
+        "buildings": 464308,
+        "roofs": 198278,
+        "details": 97084,
+        "trees": 22452,
+        "vegetation": 2466,
+        "silhouettes": 48328
+      },
+      "camera": {
+        "target": [
+          66.01950125575985,
+          0.38337531493832094,
+          -16.67372348029308
+        ],
+        "zoom": 93.19436276620738,
+        "azimuth": 1.2441258666746502,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17.700000017881393,
+          "maxMs": 19.80000001192093,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 191.69999998807907
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 17.80000001192093,
+          "maxMs": 20.5,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 200.69999992847443
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 264,
+      "name": "Sarrelmont",
+      "enterMs": 3991.300000011921,
+      "population": 32386.099604574712,
+      "buildings": 2789,
+      "ordinary": 2783,
+      "homes": 2783,
+      "parcelArea": 5371.63335742628,
+      "fingerprint": "d3bd3501",
+      "triangles": 1111064,
+      "worker": true,
+      "meshes": {
+        "farms": 406,
+        "streets": 117036,
+        "cityWalls": 47464,
+        "port": 0,
+        "buildings": 571464,
+        "roofs": 266908,
+        "details": 43644,
+        "trees": 64142,
+        "vegetation": 5514,
+        "silhouettes": 39046
+      },
+      "camera": {
+        "target": [
+          -78.900270006971,
+          0.8415530415513521,
+          -3.6197517107397386
+        ],
+        "zoom": 92.76839329608981,
+        "azimuth": 2.2963032650549695,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 18,
+          "maxMs": 19.900000005960464,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 227.5999999344349
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.600000023841858,
+          "p95Ms": 18.200000017881393,
+          "maxMs": 21.80000001192093,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 240.9999998807907
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 499,
+      "name": "Alflundenvik",
+      "enterMs": 3407.5,
+      "population": 32228.13761061071,
+      "buildings": 2867,
+      "ordinary": 2861,
+      "homes": 2783,
+      "parcelArea": 6858.031935686526,
+      "fingerprint": "7087ea25",
+      "triangles": 711276,
+      "worker": true,
+      "meshes": {
+        "farms": 748,
+        "streets": 119761,
+        "cityWalls": 42864,
+        "port": 873,
+        "buildings": 337600,
+        "roofs": 154770,
+        "details": 37330,
+        "trees": 17330,
+        "vegetation": 4106,
+        "silhouettes": 40138
+      },
+      "camera": {
+        "target": [
+          -51.9894596699114,
+          0.3873498529176228,
+          23.815475181386283
+        ],
+        "zoom": 104.69377844877994,
+        "azimuth": -0.39060139085280254,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.700000017881393,
+          "p95Ms": 18.099999994039536,
+          "maxMs": 18.900000005960464,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 236.00000008940697
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.600000023841858,
+          "p95Ms": 18,
+          "maxMs": 19.200000017881393,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 237.90000000596046
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": 267,
+      "name": "Saint Tuoneneli",
+      "enterMs": 2425.5,
+      "population": 26875.458581828294,
+      "buildings": 1596,
+      "ordinary": 1589,
+      "homes": 1589,
+      "parcelArea": 4869.2638365903595,
+      "fingerprint": "748a6e4a",
+      "triangles": 568687,
+      "worker": true,
+      "meshes": {
+        "farms": 574,
+        "streets": 54946,
+        "cityWalls": 36856,
+        "port": 735,
+        "buildings": 243704,
+        "roofs": 143704,
+        "details": 71576,
+        "trees": 16592,
+        "vegetation": 4252,
+        "silhouettes": 22344
+      },
+      "camera": {
+        "target": [
+          -64.34291357000345,
+          0.2507799140326683,
+          -4.626752551234091
+        ],
+        "zoom": 126.79444968038523,
+        "azimuth": 0.33716126308781996,
+        "elevation": 0.74
+      },
+      "motion": [
+        {
+          "details": false,
+          "frames": 90,
+          "p50Ms": 16.69999998807907,
+          "p95Ms": 18.5,
+          "maxMs": 19.19999998807907,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 216.09999984502792
+            }
+          }
+        },
+        {
+          "details": true,
+          "frames": 90,
+          "p50Ms": 16.5,
+          "p95Ms": 18.80000001192093,
+          "maxMs": 25.400000005960464,
+          "stats": {
+            "render": {
+              "count": 90,
+              "ms": 249.00000023841858
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "readyMs": 8972.071042000001,
+  "before": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "graphics": {
+    "software": false,
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+  },
+  "after": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "ui": {
+    "passed": true,
+    "originalWorld": {
+      "seed": "Aereth-47",
+      "landformVersion": 3
+    },
+    "building": {
+      "x": 326.3218786656836,
+      "y": 400.97148676021476,
+      "pid": 267,
+      "bid": "b14",
+      "name": "Quayside warehouse block 14",
+      "zoom": 126.79444968038523,
+      "closerZoom": 620.0000000000002,
+      "focusedTown": 267,
+      "centred": true,
+      "fingerprint": "748a6e4a",
+      "sameCanvas": true
+    },
+    "orbit": {
+      "azimuth": -0.38283873691217996,
+      "elevation": 0.8799999999999997,
+      "fingerprint": "748a6e4a",
+      "sameCanvas": true
+    },
+    "mobile": {
+      "width": 430,
+      "height": 900,
+      "sameCanvas": true,
+      "buildings": 1596,
+      "visibleMeshes": 9,
+      "overflow": 0
+    },
+    "regenerated": {
+      "seed": "Dense-cities-ui-2026",
+      "landformVersion": 3,
+      "fingerprints": [
+        "c7fda225",
+        "954c181a",
+        "539c112"
+      ],
+      "modelsBeforeEntry": 0,
+      "sameCanvas": true,
+      "boundToNewWorld": true,
+      "entered": {
+        "id": 303,
+        "name": "Saint Avalelwyn",
+        "buildings": 1084,
+        "worker": true,
+        "sameCanvas": true,
+        "error": null
+      }
+    },
+    "offline": true,
+    "external": [],
+    "errors": []
+  },
+  "passed": true
+}

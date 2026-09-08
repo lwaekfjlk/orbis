@@ -1,6 +1,6 @@
 /** Camera-only exploration: towns and buildings never replace the world canvas. */
 window.ContinuousMap = (() => {
- const E=id=>document.getElementById(id);let layer=null,ruins=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',shadowCenter='',moving=false,rotationGoal=null;
+ const E=id=>document.getElementById(id);let layer=null,ruins=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',lastPinView='',lastModels=[],shadowCenter='',moving=false,rotationGoal=null;
  const ready=()=>enabled&&world&&sim&&!busy&&!simAdvancing;
  /* WALKING FIGURES.
   * A frame with a moving crowd costs a mesh rebuild plus a full redraw. That is cheap on
@@ -35,7 +35,15 @@ window.ContinuousMap = (() => {
   const el=document.createElement('div');el.id='cmLabels';E('stage').appendChild(el);
   const note=document.createElement('div');note.id='cmStatus';note.setAttribute('role','status');E('omChrome').appendChild(note);
   const btn=document.createElement('button');btn.id='cmContext';btn.type='button';btn.className='cm-context';btn.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5L7 12L14 19M7 12H21"/></svg><span>Back to world</span>';btn.title='Return to the whole world (H)';btn.onclick=async()=>{if(ready()&&await home())renderer.canvas.focus({preventScroll:true});};E('omChrome').appendChild(btn);
-  layer.onChange=()=>{lastCamera='';window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();refreshPlaceDetails();renderer.request();};
+  layer.onChange=()=>{
+   lastCamera='';window.__continuous=layer.report();updateTitle();renderer.request();
+   // Loading notifications may repeat without changing the visible models.
+   // Only new or retired models change the crowd, building pins and dossier.
+   // Moving crowds have their own clock; still crowds re-cull after the gesture.
+   const models=[...layer.models.values()];
+   if(models.length===lastModels.length&&models.every((m,i)=>m===lastModels[i]))return;
+   lastModels=models;lastPinView='';renderer.buildNearRoads?.();renderer.buildFolk?.(clock);makePins();positionPins();refreshPlaceDetails();
+  };
   ruins.onChange=()=>{lastCamera='';window.__ruins=ruins.report();refreshRuinSelection();updateTitle();refreshPlaceDetails();renderer.request();};
   bindCamera();
   E('omHome').onclick=()=>ready()&&home();
@@ -45,10 +53,11 @@ window.ContinuousMap = (() => {
   const more=E('omWorldLayers');const roofs=document.createElement('label');roofs.className='om-check';roofs.innerHTML='<input type="checkbox" id="cmRoofs" checked>Building roofs';more.appendChild(roofs);E('cmRoofs').onchange=()=>{renderer.continuousRoofs=E('cmRoofs').checked;renderer.dirtyShadow=true;renderer.request();};
   // A backgrounded tab must not keep rebuilding a crowd nobody is looking at.
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')startFolk();});
+  document.fonts?.addEventListener('loadingdone',()=>{lastCamera='';lastPinView='';renderer.request();});
  }
- function beforeWorldBuild(){cancel();ruins?.reset();window.__ruinReady=false;window.__ruinFocus=null;if(layer)layer.reset(null,null);lastWorld=null;lastCamera='';selection=null;lastPins='';clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
+ function beforeWorldBuild(){cancel();ruins?.reset();window.__ruinReady=false;window.__ruinFocus=null;if(layer)layer.reset(null,null);lastWorld=null;lastCamera='';selection=null;lastPins='';lastPinView='';lastModels=[];clock=0;walking=false;clearTimeout(staticTimer);E('cmLabels')?.replaceChildren();}
  function onWorldUpdate(){if(!enabled||!world||!sim)return;lastCamera='';layer.bind(world,sim);ruins.bind(world,sim,LandmarkUI.registry.filter(s=>s.dragonRuins));if(lastWorld!==world){lastWorld=world;selection=null;shadowCenter='';lastPins='';}
-  makePins();updateTitle();renderer.request();layer.cameraChanged();ruins.cameraChanged();
+  lastPinView='';makePins();updateTitle();renderer.request();layer.cameraChanged();ruins.cameraChanged();if(!busy)renderer.buildFolk?.(clock);
   refreshPlaceDetails();
  }
  function refreshPlaceDetails(){
@@ -245,7 +254,11 @@ window.ContinuousMap = (() => {
   const sig=world.params.seed+'/'+[...layer.models.values()].map(m=>m.p.id+':'+m.key).join('/');if(sig===lastPins)return;lastPins=sig;const node=E('cmLabels');node.replaceChildren();pins=[];
   for(const m of layer.models.values())for(const b of m.city.buildings.filter(b=>b.landmark)){const a=m.frame.anchors.get(b.id),h=(m.heights[b.id]||b.h)*a.scale,button=document.createElement('button');button.className='cm-pin cm-building-pin';button.textContent=b.name;button.onclick=()=>{select({model:m,building:b,anchor:a});focusBuilding(m.p.id,b.id);};node.appendChild(button);pins.push({button,point:[a.x,a.y+h+.012,a.z],model:m,building:b});}
  }
- function positionPins(){if(!enabled||!world)return;const r=renderer,show=r.zoom>=AtlasSpace.TOWN_ZOOM&&E('names').checked;E('cmLabels').style.display=show?'block':'none';if(!show)return;const boxes=[];
+ function positionPins(){if(!enabled||!world)return;const r=renderer,show=r.zoom>=AtlasSpace.TOWN_ZOOM&&E('names').checked;
+  // Walking figures request frames without moving the camera. Reuse label
+  // measurements and terrain occlusion until their view or content changes.
+  const view=[r.zoom,...r.target,r.azimuth,r.elevation,r.width,r.height,r.relief,show,lastPins].join('/');if(view===lastPinView)return;lastPinView=view;
+  E('cmLabels').style.display=show?'block':'none';if(!show)return;const boxes=[];
   // Previously culled pins need a box before measuring. Batch all writes, then
   // all reads, so the bundled lettering participates in the collision layout.
   for(const v of pins)v.button.style.display='block';

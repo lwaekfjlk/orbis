@@ -8,19 +8,21 @@ import {root,defaults} from './engine-loader.mjs';
 
 const source=scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(file=>readFileSync(resolve(root,file),'utf8')).join('\n');
 const E=Function(source+`
-const full=generateCity,query=generateCityLandmark,context=CityEnvironment.context;
-const calls={full:0,query:0,context:0};
+const full=generateCity,query=generateCityLandmark,context=CityEnvironment.context,infill=cityResidentialInfill,originalStreetConnections=cityStreetConnections;
+const calls={full:0,query:0,context:0,infill:0,socketQueries:0};
 generateCity=(...args)=>{calls.full++;return full(...args)};
 generateCityLandmark=(...args)=>{calls.query++;return query(...args)};
 CityEnvironment.context=(...args)=>{calls.context++;return context(...args)};
+cityResidentialInfill=(...args)=>{calls.infill++;return infill(...args)};
+cityStreetConnections=(...args)=>{const connection=originalStreetConnections(...args);return Object.assign((...args)=>{calls.socketQueries++;return connection(...args)},connection)};
 return {generateWorld,createCivilization,generateCity,generateCityLandmark,LandmarkBinding,
 LandmarkCatalog,SacredCityKit,TownCityBinding,TownCatalog,wonderFor,physicalFingerprint,
 settlementFingerprint,politicalFingerprint,calls,
 withoutDryConnections(fn){const prior=cityDrySegment;cityDrySegment=()=>false;try{return fn()}finally{cityDrySegment=prior}}};`)();
 let w,s,baseline,inventory,before;
 const fingerprints=(w,s)=>[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)];
-// Public directory baseline from complete eager town generation under the current
-// sovereignty rules. The optimized query must preserve that independent result.
+// All 152 ordinary directory records match baseline 49021ed field for field.
+// Residential infill must preserve this independent directory baseline.
 // Final local building data remains available explicitly, outside the search index.
 const metadata=entries=>entries.map(({id,name,recipe,provinceId,i,x,y,priority,kind})=>({id,name,recipe,provinceId,i,x,y,priority,kind}));
 
@@ -29,12 +31,14 @@ test.before(async()=>{
  baseline=E.createCivilization(w,{realms:18,historySeed:'First-dawn',highCitadelsVersion:0});
  // Candidate founding performs its own placement preflight. Directory counts
  // begin after both simulations are initialized on exactly the same geography.
- Object.assign(E.calls,{full:0,query:0,context:0});
+ Object.assign(E.calls,{full:0,query:0,context:0,infill:0,socketQueries:0});
  before=fingerprints(w,s);inventory=E.LandmarkBinding.inventory(w,s);
 });
 
 test('the directory preserves the 152 current founding entries and adds two exact high cities and three independent dragon ruins',()=>{
  assert.equal(E.calls.full,0);assert.equal(E.calls.context,0);
+ assert.equal(E.calls.infill,0,'indexing exact landmarks must not build the added residential courtyards');
+ assert(E.calls.socketQueries<=E.calls.query,'each placement query checks its landmark doorway without resolving every household entrance');
  assert.equal(E.calls.query,80,'78 ordinary candidates and two compact high cities receive exact placement queries');
  const ordinary=inventory.filter(site=>!site.highCitadel&&!site.dragonRuins),high=inventory.filter(site=>site.highCitadel);
  assert.equal(inventory.length,157);assert.equal(inventory.filter(site=>site.dragonRuins).length,3);assert.equal(ordinary.length,152);assert.equal(high.length,2);
@@ -44,7 +48,7 @@ test('the directory preserves the 152 current founding entries and adds two exac
  const original=E.LandmarkBinding.inventory(w,baseline).filter(site=>!site.dragonRuins);
  assert.equal(original.length,152);assert(original.every(site=>!site.highCitadel));
  const digest=createHash('sha256').update(JSON.stringify(metadata(original))).digest('hex');
- assert.equal(digest,'21acd52dc3052aca20b261d8adbfc3beb613e5ceffe3fde15fbafd72d543ca23');
+ assert.equal(digest,'5491ed3269171fbfc1968f8efb8e25dc80c966e7685900c1e60d6c2b52c7bb0d');
  assert.deepEqual(metadata(ordinary),metadata(original),'founding the high cities must preserve every ordinary directory entry from the same world');
  for(const id of [414,365,458,150,291,366,320,354,111])
   assert(!inventory.some(site=>site.provinceId===id&&site.recipe.sacred),'unplaceable wonder in province '+id);
@@ -61,12 +65,12 @@ test('cloning or searching the index does not invoke the local-building getter',
  assert.equal(Object.getOwnPropertyDescriptor(site,'building').enumerable,false);
 });
 
-test('full layouts, placement coordinates and explicit building access retain their old results',()=>{
+test('dense full layouts preserve sacred placements and explicit building access',()=>{
  const expected=[
-  [127,'196d91e4',14.739393939393938,0,18,3.5599046421051024,4944],
-  [349,'67738405',0,23.83900556026821,38,3.083621091842651,6496],
-  [414,'f08bbdb7'],
-  [507,'e8b01c2b',0,24.790518659871566,38,3.231337852478027,6483]
+  [127,'9867d55e',14.739393939393938,0,18,3.5599046421051024,4944],
+  [349,'57bf5f80',0,23.83900556026821,38,3.083621091842651,6496],
+  [414,'ebcd508e'],
+  [507,'35133a8',0,24.790518659871566,38,3.231337852478027,6483]
  ];
  for(const [id,fingerprint,x,z,width,y,socket] of expected){
   const p=s.provinces[id],city=E.generateCity(w,s,id),b=city.buildings.find(b=>b.sacred);

@@ -30,6 +30,25 @@ test('a higher outlying citadel site cannot displace an equally supported town-c
 });
 
 const edgeDistance = (a, b) => Math.hypot(Math.max(0, Math.abs(a.x - b.x) - (a.w + b.w) / 2), Math.max(0, Math.abs(a.z - b.z) - (a.d + b.d) / 2));
+function laneHitsBlock(a, b, halfWidth, block) {
+    // Intersect the complete segment with the footprint enlarged by the paving
+    // half-width, so a clear centerline alone cannot pass this check.
+    let enter = 0, leave = 1;
+    for (const [axis, size] of [['x', 'w'], ['z', 'd']]) {
+        const low = block[axis] - block[size] / 2 - halfWidth;
+        const high = block[axis] + block[size] / 2 + halfWidth;
+        const delta = b[axis] - a[axis];
+        if (Math.abs(delta) < 1e-12) {
+            if (a[axis] < low || a[axis] > high) return false;
+        } else {
+            const t0 = (low - a[axis]) / delta, t1 = (high - a[axis]) / delta;
+            enter = Math.max(enter, Math.min(t0, t1));
+            leave = Math.min(leave, Math.max(t0, t1));
+            if (enter > leave) return false;
+        }
+    }
+    return true;
+}
 function neighborhood(c, b) {
     const homes = c.buildings.filter(h => !h.landmark && h.type === 'home');
     const center = { x: homes.reduce((sum, h) => sum + h.x, 0) / homes.length, z: homes.reduce((sum, h) => sum + h.z, 0) / homes.length };
@@ -64,14 +83,24 @@ test('every large-town council remains inside a substantial residential neighbor
 });
 
 test('reserved civic blocks retain their dimensions and safe street approaches', () => {
+    assert(laneHitsBlock({ x: -2, z: .6 }, { x: 2, z: .6 }, .12, { x: 0, z: 0, w: 1, d: 1 }), 'paving beside a clear centerline still needs clearance');
     for (const c of cities) for (const site of c.civicSites || []) {
         const b = c.buildings.find(b => b.type === site.type && Math.hypot(b.x - site.x, b.z - site.z) < 1e-6);
         assert(b, c.name + ' lost its reserved ' + site.type);
         assert.equal(b.w, site.w); assert.equal(b.d, site.d);
         assert(b.streetSocket != null, c.name + ' has an inaccessible ' + site.type);
-        for (const r of c.roads) for (const i of r.nodes) {
-            const q = c.xy(i);
-            assert(!(Math.abs(q.x - b.x) < b.w / 2 && Math.abs(q.z - b.z) < b.d / 2), c.name + ' routed a street through a civic block');
+        for (const r of c.roads) {
+            if (r.role === 'courtyard-access') {
+                // These lanes follow subcell coordinates. Their rounded nodes
+                // identify road connectivity, not the rendered paving location.
+                assert.equal(r.halfWidth, .12);
+                assert(r.points.length >= 2);
+                for (let k = 1; k < r.points.length; k++)
+                    assert(!laneHitsBlock(r.points[k - 1], r.points[k], r.halfWidth, b), c.name + ' routed courtyard paving through a civic block');
+            } else for (const i of r.nodes) {
+                const q = c.xy(i);
+                assert(!(Math.abs(q.x - b.x) < b.w / 2 && Math.abs(q.z - b.z) < b.d / 2), c.name + ' routed a street through a civic block');
+            }
         }
     }
 });

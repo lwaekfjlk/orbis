@@ -117,17 +117,19 @@ test('stationary crowd frames keep diagnostics current without laying out labels
  assert.equal(f.api.walking,true,'the idle UI cache does not prevent crowd animation from starting');
 });
 
-test('camera pose, viewport and label state each invalidate the UI exactly once',()=>{
- const f=fixture();f.renderer.onChange();
- const changes=[()=>f.renderer.zoom+=1,()=>f.renderer.target[0]+=.1,()=>f.renderer.target[1]+=.1,
-  ()=>f.renderer.target[2]+=.1,()=>f.renderer.azimuth+=.1,()=>f.renderer.elevation+=.1,
-  ()=>f.renderer.width+=100,()=>f.renderer.height+=100,()=>f.renderer.layer='faiths',
-  ()=>f.get('names').checked=true,()=>f.renderer.options.legends=false];
- for(const change of changes){
+test('camera pose, viewport and label state each invalidate the relevant UI exactly once',()=>{
+ const f=fixture();f.renderer.zoom=60;f.get('names').checked=false;f.renderer.onChange();
+ const changes=[[()=>f.renderer.zoom+=1,true],[()=>f.renderer.target[0]+=.1,true],[()=>f.renderer.target[1]+=.1,true],
+  [()=>f.renderer.target[2]+=.1,true],[()=>f.renderer.azimuth+=.1,true],[()=>f.renderer.elevation+=.1,true],
+  [()=>f.renderer.width+=100,true],[()=>f.renderer.height+=100,true],[()=>f.renderer.layer='faiths',false],
+  [()=>f.get('names').checked=true,true],[()=>f.renderer.options.legends=false,false]];
+ for(const [change,pinsChanged] of changes){
   const before={...f.calls};change();f.renderer.onChange();
   assert.equal(f.calls.labels,before.labels+1,'changed camera or label state reaches the prior world-label callback');
-  assert(f.calls.pins>before.pins&&f.calls.titles>before.titles);
+  assert.equal(f.calls.pins,before.pins+Number(pinsChanged),'building pins update for their view or visibility and reuse placement across thematic/legend changes');
+  assert(f.calls.titles>before.titles);
   f.renderer.onChange();assert.equal(f.calls.labels,before.labels+1,'the unchanged follow-up draw is cached');
+  assert.equal(f.calls.pins,before.pins+Number(pinsChanged),'the unchanged follow-up draw also reuses pin placement');
  }
 });
 

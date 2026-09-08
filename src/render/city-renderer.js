@@ -20,6 +20,7 @@ function cityRoof(g, b, c) {
  * Convex subtraction makes junctions one surface, including short diagonal steps. */
 function cityStreetMesh(c, ground, roads, details) {
     const nodes = new Map(), edges = new Map(), shapes = [], bins = new Map(), bucket = 4;
+    let maxFragments=0;
     const key = p => `${Math.round(p.x * 1e6)},${Math.round(p.z * 1e6)}`;
     function add(a, b, width) {
         if (![a.x, a.z, b.x, b.z, width].every(Number.isFinite) || Math.hypot(b.x-a.x,b.z-a.z)<1e-7) return;
@@ -28,9 +29,20 @@ function cityStreetMesh(c, ground, roads, details) {
         for(const p of[a,b]){const id=key(p),n=nodes.get(id);if(!n)nodes.set(id,{...p,width});else {n.width=Math.max(n.width,width);n.bridge ||= p.bridge;}}
         edges.set(id,{id,a:nodes.get(ka<kb?ka:kb),b:nodes.get(ka<kb?kb:ka),width});
     }
-    for(const r of c.roads){const width=(c.townProfile?.width||1)*(r.kind==='arterial'?.67:r.kind==='street'?.5:.37);for(let k=1;k<r.points.length;k++)add(r.points[k-1],r.points[k],width+((r.points[k-1].bridge||r.points[k].bridge) ? .18 : 0));}
+    for(const r of c.roads){const width=r.role==='courtyard-access'&&Number.isFinite(r.halfWidth)&&r.halfWidth>0?r.halfWidth:(c.townProfile?.width||1)*(r.kind==='arterial'?.67:r.kind==='street'?.5:.37);for(let k=1;k<r.points.length;k++)add(r.points[k-1],r.points[k],width+((r.points[k-1].bridge||r.points[k].bridge) ? .18 : 0));}
     for(const q of c.connectors||[])add(q.a,q.b,.08);
     const side=(a,b,p)=>(b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x);
+    // Adjacent lane rectangles share complete edges. Clipping both closed half
+    // planes retains those edges as repeated vertices, not surface polygons.
+    // Keeping them in later subtractions duplicates zero-area fragments until a
+    // dense street network exhausts memory. Translate before summing to avoid
+    // cancellation from a city's large absolute local coordinates.
+    const hasArea=poly=>{
+        if(poly.length<3)return false;
+        const a=poly[0];let area=0;
+        for(let k=1;k<poly.length-1;k++)area+=(poly[k].x-a.x)*(poly[k+1].z-a.z)-(poly[k].z-a.z)*(poly[k+1].x-a.x);
+        return Math.abs(area)>1e-10;
+    };
     function clip(poly,a,b,inside){
         const out=[];let p=poly.at(-1),dp=side(a,b,p)*(inside?1:-1);
         for(const q of poly){const dq=side(a,b,q)*(inside?1:-1);
@@ -40,17 +52,18 @@ function cityStreetMesh(c, ground, roads, details) {
     }
     function subtract(poly,cut){
         let rest=poly;const out=[];
-        for(let j=0;j<cut.length&&rest.length>=3;j++){
+        for(let j=0;j<cut.length&&hasArea(rest);j++){
             const a=cut[j],b=cut[(j+1)%cut.length],outer=clip(rest,a,b,false);
-            if(outer.length>=3)out.push(outer);rest=clip(rest,a,b,true);
+            if(hasArea(outer))out.push(outer);rest=clip(rest,a,b,true);
         }return out;
     }
     const bounds=poly=>({x0:Math.min(...poly.map(p=>p.x)),x1:Math.max(...poly.map(p=>p.x)),z0:Math.min(...poly.map(p=>p.z)),z1:Math.max(...poly.map(p=>p.z))});
     function fill(poly,lift,color){
+        if(!hasArea(poly))return;
         const box=bounds(poly),keys=[],near=new Set();
         for(let x=Math.floor(box.x0/bucket);x<=Math.floor(box.x1/bucket);x++)for(let z=Math.floor(box.z0/bucket);z<=Math.floor(box.z1/bucket);z++){const k=x+','+z;keys.push(k);for(const i of bins.get(k)||[])near.add(i);}
         let pieces=[poly];
-        for(const i of near){const s=shapes[i];if(box.x0>=s.box.x1-1e-9||box.x1<=s.box.x0+1e-9||box.z0>=s.box.z1-1e-9||box.z1<=s.box.z0+1e-9)continue;pieces=pieces.flatMap(p=>subtract(p,s.poly));if(!pieces.length)break;}
+        for(const i of near){const s=shapes[i];if(box.x0>=s.box.x1-1e-9||box.x1<=s.box.x0+1e-9||box.z0>=s.box.z1-1e-9||box.z1<=s.box.z0+1e-9)continue;pieces=pieces.flatMap(p=>subtract(p,s.poly));maxFragments=Math.max(maxFragments,pieces.length);if(!pieces.length)break;}
         for(const p of pieces){
             const center={x:p.reduce((n,q)=>n+q.x,0)/p.length,z:p.reduce((n,q)=>n+q.z,0)/p.length};
             const at=q=>[q.x,ground(q.x,q.z)+.14+lift(q),q.z],mid=at(center);
@@ -71,7 +84,7 @@ function cityStreetMesh(c, ground, roads, details) {
         fill(ring,()=>n.bridge?.48:0,n.bridge?bridge:dry);
         if(n.bridge&&details)cityBox(details,n.x,ground(n.x,n.z)-1.12,n.z,.3,1.74,.3,rgb('#bab9a6'));
     }
-    return {edges:edges.size,junctions:nodes.size};
+    return {edges:edges.size,junctions:nodes.size,maxFragments};
 }
 // Keep the support under the model's ground contact, leaving its eaves free.
 // Low banks use retaining steps. A tall bank gets an open frame of piers instead

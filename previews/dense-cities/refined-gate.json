@@ -1,0 +1,66 @@
+{
+  "sourceSHA256": "d598f615ce422cf23b35b7bd048c3527f0e29bc444dece3e78f5aca1c1ddebea",
+  "parentFingerprints": [
+    "73fe302b",
+    "b18c6a8",
+    "b007f61e"
+  ],
+  "rows": [
+    {
+      "id": 216,
+      "name": "Corbinbelararhaven",
+      "fingerprint": "efbfde0d",
+      "oldFingerprint": "efbfde0d",
+      "sameFingerprint": true,
+      "jsonSHA256": "513a5a6a78070eb84077dd9ffa3a672f7355506aa1144112badf8cef13fb429e",
+      "oldJSONSHA256": "513a5a6a78070eb84077dd9ffa3a672f7355506aa1144112badf8cef13fb429e",
+      "sameFullJSON": true,
+      "buildingPlots": 3452,
+      "ordinaryPlots": 3446,
+      "visibleHouses": 3564,
+      "refinedGateApproaches": 0
+    },
+    {
+      "id": 264,
+      "name": "Sarrelmont",
+      "fingerprint": "d3bd3501",
+      "oldFingerprint": "d3bd3501",
+      "sameFingerprint": true,
+      "jsonSHA256": "55f7bcb6cd9284e395fcfa9a6e057234b74bac621d905fc317f844c47eb461ee",
+      "oldJSONSHA256": "55f7bcb6cd9284e395fcfa9a6e057234b74bac621d905fc317f844c47eb461ee",
+      "sameFullJSON": true,
+      "buildingPlots": 2789,
+      "ordinaryPlots": 2783,
+      "visibleHouses": 2832,
+      "refinedGateApproaches": 0
+    },
+    {
+      "id": 499,
+      "name": "Alflundenvik",
+      "fingerprint": "7087ea25",
+      "oldFingerprint": "7087ea25",
+      "sameFingerprint": true,
+      "jsonSHA256": "2aacda390944b1807fc02cf1ec6112fca19a91cf5524d9e1d1c96181fc80d084",
+      "oldJSONSHA256": "2aacda390944b1807fc02cf1ec6112fca19a91cf5524d9e1d1c96181fc80d084",
+      "sameFullJSON": true,
+      "buildingPlots": 2867,
+      "ordinaryPlots": 2861,
+      "visibleHouses": 3029,
+      "refinedGateApproaches": 0
+    },
+    {
+      "id": 267,
+      "name": "Saint Tuoneneli",
+      "fingerprint": "748a6e4a",
+      "oldFingerprint": "748a6e4a",
+      "sameFingerprint": true,
+      "jsonSHA256": "feb01ce7daa3fea6d0f5247d3f3ed23810b2a4f851afffa10efbae352508f3c5",
+      "oldJSONSHA256": "feb01ce7daa3fea6d0f5247d3f3ed23810b2a4f851afffa10efbae352508f3c5",
+      "sameFullJSON": true,
+      "buildingPlots": 1596,
+      "ordinaryPlots": 1589,
+      "visibleHouses": 1719,
+      "refinedGateApproaches": 0
+    }
+  ]
+}

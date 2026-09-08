@@ -40,8 +40,9 @@ test('exact parcel bounds cover curved patches and peaks between nine survey poi
   for(let i=0;i<=40;i++)for(let j=0;j<=40;j++){const h=E.AtlasSpace.surface(w,a[0]+(a[2]-a[0])*i/40,a[1]+(a[3]-a[1])*j/40);assert(h>=b.low-1e-10&&h<=b.top+1e-10);}
  }
 });
-test('Oakwaystead keeps viable neighborhoods and visible uphill roofs with bounded footings',async()=>{
- const {w,s}=await worldAndSociety(),p=s.provinces[168];assert.equal(p.name,'Oakwaystead');
+test('Corbinelmorbridge keeps viable neighborhoods and visible uphill roofs with bounded footings',async()=>{
+ // Realm-aware naming renamed this settlement; retain the same hillside fixture.
+ const {w,s}=await worldAndSociety(),p=s.provinces[168];assert.equal(p.name,'Corbinelmorbridge');
  const c=E.generateCity(w,s,p.id),f=E.AtlasSpace.cityFrame(w,p,c,1);assert(c.buildings.length>150);assert(c.defenses.gates.length>0);
  const audit=E.auditCity(c);for(const k of['wetBuildings','roadBuildings','overlaps','nonfinite','seaRoads'])assert.equal(audit[k],0,k);
  for(let z=5;z<c.n-5;z+=9)for(let x=5;x<c.n-5;x+=9){const q=c.xy(z*c.n+x),a=f.at(q.x,q.z),eps=1e-4,fx=a[0]-Math.floor(a[0]),fy=a[1]-Math.floor(a[1]);
