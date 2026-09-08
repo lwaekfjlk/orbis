@@ -171,6 +171,7 @@ class AtlasRenderer {
         this.elevation = 1.19;
         this.target = [0, 0, 0];
         this.selected = -1;
+        this.hoveredRealm = null;
         this.relief = 1.0;
         this.dirtyShadow = true;
         this.pending = false;
@@ -481,9 +482,47 @@ class AtlasRenderer {
         }
         this.upload('legends', g, false, .72);
     }
-    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
-    setLayer(layer) { this.layer = layer; if (this.world)
+    setWorld(w) { this.clear(); this.world = w; this.selected = -1; this.hoveredRealm = null; this.buildTerrain(); this.buildSymbols(); this.buildLines(); this.buildIce(); this.buildLegends(); this.request(); }
+    setLayer(layer) { this.layer = layer; this.hoveredRealm = null; if (this.world)
         this.buildTerrain(); this.dirtyShadow = true; this.request(); }
+    setHoveredRealm(id) {
+        const next = Number.isInteger(id) && this.sim?.realms[id]?.alive ? id : null;
+        if (next === this.hoveredRealm) return;
+        this.hoveredRealm = next;
+        // A preview changes only colours, never the selected realm or camera.
+        // The continuous map updates its existing colour buffer; the original
+        // renderer retains its terrain rebuild path. Pointer movement is a no-op.
+        if (this.world && this.sim) {
+            if (this.continuousLayer?.recolorTerrain) this.continuousLayer.recolorTerrain();
+            else this.buildTerrain();
+        }
+        if (next != null) this.buildRealmHover();
+        this.request();
+    }
+    buildRealmHover() {
+        const w = this.world, s = this.sim, g = new Geometry();
+        if (!w || !s || this.hoveredRealm == null) return;
+        const owns = (x, y) => {
+            if (x < 0 || y < 0 || x >= GW || y >= GH) return false;
+            const i = cell(x, y);
+            return w.height[i] > 0 && w.lake[i] <= 0 && s.provinces[w.provinceId[i]]?.owner === this.hoveredRealm;
+        };
+        const casing = rgb('#735231'), light = rgb('#fff2b0'), neighbours = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+        for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+            if (!owns(x, y)) continue;
+            for (const [dx, dy] of neighbours) {
+                if (owns(x + dx, y + dy)) continue;
+                const cx = x + dx * .5, cy = y + dy * .5;
+                const ax = cx - dy * .5, ay = cy - dx * .5, bx = cx + dy * .5, by = cy + dx * .5;
+                const ah = this.ground(ax, ay), bh = this.ground(bx, by);
+                g.line(this.coord(ax, ay, ah + .16), this.coord(bx, by, bh + .16), .23, casing);
+                g.line(this.coord(ax, ay, ah + .18), this.coord(bx, by, bh + .18), .10, light);
+            }
+        }
+        const dirtyShadow = this.dirtyShadow;
+        this.upload('realmHover', g, false, 1);
+        this.dirtyShadow = dirtyShadow;
+    }
     select(i) { this.selected = i; this.selectionKey = null;
         if (i >= 0) this.updateCamera();
         else this.upload('selection', new Geometry(), false, 1);
@@ -738,7 +777,7 @@ AtlasRenderer.prototype.palette = function (i) {
             return c;
         return colorMix(c, rgb('#d4d2b9'), .55);
     }
-    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0 || w.lake[i] > 0 || w.ice[i] > 120)
+    if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0 || w.lake[i] > 0)
         return c;
     const pid = w.provinceId[i], p = s.provinces[pid];
     const political = this.layer === 'realms' || this.layer === 'diplomacy';
@@ -746,8 +785,11 @@ AtlasRenderer.prototype.palette = function (i) {
     // grey it out. On the political layers there is nothing to grey: no province
     // means no country, and the ground simply stays the ground.
     if (!p)
-        return political ? c : colorMix(c, rgb('#b5b7a6'), .30);
+        return political || w.ice[i] > 120 ? c : colorMix(c, rgb('#b5b7a6'), .30);
     const realm = s.realms[p.owner];
+    const hovered = realm?.alive && realm.id === this.hoveredRealm;
+    if (w.ice[i] > 120)
+        return hovered ? colorMix(c, rgb(realm.color), .34) : c;
     let paint, strength = .63;
     if (this.layer === 'faiths') {
         paint = rgb(FAITHS[cDominant(p.faith)].color);
@@ -771,19 +813,24 @@ AtlasRenderer.prototype.palette = function (i) {
         // it: any wash over the territory, even a soft band inside the border, buries
         // the relief the layer is drawn on. Faiths, peoples, wealth and magic keep
         // their full colour, because there the colour IS the measurement.
-        // The one exception is the realm you have actually selected, which needs to
-        // answer "where is it" with something more than a highlighted list row.
+        // Hovering a name briefly shows its entire territory. Leaving restores
+        // the faint wash of the selected realm without changing that selection.
+        if (this.hoveredRealm != null)
+            return hovered ? colorMix(c, rgb(realm.color), .34) : c;
         if (this.focusRealm == null || !realm || realm.id !== this.focusRealm)
             return c;
         return colorMix(c, rgb(realm.color), .14);
     }
     if (strength <= 0)
         return c;
-    return colorMix(c, paint, strength);
+    const measured = colorMix(c, paint, strength);
+    return hovered ? colorMix(measured, rgb(realm.color), .34) : measured;
 };
 const priorVisible = AtlasRenderer.prototype.visible;
 AtlasRenderer.prototype.visible = function (name) {
     const civil = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer);
+    if (name === 'realmHover')
+        return civil && this.hoveredRealm != null;
     if (name === 'settlements')
         return this.options.settlements !== false && (civil || this.layer === 'settlements' || this.layer === 'relief');
     if (name === 'frontiers')
@@ -930,7 +977,7 @@ AtlasRenderer.prototype.buildCivilization = function () {
     this.upload('reeds', reeds, true);
     this.request();
 };
-AtlasRenderer.prototype.setCivilization = function (sim) { this.sim = sim; this.buildTerrain(); this.buildCivilization(); this.request(); };
+AtlasRenderer.prototype.setCivilization = function (sim) { this.sim = sim; this.hoveredRealm = null; this.buildTerrain(); this.buildCivilization(); this.request(); };
 const geographyLayerBase = AtlasRenderer.prototype.setLayer;
 AtlasRenderer.prototype.setLayer = function (layer) { geographyLayerBase.call(this, layer); if (this.sim)
     this.buildCivilization(); };
