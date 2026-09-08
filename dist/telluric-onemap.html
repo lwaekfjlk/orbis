@@ -2506,6 +2506,10 @@ body.onemap #omChrome #forgeButton:focus-visible{outline-color:#f8e5b5}
 body.onemap .om-camera{position:absolute;right:22px;bottom:24px;padding:4px;display:flex;flex-direction:column;border-radius:10px;pointer-events:auto}
 body.onemap .om-camera button{height:30px;width:32px;padding:0;font-size:20px}
 body.onemap .om-camera button svg{display:block;width:21px;height:21px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+body.onemap .om-camera{align-items:center}
+body.onemap .om-camera #omFit{width:44px;height:52px}
+body.onemap .om-camera #omFit svg{width:32px;height:40px;stroke-width:1.3}
+body.onemap .om-camera #omFit text{fill:currentColor;stroke:none;font:600 11px/1 system-ui,sans-serif;letter-spacing:.1px}
 body.onemap .om-hint{position:absolute;left:24px;bottom:28px;max-width:270px;font-size:8px;line-height:1.85;letter-spacing:1.3px;color:#234840c9;text-shadow:0 1px 4px #e6f4e5;pointer-events:none}
 body.onemap .om-hint i{font-style:normal;padding:0 3px}
 body.onemap .om-event{position:absolute;left:50%;bottom:101px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:min(580px,calc(100vw - 40px));padding:8px 12px!important;border-radius:8px!important;font-size:10px!important;color:#d3e0d7!important;pointer-events:auto}
@@ -2997,7 +3001,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 <div class="om-hint" id="omHint">DRAG TO EXPLORE <i>·</i> SCROLL TO APPROACH <i>·</i> DOUBLE-CLICK A TOWN</div>
 <button class="om-event glass hidden" id="omEvent" title="Open chronicle"><span class="om-event-dot"></span><span id="omEventText"></span><b>↗</b></button>
 <footer aria-label="Simulation controls" class="om-dock glass"><div class="om-date"><small>YEAR</small><b id="omYearHost"><span id="year">400</span></b></div><div class="om-dock-divider"></div><div id="omTimeControls"><button aria-label="Play" class="primary play" id="play">▶ Play</button><button aria-label="Advance one year" id="step1">+1</button><button aria-label="Advance ten years" id="step10">+10</button><button aria-label="Advance fifty years" id="step50">+50</button><select aria-label="Playback speed" id="speed"><option value="1200">1×</option><option value="650">2×</option><option value="350">4×</option></select></div><div class="om-dock-divider"></div><div id="omRegenHost"><button aria-haspopup="dialog" id="forgeButton" title="Create a new world" aria-label="Recreate world">↻ Recreate</button></div></footer>
-<div aria-label="View controls" class="om-camera glass"><button aria-label="Zoom in" id="omZoomIn" title="Zoom in">+</button><button aria-label="Zoom out" id="omZoomOut" title="Zoom out">−</button><button aria-label="Fit current view" id="omFit" title="Fit view"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20 8a8.5 8.5 0 1 0 .2 7M20 3v5h-5"/><path d="m12 8 4 4-4 4-4-4Z"/></svg></button></div>
+<div aria-label="View controls" class="om-camera glass"><button aria-label="Zoom in" id="omZoomIn" title="Zoom in">+</button><button aria-label="Zoom out" id="omZoomOut" title="Zoom out">−</button><button aria-label="Rotate 3D view 90 degrees around the current center" id="omFit" title="Rotate 3D view 90°"><svg viewBox="0 0 32 40" aria-hidden="true" focusable="false"><path d="m16 4 8 4v10l-8 4-8-4V8Zm-8 4 8 4 8-4M16 12v10"/><path d="M5 14C0 17 4 24 14 25c10 1 16-3 15-7m-4 2 4-2 1 4"/><text x="16" y="38" text-anchor="middle">90°</text></svg></button></div>
 <div class="om-scene-loading hidden" id="omSceneLoading" role="status"><span class="loader"></span><span>Reading this place…</span></div>
 <div aria-live="polite" class="om-sr" id="omLive"></div>
 </div>
@@ -19221,7 +19225,7 @@ window.OneMap = (() => {
         E('omBack').onclick=back;
         E('omZoomIn').onclick=()=>zoom(1.25);
         E('omZoomOut').onclick=()=>zoom(1/1.25);
-        E('omFit').onclick=()=>{if(!interactive())return;const r=activeRenderer();r?.reset();if(scene==='world'){focusedContinent=null;legend();}clearSelection();};
+        E('omFit').onclick=rotateView;
         E('forgeButton').onclick=openRegenerate;
         E('closeForge').onclick=()=>closeRegenerate(true);
         E('omRandomSeed').onclick=()=>{E('seed').value=freshSeed();};
@@ -19279,6 +19283,12 @@ window.OneMap = (() => {
         onPlayback();
     }
 
+    function rotateView(){
+        if(!interactive())return;
+        if(scene==='world'&&window.ContinuousMap?.active)return ContinuousMap.rotate90();
+        const r=activeRenderer();
+        if(r){r.azimuth+=Math.PI/2;r.request();}
+    }
     function freshSeed(){
         const bytes=new Uint32Array(2);crypto.getRandomValues(bytes);
         return `World-${bytes[0].toString(36)}-${bytes[1].toString(36).slice(0,4)}`;
@@ -19521,7 +19531,7 @@ window.OneMap = (() => {
         const blocked=busy||simAdvancing||transitioning;
         E('play').setAttribute('aria-pressed',String(playing));E('play').setAttribute('aria-label',playing?'Pause simulation':'Play simulation');
         E('play').textContent=playing?'Ⅱ Pause':'▶ Play';
-        for(const id of ['play','step1','step10','step50','forgeButton'])E(id).disabled=blocked||!sim;
+        for(const id of ['play','step1','step10','step50','forgeButton','omFit'])E(id).disabled=blocked||!sim;
         if(E('cmContext'))E('cmContext').disabled=blocked||!sim;
         E('forgeButton').textContent=busy?'Creating…':simAdvancing?'Advancing…':'↻ Recreate';
         E('omYearHost').title=simAdvancing?'Advancing history':playing?'History is running':'Simulation paused';
@@ -19688,7 +19698,7 @@ class ContinuousRuinLayer {
 <script>
 /** Camera-only exploration: towns and buildings never replace the world canvas. */
 window.ContinuousMap = (() => {
- const E=id=>document.getElementById(id);let layer=null,ruins=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',shadowCenter='',moving=false;
+ const E=id=>document.getElementById(id);let layer=null,ruins=null,enabled=false,animation=0,lastCamera='',lastWorld=null,selection=null,pins=[],lastPins='',shadowCenter='',moving=false,rotationGoal=null;
  const ready=()=>enabled&&world&&sim&&!busy&&!simAdvancing;
  /* WALKING FIGURES.
   * A frame with a moving crowd costs a mesh rebuild plus a full redraw. That is cheap on
@@ -19725,7 +19735,7 @@ window.ContinuousMap = (() => {
   layer.onChange=()=>{window.__continuous=layer.report();renderer.buildNearRoads?.();renderer.buildFolk?.(clock);updateTitle();makePins();positionPins();refreshPlaceDetails();};
   ruins.onChange=()=>{window.__ruins=ruins.report();refreshRuinSelection();updateTitle();refreshPlaceDetails();};
   bindCamera();
-  E('omFit').onclick=()=>ready()&&home();E('omHome').onclick=()=>ready()&&home();
+  E('omHome').onclick=()=>ready()&&home();
   E('camera').onchange=()=>{if(!ready())return;cancel();renderer.elevation={relief:1.19,overhead:1.555,diorama:.65}[E('camera').value];renderer.request();};
   E('resetView').onclick=home;E('zoomIn').onclick=()=>zoomBy(1.25);E('zoomOut').onclick=()=>zoomBy(.8);
   E('cmLabels').addEventListener('pointerdown',e=>e.stopPropagation());
@@ -19784,7 +19794,28 @@ window.ContinuousMap = (() => {
   else if(shadowCenter!=='world'){shadowCenter='world';renderer.lightVP=mul4(ortho(-115,115,-90,90,1,420),lookAt([-110,170,-82],[0,0,0],[0,1,0]));renderer.dirtyShadow=true;renderer.request();}
   positionPins();updateTitle();
  }
- function cancel(){animation++;moving=false;}
+ function cancel(){animation++;moving=false;rotationGoal=null;}
+ function rotate90(){
+  if(!ready())return Promise.resolve(false);
+  // Keep an unwrapped goal so every click adds a full quarter turn, even when
+  // another turn is in flight. Other camera input cancels this goal normally.
+  const r=renderer,start=r.azimuth,goal=(rotationGoal??start)+Math.PI/2;
+  cancel();
+  if(reducedMotion()){r.azimuth=goal;r.request();return Promise.resolve(true);}
+  rotationGoal=goal;moving=true;
+  const token=animation,time=performance.now(),duration=420*(goal-start)/(Math.PI/2);
+  return new Promise(resolve=>{
+   function frame(now){
+    if(token!==animation||!ready()){if(token===animation)cancel();resolve(false);return;}
+    const t=clamp((now-time)/duration),a=t*t*(3-2*t);
+    // Orbit in place: do not overwrite zoom, elevation, target or selection.
+    r.azimuth=lerp(start,goal,a);r.request();
+    if(t<1)requestAnimationFrame(frame);
+    else{moving=false;rotationGoal=null;layer.cameraChanged();ruins.cameraChanged();resolve(true);}
+   }
+   requestAnimationFrame(frame);
+  });
+ }
  function animate(target,zoom,elevation=renderer.elevation,duration=850,azimuth=renderer.azimuth){cancel();const token=animation,r=renderer,start={target:r.target.slice(),zoom:r.zoom,elevation:r.elevation,azimuth:r.azimuth},time=performance.now();azimuth=start.azimuth+Math.atan2(Math.sin(azimuth-start.azimuth),Math.cos(azimuth-start.azimuth));moving=true;
   return new Promise(resolve=>{function frame(now){if(token!==animation||busy){if(token===animation)moving=false;resolve(false);return;}const t=clamp((now-time)/duration),a=t*t*(3-2*t);r.target=start.target.map((v,i)=>lerp(v,target[i],a));r.zoom=Math.exp(lerp(Math.log(start.zoom),Math.log(zoom),a));r.elevation=lerp(start.elevation,elevation,a);r.azimuth=lerp(start.azimuth,azimuth,a);r.request();if(t<1)requestAnimationFrame(frame);else{moving=false;layer.cameraChanged();resolve(true);}}requestAnimationFrame(frame);});
  }
@@ -19923,7 +19954,7 @@ window.ContinuousMap = (() => {
   c.addEventListener('pointerup',end);c.addEventListener('pointercancel',()=>{pointers.clear();drag=null;pinch=null;renderer.interacting=false;renderer.request();});E('stage').addEventListener('wheel',e=>{e.preventDefault();const a=rect();zoomBy(Math.exp(-e.deltaY*.0012),e.clientX-a.left,e.clientY-a.top);},{passive:false});
   c.addEventListener('dblclick',e=>{if(!ready())return;e.stopImmediatePropagation();const a=rect(),x=e.clientX-a.left,y=e.clientY-a.top,h=layer.pick(x,y),site=ruins.pick(x,y);if(site){focusRuinPart(site.model,site.part);return;}if(h){focusBuilding(h.model.p.id,h.building.id);return;}const at=AtlasSpace.pickGround(renderer,x,y);if(!at)return;const nearby=sim.provinces.filter(p=>p.settled).map(p=>({p,d:Math.hypot(p.x-at.x,p.y-at.y)})).sort((a,b)=>a.d-b.d)[0];if(nearby?.d<5)focusTown(nearby.p.id);else animate(at.point,Math.min(180,renderer.zoom*2),renderer.elevation);},true);
  }
- return{init,onWorldUpdate,beforeWorldBuild,focusTown,focusBuilding,focusSite,focusRuinPart,ruinDetails,zoomBy,wider,home,cancel,details,select,get ruinLayer(){return ruins;},get layer(){return layer;},get active(){return enabled;},get moving(){return moving;},get walking(){return walking;},get clock(){return clock;},report:()=>layer?.report()};
+ return{init,onWorldUpdate,beforeWorldBuild,focusTown,focusBuilding,focusSite,focusRuinPart,ruinDetails,zoomBy,wider,home,rotate90,cancel,details,select,get ruinLayer(){return ruins;},get layer(){return layer;},get active(){return enabled;},get moving(){return moving;},get walking(){return walking;},get clock(){return clock;},report:()=>layer?.report()};
 })();
 
 </script>

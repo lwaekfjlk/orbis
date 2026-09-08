@@ -85,6 +85,10 @@ body.onemap #omChrome #forgeButton:focus-visible{outline-color:#f8e5b5}
 body.onemap .om-camera{position:absolute;right:22px;bottom:24px;padding:4px;display:flex;flex-direction:column;border-radius:10px;pointer-events:auto}
 body.onemap .om-camera button{height:30px;width:32px;padding:0;font-size:20px}
 body.onemap .om-camera button svg{display:block;width:21px;height:21px;margin:auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+body.onemap .om-camera{align-items:center}
+body.onemap .om-camera #omFit{width:44px;height:52px}
+body.onemap .om-camera #omFit svg{width:32px;height:40px;stroke-width:1.3}
+body.onemap .om-camera #omFit text{fill:currentColor;stroke:none;font:600 11px/1 system-ui,sans-serif;letter-spacing:.1px}
 body.onemap .om-hint{position:absolute;left:24px;bottom:28px;max-width:270px;font-size:8px;line-height:1.85;letter-spacing:1.3px;color:#234840c9;text-shadow:0 1px 4px #e6f4e5;pointer-events:none}
 body.onemap .om-hint i{font-style:normal;padding:0 3px}
 body.onemap .om-event{position:absolute;left:50%;bottom:101px;transform:translateX(-50%);display:flex;align-items:center;gap:9px;max-width:min(580px,calc(100vw - 40px));padding:8px 12px!important;border-radius:8px!important;font-size:10px!important;color:#d3e0d7!important;pointer-events:auto}
