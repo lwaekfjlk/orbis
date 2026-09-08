@@ -4,9 +4,9 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and unclaimed wilderness](previews/fantasy-landforms/after/world.png)
+![World overview with named countries, settlements and complete national territories](previews/fantasy-landforms/after/world.png)
 
-*The default world, Aereth-47. Click a country name to see its territory, population and history. Unclaimed wilderness is explicitly marked.*
+*The default world, Aereth-47. Click a country name to see its territory, population and history. National territories include inland lakes and remote land.*
 
 ## Start exploring
 
@@ -32,9 +32,9 @@ Search for a named landform to find it. Regenerate to explore the new terrain; o
 
 ## Cities belong to the landscape
 
-![An oblique view of Glassbeck, showing houses, streets, walls and the waterfront](previews/readme/city.png)
+![An oblique view of Bramblequay, showing houses, streets, walls and the waterfront](previews/fantasy-landforms/after/city.png)
 
-*Glassbeck: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
+*Bramblequay: homes and streets surround the city's landmarks, with fields and water just beyond its walls.*
 
 Zooming reveals buildings, walls, temples, palaces and waterfronts in the same landscape. Nearby terrain gains finer detail, and climate shapes the ground, vegetation and architecture. Click a building to inspect it; its **Details** panel also exports the town as a 3D model (GLB), excluding the surrounding terrain.
 
@@ -71,7 +71,7 @@ New generation rules apply when you regenerate; loading an old save preserves it
 
 ## Learn more
 
-- [Countries and population](docs/POLITIES.md) · [Mythological names](docs/REALM_NAMES.md)
+- [Countries and population](docs/POLITIES.md) · [Complete territories](docs/LAKE_TERRITORY_AND_LABELS.md) · [Mythological names](docs/REALM_NAMES.md)
 - [Cities and terrain](docs/CITY_COHERENCE.md) · [Climate and landscapes](docs/BIOME_LANDSCAPES.md)
 - [Resident stories](docs/CITY_SAGAS.md) · [Architecture gallery and GLB exports](docs/WONDER_REFINEMENT.md)
 - [Loading performance](docs/MAP_LOADING.md) · [Map architecture](docs/CONTINUOUS_ARCHITECTURE.md)

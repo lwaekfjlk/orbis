@@ -7,7 +7,7 @@ const RealmProfile = (() => {
     const list = values => values.length < 3 ? values.join(' and ') : values.slice(0, -1).join(', ') + ', and ' + values.at(-1);
     const counted = (n, singular, plural = singular + 's') => `${number(n)} ${n === 1 ? singular : plural}`;
     const dry = (world, i) => Number.isInteger(i) && i >= 0 && world?.height?.[i] > 0 && (world.lake?.[i] ?? 0) <= 0;
-    const weight = (world, i) => dry(world, i) ? positive(world.area?.[i]) : 0;
+    const weight = (world, i) => dry(world, i) ? positive(finite(world.area?.[i]) ? world.area[i] : 1) : 0;
     function dryCells(world, held) {
         const cells = new Set();
         for (const p of held || []) for (const i of p.cells || []) if (dry(world, i)) cells.add(i);
@@ -39,11 +39,13 @@ const RealmProfile = (() => {
         const realms = sim?.realms || [], c = realms.find(r => r?.id === realmId);
         if (!c) return null;
         const provinces = (sim.provinces || []).filter(Boolean), held = provinces.filter(p => p.owner === c.id);
-        const cells = dryCells(world, held), area = landArea(world, held);
+        const territory = typeof PoliticalLand !== 'undefined' && world?.provinceId ? PoliticalLand.territory(world, sim) : null;
+        const cells = territory ? Array.from(territory.owners.keys()).filter(i => territory.owners[i] === c.id && dry(world, i)) : dryCells(world, held);
+        const area = territory?.areas?.[c.id]?.land ?? landArea(world, held);
         let worldArea = 0;
         for (let i = 0; i < (world?.height?.length || 0); i++) worldArea += weight(world, i);
         const areas = new Map();
-        for (const r of realms) if (r && r.alive !== false) areas.set(r.id, landArea(world, provinces.filter(p => p.owner === r.id)));
+        for (const r of realms) if (r && r.alive !== false) areas.set(r.id, territory?.areas?.[r.id]?.land ?? landArea(world, provinces.filter(p => p.owner === r.id)));
         const areaShare = worldArea ? Math.min(1, area / worldArea) : 0;
         const areaRank = area > 0 && c.alive !== false ? 1 + [...areas.values()].filter(a => a > area).length : null;
         const population = held.reduce((sum, p) => sum + positive(p.pop), 0), towns = held.filter(p => p.settled || p.city);
@@ -52,7 +54,7 @@ const RealmProfile = (() => {
         const peoples = mix(held, 'people', PEOPLES), primary = peoples.shares[0];
         const facts = { area, areaShare, areaRank, provinceCount: held.length, townCount: towns.length, population, capital,
             primaryPeople: primary?.name || null, primaryPeopleShare: primary?.share || 0 };
-        const summary = `${title} holds ${counted(held.length, 'district')} and ${counted(towns.length, 'town')}, home to ${number(population)} residents.${capital ? ` Its capital is ${capital}.` : ''}${areaRank ? ` Its dry-land territory ranks ${areaRank} among living realms and covers ${number(areaShare * 100, 1)}% of the world's dry land.` : ''}`;
+        const summary = `${title} administers ${counted(held.length, 'district')} and ${counted(towns.length, 'town')}, with ${number(population)} recorded residents.${capital ? ` Its capital is ${capital}.` : ''}${areaRank ? ` Its dry-land territory ranks ${areaRank} among living realms and covers ${number(areaShare * 100, 1)}% of the world's dry land.` : ''}`;
 
         const founding = [];
         if (finite(c.founded)) founding.push(`The realm was founded in year ${c.founded}${finite(sim.year) && sim.year > c.founded ? `, ${counted(sim.year - c.founded, 'year')} before the present` : ''}.`);
@@ -68,7 +70,7 @@ const RealmProfile = (() => {
             if (finite(world?.temp?.[i]) && a) temperatures.push(world.temp[i]);
             if (finite(world?.arid?.[i]) && a) moisture.push({ value: world.arid[i], weight: a });
         }
-        const landmassIds = new Set(held.map(p => p.landmass).filter(Number.isInteger));
+        const landmassIds = new Set((territory && world.landmassId ? cells.map(i => world.landmassId[i]) : held.map(p => p.landmass)).filter(Number.isInteger));
         const namedLand = [...(world?.landmasses || []), ...(world?.continents || [])].filter(p => landmassIds.has(p.id) && p.name);
         const landNames = [...new Set(namedLand.map(p => p.name))];
         if (landNames.length) terrain.push(`Its holdings lie on ${list(landNames)}.`);

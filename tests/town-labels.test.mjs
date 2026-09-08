@@ -68,11 +68,30 @@ test('the actual default world fits town lettering within desktop and narrow ove
         for(let i=0;i<visible.length;i++){
             const b=rectangle(visible[i]);
             assert(b.x>=7.99&&b.x+b.w<=width-7.99&&b.y>=7.99&&b.y+b.h<=height-21.99,visible[i].feature.name+' must fit the viewport');
+            const {element:e,feature:f}=visible[i],[x,y]=h.r.screen(f.x,f.y,0);
+            assert(Math.abs(parseFloat(e.style.left)+parseFloat(e.style['--town-anchor-x'])-x)<1e-6);
+            assert(Math.abs(parseFloat(e.style.top)+parseFloat(e.style['--town-anchor-y'])-y)<1e-6,f.name+' must remain tied to its real settlement, independently of the surrounding country layout');
             for(let j=0;j<i;j++)if(overlaps(b,rectangle(visible[j])))count++;
         }
         assert.equal(count,0,width+'px overview should have enough room for all 104 town names');
-        for(const v of visible.filter(v=>v.feature.highCitadel))assert(Math.hypot(parseFloat(v.element.style['--town-anchor-x']),parseFloat(v.element.style['--town-anchor-y']))<140,'the long high-city names must remain near their mountain');
     }
+});
+
+test('long high-city names claim nearby space before a dense cluster of larger-population towns',()=>{
+    // Country anchors and fonts change as national territories change. Isolate
+    // the long-name priority rule on the same crowded screen, with both tiny
+    // high cities last in the population order and no country text obstacle.
+    const ordinary=Array.from({length:18},(_,id)=>({id,i:id,name:'Riverside Metropolitan Quarter '+id,x:235,y:400,settled:true,urbanPop:5000}));
+    const state={realms:[],provinces:[...ordinary,
+        {id:18,i:18,name:"Granitewatch · Dragon King's Aerie",x:235,y:400,settled:true,urbanPop:650,highCitadel:{kind:'dragon',elevation:4097}},
+        {id:19,i:19,name:'Blackley · The High Mountain Sanctuary',x:235,y:400,settled:true,urbanPop:650,highCitadel:{kind:'holy',elevation:3938}}]};
+    const h=harness({state,width:430,height:900,projected:true});h.make('settlements');
+    assert(towns(h).every(v=>v.element.style.opacity==='1'));
+    for(const v of towns(h).filter(v=>v.feature.highCitadel)){
+        const dx=parseFloat(v.element.style['--town-anchor-x']),dy=parseFloat(v.element.style['--town-anchor-y']);
+        assert(Math.hypot(dx,dy)<=v.element.offsetHeight*2,'tiny high cities must not be displaced by the earlier population sort');
+    }
+    for(let i=0;i<towns(h).length;i++)for(let j=0;j<i;j++)assert(!overlaps(rectangle(towns(h)[i]),rectangle(towns(h)[j])));
 });
 
 test('dense and edge towns move their lettering, keep the original marker, and never lose keyboard access',()=>{
@@ -123,27 +142,33 @@ test('town lettering avoids visible landmark pins in map coordinates and reclaim
 });
 
 test('a decorative pin yields a country’s only anchor and returns after names, camera and layer changes',()=>{
-    const i=200*E.GW+300,worldData={height:new Float32Array(E.GN).fill(1),lake:new Int8Array(E.GN).fill(-1),area:new Float32Array(E.GN).fill(1)};
+    // A one-cell island is the country's entire dry territory. Filling the
+    // surrounding grid with unowned land would now correctly grant it many
+    // alternative anchors through the complete-territory ownership map.
+    const x=150,y=100,i=y*E.GW+x,worldData={height:new Float32Array(E.GN),lake:new Int8Array(E.GN).fill(-1),area:new Float32Array(E.GN).fill(1),provinceId:new Int32Array(E.GN).fill(-1)};
+    worldData.height[i]=1;worldData.provinceId[i]=0;
     const state={realms:[{id:0,name:'Tiny Island',title:'Kingdom of Tiny Island',alive:true,capital:0,strength:1,gov:0}],
-        provinces:[{id:0,i,name:'Island Town',x:300,y:200,owner:0,cells:[i],settled:true,urbanPop:40}]};
+        provinces:[{id:0,i,name:'Island Town',x,y,owner:0,cells:[i],settled:true,urbanPop:40}]};
     const pins=[],h=harness({state,worldData,projected:'all',pins});h.r.layer='realms';h.r.onChange=h.position;
+    h.r.screen=(gx,gy)=>[gx+150,gy+100];
     const container={children:[],set innerHTML(value){this.children=[];},appendChild(e){this.children.push(e);}};
     h.document.getElementById=id=>id==='worldLandmarkPins'?container:h.dom[id];
     const create=h.document.createElement;
     h.document.createElement=()=>{const e=create();e.kind='world';e.getBoundingClientRect=()=>({left:37+parseFloat(e.style.left)-12,top:93+parseFloat(e.style.top)-12,width:24,height:24});return e;};
-    const sites=[{id:'only-anchor',i,x:300,y:200,name:'Island Monument',recipe:{style:'test'}},
-        {id:'unrelated',i:i+1,x:700,y:200,name:'Distant Monument',recipe:{style:'test'}}];
+    const sites=[{id:'only-anchor',i,x,y,name:'Island Monument',recipe:{style:'test'}},
+        {id:'unrelated',i:y*E.GW+280,x:280,y,name:'Distant Monument',recipe:{style:'test'}}];
     Function('window','document','world','sim','renderer','LandmarkBinding','LandmarkCatalog',read('src/ui/landmark-ui.js'))(
         h.win,h.document,worldData,state,h.r,{inventory:()=>sites},{styles:[{id:'test',icon:'◇'}]});
     h.win.LandmarkUI.onWorldUpdate();pins.push(...container.children);h.make('realms');
     const country=h.items().find(v=>v.feature.realm===0);
+    assert.deepEqual(country.feature.anchors.map(a=>a.i),[i],'the fixture must retain exactly one real territorial anchor');
     assert.equal(country.element.style.opacity,'1','a decorative pin cannot erase the only country label');
     assert.equal(country.element.style.left,'300px');assert.equal(pins[0].style.display,'none');
     assert.equal(pins[1].style.display,'grid','unrelated pins remain visible');
     h.dom.names.checked=false;h.position();assert.equal(pins[0].style.display,'grid','turning names off immediately clears label suppression');
     h.dom.names.checked=true;h.position();assert.equal(pins[0].style.display,'none');
-    sites[0].x=500;h.r.onChange();assert.equal(pins[0].style.display,'grid','newly separated projections restore the pin');
-    sites[0].x=300;h.r.onChange();assert.equal(pins[0].style.display,'none');
+    sites[0].x=280;h.r.onChange();assert.equal(pins[0].style.display,'grid','newly separated projections restore the pin');
+    sites[0].x=x;h.r.onChange();assert.equal(pins[0].style.display,'none');
     h.r.layer='settlements';h.make('settlements');assert.equal(pins[0].style.display,'grid','a layer without country lettering must not retain its suppression');
     assert.equal(towns(h)[0].element.style.opacity,'1');
 });

@@ -42,7 +42,7 @@ function physicalColors(r) {
     return result;
 }
 
-test('Realm hover previews its whole dry territory and leaving restores the selected realm', () => {
+test('Realm hover includes remote land and inland water, then restores the selected realm', () => {
     for (const layer of ['realms', 'diplomacy']) {
         const { r, sim } = fixture(layer), before = colors(r), terrain = physicalColors(r);
         const selection = { realm: r.focusRealm, cell: r.selected, target: [...r.target], zoom: r.zoom };
@@ -50,9 +50,9 @@ test('Realm hover previews its whole dry territory and leaving restores the sele
         assert.notDeepEqual(before[0], terrain[0], 'the selected realm starts with its usual faint wash');
         r.setHoveredRealm(1);
         assert.equal(r.hoveredRealm, 1);
-        for (const i of [2, 3, 8]) assert.notDeepEqual(r.palette(i), terrain[i], `${layer}: every hovered province cell, including glaciers, should light up`);
+        for (const i of [2, 3, 4, 6, 7, 8]) assert.notDeepEqual(r.palette(i), terrain[i], `${layer}: territory includes its lake, remote district, province-free land and glacier`);
         for (const i of [0, 1, 9, 10]) assert.deepEqual(r.palette(i), terrain[i], `${layer}: hover temporarily replaces the selected wash`);
-        for (const i of [4, 5, 6, 7]) assert.deepEqual(r.palette(i), before[i], `${layer}: water and unclaimed land must remain unchanged`);
+        assert.deepEqual(r.palette(5), before[5], `${layer}: the ocean remains outside national territory`);
         assert.deepEqual({ realm: r.focusRealm, cell: r.selected, target: r.target, zoom: r.zoom }, selection);
         assert.equal(JSON.stringify(sim), society, 'hovering must not edit simulation or ownership');
         r.setHoveredRealm(null);
@@ -80,8 +80,8 @@ test('Hover overlays measurement colours and restores each layer exactly on leav
     for (const layer of ['faiths', 'peoples', 'wealth', 'magic']) {
         const { r } = fixture(layer), before = colors(r);
         r.setHoveredRealm(1);
-        for (const i of [2, 3, 8]) assert.notDeepEqual(r.palette(i), before[i], `${layer}: hovered land must be visibly identified`);
-        for (const i of [0, 1, 4, 5, 6, 7, 9, 10]) assert.deepEqual(r.palette(i), before[i], `${layer}: unrelated measurements must not change`);
+        for (const i of [2, 3, 4, 6, 7, 8]) assert.notDeepEqual(r.palette(i), before[i], `${layer}: all claimed land and water must be visibly identified`);
+        for (const i of [0, 1, 5, 9, 10]) assert.deepEqual(r.palette(i), before[i], `${layer}: unrelated measurements must not change`);
         r.setHoveredRealm(null);
         assert.deepEqual(colors(r), before, `${layer}: leaving restores all original measurements`);
     }

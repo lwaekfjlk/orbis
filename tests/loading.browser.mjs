@@ -27,18 +27,31 @@ function meshSignature(meshes) {
 async function defaultReference() {
  const ui=await readFile(join(root,'src/ui/world-ui.js'),'utf8'),declaration=ui.match(/const GEN_DEFAULTS = \{[^\n]+\};/)?.[0];
  assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,1);
- const source=(await Promise.all(scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFile(join(root,f),'utf8')))).join('\n'),scope={};
- const E=Function('window',source+'\nreturn{generateWorld,createCivilization,LandmarkBinding,ContinuousCityLayer,physicalFingerprint,settlementFingerprint,politicalFingerprint};')(scope);
- const w=await E.generateWorld(params),s=E.createCivilization(w,{realms:18,conflict:1});scope.world=w;scope.sim=s;
- const directory=JSON.parse(JSON.stringify(E.LandmarkBinding.inventory(w,s))),cities=[];
- const targets=[...s.provinces.filter(p=>p.city&&!p.highCitadel).sort((a,b)=>b.urbanPop-a.urbanPop).slice(0,2),...s.provinces.filter(p=>p.highCitadel&&p.settled)];
- assert(targets.length>=2,'default world has no ordinary benchmark cities');
- for(const p of targets){
-  const r={world:w,sim:s,relief:1,meshes:{},upload(name,g,shadow=true,unlit=0,alpha=1){this.meshes[name]={vertices:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};}};
-  const layer=new E.ContinuousCityLayer(r);layer.world=w;layer.sim=s;const m=layer.build(p);
-  cities.push({id:p.id,name:p.name,buildings:m.city.buildings.length,cityFingerprint:m.city.fingerprint,triangles:m.triangles,meshes:meshSignature(r.meshes)});
- }
- return{params,fingerprints:[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)],directory,cities};
+ const source=(await Promise.all(scripts.slice(0,scripts.indexOf('src/ui/world-ui.js')).map(f=>readFile(join(root,f),'utf8')))).join('\n');
+ // Use the same JavaScript runtime for bit-exact comparisons. Node and Chrome
+ // can differ by one double ULP in Math-derived population/priority values.
+ // This separate process loads source only, then closes before cold-load timing.
+ const profile=await mkdtemp(join(tmpdir(),'telluric-loading-source-'));
+ const child=spawn(process.env.CHROMIUM_PATH||chromium.executablePath(),['--headless','--no-first-run','--no-default-browser-check','--no-sandbox','--remote-debugging-port=0','--user-data-dir='+profile,'--use-angle=swiftshader','--enable-unsafe-swiftshader','about:blank'],{stdio:'ignore',detached:true});child.unref();let browser;
+ try {
+  let port;for(let k=0;k<100&&!port;k++){try{port=(await readFile(join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0];}catch{await new Promise(r=>setTimeout(r,100));}}
+  assert(port,'source-reference Chromium did not start');browser=await chromium.connectOverCDP('http://127.0.0.1:'+port);
+  const context=await browser.newContext({viewport:{width:1480,height:980},reducedMotion:'reduce'});await context.setOffline(true);const page=await context.newPage();
+  return await page.evaluate(async({source,params,signature})=>{
+   const scope={},meshSignature=Function('return ('+signature+');')();
+   const E=Function('window',source+'\nreturn{generateWorld,createCivilization,LandmarkBinding,ContinuousCityLayer,physicalFingerprint,settlementFingerprint,politicalFingerprint};')(scope);
+   const w=await E.generateWorld(params),s=E.createCivilization(w,{realms:18,conflict:1});scope.world=w;scope.sim=s;
+   const directory=JSON.parse(JSON.stringify(E.LandmarkBinding.inventory(w,s))),cities=[];
+   const ordinary=s.provinces.filter(p=>p.city&&!p.highCitadel).sort((a,b)=>b.urbanPop-a.urbanPop).slice(0,2);
+   if(ordinary.length!==2)throw Error('default world has fewer than two ordinary benchmark cities');
+   for(const p of [...ordinary,...s.provinces.filter(p=>p.highCitadel&&p.settled)]){
+    const r={world:w,sim:s,relief:1,meshes:{},upload(name,g,shadow=true,unlit=0,alpha=1){this.meshes[name]={vertices:new Float32Array(g.data),count:g.data.length/9,shadow,unlit,alpha};}};
+    const layer=new E.ContinuousCityLayer(r);layer.world=w;layer.sim=s;const m=layer.build(p);
+    cities.push({id:p.id,name:p.name,buildings:m.city.buildings.length,cityFingerprint:m.city.fingerprint,triangles:m.triangles,meshes:meshSignature(r.meshes)});
+   }
+   return{params,fingerprints:[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)],directory,cities};
+  },{source,params,signature:meshSignature.toString()});
+ }finally{if(browser)await browser.close();try{process.kill(-child.pid,'SIGKILL');}catch{}await rm(profile,{recursive:true,force:true});}
 }
 const reference=baseline?null:await defaultReference();
 const instrumentation = `

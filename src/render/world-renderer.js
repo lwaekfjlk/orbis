@@ -789,28 +789,27 @@ AtlasRenderer.prototype.palette = function (i) {
     }
     if (!s || !['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'].includes(this.layer) || w.height[i] <= 0)
         return c;
-    if (w.lake[i] > 0) {
-        // Lakes keep their water palette. Only the temporary territory preview
-        // and selected-country wash extend across the derived inland boundary.
-        if (this.territoryWorld !== w || this.territorySim !== s) this.prepareTerritory();
-        const realm = s.realms[this.territoryOwners?.[i]];
-        if (!realm || realm.alive === false) return c;
-        if (this.hoveredRealm != null)
-            return realm.id === this.hoveredRealm ? colorMix(c, rgb(realm.color), .34) : c;
-        return ['realms', 'diplomacy'].includes(this.layer) && realm.id === this.focusRealm
-            ? colorMix(c, rgb(realm.color), .14) : c;
-    }
     const pid = w.provinceId[i], p = s.provinces[pid];
+    if (this.territoryWorld !== w || this.territorySim !== s) this.prepareTerritory();
+    const direct = s.realms[p?.owner];
+    // Existing administered districts remain authoritative; the surrounding
+    // highlands, icefields and islands share the completed territorial map.
+    const realm = direct && direct.alive !== false && w.lake[i] <= 0 ? direct : s.realms[this.territoryOwners?.[i]];
+    const hovered = realm?.alive !== false && realm?.id === this.hoveredRealm;
     const political = this.layer === 'realms' || this.layer === 'diplomacy';
-    // Land outside every province has no measurement to show, so the data layers
-    // grey it out. On the political layers there is nothing to grey: no province
-    // means no country, and the ground simply stays the ground.
-    if (!p)
-        return political || w.ice[i] > 120 ? c : colorMix(c, rgb('#b5b7a6'), .30);
-    const realm = s.realms[p.owner];
-    const hovered = realm?.alive && realm.id === this.hoveredRealm;
+    if (w.lake[i] > 0 || !p) {
+        // No demographic measurement is invented for an uninhabited cell.
+        // Its natural surface still participates in the full country preview.
+        const base = !p && !political && w.lake[i] <= 0 && w.ice[i] <= 120 ? colorMix(c, rgb('#b5b7a6'), .30) : c;
+        if (!realm || realm.alive === false) return base;
+        if (this.hoveredRealm != null)
+            return hovered ? colorMix(c, rgb(realm.color), .34) : base;
+        return political && realm.id === this.focusRealm
+            ? colorMix(c, rgb(realm.color), .14) : base;
+    }
     if (w.ice[i] > 120)
-        return hovered ? colorMix(c, rgb(realm.color), .34) : c;
+        return hovered ? colorMix(c, rgb(realm.color), .34)
+            : political && this.hoveredRealm == null && realm?.id === this.focusRealm ? colorMix(c, rgb(realm.color), .14) : c;
     let paint, strength = .63;
     if (this.layer === 'faiths') {
         paint = rgb(FAITHS[cDominant(p.faith)].color);
