@@ -1,0 +1,260 @@
+{
+  "baselineCommit": "2f9de96",
+  "method": "Separate Chrome 152 profiles, offline standalone HTML, 1480x980, reduced motion, SwiftShader. Bootstrap through first stable rendered frame. Three cold loads per version; timing depends on hardware and scheduling.",
+  "before": {
+    "renderer": "Chromium with SwiftShader",
+    "viewport": [
+      1480,
+      980
+    ],
+    "offline": true,
+    "runs": [
+      {
+        "readyMs": 44458.09999999404,
+        "generationMs": 4005.6000000089407,
+        "fullCities": 78,
+        "terrainBuilds": 2,
+        "directory": 168,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "aaa577eb"
+        ],
+        "software": false,
+        "nearRoadVertices": 108240,
+        "settledTerrainBuilds": 2
+      },
+      {
+        "readyMs": 59416.70000000298,
+        "generationMs": 15064.79999999702,
+        "fullCities": 78,
+        "terrainBuilds": 2,
+        "directory": 168,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "aaa577eb"
+        ],
+        "software": false,
+        "nearRoadVertices": 108240,
+        "settledTerrainBuilds": 2
+      },
+      {
+        "readyMs": 42122.90000000596,
+        "generationMs": 4776.0999999940395,
+        "fullCities": 78,
+        "terrainBuilds": 2,
+        "directory": 168,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "aaa577eb"
+        ],
+        "software": false,
+        "nearRoadVertices": 108240,
+        "settledTerrainBuilds": 2,
+        "cities": [
+          {
+            "id": 507,
+            "readyMs": 2455.7000000029802,
+            "buildings": 515,
+            "triangles": 253181,
+            "worker": true
+          },
+          {
+            "id": 349,
+            "readyMs": 2725.300000011921,
+            "buildings": 499,
+            "triangles": 215252,
+            "worker": true
+          }
+        ]
+      }
+    ],
+    "medianReadyMs": 44458.09999999404
+  },
+  "after": {
+    "renderer": "Chromium with SwiftShader",
+    "viewport": [
+      1480,
+      980
+    ],
+    "offline": true,
+    "runs": [
+      {
+        "readyMs": 12446,
+        "generationMs": 10676.29999999702,
+        "fullCities": 0,
+        "terrainBuilds": 1,
+        "siteQueries": 0,
+        "index": {
+          "status": "complete",
+          "completed": 78,
+          "total": 78,
+          "frames": 16
+        },
+        "directory": 168,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "aaa577eb"
+        ],
+        "software": false,
+        "nearRoadVertices": 0,
+        "settledTerrainBuilds": 1
+      },
+      {
+        "readyMs": 10645.29999999702,
+        "generationMs": 9476.90000000596,
+        "fullCities": 0,
+        "terrainBuilds": 1,
+        "siteQueries": 0,
+        "index": {
+          "status": "complete",
+          "completed": 78,
+          "total": 78,
+          "frames": 17
+        },
+        "directory": 168,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "aaa577eb"
+        ],
+        "software": false,
+        "nearRoadVertices": 0,
+        "settledTerrainBuilds": 1
+      },
+      {
+        "readyMs": 13226.699999988079,
+        "generationMs": 11417.59999999404,
+        "fullCities": 0,
+        "terrainBuilds": 1,
+        "siteQueries": 0,
+        "index": {
+          "status": "complete",
+          "completed": 78,
+          "total": 78,
+          "frames": 12
+        },
+        "directory": 168,
+        "sacredSites": 69,
+        "fingerprints": [
+          "440ae5d0",
+          "6b6c5ea8",
+          "aaa577eb"
+        ],
+        "software": false,
+        "nearRoadVertices": 0,
+        "settledTerrainBuilds": 1,
+        "cities": [
+          {
+            "id": 507,
+            "readyMs": 2763.0999999940395,
+            "buildings": 515,
+            "triangles": 253181,
+            "worker": true
+          },
+          {
+            "id": 349,
+            "readyMs": 2229,
+            "buildings": 499,
+            "triangles": 215252,
+            "worker": true
+          }
+        ],
+        "regeneration": true,
+        "failureRecovery": true,
+        "noWorkerFallback": true
+      }
+    ],
+    "medianReadyMs": 12446
+  },
+  "reductionPercent": 72.00510143258109,
+  "screenshots": {
+    "world.png": {
+      "identical": true,
+      "before": "a025492f061954d6ebbd64cd01f9b3a9db733b95f453619a77ed87e3b98d7cf6",
+      "after": "a025492f061954d6ebbd64cd01f9b3a9db733b95f453619a77ed87e3b98d7cf6"
+    },
+    "city-507.png": {
+      "identical": false,
+      "before": "5e0243d7102d4e7612e96a7db771151f4ac0d147817a5b7ae4dcfa1d659821ce",
+      "after": "1dabbd08eb5b36c2f74ddfcc6454c4d6b24774e73882ee6bea2466acc400a195"
+    },
+    "city-349.png": {
+      "identical": true,
+      "before": "2f5d8fa63cf5df5e2a79976a23005dc9920bc1038e92f2f8ceacce3b7b3270d0",
+      "after": "2f5d8fa63cf5df5e2a79976a23005dc9920bc1038e92f2f8ceacce3b7b3270d0"
+    }
+  },
+  "comparisonScope": "Performance changes isolated on baseline 2f9de96, before integrating main PRs #39 and #40. Screenshot hashes refer only to this isolated comparison.",
+  "integration": {
+    "mainCommit": "15ee054e259a065800dfc065b323c117216b3779",
+    "testedCommit": "cb9d9a4",
+    "note": "One additional correctness run after integrating realm descriptions and landscape changes; run concurrently with integration tests, separate from the controlled three-run timing comparison.",
+    "nodeTests": {
+      "preIntegrationFullSuite": 306,
+      "postIntegrationTargeted": 105,
+      "failures": 0
+    },
+    "browser": {
+      "renderer": "Chromium with SwiftShader",
+      "viewport": [
+        1480,
+        980
+      ],
+      "offline": true,
+      "runs": [
+        {
+          "readyMs": 13764.70000000298,
+          "generationMs": 10820.39999999106,
+          "fullCities": 0,
+          "terrainBuilds": 1,
+          "siteQueries": 0,
+          "index": {
+            "status": "complete",
+            "completed": 78,
+            "total": 78,
+            "frames": 7
+          },
+          "directory": 168,
+          "sacredSites": 69,
+          "fingerprints": [
+            "440ae5d0",
+            "6b6c5ea8",
+            "aaa577eb"
+          ],
+          "software": false,
+          "nearRoadVertices": 0,
+          "settledTerrainBuilds": 1,
+          "cities": [
+            {
+              "id": 507,
+              "readyMs": 4085.9000000059605,
+              "buildings": 515,
+              "triangles": 253181,
+              "worker": true
+            },
+            {
+              "id": 349,
+              "readyMs": 4321.70000000298,
+              "buildings": 499,
+              "triangles": 215252,
+              "worker": true
+            }
+          ],
+          "regeneration": true,
+          "failureRecovery": true,
+          "noWorkerFallback": true
+        }
+      ],
+      "medianReadyMs": 13764.70000000298
+    }
+  }
+}

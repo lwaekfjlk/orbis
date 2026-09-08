@@ -87,6 +87,41 @@ function cityReach(sim, p) {
             best = Math.min(best, Math.hypot(q.x - p.x, q.y - p.y));
     return best;
 }
+/** Visit the exact footprint samples used for placing a building. The landmark
+ * index also uses them to prove that reserved land cannot be occupied by roads. */
+function cityParcelEvery(city, q, width, depth, test) {
+    if (width > 3 || depth > 3) {
+        for (let dx = -width / 2; dx <= width / 2; dx += 1)
+            for (let dz = -depth / 2; dz <= depth / 2; dz += 1)
+                if (!test(city.index(q.x + dx, q.z + dz))) return false;
+    }
+    for (const dx of [-width / 2, 0, width / 2])
+        for (const dz of [-depth / 2, 0, depth / 2])
+            if (!test(city.index(q.x + dx, q.z + dz))) return false;
+    return true;
+}
+/** Find the actual dry, unobstructed doorway used by the final layout filter. */
+function cityStreetConnections(city) {
+    const roadGrid = cityGrid(12), blockGrid = cityGrid(8);
+    for (let k=0;k<city.road.length;k++) if (city.road[k]) { const q = {i:k,...city.xy(k)}; roadGrid.add(q, q.x, q.z, q.x, q.z); }
+    for (const b of city.buildings) blockGrid.add(b, b.x-b.w/2-.09, b.z-b.d/2-.09, b.x+b.w/2+.09, b.z+b.d/2+.09);
+    return b => {
+        let best=null;
+        // A socket beyond 12 is rejected below anyway, so only that neighbourhood is searched.
+        for(const q of roadGrid.near(b.x-b.w/2-12,b.z-b.d/2-12,b.x+b.w/2+12,b.z+b.d/2+12)) {
+            const dx=q.x-b.x,dz=q.z-b.z;
+            const px=b.x+cityClamp(dx,-b.w/2-.08,b.w/2+.08), pz=b.z+cityClamp(dz,-b.d/2-.08,b.d/2+.08);
+            const dist=Math.hypot(q.x-px,q.z-pz);
+            if(best&&dist>=best.dist)continue;
+            const a = { x: px, z: pz };
+            if (!cityDrySegment(city, a, q)) continue;
+            const obstacles = blockGrid.near(Math.min(px, q.x), Math.min(pz, q.z), Math.max(px, q.x), Math.max(pz, q.z));
+            if (obstacles.some(v => v !== b && citySegmentBox(a, q, v.x - v.w / 2 - .08, v.z - v.d / 2 - .08, v.x + v.w / 2 + .08, v.z + v.d / 2 + .08))) continue;
+            best={dist,a,b:q};
+        }
+        return best;
+    };
+}
 /** Read the existing survey extent without generating streets or consuming RNG. */
 function citySurvey(sim, p) {
     const capital = sim.realms.some(r => r.alive && r.capital === p.id);
@@ -100,6 +135,14 @@ function citySurvey(sim, p) {
     return {span, grow, crowd, settled, width, depth, terrainSpan};
 }
 function generateCity(w, sim, provinceId, design = {}) {
+    return buildCityLayout(w, sim, provinceId, design, false);
+}
+/** Exact landmark query. It executes the same placement and household occlusion
+ * checks as a full town, but leaves surroundings and decorative detail unbuilt. */
+function generateCityLandmark(w, sim, provinceId) {
+    return buildCityLayout(w, sim, provinceId, {}, true);
+}
+function buildCityLayout(w, sim, provinceId, design, landmarkOnly) {
     const p = sim.provinces[provinceId];
     if (!p || !p.settled || p.urbanPop < 650)
         throw Error('City detail requires an existing village or town.');
@@ -144,8 +187,9 @@ function generateCity(w, sim, provinceId, design = {}) {
     // The full local environment crosses the scale boundary, not only height/water.
     for(let y=0;y<n;y++)for(let x=0;x<n;x++){
         const k=y*n+x,gx=p.x+(x/(n-1)-.5)*terrainSpan,gy=p.y+(y/(n-1)-.5)*terrainSpan*depth/width;
-        const e=CityEnvironment.sample(w,gx,gy);
-        CityEnvironment.write(city.environment,k,e);
+        const e=landmarkOnly?CityEnvironment.sampleSite(w,gx,gy):CityEnvironment.sample(w,gx,gy);
+        if (landmarkOnly) { city.environment.ice[k]=e.ice; city.environment.snow[k]=e.snow; }
+        else CityEnvironment.write(city.environment,k,e);
         city.water[k]=e.water;city.waterKind[k]=e.waterKind;
         city.height[k]=elevate(e.surface);city.wet[k]=e.wetness;
     }
@@ -156,11 +200,13 @@ function generateCity(w, sim, provinceId, design = {}) {
         const gx=p.x+(x/(n-1)-.5)*terrainSpan,gy=p.y+(y/(n-1)-.5)*terrainSpan*depth/width;
         city.atlasSlope[y*n+x]=CityEnvironment.atlasGrade(w,gx,gy);
     }
-    city.environment.signature=CityEnvironment.hash(city.environment);
-    city.source.environmentSignature=city.environment.signature;
-    city.context=CityEnvironment.context(w,p,city,elevate);
-    CityEnvironment.refineContextRivers(w,p,city);
-    city.source.contextSignature=city.context.signature;
+    if (!landmarkOnly) {
+        city.environment.signature=CityEnvironment.hash(city.environment);
+        city.source.environmentSignature=city.environment.signature;
+        city.context=CityEnvironment.context(w,p,city,elevate);
+        CityEnvironment.refineContextRivers(w,p,city);
+        city.source.contextSignature=city.context.signature;
+    }
     // Rivers at this scale are centerline refinements of parent drainage segments.
     // Do not invent a river merely because a city would look attractive next to one.
     city.rivers = [];
@@ -226,9 +272,13 @@ function generateCity(w, sim, provinceId, design = {}) {
     city.market = city.xy(center);
     // Keep this town within the dry/river-bridge-connected local component.
     // Other shores require a real ferry simulation, not an invented road over water.
-    const connected = new Uint8Array(nn), queue = new Int32Array(nn);
-    let head=0,tail=0;connected[center]=1;queue[tail++]=center;
-    while(head<tail){const k=queue[head++],x=k%n,y=Math.floor(k/n);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){const xx=x+dx,yy=y+dy;if(xx<2||xx>=n-2||yy<2||yy>=n-2)continue;const j=yy*n+xx;if(connected[j]||!passable(j)||(dx&&dy&&(!passable(y*n+xx)||!passable(yy*n+x))))continue;connected[j]=1;queue[tail++]=j;}}
+    function reachable() {
+        const connected = new Uint8Array(nn), queue = new Int32Array(nn);
+        let head=0,tail=0;connected[center]=1;queue[tail++]=center;
+        while(head<tail){const k=queue[head++],x=k%n,y=Math.floor(k/n);for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]){const xx=x+dx,yy=y+dy;if(xx<2||xx>=n-2||yy<2||yy>=n-2)continue;const j=yy*n+xx;if(connected[j]||!passable(j)||(dx&&dy&&(!passable(y*n+xx)||!passable(yy*n+x))))continue;connected[j]=1;queue[tail++]=j;}}
+        return connected;
+    }
+    const connected = reachable();
     for(let i=candidates.length-1;i>=0;i--)if(!connected[candidates[i].k])candidates.splice(i,1);
     // Shared between the reserve and the precinct build, so the two cannot disagree about
     // what counts as buildable ground for a citadel.
@@ -240,6 +290,27 @@ function generateCity(w, sim, provinceId, design = {}) {
             FortressPlan.reserveCivic(city,candidates,type,{scale:atlasScale,bounds:parcelBounds});
         }
         if(city.citadelReserve)for(let j=candidates.length-1;j>=0;j--)if(city.citadelReserve[candidates[j].k])candidates.splice(j,1);
+    }
+    if (landmarkOnly) {
+        const result = buildings => ({townRecipe: recipe, townProfile: profile, buildings});
+        const a = city.citadelSite;
+        if (!a?.sacred) return result([]);
+        // Every footprint sample lies in the reserved road exclusion. Streets
+        // and gate corridors cannot change its buildingAt result. If a future
+        // reserve fails that proof, retain the exact street/placement prefix below.
+        if (cityParcelEvery(city, a, a.w, a.d, j => !!city.citadelReserve[j])) {
+            const reached = reachable();
+            const gateway = [[a.x,a.z+a.d/2+3],[a.x-a.w/2-3,a.z],[a.x+a.w/2+3,a.z],[a.x,a.z-a.d/2-3]]
+                .map(([x,z]) => city.index(x,z)).some(j => j !== center && passable(j) && reached[j]);
+            // Costs select a path within this component; they cannot change
+            // whether any of these same entrance goals has a route to the market.
+            const clear = cityParcelEvery(city, a, a.w, a.d, j => !(city.water[j] || city.environment.ice[j] > 25 || city.environment.snow[j] > .5 || city.slope[j] > CITADEL_SLOPE));
+            const bounds = parcelBounds(a.x,a.z,a.w,a.d),fall = (bounds.top-bounds.low)/atlasScale;
+            if (!gateway || !clear || fall > a.footingLimit) return result([]);
+            // A reachable reserved site can still lose its doorway to a later
+            // household plot. Positive queries continue through those same plots
+            // and the final connector test; connectivity only proves negatives.
+        }
     }
     function route(start, goal) {
         const dist = new Float64Array(nn).fill(Infinity), parent = new Int32Array(nn).fill(-1), heap = new MinHeap();
@@ -382,15 +453,8 @@ function generateCity(w, sim, provinceId, design = {}) {
         // entire multi-building compound into them.
         if (!landmark && (Math.min(ww, dd) < MIN_PARCEL_SIDE || Math.max(ww / dd, dd / ww) > MAX_PARCEL_ASPECT + 1e-9)) return null;
         // A precinct must fit wholly on dry road-free ground, not merely at its corners.
-        if (ww > 3 || dd > 3) {
-            for (let dx = -ww / 2; dx <= ww / 2; dx += 1) for (let dz = -dd / 2; dz <= dd / 2; dz += 1)
-                if (blocked(city.index(q.x + dx, q.z + dz), steep)) return null;
-        }
+        if (!cityParcelEvery(city, q, ww, dd, j => !blocked(j, steep))) return null;
         const a = 0; // Footprints remain aligned to local surveyed blocks; organic roads cut across them.
-        for (const dx of [-ww / 2, 0, ww / 2])
-            for (const dz of [-dd / 2, 0, dd / 2])
-                if (blocked(city.index(q.x + dx, q.z + dz), steep))
-                    return null;
         // Party walls, not garden walls. The old .28 clearance around every block is most of
         // why half the buildable ground stayed empty; the style's spacing still separates an
         // airy woodland town from a tight courtyard one, just at a fraction of the width.
@@ -518,6 +582,13 @@ function generateCity(w, sim, provinceId, design = {}) {
     infill=true;
     for(const lot of lots){if(city.buildings.length>=Math.min(1900,target*2.1))break;buildingAt(lot.k,'home',false);}
     infill=false;
+    if (landmarkOnly) {
+        const b=city.buildings.find(b=>b.sacred),socket=b?cityStreetConnections(city)(b):null;
+        // Waterfront fittings, trees and fields add no building footprints or
+        // road nodes. Query the same final doorway against all household plots,
+        // then leave their decorative geometry and full town metadata unbuilt.
+        return {townRecipe:recipe,townProfile:profile,buildings:b&&socket&&socket.dist<12?[b]:[]};
+    }
     // A granary and public well are selected from dry, road-served existing lots.
     const ordinary = city.buildings.filter(b => !b.landmark).sort((a, b) => Math.hypot(a.x - city.market.x, a.z - city.market.z) - Math.hypot(b.x - city.market.x, b.z - city.market.z));
     // Reusing a house lot for a lower structure also lowers its footing budget.
@@ -671,23 +742,9 @@ function generateCity(w, sim, provinceId, design = {}) {
         city.walls.push({ a: A, b: B, y: Math.max(city.height[i], city.height[j]) });
     }
     city.connectors = [];
-    const roadGrid = cityGrid(12), blockGrid = cityGrid(8);
-    for (let k=0;k<nn;k++) if (city.road[k]) { const q = {i:k,...city.xy(k)}; roadGrid.add(q, q.x, q.z, q.x, q.z); }
-    for (const b of city.buildings) blockGrid.add(b, b.x-b.w/2-.09, b.z-b.d/2-.09, b.x+b.w/2+.09, b.z+b.d/2+.09);
+    const connectorFor = cityStreetConnections(city);
     for(const b of city.buildings) {
-        let best=null;
-        // A socket beyond 12 is rejected below anyway, so only that neighbourhood is searched.
-        for(const q of roadGrid.near(b.x-b.w/2-12,b.z-b.d/2-12,b.x+b.w/2+12,b.z+b.d/2+12)) {
-            const dx=q.x-b.x,dz=q.z-b.z;
-            const px=b.x+cityClamp(dx,-b.w/2-.08,b.w/2+.08), pz=b.z+cityClamp(dz,-b.d/2-.08,b.d/2+.08);
-            const dist=Math.hypot(q.x-px,q.z-pz);
-            if(best&&dist>=best.dist)continue;
-            const a = { x: px, z: pz };
-            if (!cityDrySegment(city, a, q)) continue;
-            const obstacles = blockGrid.near(Math.min(px, q.x), Math.min(pz, q.z), Math.max(px, q.x), Math.max(pz, q.z));
-            if (obstacles.some(v => v !== b && citySegmentBox(a, q, v.x - v.w / 2 - .08, v.z - v.d / 2 - .08, v.x + v.w / 2 + .08, v.z + v.d / 2 + .08))) continue;
-            best={dist,a,b:q};
-        }
+        const best=connectorFor(b);
         if(best&&best.dist<12){b.streetSocket=best.b.i;b.angle=Math.round(Math.atan2(-(best.b.x-b.x),best.b.z-b.z)/(Math.PI/2))*(Math.PI/2);city.connectors.push({blockId:b.id,...best});}
     }
     city.buildings = city.buildings.filter(b=>b.streetSocket!=null);

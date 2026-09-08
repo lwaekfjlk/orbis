@@ -15,6 +15,7 @@
     "test:browser": "python tests/continuous_browser.py",
     "test:city-browser": "node tests/city-coherence.browser.mjs",
     "test:civic-browser": "node tests/civic-layout.browser.mjs",
+    "test:loading-browser": "node tests/loading.browser.mjs",
     "test:terrain-browser": "node tests/terrain-refinement.browser.mjs",
     "assets": "node scripts/export-landmarks.mjs",
     "test:towns": "node --test tests/towns.test.mjs",
