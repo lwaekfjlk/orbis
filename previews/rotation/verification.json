@@ -1,0 +1,351 @@
+{
+  "passed": true,
+  "productBundleSha256": "843f928ba93689fbfe7af13b6f7fa047de791137d8154628c51bc926fdbcbc5a",
+  "environment": "Actual Google Chrome, offline bundled Orbis HTML; native pointer and keyboard input; no external requests",
+  "scope": "Quarter-turn navigation only; real smallest ordinary eligible town selected by province data",
+  "checkGroups": 21,
+  "normalAndReducedMotion": true,
+  "nativeQuarterTurns": [
+    {
+      "name": "normal / pointer",
+      "deltaRadians": 1.5707963267948966,
+      "trusted": true
+    },
+    {
+      "name": "normal / Enter",
+      "deltaRadians": 1.5707963267948963,
+      "trusted": true
+    },
+    {
+      "name": "normal / Space",
+      "deltaRadians": 1.5707963267948966,
+      "trusted": true
+    },
+    {
+      "name": "normal / fourth quarter",
+      "deltaRadians": 1.5707963267948966,
+      "trusted": true
+    },
+    {
+      "name": "normal / actual city with selected building and open details",
+      "deltaRadians": 1.5707963267948948,
+      "trusted": true
+    },
+    {
+      "name": "normal / fresh quarter after cancelled zoom rotation",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "normal / fresh quarter after cancelled pan rotation",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "reduced / pointer",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "reduced / Enter",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "reduced / Space",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "reduced / fourth quarter",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "1480px / visible native button",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "430px / visible native button",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    },
+    {
+      "name": "320px / visible native button",
+      "deltaRadians": 1.5707963267948983,
+      "trusted": true
+    }
+  ],
+  "rapidClicks": {
+    "normal": 5,
+    "reduced": 5,
+    "expectedRotationDegrees": 450,
+    "allActionsRetained": true
+  },
+  "preserved": [
+    "target",
+    "zoom",
+    "elevation",
+    "scene",
+    "selected building",
+    "selection outline geometry",
+    "open details",
+    "year",
+    "play state"
+  ],
+  "interruptions": [
+    {
+      "name": "normal / zoom interrupts rotation",
+      "nativePointerSawMoving": true,
+      "cameraUnchangedAfter1200ms": true,
+      "yawAfter": 19.053255882408607
+    },
+    {
+      "name": "normal / pan interrupts rotation",
+      "nativePointerSawMoving": true,
+      "cameraUnchangedAfter1200ms": true,
+      "yawAfter": 22.830252743562944
+    }
+  ],
+  "backToWorld": {
+    "target": [
+      0,
+      0,
+      0
+    ],
+    "zoom": 1,
+    "elevation": 1.19,
+    "yawEquivalentModulo2Pi": 0.018
+  },
+  "loading": {
+    "before": {
+      "busy": true,
+      "disabled": true,
+      "yaw": 0.018,
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "zoom": 1,
+      "elevation": 1.19
+    },
+    "after": {
+      "busy": true,
+      "disabled": true,
+      "yaw": 0.018,
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "zoom": 1,
+      "elevation": 1.19
+    }
+  },
+  "viewports": [
+    {
+      "name": "1480px / bounds and hit targets",
+      "controls": [
+        {
+          "id": "omFit",
+          "x": 1409,
+          "y": 899,
+          "w": 44,
+          "h": 52,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "omZoomIn",
+          "x": 1415,
+          "y": 839,
+          "w": 32,
+          "h": 30,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "omZoomOut",
+          "x": 1415,
+          "y": 869,
+          "w": 32,
+          "h": 30,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "forgeButton",
+          "x": 883.0234375,
+          "y": 904,
+          "w": 106.84375,
+          "h": 42,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "play",
+          "x": 572.6640625,
+          "y": 907,
+          "w": 91,
+          "h": 36,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "year",
+          "x": 494.1328125,
+          "y": 917.40625,
+          "w": 44.53125,
+          "h": 27,
+          "hit": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "name": "430px / bounds and hit targets",
+      "controls": [
+        {
+          "id": "omFit",
+          "x": 370,
+          "y": 753,
+          "w": 44,
+          "h": 52,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "omZoomIn",
+          "x": 376.5,
+          "y": 695,
+          "w": 31,
+          "h": 29,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "omZoomOut",
+          "x": 376.5,
+          "y": 724,
+          "w": 31,
+          "h": 29,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "forgeButton",
+          "x": 300.515625,
+          "y": 836.5,
+          "w": 92.03125,
+          "h": 42,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "play",
+          "x": 99.1875,
+          "y": 839.5,
+          "w": 70,
+          "h": 36,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "year",
+          "x": 39.453125,
+          "y": 850.421875,
+          "w": 42.734375,
+          "h": 26,
+          "hit": true,
+          "visible": true
+        }
+      ]
+    },
+    {
+      "name": "320px / bounds and hit targets",
+      "controls": [
+        {
+          "id": "omFit",
+          "x": 260,
+          "y": 651,
+          "w": 44,
+          "h": 52,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "omZoomIn",
+          "x": 266.5,
+          "y": 593,
+          "w": 31,
+          "h": 29,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "omZoomOut",
+          "x": 266.5,
+          "y": 622,
+          "w": 31,
+          "h": 29,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "forgeButton",
+          "x": 23,
+          "y": 782,
+          "w": 274,
+          "h": 40,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "play",
+          "x": 110.671875,
+          "y": 737.921875,
+          "w": 70,
+          "h": 36,
+          "hit": true,
+          "visible": true
+        },
+        {
+          "id": "year",
+          "x": 25,
+          "y": 748.859375,
+          "w": 42.734375,
+          "h": 26,
+          "hit": true,
+          "visible": true
+        }
+      ]
+    }
+  ],
+  "town": {
+    "id": 529,
+    "name": "Saint Midulrik",
+    "population": 2116.13612630911,
+    "buildings": 214,
+    "selectedBuilding": "b0"
+  },
+  "screenshots": [
+    "city-details-desktop.png",
+    "rotate-1480.png",
+    "rotate-430.png",
+    "rotate-320.png"
+  ],
+  "jsErrors": [],
+  "externalRequests": [],
+  "instrumentation": "The real third loading-stage callback was paused to inspect disabled behavior. Product source and repository were not modified.",
+  "build": {
+    "command": "npm run build",
+    "passed": true
+  },
+  "existingTests": {
+    "command": "node --test --test-concurrency=1 tests/onemap.test.mjs tests/continuous.test.mjs",
+    "passed": 28,
+    "failed": 0
+  }
+}
