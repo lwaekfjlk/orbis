@@ -7,8 +7,8 @@
   "offline": true,
   "runs": [
     {
-      "readyMs": 11981.100000023842,
-      "generationMs": 10831,
+      "readyMs": 12042.800000011921,
+      "generationMs": 10588.09999999404,
       "fullCities": 0,
       "terrainBuilds": 1,
       "siteQueries": 0,
@@ -16,9 +16,9 @@
         "status": "complete",
         "completed": 92,
         "total": 92,
-        "frames": 18
+        "frames": 17
       },
-      "directory": 170,
+      "directory": 173,
       "sacredSites": 79,
       "fingerprints": [
         "73fe302b",
@@ -32,7 +32,7 @@
       "cities": [
         {
           "id": 421,
-          "readyMs": 2878,
+          "readyMs": 2718.699999988079,
           "name": "Oakfield",
           "buildings": 299,
           "cityFingerprint": "bd34682a",
@@ -153,7 +153,7 @@
         },
         {
           "id": 289,
-          "readyMs": 2206.7000000178814,
+          "readyMs": 2715.4000000059605,
           "name": "Whitewatch",
           "buildings": 235,
           "cityFingerprint": "5f0da80d",
@@ -278,8 +278,8 @@
       "noWorkerFallback": true
     }
   ],
-  "medianReadyMs": 11981.100000023842,
-  "medianGenerationMs": 10831,
-  "bundleSha256": "c964a1e1c1703d4c2d836945f2487f443af546c818282d7e1938adead990dbf7",
-  "note": "One functional run, not a controlled speed comparison. Includes exact source/Worker/fallback mesh comparisons, regeneration and failed-generation recovery."
+  "medianReadyMs": 12042.800000011921,
+  "medianGenerationMs": 10588.09999999404,
+  "bundleSha256": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f",
+  "note": "Final merged bundle including dragon ruins, complete country labels and v3 high-platform selection. One functional cold-load run; timings are not a comparative benchmark."
 }

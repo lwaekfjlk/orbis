@@ -1,0 +1,135 @@
+{
+  "bundleSha256": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f",
+  "integratedMain": "d3827536311d3186389efc81904a7cc0832253fd",
+  "defaultVersion": 3,
+  "defaultFingerprints": {
+    "physical": "73fe302b",
+    "settlement": "b18c6a8",
+    "political": "b007f61e"
+  },
+  "sourceSha256": {
+    "src/world/geography.js": "60bb8a64d94287c3d6ce2fe226e3a6d1c014f202d210845a592ce8d7cdc0d2be",
+    "src/city/environment.js": "75ee4326fb650838984fc94aca3d16ad8cc58948e7094398ef0e971d05903cab",
+    "src/continuous/landscape-color.js": "62bc5e549e9a7e1b102d00ed8a3e82ff363b66e33d3584ef040bbd1e4dba2209",
+    "src/continuous/city-layer.js": "257a376a9bc7e4e23bf5f6e3570eb6cefa57aba3aac4870fd80981c0addd3b8e",
+    "src/civilization/simulation.js": "b3da4df45f275ba808eff21f8b1ee89427ee2026658aa4ed8d1661126bf67f5c",
+    "src/ui/world-ui.js": "d6a3a20886acf1a58328f2bf0572239fe78d23ecf3b2bd7e03cd71aa9660b5da",
+    "src/continuous/generated-worker.js": "b8366bfac6b71815c7d5c9f5ccb02fd4461d883d266c375685ff7e789d404ab0"
+  },
+  "unitRuns": [
+    {
+      "scope": "tectonics",
+      "tests": 6,
+      "passed": 6,
+      "failed": 0,
+      "logSha256": "4c0afaec52a12531cdf4a6eefaf0a1ee65a17f8a6d8ea2081b5aa203183ed13a"
+    },
+    {
+      "scope": "published-geography-compatibility",
+      "tests": 13,
+      "passed": 13,
+      "failed": 0,
+      "logSha256": "c4837b3813843264d45e9c105ebc6b56033441e984da767abf8282c7aef90a7f"
+    },
+    {
+      "scope": "ocean-and-climate-v3",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "logSha256": "23f6a6fc92e76e636f57c66bb82a6accbef19bb264e23235fdcc8d7b0245e664"
+    },
+    {
+      "scope": "original-climate-causality",
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "logSha256": "402f78a72a4d61f39950c56410e52900beb9703d45c6b474a4a93417376a8ab0"
+    },
+    {
+      "scope": "landcover-colors-snow-cache",
+      "tests": 33,
+      "passed": 33,
+      "failed": 0,
+      "logSha256": "e1f4ee3ba6988dc0bed731e99a006ceb53e46a51da1d1e836447ecfe492ba9e0"
+    },
+    {
+      "scope": "excavation-reset-refinement-hover-camera",
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "logSha256": "ff4fbbeccdce3a45f18b1da155b3b9f94732fce6d1f8273b17ed5cf4032ef10f"
+    },
+    {
+      "scope": "v3-world-city-integration",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0,
+      "logSha256": "b40e9763eef4e9e89f6bb3ada7702662949deb8c34cfdc1fb56e788d2589d541"
+    },
+    {
+      "scope": "pre-merge-invariants",
+      "tests": 47,
+      "passed": 47,
+      "failed": 0,
+      "logSha256": "bb3f173064cb506ab90e8c0894c5725b529ca7cdf3383a3982e3549a51ba6953"
+    },
+    {
+      "scope": "merged-onemap-ui-and-dragon-ruins",
+      "tests": 27,
+      "passed": 27,
+      "failed": 0,
+      "logSha256": "16fe6e4316a03b5e0e50932d6cc0e7266880e2e641088e8f3649c8d228a980f5"
+    },
+    {
+      "scope": "high-platform-v1-v2-v3-and-saved-founding",
+      "tests": 27,
+      "passed": 27,
+      "failed": 0,
+      "logSha256": "72bc43bce1b75055f3660b259748a5a68ad3bcb5c03772c8d8da53aa343a099d"
+    }
+  ],
+  "unitScopeNote": "Targeted runs, with overlapping suites; counts are not summed or presented as a full npm test run. Core geography, colors and reset sources remained unchanged across the final merge; high-platform selection and integration were checked after merging.",
+  "browserReports": [
+    {
+      "path": "results.json",
+      "scope": "Matched v2/v3 mountain cameras and both save restorations",
+      "bundle": "29d1fc1dc74c38f91704214c02a3fb48bcbd34e6623c50a35659a8117eb926d4",
+      "sha256": "c3274d14a17f79da56f992192f080e04b495402c9dcee38361192cd401347810"
+    },
+    {
+      "path": "exploration/results.json",
+      "scope": "Four landforms, real city, refinement, labels and versionless/v3 saves",
+      "bundle": "29d1fc1dc74c38f91704214c02a3fb48bcbd34e6623c50a35659a8117eb926d4",
+      "sha256": "c4994c331390523fcf5da8725833478f3929b91f232fc6b832cb56ad3b5f9d03"
+    },
+    {
+      "path": "loading/results.json",
+      "scope": "Final bundle: one cold load, source/Worker/fallback mesh parity, regeneration and failure recovery",
+      "sha256": "6e3c0cea8509ca820a9f4a608f2e9ae3c708760c20ed7d15363240d99f53d886",
+      "bundle": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f"
+    },
+    {
+      "path": "labels/report.json",
+      "scope": "Final bundle: all 28 complete country names and 110 town names on desktop/mobile, no overlapping labels or covers",
+      "sha256": "7f3f92bda342cb6ceda5f7d9f0f49f9c5bc9b168a0963dc118215e68addf0124",
+      "bundle": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f"
+    },
+    {
+      "path": "polities/results.json",
+      "scope": "Final bundle: ownership, closed-sea raw-height BFS and actual picking, names, saves and legacy high-city restore",
+      "sha256": "2730e9772995eef9ee06002255c5f9a08b4470aa25fc5b53155a718336a06469",
+      "bundle": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f"
+    },
+    {
+      "path": "dragon-sites/report.json",
+      "scope": "Final bundle: three default ruins with picking/parts/export/history remounting, plus two real v3 high cities with map pin/search/visible meshes/picking and unchanged world fingerprints",
+      "sha256": "1954a57e12deb52a5be3de1ab0adbe9d7d433f58f9099e0ebc65cf0109acea50",
+      "bundle": "11d13fa951af1423dec61acd77a23dc6e32ac061fc07f2ae15a6b94562e0834f"
+    }
+  ],
+  "screenshotsNote": "Matched terrain and exploration pictures precede the unrelated dragon/full-country-name main merge. README overview uses final labels/full-names-1480.png; final loading and polity reports use the same production bundle. Geography and ground-color source hashes did not change during the merge.",
+  "limitations": [
+    "Qualitative, uncalibrated fantasy geography and climate, not an Earth simulation.",
+    "The 12.04-second load is a single functional run, not a comparative performance benchmark."
+  ]
+}

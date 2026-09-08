@@ -18,7 +18,7 @@ The streaming layer holds at most three sites, increases detail with zoom and re
 
 ## Preview
 
-[Open the screenshot gallery](../previews/dragon-sites/index.html) for the default world, dedicated high-city models and all three dragon relic variants.
+[Open the screenshot gallery](../previews/dragon-sites/index.html) for the published terrain version 2 world, dedicated high-city models and all three dragon relic variants. The [current overview](../previews/tectonic-climate/labels/full-names-1480.png) uses terrain version 3.
 
 ## Verification
 
@@ -28,6 +28,6 @@ npm run test:full-realm-labels-browser
 npm run test:dragon-sites-browser
 ```
 
-The optional browser scripts accept `PLAYWRIGHT_MODULE` and `CHROMIUM_PATH` for a local browser runtime. By default they test the standalone HTML offline. The site browser test verifies real map buttons, both high-city models, every default ruin, projected mesh visibility, triangle hits, part navigation, isolated GLB content and unchanged world fingerprints after exploration.
+The optional browser scripts accept `PLAYWRIGHT_MODULE` and `CHROMIUM_PATH` for a local browser runtime. By default they test the standalone HTML offline. The site browser test verifies real map buttons, every default ruin, projected mesh visibility, triangle hits, part navigation, isolated GLB content and unchanged world fingerprints after exploration. Both high-city models are also checked in the generated `Meridian-21` / `rift` version 3 world, which has two viable mountain platforms.
 
 A separate validated save fixture redistributes one ordinary town’s existing population to just below the city-detail threshold. Advancing one real year crosses that threshold and invalidates landscape protection. The test keeps both models at LOD 2 and checks actual landscape-key changes, unmoved camera, remounting, current exports and a closed card that remains closed. Its history fingerprints are recorded separately from unmodified exploration.

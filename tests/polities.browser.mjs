@@ -13,16 +13,45 @@ const baseline=process.env.TELLURIC_BASELINE==='1';
 let reference=null;
 if(!baseline){
  const ui=await readFile(join(root,'src/ui/world-ui.js'),'utf8'),declaration=ui.match(/const GEN_DEFAULTS = \{[^\n]+\};/)?.[0];
- assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,2);
+ assert(declaration,'source defaults are missing');const params=Function(declaration+'return GEN_DEFAULTS;')();assert.equal(params.landformVersion,3);
  const E=loadEngine(),w=await E.generateWorld(params),s=E.createCivilization(w,{realms:18,conflict:1});
  const territory=E.PoliticalLand.territory(w,s);let landCells=0,lakeCells=0,unclaimedCells=0,enclosedSeaCells=0;
  for(let i=0;i<w.height.length;i++){
   if(w.height[i]<=0){if(territory.inlandWater[i])enclosedSeaCells++;continue;}
   if(w.lake[i]>0)lakeCells++;else landCells++;if(territory.owners[i]<0)unclaimedCells++;
  }
+ // Flood the raw nonpositive bed independently of the political water mask.
+ // A versioned coastline can move a real inland sea; its full component must
+ // still be closed, explicitly inland, and held by one living country.
+ const visited=new Uint8Array(w.height.length),seas=[];
+ for(let start=0;start<w.height.length;start++){
+  if(w.height[start]>0||visited[start])continue;
+  const cells=[start];visited[start]=1;let edge=false;
+  for(let k=0;k<cells.length;k++){
+   const at=cells[k],x=at%E.GW,y=Math.floor(at/E.GW);
+   if(x===0||x===E.GW-1||y===0||y===E.GH-1)edge=true;
+   for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){
+    const xx=x+dx,yy=y+dy,j=yy*E.GW+xx;
+    if(xx<0||xx>=E.GW||yy<0||yy>=E.GH||visited[j]||w.height[j]>0)continue;
+    visited[j]=1;cells.push(j);
+   }
+  }
+  const owner=territory.owners[start],realm=s.realms[owner];
+  if(edge||owner<0||!realm||realm.alive===false||!cells.every(i=>territory.inlandWater[i]&&territory.owners[i]===owner))continue;
+  // Aim inside the water, away from sloping shores that could intercept a ray.
+  const set=new Set(cells),distance=new Map(),queue=[];
+  for(const i of cells)if([i-1,i+1,i-E.GW,i+E.GW].some(j=>!set.has(j))){distance.set(i,0);queue.push(i);}
+  for(let k=0;k<queue.length;k++)for(const j of[queue[k]-1,queue[k]+1,queue[k]-E.GW,queue[k]+E.GW]){
+   if(!set.has(j)||distance.has(j))continue;distance.set(j,distance.get(queue[k])+1);queue.push(j);
+  }
+  const i=cells.reduce((best,j)=>distance.get(j)>distance.get(best)||distance.get(j)===distance.get(best)&&j<best?j:best,start);
+  seas.push({i,cells:cells.sort((a,b)=>a-b),owner,country:realm.name});
+ }
+ seas.sort((a,b)=>b.cells.length-a.cells.length||a.i-b.i);
+ assert(seas.length,'default source world needs a genuine closed sea entirely held by one country');
  reference={fingerprints:[E.physicalFingerprint(w),E.settlementFingerprint(s),E.politicalFingerprint(s)],realms:s.realms.filter(c=>c.alive).length,towns:s.provinces.filter(p=>p.settled).length,
   territory:{landCells,lakeCells,unclaimedCells,invalidClaims:0,oceanClaims:0,enclosedSeaCells},owners:Array.from(territory.owners),inlandWater:Array.from(territory.inlandWater),
-  enclosedSea:{owner:territory.owners[15995],country:s.realms[territory.owners[15995]]?.name},
+  enclosedSea:seas[0],
   highCities:s.provinces.filter(p=>p.highCitadel&&p.settled).map(p=>({id:p.id,kind:p.highCitadel.kind}))};
 }
 await mkdir(out,{recursive:true});
@@ -56,7 +85,7 @@ try {
   unownedTowns:sim.provinces.filter(p=>p.settled&&p.owner<0).length,
   unownedPopulation:sim.provinces.filter(p=>p.owner<0).reduce((n,p)=>n+p.pop,0),
   population:sim.provinces.reduce((n,p)=>n+p.pop,0),
-  labels:labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>{const b=e.getBoundingClientRect();return{id:f.realm,text:e.innerText,visible:e.style.opacity==='1',variant:e.dataset.labelVariant||'original',x:b.x,y:b.y,w:b.width,h:b.height,
+  labels:labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>{const b=e.getBoundingClientRect();return{id:f.realm,formalName:f.name,text:e.innerText,visible:e.style.opacity==='1',variant:e.dataset.labelVariant||'original',x:b.x,y:b.y,w:b.width,h:b.height,
    lettering:['.realmFullName','.realmCompactName'].map(selector=>{const s=getComputedStyle(e.querySelector(selector));return{family:s.fontFamily,style:s.fontStyle,weight:s.fontWeight};})};}),
   wildness:labelItems.filter(v=>v.feature.wildness).map(v=>({name:v.feature.name,text:v.element.innerText,visible:v.element.style.opacity==='1'})),
   territory:{landCells,lakeCells,unclaimedCells,invalidClaims,oceanClaims,enclosedSeaCells},
@@ -67,13 +96,14 @@ try {
  console.log('Desktop',JSON.stringify(report.desktop));
  await page.screenshot({path:join(out,'world.png')});
  if(!baseline){
-  assert.equal(report.desktop.landformVersion,2,'the default atlas loaded legacy terrain');
+  assert.equal(report.desktop.landformVersion,3,'the default atlas loaded legacy terrain');
   assert.equal(report.desktop.realms,reference.realms,'browser founding differs from independent source generation');
   assert(report.desktop.realms>=18&&report.desktop.realms<=28);
   assert.equal(report.desktop.towns,reference.towns);assert.equal(report.desktop.visibleTownNames,reference.towns);
   assert.equal(report.desktop.unownedTowns,0);
   assert(report.desktop.majority.every(c=>c.share>.5));
-  assert.equal(report.desktop.labels.filter(l=>l.visible).length,report.desktop.realms,'every country must have a visible name or clickable marker');
+  assert.equal(report.desktop.labels.filter(l=>l.visible).length,report.desktop.realms,'every country must print its complete formal name');
+  assert(report.desktop.labels.every(l=>['full','compact'].includes(l.variant)&&l.text===l.formalName),'both country-label sizes must display the complete formal name');
   assert(report.desktop.wildness.some(l=>l.visible),'open unowned terrain must retain a visible wildness label');
   assert(report.desktop.wildness.every(l=>l.name==='wildness'&&(!l.visible||l.text==='wildness')));
   assert.deepEqual(report.desktop.territory,reference.territory,'the bundled political topology differs from independent source generation');
@@ -129,23 +159,25 @@ try {
   report.wild={...selected,status:wild.status};await page.screenshot({path:join(out,'wildness.png')});
   await page.keyboard.press('Escape');
   await page.evaluate(({camera,names})=>{Object.assign(renderer,camera);$('names').checked=names;positionLabels();renderer.request();},wild);await stable();
-  // The negative-height inland sea is closed by Annwn's shore. It must retain
-  // its country even though the physical height raster classifies it as water.
-  const sea=await page.evaluate(()=>{
-   const i=15995,t=PoliticalLand.territory(world,sim),status=PoliticalLand.status(world,sim,i),cells=[i],seen=new Set(cells);
+  // Independently flood the source-selected sea in the actual bundled world.
+  // Do not filter the traversal by political inlandWater or country ownership:
+  // either a water connection to the ocean or a foreign cell must fail below.
+  const sea=await page.evaluate(i=>{
+   const t=PoliticalLand.territory(world,sim),status=PoliticalLand.status(world,sim,i),cells=[i],seen=new Set(cells);let edge=false;
    for(let k=0;k<cells.length;k++){
     const at=cells[k],x=at%GW,y=Math.floor(at/GW);
+    if(x===0||x===GW-1||y===0||y===GH-1)edge=true;
     for(const [dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){
      const xx=x+dx,yy=y+dy,j=yy*GW+xx;
-     if(xx<0||xx>=GW||yy<0||yy>=GH||seen.has(j)||world.height[j]>0||!t.inlandWater[j])continue;
+     if(xx<0||xx>=GW||yy<0||yy>=GH||seen.has(j)||world.height[j]>0)continue;
      seen.add(j);cells.push(j);
     }
    }
    const camera={target:renderer.target.slice(),zoom:renderer.zoom,azimuth:renderer.azimuth,elevation:renderer.elevation},names=$('names').checked;
    $('names').checked=false;positionLabels();renderer.target=renderer.coord(i%GW,Math.floor(i/GW));renderer.zoom=6;renderer.azimuth=.018;renderer.elevation=1.4;renderer.request();
-   return{i,height:world.height[i],inland:t.inlandWater[i],owner:t.owners[i],country:status.realm?.name,fullName:status.label,status:status.kind,cells,owners:[...new Set(cells.map(j=>t.owners[j]))],camera,names};
-  });await stable();
-  assert(sea.height<0&&sea.inland);assert.equal(sea.status,'realm');assert.equal(sea.owner,reference.enclosedSea.owner);assert.equal(sea.country,reference.enclosedSea.country);assert.equal(sea.cells.length,64);assert.deepEqual(sea.owners,[reference.enclosedSea.owner]);
+   return{i,height:world.height[i],inland:t.inlandWater[i],allInland:cells.every(j=>t.inlandWater[j]),edge,owner:t.owners[i],country:status.realm?.name,fullName:status.label,status:status.kind,cells:cells.sort((a,b)=>a-b),owners:[...new Set(cells.map(j=>t.owners[j]))],camera,names};
+  },reference.enclosedSea.i);await stable();
+  assert(sea.height<=0&&sea.inland&&sea.allInland&&!sea.edge);assert.equal(sea.status,'realm');assert.equal(sea.owner,reference.enclosedSea.owner);assert.equal(sea.country,reference.enclosedSea.country);assert.deepEqual(sea.cells,reference.enclosedSea.cells,'the bundled closed-sea component differs from independent raw-height BFS');assert.deepEqual(sea.owners,[reference.enclosedSea.owner]);
   const seaPoint=await page.evaluate(i=>{renderer.updateCamera();const [x,y]=renderer.screen(i%GW,Math.floor(i/GW),0),hit=AtlasSpace.pickGround(renderer,x,y),r=renderer.canvas.getBoundingClientRect();return{x:x+r.left,y:y+r.top,hit:hit?.i};},sea.i);
   assert(sea.cells.includes(seaPoint.hit),'the pointer must hit the real closed-sea component');
   await page.mouse.click(seaPoint.x,seaPoint.y);await stable();
@@ -165,9 +197,11 @@ try {
   await page.waitForFunction('renderer.width===430');
   await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));await stable();
   await page.screenshot({path:join(out,'mobile.png')});report.mobile=await measure();
-  const mobileLayout=await page.evaluate(()=>labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>({id:f.realm,name:f.name,visible:e.style.opacity==='1',anchors:(f.anchors||[f]).map(a=>({...a,screen:renderer.screen(a.x,a.y,.6)})),probes:[e.querySelector('.realmFullName'),e.querySelector('.realmCompactName'),e.querySelector('.realmMarker')].map(p=>({width:p.offsetWidth,height:p.offsetHeight}))})));
+  const mobileLayout=await page.evaluate(()=>labelItems.filter(v=>v.feature.realm!=null).map(({element:e,feature:f})=>({id:f.realm,name:f.name,visible:e.style.opacity==='1',anchors:(f.anchors||[f]).map(a=>({...a,screen:renderer.screen(a.x,a.y,.6)})),probes:['.realmFullName','.realmCompactName'].map(selector=>{const p=e.querySelector(selector);if(!p)throw Error('Missing '+selector+' for country '+f.realm);return{selector,text:p.textContent,width:p.offsetWidth,height:p.offsetHeight};})})));
   await writeFile(join(out,'mobile-layout.json'),JSON.stringify({mobile:report.mobile,layout:mobileLayout},null,2)+'\n');
-  assert.equal(report.mobile.labels.filter(l=>l.visible).length,report.desktop.realms,'mobile loses a country instead of retaining its marker');
+  assert.equal(report.mobile.labels.filter(l=>l.visible).length,report.desktop.realms,'mobile loses a complete country name');
+  assert(report.mobile.labels.every(l=>['full','compact'].includes(l.variant)&&l.text===l.formalName),'mobile country labels must print the full name, including their formal title');
+  assert(mobileLayout.every(l=>l.probes.length===2&&l.probes.every(p=>p.text===l.name&&p.width>0&&p.height>0)),'both complete-name variants must remain measurable and contain the same formal name');
   assert(report.mobile.labels.filter(l=>l.visible).every(l=>l.x>=0&&l.x+l.w<=430),'mobile label measurements came from the old desktop viewport');
   assert.equal(report.mobile.labels.length,report.desktop.realms);
   assert.equal(report.mobile.visibleTownNames,reference.towns);assert.equal(report.mobile.territory.unclaimedCells,report.desktop.territory.unclaimedCells);assert.equal(report.mobile.territory.invalidClaims,0);
@@ -177,12 +211,12 @@ try {
   for(let i=0;i<mobileVisible.length;i++)for(let j=i+1;j<mobileVisible.length;j++){
    const a=mobileVisible[i],b=mobileVisible[j];assert(!(a.x<b.x+b.w-1&&a.x+a.w>b.x+1&&a.y<b.y+b.h-1&&a.y+a.h>b.y+1),'overlapping mobile country labels: '+a.id+' / '+b.id);
   }
-  const id=mobileVisible.find(l=>l.variant==='marker')?.id??mobileVisible[0].id;
+  const chosenLabel=mobileVisible.find(l=>l.variant==='compact')??mobileVisible[0],id=chosenLabel.id;
   const mobileLabel=page.locator('#labels [data-realm-id="'+id+'"]');
-  assert(await mobileLabel.getAttribute('aria-label'),'a country marker must expose its complete name');
+  assert.equal(await mobileLabel.getAttribute('aria-label'),'Read about '+chosenLabel.formalName,'a country label must expose its complete accessible name');
   await mobileLabel.click();await stable();
-  assert(await page.locator('.realm-community').isVisible(),'a mobile country marker must open its overview');
-  assert.equal(await page.locator('.realm-overview').getAttribute('data-realm-id'),String(id),'the mobile marker must select its own country');
+  assert(await page.locator('.realm-community').isVisible(),'a mobile country name must open its overview');
+  assert.equal(await page.locator('.realm-overview').getAttribute('data-realm-id'),String(id),'the mobile name must select its own country');
   await page.keyboard.press('Escape');await stable();
   await page.evaluate(id=>{const c=sim.realms[id],p=sim.provinces[c.capital];renderer.focus(p.x,p.y);},id);await stable();
   assert(await page.locator('#labels [data-realm-id="'+id+'"]').evaluate(e=>e.style.opacity==='1'));

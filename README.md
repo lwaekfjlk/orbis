@@ -7,7 +7,7 @@ A procedural fantasy atlas you can explore from continents to city streets. Gene
 
 **[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
 
-![World overview with named countries, settlements and marked wildness](previews/tectonic-climate/after/world.png)
+![World overview with named countries, settlements and marked wildness](previews/tectonic-climate/labels/full-names-1480.png)
 
 *The default world, Aereth-47. Click a country name to see its territory, population and history. Countries print their full formal names. Domestic lakes belong to their surrounding countries; open wildness remains clearly marked.*
 
@@ -45,7 +45,7 @@ City detail loads as you approach. Initial generation and large cities can take 
 
 ### High cities and dragon relics
 
-A coiled dragon totem marks a Dragon King Citadel; a sacred sun seal marks a High Holy City. These tiny settlements stand on mountain platforms above 3,500 m. A broken dragon totem marks ancient ruins: shattered nesting courts, dragon-spine arches and horned gateways.
+A coiled dragon totem marks a Dragon King Citadel; a sacred sun seal marks a High Holy City. These tiny settlements can appear where mountain platforms above 3,500 m have enough space, water and residents. A broken dragon totem marks ancient ruins: shattered nesting courts, dragon-spine arches and horned gateways.
 
 Click a special symbol or open Search to visit. Searches for **龙城**, **圣城** and **龙族遗迹** work too. Ruins can be explored part by part and exported as a 3D model. [Explore the dragon sites](docs/DRAGON_SITES.md).
 

@@ -81,4 +81,6 @@ npm run test:tectonic-climate-browser
 浏览器可用 `PLAYWRIGHT_MODULE` 和 `CHROMIUM_PATH` 指定已有 Playwright 与 Chromium 安装。实际界面检查覆盖四类地貌定位、桌面与手机国名、城市 Worker 数据一致性，以及新版和旧版存档恢复，见[浏览器报告](../previews/tectonic-climate/exploration/results.json)。
 
 
-加载验收还发现并修复了一个与地下庭院有关的问题：更换世界时，批量卸载旧城会重建即将丢弃的地形。现在先解除旧世界绑定；同世界清理和单城移除仍会补回地面。[调用栈记录](../previews/tectonic-climate/regeneration.json)。最终离线功能运行约 11.98 秒就绪，首次与重生成均只构建一次地形，170 条地标目录、城市数据、无 Worker 回退和失败恢复全部通过；这是单次记录，见[加载报告](../previews/tectonic-climate/loading/results.json)。
+加载验收还发现并修复了一个与地下庭院有关的问题：更换世界时，批量卸载旧城会重建即将丢弃的地形。现在先解除旧世界绑定；同世界清理和单城移除仍会补回地面。[调用栈记录](../previews/tectonic-climate/regeneration.json)。最终离线功能运行约 12.04 秒就绪，首次与重生成均只构建一次地形，173 条地标目录、城市数据、无 Worker 回退和失败恢复全部通过；这是单次记录，见[加载报告](../previews/tectonic-climate/loading/results.json)。
+
+最终合并版还验证了完整国名、真实封闭内海的归属、三处龙族遗迹的拾取与导出，以及另一张真实生成的 v3 地图上的两座高城。[验收汇总](../previews/tectonic-climate/verification.json)记录各组检查的范围、源码与 HTML 指纹，并区分合并前的地形对照图和合并后的界面截图。
