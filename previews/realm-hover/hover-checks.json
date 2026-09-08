@@ -1,0 +1,133 @@
+{
+  "stages": [
+    "desktop",
+    "hover",
+    "overview",
+    "export",
+    "mobile"
+  ],
+  "hover": {
+    "stage": "hover",
+    "id": 6,
+    "meshCheck": {
+      "colourChanges": 30424,
+      "shapeChanges": 0,
+      "sameLength": true,
+      "reusedMesh": true
+    },
+    "timings": [
+      {
+        "id": 6,
+        "ms": 54.80000001192093,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 3,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 44.3999999910593,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 2.5,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 17,
+        "ms": 344,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 1.7000000029802322,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 17,
+        "ms": 271.40000000596046,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 1.7999999970197678,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 45.79999999701977,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 199.3999999910593,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 45.900000005960464,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 36.29999999701977,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 45.5,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 47.69999998807907,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 1.5999999940395355,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 49.5,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 213.29999999701977,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 47.20000000298023,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 312.80000001192093,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 11,
+        "ms": 100.70000000298023,
+        "shadowInvalidated": false
+      },
+      {
+        "id": null,
+        "ms": 15.799999997019768,
+        "shadowInvalidated": false
+      },
+      {
+        "id": 6,
+        "ms": 524.1000000089407,
+        "shadowInvalidated": false
+      }
+    ]
+  },
+  "errors": [],
+  "externalRequests": []
+}

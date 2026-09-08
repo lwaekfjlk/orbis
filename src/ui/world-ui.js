@@ -9,7 +9,7 @@ const POLITICAL = ['realms', 'faiths', 'peoples', 'diplomacy', 'wealth', 'magic'
 const layerTitles = { potential: 'SETTLEMENT POTENTIAL', settlements: 'SETTLEMENTS / BEFORE STATES', realms: 'THE REALMS', relief: 'PHYSICAL LANDSCAPE', faiths: 'LOCAL FAITHS', peoples: 'LOCAL PEOPLES', diplomacy: 'DIPLOMACY & SEA LANES', water: 'WATERSHEDS & BASINS', plates: 'LITHOSPHERE / MOTION', ice: 'CRYOSPHERE', aridity: 'DESERT CAUSES', rain: 'RAINFALL', ocean: 'OCEAN HEAT', wealth: 'PROVINCIAL DEVELOPMENT', magic: 'ARCANE CAPACITY' };
 function toast(text) { $('toast').textContent = text; $('toast').classList.remove('hidden'); clearTimeout(toast.timer); toast.timer = setTimeout(() => $('toast').classList.add('hidden'), 4800); }
 function pause() { playing = false; clearTimeout(timer); timer = null; $('play').textContent = '▶ Play'; window.OneMap?.onPlayback(); }
-function setBusy(value) { busy = value; for (const id of ['generate', 'play', 'step1', 'step10', 'step50', 'resetAge', 'exportToggle', 'forgeButton'])
+function setBusy(value) { busy = value; if (value) renderer?.setHoveredRealm(null); for (const id of ['generate', 'play', 'step1', 'step10', 'step50', 'resetAge', 'exportToggle', 'forgeButton'])
     $(id).disabled = value; $('loading').classList.toggle('hidden', !value); window.OneMap?.onBusy(value); }
 async function stageProgress(text) { $('loadingText').textContent = text; await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0))); }
 /** Default presentation for a newly generated/restored world, not a model update. */
@@ -415,7 +415,9 @@ function realmLabelAnchors(held) {
 function legendLabels() { return $('legends')?.checked === false ? [] : (world.legends || []); }
 // Loaded lettering changes the label bounds, so re-run collision placement.
 document.fonts?.addEventListener('loadingdone', () => { positionLabels(); renderer?.request(); });
+window.addEventListener('blur', () => renderer?.setHoveredRealm(null));
 function makeLabels() {
+    renderer?.setHoveredRealm(null);
     $('labels').innerHTML = '';
     labelItems = [];
     if (!world || !sim)
@@ -468,6 +470,13 @@ function makeLabels() {
             b.dataset.realmId = f.realm;
             b.style.setProperty('--realm-label-size', f.labelSize.toFixed(2) + 'px');
             b.setAttribute('aria-label', 'Read about ' + f.name);
+            b.onpointerenter = e => {
+                if (!busy && e.pointerType !== 'touch' && $('names').checked && b.style.opacity === '1')
+                    renderer.setHoveredRealm(f.realm);
+            };
+            b.onpointerleave = b.onpointercancel = () => {
+                if (renderer.hoveredRealm === f.realm) renderer.setHoveredRealm(null);
+            };
         }
         b.title = 'Inspect ' + f.name + (f.kind ? ' · ' + f.kind : '');
         b.onclick = () => { if (f.realm != null) {
@@ -484,8 +493,10 @@ function positionLabels() {
     if (!renderer || !world)
         return;
     $('labels').classList.toggle('hidden', !$('names').checked);
-    if (!$('names').checked)
+    if (!$('names').checked || (renderer.continuousLayer && renderer.zoom >= AtlasSpace.TOWN_ZOOM)) {
+        renderer.setHoveredRealm(null);
         return;
+    }
     const boxes = [];
     // Batch reads before position writes so camera movement causes one layout pass.
     const measured = labelItems.map(item => ({ ...item, width: item.element.offsetWidth + 6, height: item.element.offsetHeight + 4 }));
@@ -517,6 +528,7 @@ function positionLabels() {
         e.style.pointerEvents = show ? 'auto' : 'none';
         e.style.left = box.left+'px';
         e.style.top = box.top+'px';
+        if (!show && region && renderer.hoveredRealm === f.realm) renderer.setHoveredRealm(null);
         if (show) boxes.push(box);
     }
     $('compass').style.transform = `rotate(${-renderer.azimuth * 180 / Math.PI}deg)`;
