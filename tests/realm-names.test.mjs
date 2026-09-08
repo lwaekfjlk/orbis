@@ -91,10 +91,71 @@ test('Origin markup escapes imported text and long labels use actual rendered wi
     assert(html.includes('&lt;script&gt;'));
     const position = src.slice(src.indexOf('function positionLabels()'), src.indexOf('function makeGeoJumps()'));
     const dom = { labels: { classList: { toggle() {} } }, names: { checked: true }, compass: { style: {} } };
-    const label = (x, width) => ({ element: { offsetWidth: width, offsetHeight: 40, style: {} }, feature: { name: 'Chicomoztoc', x, y: 200, capital: true } });
+    const label = (x, width) => ({ element: { offsetWidth: width, offsetHeight: 40, style: {} }, feature: { name: 'Chicomoztoc', x, y: 200, realm: 0 } });
     const items = [label(300, 230), label(480, 220)];
     const renderer = { width: 1000, height: 600, azimuth: 0, screen: (x, y) => [x, y] };
     new Function('$', 'renderer', 'world', 'labelItems', position + ';positionLabels();')(id => dom[id], renderer, {}, items);
     assert.equal(items[0].element.style.opacity, '1');
     assert.equal(items[1].element.style.opacity, '0', 'long adjacent names must not overlap');
+});
+
+function positionMapLabels(items) {
+    const src = readFileSync(`${root}/src/ui/world-ui.js`, 'utf8');
+    const position = src.slice(src.indexOf('function positionLabels()'), src.indexOf('function makeGeoJumps()'));
+    const dom = { labels: { classList: { toggle() {} } }, names: { checked: true }, compass: { style: {} } };
+    const renderer = { width: 1000, height: 600, azimuth: 0, screen: (x, y) => [x, y] };
+    new Function('$', 'renderer', 'world', 'labelItems', position + ';positionLabels();')(id => dom[id], renderer, {}, items);
+}
+function mapLabel(feature, width, height) {
+    return { element: { offsetWidth: width, offsetHeight: height, style: {} }, feature };
+}
+
+test('Realm label candidates remain on owned dry land and prefer space away from cities', () => {
+    const src = readFileSync(`${root}/src/ui/world-ui.js`, 'utf8');
+    const helper = src.slice(src.indexOf('function realmLabelAnchors('), src.indexOf('function legendLabels('));
+    const width = 30, world = { height: Array(900).fill(1), lake: Array(900).fill(-1) };
+    const cells = [];
+    for (let y = 3; y <= 24; y++)
+        for (let x = 3; x <= 24; x++) cells.push(y * width + x);
+    world.height[12 * width + 15] = 0;
+    world.lake[15 * width + 12] = 1;
+    const town = { x: 13.5, y: 13.5, settled: true, cells };
+    const anchorsFor = new Function('world', 'GW', helper + ';return realmLabelAnchors;')(world, width);
+    const anchors = anchorsFor([town]), owned = new Set(cells);
+    assert(anchors.length > 1, 'the realm needs alternatives when its first position is occupied');
+    for (const anchor of anchors) {
+        assert(owned.has(anchor.i), 'neighboring land cannot host this realm name');
+        assert(world.height[anchor.i] > 0 && world.lake[anchor.i] <= 0, 'water cannot host realm lettering');
+        assert.equal(anchor.i, anchor.y * width + anchor.x);
+    }
+    assert(Math.hypot(anchors[0].x - town.x, anchors[0].y - town.y) >= 7,
+        'the preferred position should leave the central city room for its own label');
+    assert.deepEqual(anchorsFor([{ cells: [12 * width + 15, 15 * width + 12] }]), [],
+        'a realm without dry land has no valid land candidate');
+});
+
+test('Realm names use another land candidate while preserving the city label and location', () => {
+    const city = mapLabel({ name: 'Stonefall', town: true, x: 300, y: 220 }, 110, 24);
+    const realm = mapLabel({ name: 'Asgard', realm: 0, x: 300, y: 220,
+        anchors: [{ x: 300, y: 220 }, { x: 550, y: 220 }] }, 180, 32);
+    positionMapLabels([realm, city]);
+    assert.equal(realm.element.style.opacity, '1');
+    assert.equal(realm.element.style.left, '550px', 'the first candidate conflicts with the city');
+    assert.equal(realm.element.style.top, '220px');
+    assert.equal(city.element.style.opacity, '1', 'a realm processed first must not suppress its city');
+    assert.equal(city.element.style.pointerEvents, 'auto');
+    assert.equal(city.element.style.left, '300px');
+    assert.equal(city.element.style.top, '220px', 'the city name must stay at its actual location');
+});
+
+test('A crowded realm hides its own name instead of overlapping or hiding the city', () => {
+    const city = mapLabel({ name: 'Stonefall', town: true, x: 300, y: 220 }, 110, 24);
+    const realm = mapLabel({ name: 'Chicomoztoc', realm: 0, x: 650, y: 220,
+        anchors: [{ x: 300, y: 220 }, { x: 995, y: 220 }] }, 240, 32);
+    positionMapLabels([realm, city]);
+    assert.equal(realm.element.style.opacity, '0', 'all owned candidates conflict or extend outside the map');
+    assert.equal(realm.element.style.pointerEvents, 'none', 'hidden realm lettering must not intercept city clicks');
+    assert.equal(city.element.style.opacity, '1');
+    assert.equal(city.element.style.left, '300px');
+    assert.equal(city.element.style.top, '220px');
 });

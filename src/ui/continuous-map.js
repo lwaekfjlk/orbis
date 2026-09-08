@@ -152,10 +152,14 @@ window.ContinuousMap = (() => {
   for(const m of layer.models.values())for(const b of m.city.buildings.filter(b=>b.landmark)){const a=m.frame.anchors.get(b.id),h=(m.heights[b.id]||b.h)*a.scale,button=document.createElement('button');button.className='cm-pin cm-building-pin';button.textContent=b.name;button.onclick=()=>{select({model:m,building:b,anchor:a});focusBuilding(m.p.id,b.id);};node.appendChild(button);pins.push({button,point:[a.x,a.y+h+.012,a.z],model:m,building:b});}
  }
  function positionPins(){if(!enabled||!world)return;const r=renderer,show=r.zoom>=AtlasSpace.TOWN_ZOOM&&E('names').checked;E('cmLabels').style.display=show?'block':'none';if(!show)return;const boxes=[];
-  for(const v of pins){let point;if(v.town){point=AtlasSpace.point(world,v.town.x,v.town.y,r.relief);point[1]+=.06;}else point=v.point;const q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height,w=Math.min(210,32+v.button.textContent.length*6.2);let valid=x>40&&x<r.width-40&&y>105&&y<r.height-140&&(v.town?r.zoom<AtlasSpace.DETAIL_ZOOM*2.11:r.zoom>=AtlasSpace.DETAIL_ZOOM*1.11);if(valid&&boxes.some(a=>Math.abs(a.x-x)<(a.w+w)*.5&&Math.abs(a.y-y)<34))valid=false;
+  // Previously culled pins need a box before measuring. Batch all writes, then
+  // all reads, so the bundled lettering participates in the collision layout.
+  for(const v of pins)v.button.style.display='block';
+  const measured=pins.map(v=>({...v,w:v.button.offsetWidth,h:v.button.offsetHeight}));
+  for(const v of measured){let point;if(v.town){point=AtlasSpace.point(world,v.town.x,v.town.y,r.relief);point[1]+=.06;}else point=v.point;const q=project4(r.mvp,point),x=(q[0]/q[3]*.5+.5)*r.width,y=(.5-q[1]/q[3]*.5)*r.height,box={x:x-v.w/2-4,y:y-v.h-3,w:v.w+8,h:v.h+6};let valid=box.x>8&&box.x+box.w<r.width-8&&box.y>105&&y<r.height-140&&(v.town?r.zoom<AtlasSpace.DETAIL_ZOOM*2.11:r.zoom>=AtlasSpace.DETAIL_ZOOM*1.11);if(valid&&boxes.some(a=>box.x<a.x+a.w&&box.x+box.w>a.x&&box.y<a.y+a.h&&box.y+box.h>a.y))valid=false;
    // Do not put labels through an intervening mountain face.
    if(valid){const floor=AtlasSpace.pickGround(r,x,y);if(floor){const d=dot(sub(floor.point,point),r.dir);if(d<-.035)valid=false;}}
-   v.button.style.display=valid?'block':'none';v.button.style.left=x+'px';v.button.style.top=y+'px';if(valid)boxes.push({x,y,w});
+   v.button.style.display=valid?'block':'none';v.button.style.left=x+'px';v.button.style.top=y+'px';if(valid)boxes.push(box);
   }
  }
  function bindCamera(){const c=E('map'),pointers=new Map();let drag=null,pinch=null;const rect=()=>c.getBoundingClientRect();
