@@ -138,9 +138,9 @@ window.OneMap = (() => {
         if(!interactive())return;
         originalFocus=document.activeElement;closeMenus();closeRegenerate();
         drawer=kind;show('omDrawer',true);
-        show('omDetails',kind==='detail');show('omHistory',kind==='history');show('omRealms',kind==='realms');
-        E('omDrawerKicker').textContent=kind==='history'?'THE CHRONICLE':kind==='realms'?'CROWNS & COMMUNITIES':'SELECTED PLACE';
-        E('omDrawerTitle').textContent=kind==='history'?`Year ${sim.year}`:kind==='realms'?'Realms':scene==='city'?CityUI.layout?.name||'Town':scene==='landmark'?LandmarkUI.recipe?.name||'Landmark':'Field notes';
+        show('omDetails',kind==='detail'||kind==='realm');show('omHistory',kind==='history');show('omRealms',kind==='realms');
+        E('omDrawerKicker').textContent=kind==='history'?'THE CHRONICLE':kind==='realms'?'CROWNS & COMMUNITIES':kind==='realm'?'REALM OVERVIEW':'SELECTED PLACE';
+        E('omDrawerTitle').textContent=kind==='history'?`Year ${sim.year}`:kind==='realms'?'Realms':kind==='realm'?RealmNames.fullName(sim.realms[selection?.id]):scene==='city'?CityUI.layout?.name||'Town':scene==='landmark'?LandmarkUI.recipe?.name||'Landmark':'Field notes';
         show('omWorldDetail',scene==='world');show('omCityDetail',scene==='city');show('omLandmarkDetail',scene==='landmark');
         E('omDrawerClose').focus({preventScroll:true});
     }
@@ -193,15 +193,28 @@ window.OneMap = (() => {
         }
         if(scene==='landmark'){E('omMonumentRoofs').checked=E('lmRoofs').checked;E('omMonumentExplode').checked=E('lmExplode').checked;E('omLocalCamera').value=E('lmCamera').value==='plan'?'overhead':E('lmCamera').value==='front'?'low':'relief';}
     }
-    function clearSelection(){selection=null;show('omSelection',false);}
+    function clearSelection(){selection=null;show('omSelection',false);if(drawer==='realm')closeDrawer();}
     function selectionCard(kicker,title,text,buttons,media='',realm=null){
         // `media` is markup we generated ourselves (a narrator portrait), never input.
         E('omSelectionBody').innerHTML=media+`<small class="om-eyebrow">${esc(kicker)}</small><h3>${esc(title)}</h3><p>${esc(text)}</p>${realmNameOriginHTML(realm)}<div class="om-actions">${buttons.map((b,i)=>`<button data-selection-action="${i}" class="${b.primary?'main':''}">${esc(b.label)}</button>`).join('')}</div>`;
         E('omSelectionBody').querySelectorAll('[data-selection-action]').forEach(b=>b.onclick=buttons[+b.dataset.selectionAction].run);
         show('omSelection',true);
     }
+    function inspectRealm(id,open=true){
+        if(!world||!sim||(open&&!interactive()))return;
+        const c=sim.realms[id];
+        if(!c?.alive){if(selection?.kind==='realm'&&selection.id===id)clearSelection();return;}
+        selection={kind:'realm',id};show('omSelection',false);
+        if(open){pause();openDrawer('realm');}
+        if(drawer==='realm'){
+            renderRealmOverview(id);
+            E('omDrawerTitle').textContent=RealmNames.fullName(c);
+            if(open)E('omDrawer').querySelector('.om-drawer-body').scrollTop=0;
+        }
+    }
     function inspectWorld(i){
         if(!world||!sim||busy||scene!=='world'||i<0)return;
+        if(drawer==='realm')closeDrawer();
         const p=sim.provinces[world.provinceId[i]],f=(world.legends||[]).find(f=>f.i===i)||world.features.find(f=>f.i===i),b=world.basins?.[world.lakeId?.[i]],realm=p&&sim.realms[p.owner];
         if(world.height[i]<=0&&!f&&!b){clearSelection();return;}
         selection={kind:'world',i};
@@ -264,7 +277,7 @@ window.OneMap = (() => {
         if(item.type==='continent'){focusContinent(item.id);return;}
         renderer.focus(item.x,item.y);renderer.zoom=3.2;
         if(item.type==='realm')selectRealm(item.id);else inspectCell(item.i);
-        renderer.request();E('map').focus({preventScroll:true});
+        renderer.request();if(item.type!=='realm')E('map').focus({preventScroll:true});
     }
     function onWorldUpdate(){
         if(!sim||!world)return;
@@ -278,12 +291,13 @@ window.OneMap = (() => {
                 saga:g?`${g.title} ${g.hero.name} ${g.hero.rank} ${PEOPLES[g.hero.people].name} ${g.adversary.name}`:'',
                 subtitle:g?`${g.hero.name} against ${g.adversary.name} · ${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`
                     :`${TownCatalog.native(p,world)==='basilica'?'Grand sanctuary · ':''}${p.settlementType} · ${sim.realms[p.owner]?.name||'Free communities'}`};
-        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:c.title,subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
+        }),...world.continents.map(c=>({...c,type:'continent',subtitle:'Continent'})),...sim.realms.filter(c=>c.alive).map(c=>{const p=sim.provinces[c.capital];return{type:'realm',id:c.id,i:p.i,x:p.x,y:p.y,name:RealmNames.fullName(c),subtitle:'Realm · '+fmtPop(c.population)+' residents'};}),...LandmarkUI.registry.map(s=>({...s,type:'site',subtitle:'3D landmark'})),...world.features.map(f=>({...f,type:'feature',subtitle:f.kind||'Landscape'})),...(world.legends||[]).map(f=>({...f,type:'feature',subtitle:'Legendary place · '+f.kind}))];
         const latest=sim.events.slice().reverse().find(e=>e.type!=='founding'&&e.year>400);
         show('omEvent',!!latest&&sim.year>400);
         if(latest){E('omEventText').textContent=`${latest.year} · ${latest.text}`;if(latest!==lastEvent)lastEvent=latest;}
         if(drawer==='history')E('omDrawerTitle').textContent=`Year ${sim.year}`;
         if(selection?.kind==='world')inspectWorld(selection.i);
+        else if(selection?.kind==='realm')inspectRealm(selection.id,false);
         if(menu==='search')renderSearch();
         E('omHome').title=`World seed: ${world.params.seed} · Whole world`;
         setScene(scene);onPlayback();
@@ -331,5 +345,5 @@ window.OneMap = (() => {
         if(['+','=','-'].includes(e.key)&&!e.target.closest('button')){e.preventDefault();e.stopImmediatePropagation();zoom(e.key==='-'?1/1.2:1.2);}
         if(e.key.toLowerCase()==='h'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();home();}
     }
-    return {init,bind,setScene,inspectWorld,inspectBuilding,inspectPart,onWorldUpdate,onPlayback,onBusy,onAdvancing,enterTown,openDrawer,closeDrawer,closeMenus,openRegenerate,home,back,locate,clearSelection,get scene(){return scene;},get panel(){return drawer;},get activeRenderer(){return activeRenderer();}};
+    return {init,bind,setScene,inspectRealm,inspectWorld,inspectBuilding,inspectPart,onWorldUpdate,onPlayback,onBusy,onAdvancing,enterTown,openDrawer,closeDrawer,closeMenus,openRegenerate,home,back,locate,clearSelection,get scene(){return scene;},get panel(){return drawer;},get activeRenderer(){return activeRenderer();}};
 })();
