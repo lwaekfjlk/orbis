@@ -5,7 +5,7 @@
 
 A procedural fantasy atlas you can explore from continents to city streets. Generate a world, discover its countries and people, and watch its history unfold—all in your browser.
 
-**[Explore online](https://haofeiyu.me/telluric/)** · [中文说明](README.zh-CN.md)
+**[Explore online](https://haofeiyu.me/orbis/)** · [中文说明](README.zh-CN.md)
 
 ![World overview with named countries, settlements and marked wildness](previews/orbis/overview-desktop.png)
 
